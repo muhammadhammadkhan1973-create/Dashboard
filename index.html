@@ -705,7 +705,15 @@ function calcExplosive(){
   document.getElementById('explosive_psx_macro').innerHTML=explosiveMacroBanner('psx');
   renderExplosiveTable('explosive_us_table',(LIVE&&Array.isArray(LIVE.explosive_us))?LIVE.explosive_us:[],'us');
   renderExplosiveTable('explosive_psx_table',(LIVE&&Array.isArray(LIVE.explosive_psx))?LIVE.explosive_psx:[],'psx');
-  // Re-render any already-scored IM3 cells (stored scores loaded async before render)
+  // Load IM3 scores from data.json into im3Scores (no API call needed)
+  if (LIVE && Array.isArray(LIVE.explosive_us)) {
+    LIVE.explosive_us.forEach(r => {
+      if (r.im3 && !r.im3.error) {
+        im3Scores[r.ticker] = r.im3;
+      }
+    });
+  }
+  // Re-render cells that now have scores from data.json
   if (Object.keys(im3Scores).length > 0) {
     Object.keys(im3Scores).forEach(ticker => im3RefreshRow(ticker));
   }
@@ -735,135 +743,6 @@ async function im3SaveStored() {
   try { if (window.storage) await window.storage.set(IM3_STORAGE_KEY, JSON.stringify(im3Scores)); } catch(e){}
 }
 
-// Called by Score/Retry button — reads name+sector from parent cell's data attrs
-function im3ScoreFromCell(btn, ticker) {
-  const cell = btn.closest('[data-im3-ticker]') || btn.parentElement;
-  const name   = cell.dataset.im3Name   || ticker;
-  const sector = cell.dataset.im3Sector || '';
-  im3ScoreOne(ticker, name, sector);
-}
-
-// Score a single ticker — calls Claude API
-async function im3ScoreOne(ticker, name, sector) {
-  if (im3Busy[ticker]) return;
-  im3Busy[ticker] = true;
-  im3RefreshRow(ticker);
-
-  try {
-    const prompt = `You are a financial analyst applying the IM3 Investo Genie 162-point scoring framework.
-Score ${ticker} (${name}, ${sector}) using real current financial data you know.
-
-THRESHOLDS (exact IM3 Excel formulas):
-Revenue CAGR 5yr: GOOD≥15% | Op Profit CAGR 5yr: GOOD≥15% | Op Margin: GOOD≥12%
-Net Profit CAGR 5yr: GOOD≥15% | Net Margin: GOOD≥8% | Tax Rate: GOOD≥21% (25% US bank, 29% Pak bank)
-Interest Coverage: GOOD>5, N/A for banks | D/E: GOOD<0.5, WATCH<1, BAD≥1
-Total Debt trend: GOOD if 3yr avg<5yr avg | Current Ratio: GOOD≥1.5, WATCH≥1, BAD<1, N/A banks
-CFO trend: GOOD if 3yr avg>5yr avg | Net Change Cash: GOOD if TTM>prior, WATCH if >0, BAD <0
-cCFO vs cPAT: GOOD if 5yr cumCFO>5yr cumNP | NFAT trend: GOOD if 3yr>5yr | ROE: GOOD≥20%
-EPS trend: GOOD if 3yr avg>5yr avg | P/E: GOOD if ≤peer PE or within 10%
-PEG: GOOD<1, WATCH≤1.5, BAD>1.5 | Earnings Yield vs 4.3%: GOOD if EY>4.3%
-P/B: GOOD<1.5, WATCH<3, BAD≥3 | Graham P/E×P/B: GOOD<22.5 | P/S: GOOD<1.5, WATCH<3, BAD≥3
-Dividend Yield: GOOD≥4% | EV/EBITDA: GOOD<10, WATCH<15, BAD≥15
-MoS via DCF EPS: IV=EPS×(8.5+2×MIN(MAX(g,0.03),0.25))×4.4/0.043, GOOD if MoS≥25%
-Value for Shareholders: GOOD if EPS improving | Inventory Turnover: GOOD if 3yr>5yr, N/A banks
-DRO: GOOD if 3yr avg<5yr avg, N/A banks | NFAT: GOOD if 3yr>5yr | FAT: GOOD if 3yr>5yr, N/A banks
-FCF trend: GOOD if 3yr avg>5yr avg | CROIC: GOOD>15%, WATCH>5% | FCF/Sale: GOOD>20%, WATCH>8%
-FCF/CFO ratio: GOOD if 3yr>5yr | CCC: GOOD if 3yr<5yr, N/A banks
-Altman Z: GOOD>2.6, WATCH>1.1 | Beneish M: GOOD<-2.22, WATCH<-1.78 | Piotroski F: GOOD≥7, WATCH≥4
-ROIC vs WACC: GOOD if ROIC>WACC | Cash/Share: GOOD if >10% of price | Cash/Debt: GOOD>1.0, WATCH>0.3
-
-WEIGHTS: rev_cagr=5,op_cagr=1,op_margin=5,np_cagr=1,np_margin=5,tax_rate=3,int_coverage=2,de_ratio=5,
-total_debt=3,current_ratio=5,cfo_trend=5,net_cash=3,ccfo_cpat=5,nfa_turn=3,roe=3,eps_trend=5,
-pe_ratio=5,peg_ratio=5,earn_yield=3,pb_ratio=3,graham_val=3,ps_ratio=3,div_yield=5,ev_ebitda=3,
-mos=5,val_shareholders=5,inv_turn=3,dro=3,fat=3,fcf_trend=5,croic=5,fcf_sale=5,fcf_cfo=3,
-ccc=3,altman_z=5,beneish_m=5,piotroski_f=10,roic_wacc=3,cash_share=5,cash_debt=5
-
-POINTS: GOOD=100% of max, WATCH=60%, BAD=20%, NA=0
-GRADE: A≥75%, B≥60%, C≥50%, FAIL<50%
-BANK: N/A for int_coverage, current_ratio, inv_turn, dro, fat, ccc if is_bank=true
-
-INTRINSIC VALUES:
-dcf_eps = EPS×(8.5+2×MIN(MAX(avg_eps_growth/100,0.03),0.25))×4.4/0.043
-graham  = sqrt(22.5 × EPS × BookValuePerShare)
-peter_lynch = PEG × MIN(MAX(avg_ebitda_growth/100,0.05),0.20) × EPS
-
-Return ONLY valid JSON, no markdown:
-{"ticker":"${ticker}","name":"${name}","is_bank":false,"score":0,"max":162,"pct":0.0,"grade":"A",
-"price":0.0,
-"sections":{
-  "growth":{"score":0,"max":13,"metrics":[{"key":"rev_cagr","label":"Revenue CAGR 5yr","verdict":"GOOD","value":"22%","pts":5,"max":5}]},
-  "stability":{"score":0,"max":29,"metrics":[]},
-  "valuation":{"score":0,"max":37,"metrics":[]},
-  "inventory":{"score":0,"max":12,"metrics":[]},
-  "cashflow":{"score":0,"max":26,"metrics":[]},
-  "risk":{"score":0,"max":45,"metrics":[]}
-},
-"iv":{"dcf_eps":null,"graham":null,"peter_lynch":null,"mos_pct":null},
-"top_strengths":["strength 1","strength 2","strength 3"],
-"top_concerns":["concern 1","concern 2","concern 3"],
-"data_note":"brief note"
-}`;
-
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key': (typeof IM3_API_KEY !== 'undefined' ? IM3_API_KEY : ''),
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:4000,
-        messages:[{role:'user',content:prompt}] })
-    });
-    if (!resp.ok) {
-      // No API key (GitHub Pages) — open claude.ai with prompt pre-filled
-      if (resp.status === 401 || resp.status === 403) {
-        const encoded = encodeURIComponent(prompt.slice(0, 2000));
-        window.open('https://claude.ai/new?q=' + encoded, '_blank');
-        throw new Error('No API key — opened Claude.ai tab with prompt.');
-      }
-      throw new Error(`API ${resp.status}`);
-    }
-    const data = await resp.json();
-    const text = (data.content||[]).map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
-    const result = JSON.parse(text);
-
-    // Recompute score from metrics
-    let tot=0, mx=0;
-    Object.values(result.sections||{}).forEach(sec=>{
-      (sec.metrics||[]).forEach(m=>{ tot+=m.pts||0; mx+=m.max||0; });
-      sec.score = (sec.metrics||[]).reduce((a,m)=>a+(m.pts||0),0);
-    });
-    if (mx>0){ result.score=tot; result.max=162; result.pct=Math.round(tot/162*1000)/10; }
-    result.grade = result.pct>=75?'A':result.pct>=60?'B':result.pct>=50?'C':'FAIL';
-
-    im3Scores[ticker] = result;
-    await im3SaveStored();
-  } catch(e) {
-    im3Scores[ticker] = { error: String(e), ticker, name, sector };
-  }
-  delete im3Busy[ticker];
-  im3RefreshRow(ticker);
-}
-
-// Score all tickers in a table sequentially
-async function im3ScoreTable(tableId) {
-  const el = document.getElementById(tableId);
-  if (!el) return;
-  const cells = el.querySelectorAll('[data-im3-ticker]');
-  const tickers = [...cells].map(c=>({
-    ticker: c.dataset.im3Ticker,
-    name:   c.dataset.im3Name   || c.dataset.im3Ticker,
-    sector: c.dataset.im3Sector || ''
-  })).filter(t => t.ticker);
-  if (!tickers.length) return;
-  for (const t of tickers) {
-    // Score if unscored OR previously errored — skip only if already scored successfully
-    if ((!im3Scores[t.ticker] || im3Scores[t.ticker].error) && !im3Busy[t.ticker])
-      await im3ScoreOne(t.ticker, t.name, t.sector);
-  }
-}
-
 // Refresh a single row's IM3 cell without re-rendering the whole table
 function im3RefreshRow(ticker) {
   document.querySelectorAll(`[data-im3-cell="${ticker}"]`).forEach(cell => {
@@ -884,10 +763,9 @@ function im3CellHTML(ticker) {
   const busy = im3Busy[ticker];
   if (busy) return `<span style="color:var(--grey-d);font-size:11px;font-family:var(--font-mono);">⏳ scoring…</span>`;
 
-  // Unscored OR previously errored → show Score button (error = retry)
+  // Unscored OR previously errored → pending next scan (scores come from GitHub Actions)
   if (!r || r.error) {
-    const errTip = r && r.error ? ` title="Last error: ${String(r.error).slice(0,120)}"` : '';
-    return `<button${errTip} onclick="im3ScoreFromCell(this,'${ticker}')" style="padding:3px 8px;background:var(--navy);color:white;border:none;border-radius:5px;font-size:10px;cursor:pointer;font-weight:600;">${r && r.error ? '↻ Retry' : 'Score'}</button>`;
+    return `<span style="color:#9ca3af;font-size:11px;">Pending next scan</span>`;
   }
 
   const gc = r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f';
@@ -1031,7 +909,13 @@ function renderExplosiveTable(elId, rows, market) {
   if(counts.quality)   html+=`<span style="background:var(--orange-l);color:var(--orange);padding:4px 10px;border-radius:6px;">📈 ${counts.quality} QUALITY-GROWTH</span>`;
   if(counts.not)       html+=`<span style="background:var(--red-l);color:var(--red);padding:4px 10px;border-radius:6px;">✗ ${counts.not} NOT EXPLOSIVE</span>`;
   if(counts.insuff)    html+=`<span style="background:#F3F4F6;color:#6B7280;padding:4px 10px;border-radius:6px;">◌ ${counts.insuff} INSUFFICIENT DATA</span>`;
-  if(market==='us')    html+=`<button onclick="im3ScoreTable('${elId}')" style="margin-left:auto;padding:5px 14px;background:linear-gradient(135deg,var(--navy),var(--blue));color:white;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;">🧮 Score All with IM3</button>`;
+  if(market==='us') {
+    const scoredCount = rows.filter(r => r.im3 && !r.im3.error).length;
+    const explosiveCount = counts.explosive;
+    if (scoredCount > 0) {
+      html += `<span style="margin-left:auto;font-size:12px;color:var(--navy);font-weight:600;padding:5px 14px;background:#EEF2FF;border-radius:7px;">🧮 IM3 scored ${scoredCount}/${explosiveCount} — auto-updated by scanner</span>`;
+    }
+  }
   html+='</div>';
 
   html+=`<table style="font-size:12px;"><thead><tr>
@@ -1100,7 +984,7 @@ function renderTceTable(elId, rows, market) {
   if(high.length)   html+=`<span style="background:var(--green-l);color:var(--green);padding:4px 10px;border-radius:6px;">🔥 ${high.length} HIGH</span>`;
   if(watch.length)  html+=`<span style="background:var(--orange-l);color:var(--orange);padding:4px 10px;border-radius:6px;">👀 ${watch.length} WATCH</span>`;
   if(ignore.length) html+=`<span style="background:#F3F4F6;color:#6B7280;padding:4px 10px;border-radius:6px;">— ${ignore.length} IGNORE</span>`;
-  if(market==='us') html+=`<button onclick="im3ScoreTable('${elId}')" style="margin-left:auto;padding:5px 14px;background:linear-gradient(135deg,var(--navy),var(--blue));color:white;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;">🧮 Score All with IM3</button>`;
+  if(market==='us' && high.length) html+=`<span style="margin-left:auto;font-size:11px;color:var(--grey-d);">IM3 scores auto-updated by scanner</span>`;
   html+='</div>';
 
   html+=`<table style="font-size:12px;"><thead><tr>
