@@ -88,12 +88,19 @@ jobs:
               capture_output=True, text=True, timeout=600
           )
 
-          if result.returncode != 0:
+          # stdout should be pure JSON; stderr has any debug output
+          if result.stderr:
               print("STDERR:", result.stderr[:500])
+
+          # Find JSON in output - look for the [ that starts the array
+          raw = result.stdout.strip()
+          json_start = raw.find('[')
+          if json_start > 0:
+              raw = raw[json_start:]  # Strip any non-JSON prefix
 
           # Parse JSON output
           try:
-              scores = json.loads(result.stdout.strip())
+              scores = json.loads(raw)
           except json.JSONDecodeError as e:
               print(f"Failed to parse IM3 output: {e}")
               print("Output was:", result.stdout[:200])
