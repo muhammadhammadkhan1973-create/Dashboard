@@ -1,12 +1,12 @@
 {
   "meta": {
     "scan_version": "1.10.0",
-    "last_scan_utc": "2026-05-30T18:18:48.034435Z",
+    "last_scan_utc": "2026-05-30T18:51:21.405647Z",
     "errors": [],
     "warnings": [
-      "FRED cpi_yoy (CPIAUCSL) failed: Too Many Requests.  Exceeded Rate Limit",
       "FRED gdp_growth (A191RL1Q225SBEA) failed: Too Many Requests.  Exceeded Rate Limit",
-      "FRED industrial_prod (INDPRO) failed: Too Many Requests.  Exceeded Rate Limit"
+      "FRED industrial_prod (INDPRO) failed: Too Many Requests.  Exceeded Rate Limit",
+      "FRED hy_spread (BAMLH0A0HYM2) failed: Too Many Requests.  Exceeded Rate Limit"
     ]
   },
   "macros": {
@@ -16,6 +16,7 @@
       "core_pce": 3.29,
       "core_pce_date": "2026-04-01",
       "cpi_yoy": 3.95,
+      "cpi_yoy_date": "2026-04-01",
       "us_10y": 4.45,
       "us_10y_date": "2026-05-28",
       "us_2y": 3.99,
@@ -28,7 +29,6 @@
       "mfg_emp_date": "2026-04-01",
       "industrial_prod": 102.5,
       "hy_spread": 2.72,
-      "hy_spread_date": "2026-05-28",
       "permits": 1423.0,
       "permits_date": "2026-04-01",
       "wti": 87.36,
@@ -568,7 +568,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 14,
+        "s1_news_count": 15,
         "s5_volume_ratio": 1.82,
         "total": 3
       }
@@ -812,7 +812,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 12,
+        "s1_news_count": 13,
         "s5_volume_ratio": 0.76,
         "s3_insider_count": 32,
         "total": 3
@@ -848,7 +848,7 @@
         "s3_insider": 1,
         "s4_revisions": 1,
         "s5_volume": 0,
-        "s1_news_count": 3,
+        "s1_news_count": 4,
         "s5_volume_ratio": 0.62,
         "s4_revisions_pct": 83.1,
         "s3_insider_count": 19,
@@ -993,7 +993,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 2,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.76,
         "s3_insider_count": 5,
         "total": 1
