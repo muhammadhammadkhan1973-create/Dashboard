@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
+<style>
+  :root {
+    --navy: #4338CA; --blue: #6366F1; --accent: #06B6D4; --light-blue: #EEF2FF;
+    --gold: #D97706; --gold-l: #FEF3C7; --green: #059669; --green-l: #D1FAE5;
+    --red: #E11D48; --red-l: #FFE4E6; --orange: #F97316; --orange-l: #FFEDD5;
+    --grey-l: #F4F4F7; --grey-d: #64748B; --white: #FFFFFF; --ink: #1E1B4B;
+    --shadow: 0 4px 16px rgba(67,56,202,0.08); --shadow-lg: 0 12px 32px rgba(30,27,75,0.12);
+    --font-head: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-body); background: #F7F7FB; color: #1F2937; line-height: 1.55; padding: 0; -webkit-font-smoothing: antialiased; }
+  .header { background: linear-gradient(120deg, var(--ink) 0%, var(--navy) 45%, var(--blue) 100%); color: white; padding: 28px 32px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+  .header::after { content:''; position:absolute; top:-40%; right:-5%; width:380px; height:380px; background: radial-gradient(circle, rgba(6,182,212,0.35), transparent 65%); pointer-events:none; }
+  .header h1 { font-family: var(--font-head); font-size: 26px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.02em; position:relative; z-index:1; }
+  .header p { font-size: 14px; opacity: 0.85; position:relative; z-index:1; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab { padding: 11px 18px; background: var(--white); border: 1px solid #E5E7EB; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--grey-d); transition: all 0.18s; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  .tab:hover { background: var(--light-blue); color: var(--navy); transform: translateY(-1px); }
+  .tab.active { background: linear-gradient(135deg, var(--navy), var(--blue)); color: white; border-color: transparent; box-shadow: 0 6px 18px rgba(99,102,241,0.35); }
+  .panel { display: none; background: white; border-radius: 16px; padding: 28px; box-shadow: var(--shadow); margin-bottom: 24px; border: 1px solid #EEF0F5; }
+  .panel.active { display: block; }
+  .section-title { font-family: var(--font-head); font-size: 21px; font-weight: 700; color: var(--ink); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--light-blue); letter-spacing:-0.01em; }
+  .subsection-title { font-family: var(--font-head); font-size: 16px; font-weight: 600; color: var(--blue); margin: 20px 0 12px; }
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+  .input-group { display: flex; flex-direction: column; gap: 4px; }
+  .input-group label { font-size: 13px; font-weight: 600; color: var(--grey-d); }
+  .input-group label .desc { display: block; font-size: 11px; font-weight: 400; color: #999; margin-top: 2px; }
+  .input-group input, .input-group select { padding: 10px 12px; border: 1.5px solid #E5E7EB; border-radius: 9px; font-size: 14px; font-family: var(--font-mono); transition: all 0.18s; background:#FCFCFE; }
+  .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); background:#fff; }
+  .input-group .current-val { font-size: 11px; color: var(--blue); margin-top: 2px; }
+  .btn { padding: 12px 24px; background: linear-gradient(135deg, var(--navy), var(--blue)); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; box-shadow: 0 4px 14px rgba(99,102,241,0.3); }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(99,102,241,0.4); }
+  .btn-secondary { background: var(--grey-d); }
+  .btn-row { display: flex; gap: 12px; margin-top: 20px; }
+  .indicator-card { background: var(--grey-l); padding: 16px; border-radius: 12px; border-left: 4px solid var(--grey-d); transition: transform 0.18s; }
+  .indicator-card:hover { transform: translateY(-2px); }
+  .indicator-card.pos { border-left-color: var(--green); background: var(--green-l); }
+  .indicator-card.neg { border-left-color: var(--red); background: var(--red-l); }
+  .indicator-card.warn { border-left-color: var(--orange); background: var(--orange-l); }
+  .indicator-card.neutral { border-left-color: var(--gold); background: var(--gold-l); }
+  .indicator-card .label { font-size: 12px; font-weight: 600; color: var(--grey-d); text-transform: uppercase; letter-spacing: 0.5px; }
+  .indicator-card .value { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: var(--ink); margin: 4px 0; }
+  .indicator-card .status { font-size: 13px; font-weight: 600; }
+  .indicator-card .interp { font-size: 12px; color: var(--grey-d); margin-top: 6px; line-height: 1.4; }
+  .alert-banner { padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; border: 3px solid; box-shadow: var(--shadow); }
+  .alert-banner.green { background: var(--green-l); border-color: var(--green); }
+  .alert-banner.yellow { background: var(--gold-l); border-color: var(--gold); }
+  .alert-banner.orange { background: var(--orange-l); border-color: var(--orange); }
+  .alert-banner.red { background: var(--red-l); border-color: var(--red); }
+  .alert-banner h3 { font-size: 18px; margin-bottom: 8px; }
+  .alert-banner.green h3 { color: var(--green); }
+  .alert-banner.yellow h3 { color: var(--gold); }
+  .alert-banner.orange h3 { color: var(--orange); }
+  .alert-banner.red h3 { color: var(--red); }
+  .alert-banner p { font-size: 14px; line-height: 1.6; }
+  .alert-banner ul { margin-top: 8px; padding-left: 20px; font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
+  th { background: var(--ink); color: white; font-weight: 600; font-size: 12px; letter-spacing:0.02em; }
+  tr:nth-child(even) td { background: var(--grey-l); }
+  tr.pos td { background: var(--green-l) !important; }
+  tr.neg td { background: var(--red-l) !important; }
+  tr.warn td { background: var(--orange-l) !important; }
+  .reading-box { background: var(--light-blue); padding: 16px 20px; border-radius: 8px; border-left: 4px solid var(--blue); margin: 12px 0; font-size: 13px; line-height: 1.6; }
+  .reading-box strong { color: var(--navy); }
+  .score-bar { background: #eee; height: 28px; border-radius: 14px; overflow: hidden; position: relative; margin: 8px 0; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--red) 0%, var(--orange) 40%, var(--gold) 60%, var(--green) 100%); transition: width 0.5s; }
+  .score-label { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: 700; color: white; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+  .footer { text-align: center; padding: 24px; color: var(--grey-d); font-size: 12px; }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+  .badge.pos { background: var(--green); color: white; }
+  .badge.neg { background: var(--red); color: white; }
+  .badge.warn { background: var(--orange); color: white; }
+  .badge.neutral { background: var(--gold); color: white; }
+  .historical-table { font-size: 12px; }
+  .historical-table th { background: var(--gold); color: white; }
+  .stock-sector { padding: 8px 12px; background: var(--white); border: 1px solid #ddd; border-radius: 6px; margin: 4px 0; font-size: 13px; }
+  .stock-sector.win { border-color: var(--green); background: var(--green-l); }
+  .stock-sector.lose { border-color: var(--red); background: var(--red-l); }
+  h2, h3 { font-family: var(--font-head); letter-spacing:-0.01em; }
+  .card { background:#fff; border:1px solid #EEF0F5; border-radius:14px; padding:20px 22px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .panel-title { font-family:var(--font-head); font-size:21px; font-weight:700; color:var(--ink); margin-bottom:16px; }
+  td b, .ticker { font-family: var(--font-mono); }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+    <div>
+      <h1>PSX + US Active Macro Dashboard — IM3 Framework</h1>
+      <p>Real-time regime classification, sector implications, and PKR devaluation early-warning system | Based on Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum</p>
+    </div>
+    <div id="liveStatus" style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:10px 14px; font-size:12px; min-width:190px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span id="liveDot" style="width:9px; height:9px; border-radius:50%; background:#9ca3af; display:inline-block;"></span>
+        <strong id="liveText">Loading live scan…</strong>
+      </div>
+      <div style="margin-top:5px; opacity:0.85;">Last scan: <span id="liveScan">—</span> · <span id="liveVer">—</span></div>
+      <div style="margin-top:6px;"><button onclick="reloadLive()" style="background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:6px; padding:3px 10px; font-size:11px; cursor:pointer;">↻ Reload live data</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  
+  <div class="tabs">
+    <button class="tab active" onclick="showPanel('input', this)">1. Input Data</button>
+    <button class="tab" onclick="showPanel('us', this)">2. US Dashboard</button>
+    <button class="tab" onclick="showPanel('pak', this)">3. Pakistan Dashboard</button>
+    <button class="tab" onclick="showPanel('devalert', this)">4. PKR Devaluation Alert</button>
+    <button class="tab" onclick="showPanel('history', this)">5. Historical PKR Crashes</button>
+    <button class="tab" onclick="showPanel('sectors', this)">6. Sector Implications</button>
+    <button class="tab" onclick="showPanel('zone', this)">7. Allocation Zone (IM3)</button>
+    <button class="tab" onclick="showPanel('mbpsx', this)">8. PSX Multibagger</button>
+    <button class="tab" onclick="showPanel('mbus', this)">9. US Multibagger</button>
+    <button class="tab" onclick="showPanel('tce', this)">10. TCE Convergence</button>
+    <button class="tab" onclick="showPanel('explosive', this)">11. Explosive Stocks</button>
+  </div>
+
+  <!-- ============ PANEL 1: INPUT ============ -->
+  <div id="input" class="panel active">
+    <h2 class="section-title">Macro Indicator Inputs</h2>
+    <p style="color: var(--grey-d); margin-bottom: 20px; font-size: 14px;">Enter current readings or use defaults (verified May 2026 data). Dashboard recalculates instantly. Hover labels for sourcing tips.</p>
+    
+    <h3 class="subsection-title">United States — Leading Indicators</h3>
+    <div class="grid grid-3">
+      <div class="input-group">
+        <label>ISM Manufacturing PMI <span class="desc">Above 50 = expansion. Below 47.5 = recession signal</span></label>
+        <input type="number" id="ism_mfg" value="52.7" step="0.1" oninput="recalc()">
+        <span class="current-val">Apr 2026: 52.7 (18th month expansion)</span>
+      </div>
+      <div class="input-group">
+        <label>ISM Services PMI <span class="desc">Services = 89% of US GDP. >50 expansion</span></label>
+        <input type="number" id="ism_svc" value="53.6" step="0.1" oninput="recalc()">
+        <span class="current-val">Apr 2026: 53.6 (22nd month expansion)</span>
+      </div>
+      <div class="input-group">
+        <label>UMCSI Headline <span class="desc">>80 bullish, 55-70 bearish, <55 extreme</span></label>
+        <input type="number" id="umcsi" value="44.8" step="0.1" oninput="recalc()">
+        <span class="current-val">May 2026: 44.8 (RECORD LOW since 1952)</span>
+      </div>
+      <div class="input-group">
+        <label>US 10Y Yield (%) <span class="desc">Long-term Treasury</span></label>
+        <input type="number" id="us_10y" value="4.45" step="0.01" oninput="recalc()">
+        <span class="current-val">May 2026: 4.45%</span>
+      </div>
+      <div class="input-group">
+        <label>US 2Y Yield (%) <span class="desc">Short-term Treasury</span></label>
+        <input type="number" id="us_2y" value="4.00" step="0.01" oninput="recalc()">
+        <span class="current-val">May 2026: 4.00% (spread +45bps NORMAL)</span>
+      </div>
+      <div class="input-group">
+        <label>Fed Funds Rate (%) <span class="desc">Fed target rate</span></label>
+        <input type="number" id="fed_rate" value="4.375" step="0.125" oninput="recalc()">
+        <span class="current-val">May 2026: 4.25-4.50% range</span>
+      </div>
+      <div class="input-group">
+        <label>Core PCE Inflation (YoY %) <span class="desc">Fed's preferred inflation gauge</span></label>
+        <input type="number" id="core_pce" value="2.7" step="0.1" oninput="recalc()">
+        <span class="current-val">Mar 2026: 2.7% (target 2.0%)</span>
+      </div>
+      <div class="input-group">
+        <label>US GDP Growth (YoY %) <span class="desc">Real GDP</span></label>
+        <input type="number" id="us_gdp" value="2.1" step="0.1" oninput="recalc()">
+        <span class="current-val">Q1 2026: +2.1%</span>
+      </div>
+      <div class="input-group">
+        <label>DXY (US Dollar Index) <span class="desc">>105 strong, <98 weak vs basket</span></label>
+        <input type="number" id="dxy" value="99.5" step="0.1" oninput="recalc()">
+        <span class="current-val">May 2026: ~99-100</span>
+      </div>
+      <div class="input-group">
+        <label>WTI Crude ($/bbl) <span class="desc">US benchmark (Cushing). US net-exporter lens</span></label>
+        <input type="number" id="wti" value="95.0" step="0.5" oninput="recalc()">
+        <span class="current-val">May 2026: ~$95 (Hormuz premium)</span>
+      </div>
+      <div class="input-group">
+        <label>Brent Crude ($/bbl) <span class="desc">Global benchmark (North Sea)</span></label>
+        <input type="number" id="brent" value="100.0" step="0.5" oninput="recalc()">
+        <span class="current-val">May 2026: ~$100</span>
+      </div>
+      <div class="input-group">
+        <label>US Crude Production (M bbl/d) <span class="desc">EIA weekly field production — LEADING</span></label>
+        <input type="number" id="us_crude_prod" value="13.57" step="0.01" oninput="recalc()">
+        <span class="current-val">May 2026: ~13.57M b/d (near record)</span>
+      </div>
+      <div class="input-group">
+        <label>US Oil Rig Count <span class="desc">Baker Hughes weekly — forward production signal</span></label>
+        <input type="number" id="us_oil_rigs" value="425" step="1" oninput="recalc()">
+        <span class="current-val">May 22 2026: 425 oil rigs (4-wk rising)</span>
+      </div>
+    </div>
+
+    <h3 class="subsection-title">Pakistan — Seven Factors</h3>
+    <div class="grid grid-3">
+      <div class="input-group">
+        <label>Arab Light Crude ($/bbl) <span class="desc">Pakistan's reference oil price</span></label>
+        <input type="number" id="oil_arab" value="78" step="0.5" oninput="recalc()">
+        <span class="current-val">May 2026: $75-82/bbl range</span>
+      </div>
+      <div class="input-group">
+        <label>SBP Policy Rate (%) <span class="desc">State Bank of Pakistan main rate</span></label>
+        <input type="number" id="sbp_rate" value="11.50" step="0.25" oninput="recalc()">
+        <span class="current-val">May 2026: 11.50% (+100bp Apr 27)</span>
+      </div>
+      <div class="input-group">
+        <label>USD/PKR Spot <span class="desc">Interbank rate</span></label>
+        <input type="number" id="usd_pkr" value="278.50" step="0.1" oninput="recalc()">
+        <span class="current-val">May 2026: 278.50 stable</span>
+      </div>
+      <div class="input-group">
+        <label>Pakistan CPI Inflation (YoY %) <span class="desc">Pakistan headline CPI</span></label>
+        <input type="number" id="pak_cpi" value="10.9" step="0.1" oninput="recalc()">
+        <span class="current-val">Apr 2026: 10.9% (spike from 7.3% Mar)</span>
+      </div>
+      <div class="input-group">
+        <label>SBP FX Reserves (USD bn) <span class="desc">Foreign exchange reserves</span></label>
+        <input type="number" id="sbp_reserves" value="16.4" step="0.1" oninput="recalc()">
+        <span class="current-val">Apr 2026: $16.40bn (post IMF May 12)</span>
+      </div>
+      <div class="input-group">
+        <label>Current Account (Monthly USD M) <span class="desc">Positive = surplus; negative = deficit</span></label>
+        <input type="number" id="pak_ca" value="-324" step="1" oninput="recalc()">
+        <span class="current-val">Apr 2026: -$324M (first deficit in 7 months)</span>
+      </div>
+      <div class="input-group">
+        <label>Fiscal Deficit (% of GDP) <span class="desc">Annualized estimate</span></label>
+        <input type="number" id="pak_fiscal" value="6.0" step="0.1" oninput="recalc()">
+        <span class="current-val">FY26 target: 5.9%</span>
+      </div>
+      <div class="input-group">
+        <label>REER (Real Effective Exchange Rate) <span class="desc">>100 overvalued; <100 undervalued</span></label>
+        <input type="number" id="reer" value="105.80" step="0.01" oninput="recalc()">
+        <span class="current-val">Apr 2026: 105.80 (7.5-yr high)</span>
+      </div>
+      <div class="input-group">
+        <label>NEER (Nominal Effective Exchange Rate) <span class="desc">Trade-weighted nominal FX</span></label>
+        <input type="number" id="neer" value="37.89" step="0.01" oninput="recalc()">
+        <span class="current-val">Apr 2026: 37.89 (declined from 60+ in 2021)</span>
+      </div>
+      <div class="input-group">
+        <label>Remittances (Monthly USD bn) <span class="desc">Worker remittances</span></label>
+        <input type="number" id="remittances" value="3.54" step="0.01" oninput="recalc()">
+        <span class="current-val">Apr 2026: $3.54bn (+11% YoY)</span>
+      </div>
+      <div class="input-group">
+        <label>Import Cover (months) <span class="desc">Reserves ÷ monthly imports</span></label>
+        <input type="number" id="import_cover" value="2.4" step="0.1" oninput="recalc()">
+        <span class="current-val">Apr 2026: ~2.4 months (IMF "adequate" = 3)</span>
+      </div>
+      <div class="input-group">
+        <label>KSE-100 Index <span class="desc">Pakistan benchmark</span></label>
+        <input type="number" id="kse100" value="167844" step="100" oninput="recalc()">
+        <span class="current-val">May 22, 2026: 167,844 (52-wk: 115,887 – 191,033)</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="recalc()">Recalculate All</button>
+      <button class="btn btn-secondary" onclick="resetDefaults()">Reset to Defaults</button>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 2: US DASHBOARD ============ -->
+  <div id="us" class="panel">
+    <h2 class="section-title">United States Macro Dashboard</h2>
+    <div id="us_regime_banner" class="alert-banner"></div>
+    <h3 class="subsection-title">Leading Indicators</h3>
+    <div class="grid grid-3" id="us_indicators"></div>
+    <h3 class="subsection-title">Energy Leading Indicators — Net-Exporter Lens</h3>
+    <div id="us_energy_banner" class="reading-box"></div>
+    <div class="grid grid-3" id="us_energy_indicators"></div>
+    <h3 class="subsection-title">Yield Curve</h3>
+    <div id="yield_curve_box"></div>
+    <h3 class="subsection-title">Four Regimes Quadrant</h3>
+    <div id="us_quadrant"></div>
+    <h3 class="subsection-title">Composite Sector Recommendation</h3>
+    <div id="us_sector_rec"></div>
+  </div>
+
+  <!-- ============ PANEL 3: PAKISTAN DASHBOARD ============ -->
+  <div id="pak" class="panel">
+    <h2 class="section-title">Pakistan / PSX Macro Dashboard</h2>
+    <div id="pak_regime_banner" class="alert-banner"></div>
+    <h3 class="subsection-title">Seven Factors Status Board</h3>
+    <div class="grid grid-3" id="pak_seven_factors"></div>
+    <h3 class="subsection-title">REER / NEER Currency Competitiveness</h3>
+    <div id="reer_box"></div>
+    <h3 class="subsection-title">Twin Deficit Status</h3>
+    <div id="twin_deficit_box"></div>
+    <h3 class="subsection-title">PSX Sector Implications</h3>
+    <div id="pak_sector_rec"></div>
+  </div>
+
+  <!-- ============ PANEL 4: PKR DEVALUATION ALERT ============ -->
+  <div id="devalert" class="panel">
+    <h2 class="section-title">PKR Devaluation Early-Warning System</h2>
+    <p style="color: var(--grey-d); margin-bottom: 16px; font-size: 14px;">Composite alert based on historical pattern of all major PKR devaluations (2008, 2013, 2018, 2022, 2023). Score 0-100 — higher = greater devaluation probability over next 3-6 months.</p>
+    <div id="devalert_main"></div>
+    <h3 class="subsection-title">Trigger Component Scoring</h3>
+    <table id="dev_components"></table>
+    <h3 class="subsection-title">How the Alert Works</h3>
+    <div class="reading-box">
+      <strong>The 7 historical devaluation triggers — each scored 0-100:</strong>
+      <ol style="margin-top: 8px; padding-left: 24px; line-height: 1.8;">
+        <li><strong>FX Reserves Stress (weight 25%):</strong> Reserves below 2 months of imports = high alert. Historical devaluation episodes ALL had reserves below 2.5 months of import cover.</li>
+        <li><strong>Current Account Deterioration (weight 20%):</strong> Sustained monthly deficit OR widening trend triggers alert. 2018 and 2022 episodes both began with CAD widening 30%+ YoY.</li>
+        <li><strong>REER Overvaluation (weight 15%):</strong> REER >103 = building pressure; >106 = imminent correction risk. Sep 2018 (REER 106.6) preceded major fall. April 2021 peak 102.95 preceded 2022 collapse.</li>
+        <li><strong>Inflation Pressure (weight 15%):</strong> CPI >12% combined with above triggers historically forced SBP-IMF action. 2022-23 peaked at 38% CPI.</li>
+        <li><strong>Fiscal Deficit Stress (weight 10%):</strong> Fiscal deficit >6.5% historically coincides with currency pressure. 2018: 6.6%, 2022: 7%+.</li>
+        <li><strong>Oil Price Shock (weight 10%):</strong> Arab Light >$85 sustained = import bill blow-out. 2008 (oil $140), 2022 (oil $120+).</li>
+        <li><strong>Real Interest Rate (weight 5%):</strong> Negative real rates (SBP rate − CPI <0) signal monetary slippage. Was negative throughout 2022.</li>
+      </ol>
+    </div>
+    <h3 class="subsection-title">Common Pattern From History</h3>
+    <div class="reading-box">
+      Every major PKR devaluation event since 2008 had these <strong>5 common factors</strong> present 3-6 months BEFORE the crash:
+      <ul style="margin-top: 8px; padding-left: 24px; line-height: 1.8;">
+        <li>FX reserves declining toward 2 months of import cover (or below)</li>
+        <li>Current account in widening deficit (sustained for 3+ months)</li>
+        <li>REER above 100 (overvalued in real terms)</li>
+        <li>External debt service obligations rising near term</li>
+        <li>IMF program either expiring, suspended, or about to enter</li>
+      </ul>
+      <strong style="display: block; margin-top: 12px;">If 4 of these 5 fire simultaneously, devaluation has historically occurred within 6 months 100% of the time (n=5 episodes: 2008, 2013, 2017-18, 2022, 2023).</strong>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 5: HISTORICAL ============ -->
+  <div id="history" class="panel">
+    <h2 class="section-title">Historical PKR Devaluation Episodes — What the 7 Factors Looked Like</h2>
+    <p style="color: var(--grey-d); margin-bottom: 20px; font-size: 14px;">Each row shows the macro state during 5 major PKR devaluation events. The "Common Factor" column highlights what was true in ALL devaluation periods.</p>
+    <div style="overflow-x: auto;">
+    <table class="historical-table">
+      <thead>
+        <tr>
+          <th>Factor</th>
+          <th>2008 (Oct)<br><span style="font-weight:400">PKR 60→80 (33%)</span></th>
+          <th>2013 (Nov)<br><span style="font-weight:400">PKR 98→108 (10%)</span></th>
+          <th>2017-18<br><span style="font-weight:400">PKR 105→160 (52%)</span></th>
+          <th>2022 (May-Dec)<br><span style="font-weight:400">PKR 178→230 (29%)</span></th>
+          <th>2023 (Jan-Jun)<br><span style="font-weight:400">PKR 226→290 (28%)</span></th>
+          <th>Common Pattern</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><b>Oil Price (Arab Light $/bbl)</b></td><td>$140 peak (May 08)</td><td>$105-110 elevated</td><td>$60→$85 rising</td><td>$110-120 (Russia war)</td><td>$80-95</td><td class="warn"><b>Elevated or rising</b></td></tr>
+        <tr><td><b>SBP Policy Rate (%)</b></td><td>15% (peak)</td><td>9.5%</td><td>6.5→10%</td><td>9.75% → 15%</td><td>17% → 22% peak</td><td class="warn"><b>Rising aggressively</b></td></tr>
+        <tr><td><b>Currency Valuation (USD/PKR)</b></td><td>60 (overvalued)</td><td>98 (overvalued)</td><td>105 (overvalued)</td><td>178 (managed too high)</td><td>226 (artificial peg)</td><td class="neg"><b>OVERVALUED ALL 5 TIMES</b></td></tr>
+        <tr><td><b>Current Account ($bn deficit)</b></td><td>-$14bn (8.4% GDP)</td><td>-$2.5bn → -$3.1bn</td><td>-$18bn (6.3% GDP)</td><td>-$17bn</td><td>-$3.5bn</td><td class="neg"><b>Widening deficit ALL 5</b></td></tr>
+        <tr><td><b>Fiscal Deficit (% GDP)</b></td><td>7.6%</td><td>8.2%</td><td>6.6%</td><td>7.9%</td><td>7.0%</td><td class="neg"><b>Always >6.5% of GDP</b></td></tr>
+        <tr><td><b>Inflation (CPI YoY %)</b></td><td>25.3% (peak Aug 08)</td><td>7.8%</td><td>6.7% → 12%</td><td>27.5% YoY peak</td><td>38% peak May 23</td><td class="warn"><b>Rising sharply</b></td></tr>
+        <tr><td><b>FX Reserves (USD bn)</b></td><td>$3.4bn (12-yr low)</td><td>$3.4bn (12-yr low Nov 13)</td><td>$10.3bn (under 2mo imports)</td><td>$5.6bn (Dec 22)</td><td>$4.6bn (Jan 23)</td><td class="neg"><b>CRITICALLY LOW <2 mo cover</b></td></tr>
+        <tr><td><b>REER</b></td><td>~120 overvalued</td><td>~108</td><td>~106-108</td><td>~100-103</td><td>~95 (post-Jan 23)</td><td class="warn"><b>REER >100 pre-crash</b></td></tr>
+        <tr><td><b>IMF Status</b></td><td>Entered SBA Nov 08</td><td>Entered EFF Sep 13</td><td>Sought bailout Oct 18</td><td>Negotiated EFF Aug 22</td><td>EFF restart Jun 23</td><td class="warn"><b>IMF entry/exit cycle</b></td></tr>
+        <tr><td><b>Real Interest Rate</b></td><td>-10% (highly negative)</td><td>+1.7%</td><td>-3% to -6%</td><td>-12% to -23% (very negative)</td><td>-21% (extreme negative)</td><td class="warn"><b>Often deeply negative</b></td></tr>
+        <tr><td><b>Political Trigger</b></td><td>Musharraf ouster + new gov</td><td>PML-N transition</td><td>Imran Khan PTI election</td><td>Khan ouster + Shahbaz Sharif</td><td>Floods + political crisis</td><td class="warn"><b>Political instability</b></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <h3 class="subsection-title">Key Insights From Historical Pattern Analysis</h3>
+    <div class="reading-box">
+      <p><strong>1. Reserve Levels Below 2-Month Import Cover Are The Single Strongest Predictor:</strong> Every one of the 5 major devaluation events occurred when FX reserves fell below 2 months of import cover. Currently Pakistan reserves at ~2.4 months — close to but above the threshold.</p>
+      <p style="margin-top: 10px;"><strong>2. REER Above 100 Is A Necessary But Not Sufficient Condition:</strong> REER overvaluation alone doesn't trigger devaluation, but EVERY devaluation episode had REER >100 prior. The current REER at 105.80 is in danger zone — only above 106 in Sep 2018 before that crash. Watch this closely.</p>
+      <p style="margin-top: 10px;"><strong>3. Twin Deficit (Current + Fiscal >12% GDP combined) Is The Killer Combination:</strong> 2008 had CA -8.4% + Fiscal -7.6% = 16% twin. 2018 had CA -6.3% + Fiscal -6.6% = 12.9% twin. 2022 had CA -4.6% + Fiscal -7.9% = 12.5% twin. Current Pakistan: CA approx -1% + Fiscal -6% = ~7% twin — much better than devaluation history.</p>
+      <p style="margin-top: 10px;"><strong>4. IMF Program Status Is Counter-Intuitive:</strong> Devaluations cluster AROUND IMF program entry (forced by IMF as precondition) OR AROUND IMF program suspension (lost discipline). Mid-program periods are stable. Currently Pakistan in mid-EFF program — stable phase.</p>
+      <p style="margin-top: 10px;"><strong>5. The 6-12 Month Lead Time:</strong> Reserves erosion typically begins 6-12 months before the formal devaluation. By the time politicians admit there's a problem, the crash has already happened. The dashboard's value is catching this LEADING.</p>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 6: SECTOR IMPLICATIONS ============ -->
+  <div id="sectors" class="panel">
+    <h2 class="section-title">Sector & Stock Implications — From Current Macro State</h2>
+    <h3 class="subsection-title">US Sectors — Per COT Position + Current Regime</h3>
+    <div id="us_sectors"></div>
+    <h3 class="subsection-title">PSX Sectors — Per Seven Factors</h3>
+    <div id="psx_sectors"></div>
+    <h3 class="subsection-title">Top Picks From Explosive Stocks Q2 2026</h3>
+    <div id="top_picks"></div>
+  </div>
+
+  <!-- ============ PANEL 7: ALLOCATION ZONE (IM3) ============ -->
+  <div id="zone" class="panel">
+    <h2 class="section-title">IM3 Allocation Zone — Ammar Yaseen Methodology</h2>
+    <p style="color: var(--grey-d); margin-bottom: 16px; font-size: 14px;">Zone classification follows IM3 Week 3 lecture. Mean = long-term average SBP policy rate since 1991 (~11.01%). Current zone depends on (a) is current rate above or below Mean, and (b) is the rate Increasing or Decreasing. Asset allocation for Risk HIGH profile shown in each zone.</p>
+    <div id="zone_banner" class="alert-banner red">
+      <h3>CURRENT ZONE: RED — 20% Stocks / 60% Bonds / 20% Cash</h3>
+      <p><b>Latest SBP Rate:</b> 11.50% (HIKED +100bp on Apr 27, 2026, effective Apr 28) | <b>Mean (long-term):</b> 11.01% | <b>Direction:</b> Increasing</p>
+      <p style="margin-top:6px;"><b>Rule fired:</b> Current rate (11.50%) is <i>Greater than Mean</i> (11.01%) AND <i>Increasing</i> (from prior 10.50%) → Weight 0.2 = RED ZONE</p>
+      <p style="margin-top:6px;"><b>Allocation per Risk HIGH (Muhammad's profile, 50s age bracket):</b> 20% Stocks / 60% Bonds / 20% Cash</p>
+    </div>
+    <h3 class="subsection-title">Zone Quadrant — Per IM3 Week 3 Rules</h3>
+    <div id="zone_quadrant_box"></div>
+    <h3 class="subsection-title">SBP Policy Rate Path — Sep 2025 to May 2026</h3>
+    <div id="zone_rate_path"></div>
+    <h3 class="subsection-title">KSE-100 Monthly Performance — Sep 2025 to May 2026</h3>
+    <div id="zone_kse_table"></div>
+    <h3 class="subsection-title">Asset Allocation by Zone × Risk Profile (Per IM3 PDF Slide 4)</h3>
+    <div id="zone_alloc_table"></div>
+    <h3 class="subsection-title">How the Classification Works</h3>
+    <div class="reading-box">
+      <p><strong>Two conditions determine the zone:</strong></p>
+      <ul style="margin-top: 8px; padding-left: 24px; line-height: 1.8;">
+        <li><b>Condition A — Rate vs Mean:</b> Is the latest SBP policy rate above or below the long-term mean of ~11.01%?</li>
+        <li><b>Condition B — Direction:</b> Is the rate increasing (last change was a hike) or decreasing (last change was a cut)? Holds inherit the prior direction.</li>
+      </ul>
+      <p style="margin-top: 12px;"><strong>The four zones:</strong></p>
+      <ul style="margin-top: 8px; padding-left: 24px; line-height: 1.8;">
+        <li><b>DARK GREEN (Weight 1.0):</b> Rate Lesser than Mean AND Decreasing → Maximum stocks. Optimal accumulation environment.</li>
+        <li><b>LIGHT GREEN (Weight 0.8):</b> Rate Greater than Mean AND Decreasing → Heavy stocks. Easing cycle priced in.</li>
+        <li><b>YELLOW (Weight 0.6):</b> Rate Lesser than Mean AND Increasing → Moderate stocks. Early tightening warning.</li>
+        <li><b>RED (Weight 0.2):</b> Rate Greater than Mean AND Increasing → Minimum stocks. Tightening cycle in progress.</li>
+      </ul>
+      <p style="margin-top: 12px;"><strong>Why we are in RED right now:</strong> After cutting to 10.50% in December 2025 (and holding through March 2026), SBP unexpectedly hiked to 11.50% on April 27, 2026 — the first hike since June 2023. The hike was triggered by April 2026 CPI spiking to 10.9% (from 7.3% in March), a flip back to current account deficit (–$324M), and REER pushing to a 7.5-year high of 105.80. This single change moves rate above Mean AND establishes Increasing direction = RED quadrant.</p>
+      <p style="margin-top: 12px;"><strong>What triggers a zone change:</strong> Either (a) the next MPC meeting cuts (would shift back to LIGHT GREEN at first cut, then DARK GREEN if below Mean), or (b) the rate moves materially. The current 11.50% is only 49bp above Mean — close call. Any hold-and-cut sequence in June/July 2026 could shift this back to LIGHT GREEN quickly.</p>
+    </div>
+    <h3 class="subsection-title">Backtest Result (From Ammar's Original Excel)</h3>
+    <div class="reading-box">
+      <p><strong>Starting Capital:</strong> PKR 100,000 in June 1994</p>
+      <p style="margin-top: 6px;"><strong>Fully Invested (Buy & Hold) PSX strategy:</strong> PKR 6,533,162 — multiple of 65.3x</p>
+      <p style="margin-top: 6px;"><strong>Zone-Based Active Allocation:</strong> PKR 7,994,505 — multiple of 79.9x</p>
+      <p style="margin-top: 6px;"><strong>Outperformance:</strong> +14.6x cumulative gain over buy-and-hold by rotating between 100%/80%/60%/20% equity exposure based on SBP rate vs Mean × direction.</p>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 8: PSX MULTIBAGGER HUNTER ============ -->
+  <div id="mbpsx" class="panel">
+    <h2 class="section-title">PSX Multibagger Hunter — 10x+ Return Track</h2>
+    <p style="color: var(--grey-d); margin-bottom: 16px; font-size: 14px;"><strong>Distinct from Explosive Stocks track.</strong> Multibaggers are early-stage compounders held 10-20 years for 10-100x returns. Different gates than the Explosive Stocks track — see Section 6 below for methodology comparison. PSX-only universe in this tab; US in Tab 9.</p>
+    <div id="mbpsx_macro_banner" class="alert-banner red">
+      <h3>Macro Awareness: Tab 7 reads RED ZONE</h3>
+      <p><b>Current IM3 Allocation:</b> 20% Stocks / 60% Bonds / 20% Cash. <b>Recommended Action:</b> Use this period to BUILD WATCHLIST via scorecard. Aggressive accumulation of multibagger candidates should wait for LIGHT GREEN or DARK GREEN zone. New multibagger initiations limited to 20% of available stock allocation.</p>
+    </div>
+    <h3 class="subsection-title">PSX Multibagger Screening Summary</h3>
+    <div id="psx_mb_funnel"></div>
+    <h4 style="font-size:14px; color:var(--blue); margin:16px 0 8px;">Sector-by-Sector Breakdown — PSX Universe</h4>
+    <div id="psx_mb_sector_table"></div>
+    <h3 class="subsection-title">1. Multibagger Scorecard — Enter PSX Stock Data</h3>
+    <p style="color: var(--grey-d); margin-bottom: 12px; font-size: 13px;">All financial inputs as 5-year averages or trailing where indicated. Score 0-100 with classification band.</p>
+    <h4 style="font-size: 14px; color: var(--blue); margin: 16px 0 10px;">Quantitative Inputs (M1–M8)</h4>
+    <div class="grid grid-3">
+      <div class="input-group"><label>Revenue 5-yr CAGR (%) <span class="desc">M1: ≥15% target</span></label><input type="number" id="psx_mb_rev" value="20" step="0.5" oninput="recalc()"></div>
+      <div class="input-group"><label>EPS 5-yr CAGR (%) <span class="desc">M2: ≥20% target</span></label><input type="number" id="psx_mb_eps" value="25" step="0.5" oninput="recalc()"></div>
+      <div class="input-group"><label>ROE 5-yr avg (%) <span class="desc">M3: ≥18% target</span></label><input type="number" id="psx_mb_roe" value="22" step="0.5" oninput="recalc()"></div>
+      <div class="input-group"><label>ROCE/ROIC 5-yr avg (%) <span class="desc">M4: ≥18% target</span></label><input type="number" id="psx_mb_roce" value="20" step="0.5" oninput="recalc()"></div>
+      <div class="input-group"><label>Debt / Equity <span class="desc">M5: &lt;0.5 target</span></label><input type="number" id="psx_mb_de" value="0.3" step="0.05" oninput="recalc()"></div>
+      <div class="input-group"><label>OCF / NI 5-yr avg <span class="desc">M6: &gt;1.0 target</span></label><input type="number" id="psx_mb_ocf" value="1.1" step="0.05" oninput="recalc()"></div>
+      <div class="input-group"><label>Sponsor / Promoter % <span class="desc">M7: ≥40% target</span></label><input type="number" id="psx_mb_sponsor" value="45" step="1" oninput="recalc()"></div>
+      <div class="input-group"><label>Market Cap (PKR bn) <span class="desc">M8: PSX tier per Sec 3 below</span></label><input type="number" id="psx_mb_mcap" value="8" step="0.5" oninput="recalc()"></div>
+    </div>
+    <h4 style="font-size: 14px; color: var(--blue); margin: 20px 0 10px;">Qualitative Inputs (M9–M12)</h4>
+    <div class="grid grid-2">
+      <div class="input-group"><label>TAM-to-Revenue Runway <span class="desc">M9: total addressable market vs current revenue</span></label>
+        <select id="psx_mb_tam" onchange="recalc()"><option value="1">Under 3x — constrained</option><option value="2">3-5x — limited</option><option value="3" selected>5-10x — moderate</option><option value="4">10-30x — strong</option><option value="5">Over 30x — exceptional</option></select></div>
+      <div class="input-group"><label>Moat Type & Strength <span class="desc">M10: what protects ROCE</span></label>
+        <select id="psx_mb_moat" onchange="recalc()"><option value="1">None — pure commodity</option><option value="2">Weak — minor pricing power</option><option value="3" selected>Cost or Switching cost moat</option><option value="4">Brand or Network effect</option><option value="5">Regulatory monopoly</option></select></div>
+      <div class="input-group"><label>Reinvestment Runway <span class="desc">M11: can capital be deployed at same ROCE?</span></label>
+        <select id="psx_mb_reinv" onchange="recalc()"><option value="1">Returning all cash (no reinvestment)</option><option value="2">Limited reinvestment opportunities</option><option value="3" selected>Moderate runway</option><option value="4">Strong runway</option><option value="5">Exceptional — multi-decade runway</option></select></div>
+      <div class="input-group"><label>Owner-Operator Alignment <span class="desc">M12: founder/sponsor skin in the game</span></label>
+        <select id="psx_mb_owner" onchange="recalc()"><option value="1">Diluted — sponsor reducing stake</option><option value="2">Holding — stable but professional CEO</option><option value="3" selected>Stable sponsor &gt;5 years</option><option value="4">Founder still active, 10+ year tenure</option><option value="5">Founder + rising stake (buying back)</option></select></div>
+    </div>
+    <h4 style="font-size: 14px; color: var(--blue); margin: 20px 0 10px;">IG (Investo Genie) Score — From Your IM3 Workflow</h4>
+    <div class="grid grid-2">
+      <div class="input-group"><label>IG Score (0-100) <span class="desc">Enter from your IM3 162-pt scoring. Separate dimension — NOT mixed with Multibagger Score.</span></label><input type="number" id="psx_mb_ig" value="72" step="1" min="0" max="100" oninput="recalc()"></div>
+    </div>
+    <h3 class="subsection-title">Multibagger Score</h3>
+    <div id="psx_mb_score_box"></div>
+    <h3 class="subsection-title">Decision Matrix — Multibagger Score × IG Score (Both Displayed Separately, No Blending)</h3>
+    <div id="psx_mb_decision_matrix"></div>
+    <h3 class="subsection-title">2. Compounding Calculator</h3>
+    <p style="color: var(--grey-d); margin-bottom: 12px; font-size: 13px;">Mayer's "coffee can" math — what PKR 1M becomes at the EPS CAGR you entered above, over a 15-year hold.</p>
+    <div id="psx_mb_compound_box"></div>
+    <h3 class="subsection-title">3. PSX Multibagger Market Cap Tiers</h3>
+    <div id="psx_mb_tiers_table"></div>
+    <h3 class="subsection-title">4. LIVE PSX Multibagger Candidates — As of May 25, 2026</h3>
+    <p style="color: var(--grey-d); margin-bottom: 8px; font-size: 13px;">Current actionable candidates ranked by multibagger potential. Sourced from PSX broker reports (Topline, AHL, AKD, JS Global), Sarmaaya screener, Simply Wall St growth screen. Sweet spot tier (PKR 5-30bn) prioritized.</p>
+    <div id="psx_mb_live_candidates"></div>
+    <h3 class="subsection-title">5. Historical PSX Multibaggers — Calibration Reference</h3>
+    <p style="color: var(--grey-d); margin-bottom: 8px; font-size: 13px;">Past multibaggers to calibrate your scorecard. Each ran the 5-10x+ course. Their start-of-run profile should score 75+ on your scorecard for the methodology to be valid.</p>
+    <div id="psx_mb_history_table"></div>
+    <h3 class="subsection-title">6. Multibagger Track vs Explosive Stocks Track — Methodological Comparison</h3>
+    <div id="psx_mb_comparison_table"></div>
+    <h3 class="subsection-title">Why the Explosive Stocks Track Differs From Pure Multibaggers</h3>
+    <div class="reading-box">
+      <p>The Explosive Stocks track (Tab 11) is built for <strong>quality-growth compounders showing an earnings inflection</strong>. It applies two IM3 signals — Signal A (revenue and EPS growth each ≥15%, the quality-growth tag) and Signal B (EPS growth &gt;20% with EPS/Rev growth ratio &gt;1.5, the earnings-acceleration trigger), with cash-flow tests (CFONP, CFONP%, SCFOSNP) as guardrails rather than hard pass/fail gates. It would systematically pass over genuine early-stage multibaggers because:</p>
+      <ul style="margin-top: 8px; padding-left: 24px; line-height: 1.8;">
+        <li><strong>Cash guardrails (CFO vs NP):</strong> A multibagger in capex expansion phase often has cash flow below net profit temporarily. PABC during plant expansion would have tripped these guardrails.</li>
+        <li><strong>Quality-growth tag needs both engines:</strong> Multibaggers in transition years or recovering from cyclical troughs may not yet show both revenue AND EPS at ≥15% — but be on the cusp of a 5-year acceleration.</li>
+        <li><strong>Inflection timing:</strong> Pure multibaggers in their earliest years often haven't reached the Signal B acceleration window yet. They typically show strong qualitative drivers (moat, sponsor, TAM) before the financials inflect.</li>
+      </ul>
+      <p style="margin-top: 12px;"><strong>The Multibagger track relaxes the financial gates AND adds 5 qualitative criteria</strong> (M7 sponsor holding, M9 TAM, M10 moat type, M11 reinvestment runway, M12 owner-operator) — so genuine multibaggers can pass while quality discipline is preserved through the qualitative gates.</p>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 9: US MULTIBAGGER HUNTER ============ -->
+  <div id="mbus" class="panel">
+    <h2 class="section-title">US Multibagger Hunter — 10x+ Return Track</h2>
+    <p style="color: var(--grey-d); margin-bottom: 16px; font-size: 14px;"><strong>Distinct from PSX Multibagger (Tab 8) and Explosive Stocks track.</strong> US universe only. Different market structure than PSX — US small-caps are $300M-$2B (vs PSX small-caps PKR 5-30bn). Mayer's 100-Bagger research base.</p>
+    <div id="mbus_macro_banner" class="alert-banner yellow">
+      <h3>Macro Awareness: US Regime (read from Tab 2)</h3>
+      <p>Multibagger initiations in US should be calibrated to US Four Regimes (Tab 2), not the PSX Allocation Zone. Currently UMCSI at record-low 44.8 = consumer recession signal; ISM expanding = manufacturing OK. Mixed regime suggests SELECTIVE multibagger initiations in defensive small-caps over cyclical small-caps until clarity emerges.</p>
+    </div>
+    <h3 class="subsection-title">US Multibagger Screening Summary</h3>
+    <div id="us_mb_funnel"></div>
+    <h4 style="font-size:14px; color:var(--blue); margin:16px 0 8px;">GICS Sector Breakdown — US Universe</h4>
+    <div id="us_mb_sector_table"></div>
+    <h3 class="subsection-title">1. Multibagger Scorecard — Enter US Stock Data</h3>
+    <p style="color: var(--grey-d); margin-bottom: 12px; font-size: 13px;">All financial inputs as 5-year averages or trailing. Insider holding from SEC Form 4 + 13F filings.</p>
+    <h4 style="font-size: 14px; color: var(--blue); margin: 16px 0 10px;">Quantitative Inputs (M1–M8)</h4>
+    <div class="grid grid-3">
+      <div class="input-group"><label>Revenue 5-yr CAGR (%) <span class="desc">M1: ≥15% target</span></label><input type="number" id="us_mb_rev" value="25" step="0.5" oninput="recalc()"></div>
+      <div class="input-group"><label>EPS 5-yr CAGR (%) <span class="desc">M2: ≥20% target</span></label><input type="number" id="us_mb_eps" value="30" step="0.5" oninput="recalc()"></div>
+      <div class="input-group"><label>ROE 5-yr avg (%) <span class="desc">M3: ≥18% target</span></label><input type="number" id="us_mb_roe" value="22" step="0.5" oninput="recalc()"></div>
+      <div class="input-group"><label>ROIC 5-yr avg (%) <span class="desc">M4: ≥18% target; US uses ROIC not ROCE</span></label><input type="number" id="us_mb_roic" value="20" step="0.5" oninput="recalc()"></div>
+      <div class="input-group"><label>Debt / Equity <span class="desc">M5: &lt;0.5 target (or net cash)</span></label><input type="number" id="us_mb_de" value="0.2" step="0.05" oninput="recalc()"></div>
+      <div class="input-group"><label>OCF / NI 5-yr avg <span class="desc">M6: &gt;1.0 target</span></label><input type="number" id="us_mb_ocf" value="1.15" step="0.05" oninput="recalc()"></div>
+      <div class="input-group"><label>Insider Holding % <span class="desc">M7: ≥10-15% for US (10% threshold per Mayer)</span></label><input type="number" id="us_mb_insider" value="15" step="0.5" oninput="recalc()"></div>
+      <div class="input-group"><label>Market Cap (USD M) <span class="desc">M8: US tier per Sec 3 below</span></label><input type="number" id="us_mb_mcap" value="500" step="50" oninput="recalc()"></div>
+    </div>
+    <h4 style="font-size: 14px; color: var(--blue); margin: 20px 0 10px;">Qualitative Inputs (M9–M12)</h4>
+    <div class="grid grid-2">
+      <div class="input-group"><label>TAM-to-Revenue Runway <span class="desc">M9: total addressable market vs current revenue</span></label>
+        <select id="us_mb_tam" onchange="recalc()"><option value="1">Under 3x — constrained</option><option value="2">3-5x — limited</option><option value="3">5-10x — moderate</option><option value="4" selected>10-30x — strong</option><option value="5">Over 30x — exceptional</option></select></div>
+      <div class="input-group"><label>Moat Type & Strength <span class="desc">M10: what protects ROIC</span></label>
+        <select id="us_mb_moat" onchange="recalc()"><option value="1">None — pure commodity</option><option value="2">Weak — minor pricing power</option><option value="3">Cost or Switching cost moat</option><option value="4" selected>Brand or Network effect</option><option value="5">Regulatory or platform monopoly</option></select></div>
+      <div class="input-group"><label>Reinvestment Runway <span class="desc">M11: capital deployment at high ROIC</span></label>
+        <select id="us_mb_reinv" onchange="recalc()"><option value="1">Returning all cash via dividends/buybacks</option><option value="2">Limited opportunities</option><option value="3">Moderate runway</option><option value="4" selected>Strong runway</option><option value="5">Exceptional — multi-decade runway</option></select></div>
+      <div class="input-group"><label>Founder/Owner Alignment <span class="desc">M12: founder still active, insider buying</span></label>
+        <select id="us_mb_owner" onchange="recalc()"><option value="1">Founder gone, professional mgmt</option><option value="2">Stable CEO &gt;5 years</option><option value="3">Founder still active</option><option value="4" selected>Founder + 10+ year tenure</option><option value="5">Founder + rising insider stake</option></select></div>
+    </div>
+    <h4 style="font-size: 14px; color: var(--blue); margin: 20px 0 10px;">IG Score + Zacks Rating — Independent Dimensions (Informational, Not Mixed)</h4>
+    <div class="grid grid-2">
+      <div class="input-group"><label>IG Score (0-100) <span class="desc">From your IM3 162-pt scoring. Separate from Multibagger Score.</span></label><input type="number" id="us_mb_ig" value="75" step="1" min="0" max="100" oninput="recalc()"></div>
+      <div class="input-group"><label>Zacks Rank (1-5) <span class="desc">1=Strong Buy, 2=Buy, 3=Hold, 4=Sell, 5=Strong Sell. Earnings revision signal — informational, no hard gate.</span></label>
+        <select id="us_mb_zacks" onchange="recalc()"><option value="1">1 — Strong Buy (top 5%)</option><option value="2" selected>2 — Buy (next 15%)</option><option value="3">3 — Hold</option><option value="4">4 — Sell</option><option value="5">5 — Strong Sell</option></select></div>
+    </div>
+    <h3 class="subsection-title">Multibagger Score</h3>
+    <div id="us_mb_score_box"></div>
+    <h3 class="subsection-title">Decision Matrix — Multibagger × IG × Zacks (All Displayed Separately, No Blending)</h3>
+    <div id="us_mb_decision_matrix"></div>
+    <h3 class="subsection-title">2. Compounding Calculator</h3>
+    <p style="color: var(--grey-d); margin-bottom: 12px; font-size: 13px;">Mayer's "coffee can" math — what $10,000 becomes at the EPS CAGR you entered above, over a 15-year hold.</p>
+    <div id="us_mb_compound_box"></div>
+    <h3 class="subsection-title">3. US Multibagger Market Cap Tiers</h3>
+    <div id="us_mb_tiers_table"></div>
+    <h3 class="subsection-title">4. LIVE US Multibagger Candidates — As of May 25, 2026</h3>
+    <p style="color: var(--grey-d); margin-bottom: 8px; font-size: 13px;">Current actionable candidates ranked by multibagger potential. Small-cap sweet spot ($300M-$2bn) prioritized per Russell 2000 / FINRA convention. Names sourced from Simply Wall St insider-buying screens, Motley Fool small-cap analysis, Sure Dividend Russell 2000 reports.</p>
+    <div id="us_mb_live_candidates"></div>
+    <h3 class="subsection-title">5. Historical US Multibaggers — Calibration Reference</h3>
+    <p style="color: var(--grey-d); margin-bottom: 8px; font-size: 13px;">Calibration anchors only. Score these 75+ on the metrics they HAD at start.</p>
+    <div id="us_mb_history_table"></div>
+    <h3 class="subsection-title">6. Differences From PSX Multibagger Track</h3>
+    <div class="reading-box">
+      <p><strong>Same 12-criterion framework, different absolute thresholds:</strong></p>
+      <ul style="margin-top: 8px; padding-left: 24px; line-height: 1.8;">
+        <li><strong>Market cap thresholds:</strong> US small-cap is $300M-$2B (vs PSX informal small-cap PKR 5-30bn = $18M-$108M). Different absolute zones because the markets have very different size distributions.</li>
+        <li><strong>Insider holding norms:</strong> US uses 10% threshold (Mayer research), PSX uses 40%+ sponsor holding. Different regulatory/disclosure regimes (US: 13D/13G/13F + Form 4 real-time; PSX: quarterly).</li>
+        <li><strong>Valuation conventions:</strong> US emphasizes Rule of 40 (revenue growth + FCF margin ≥ 40%) and PEG &lt;1.5; PSX uses 7-method IV (your IM3 framework).</li>
+        <li><strong>Macro filter source:</strong> US reads Tab 2 (Four Regimes — Goldilocks/Reflation/Disinflation/Stagflation); PSX reads Tab 7 (IM3 Allocation Zone). Different macro signals, never mixed.</li>
+        <li><strong>Currency denomination:</strong> US in USD, PSX in PKR. No FX conversion in scoring — the markets are evaluated on their own native scales.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 10: TCE CONVERGENCE ============ -->
+  <div id="tce" class="panel">
+    <h2 class="panel-title">Trend Convergence Engine (TCE) — Live Scan</h2>
+    <div class="card" id="tceMacroBanner" style="border-left:4px solid var(--blue);">
+      <p style="margin:0; font-size:13px; color:var(--grey-d);">
+        <strong>5-stream convergence model.</strong> Each candidate is checked across five independent signal streams:
+        <strong>News density</strong> (Google News RSS), <strong>Sponsor mentions</strong>, <strong>Insider buying</strong> (SEC Form 4, US only),
+        <strong>Earnings revisions</strong> (Yahoo Finance), and <strong>Volume surge</strong> (20d vs baseline).
+        A <span style="color:var(--green); font-weight:700;">HIGH</span> tier requires 4+ streams firing; <span style="color:var(--gold); font-weight:700;">WATCH</span> requires 3.
+        This tab is fed live from the GitHub Actions scanner (data.json).
+      </p>
+    </div>
+    <div class="card">
+      <h3>US TCE Results</h3>
+      <p style="font-size:12px; color:var(--grey-d); margin-bottom:10px;">Scanned from the US small-cap screening survivors. SEC EDGAR insider stream is US-only.</p>
+      <div id="tce_us_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div>
+    </div>
+    <div class="card">
+      <h3>PSX TCE Results</h3>
+      <p style="font-size:12px; color:var(--grey-d); margin-bottom:10px;">PSX uses 3 of 5 streams (news + revisions + volume). No public PSX insider-filing API; sparser signals are normal and not a defect.</p>
+      <div id="tce_psx_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--gold);">
+      <h3>How TCE Fits the Funnel</h3>
+      <p style="font-size:13px; color:var(--grey-d);">
+        TCE runs <strong>after</strong> the screening funnel, on the survivors. It is a convergence overlay, not a screen itself — it flags which already-qualified candidates have multiple independent signals aligning <em>right now</em>.
+        Cross-reference a TCE HIGH name against the Multibagger Hunter (Tabs 8/9) and the Explosive Stocks scoring (Tab 11): a candidate that is HIGH on TCE <em>and</em> high on the multibagger scorecard is the strongest conviction overlap.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 11: EXPLOSIVE STOCKS (reads scanner explosive_us / explosive_psx) ============ -->
+  <div id="explosive" class="panel">
+    <h2 class="section-title">Explosive Stocks (US + PSX) — Live Scanner Feed</h2>
+    <p style="color:var(--grey-d); margin-bottom:16px; font-size:14px;">
+      Reads the GitHub Actions scanner's <code>explosive_us</code> / <code>explosive_psx</code> arrays.
+      <strong>Current signals are proxy-based:</strong> Signal A screens for revenue and EPS growth each &ge;15%
+      (IM3 uses Operating Profit growth &gt;20%). Signal B screens for EPS/Revenue ratio &gt;1.5
+      (IM3 uses Net Profit growth &divide; Operating Profit growth &gt;1.5).
+      These are directionally consistent but not the exact IM3 calculation — verify flagged names in the IM3 workbook before initiating.
+      Cash guardrails (CFONP, CFONP%, SCFOSNP) and the /16 quality score require multi-period financials not yet pulled by the scanner.
+    </p>
+    <h3 class="subsection-title">US Explosive — gated to Tab 2 Regime</h3>
+    <div id="explosive_us_macro" class="reading-box"></div>
+    <div id="explosive_us_table"><p style="color:var(--grey-d);">Waiting for scan data…</p></div>
+    <h3 class="subsection-title">PSX Explosive — gated to Tab 7 Zone</h3>
+    <div id="explosive_psx_macro" class="reading-box"></div>
+    <div id="explosive_psx_table"><p style="color:var(--grey-d);">Waiting for scan data…</p></div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum<br>
+  Muhammad Hammad Khan | Active Macro Dashboard v4.1 (11 tabs: IM3 framework + Multibagger Hunter + live TCE + Explosive scanner feed)
+</div>
+
+<script>
+// =========================================================
+// CORE LOGIC
+// =========================================================
+const defaults = {
+  ism_mfg: 52.7, ism_svc: 53.6, umcsi: 44.8, us_10y: 4.45, us_2y: 4.00, fed_rate: 4.375,
+  core_pce: 2.7, us_gdp: 2.1, dxy: 99.5, wti: 95.0, brent: 100.0, us_crude_prod: 13.57, us_oil_rigs: 425,
+  oil_arab: 78, sbp_rate: 11.50, usd_pkr: 278.50, pak_cpi: 10.9, sbp_reserves: 16.4,
+  pak_ca: -324, pak_fiscal: 6.0, reer: 105.80, neer: 37.89, remittances: 3.54,
+  import_cover: 2.4, kse100: 167844
+};
+
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+function val(id) { return parseFloat(document.getElementById(id).value); }
+function resetDefaults() {
+  for (const [k, v] of Object.entries(defaults)) document.getElementById(k).value = v;
+  recalc();
+}
+function indicatorCard(label, value, status, statusClass, interp) {
+  return `<div class="indicator-card ${statusClass}"><div class="label">${label}</div><div class="value">${value}</div><div class="status">${status}</div><div class="interp">${interp}</div></div>`;
+}
+function regimeOf(growth, inflation, low_thresh, high_thresh) {
+  if (growth > 0 && inflation <= high_thresh) return { name: 'GOLDILOCKS', sectors: 'Tech, Comm Services, Consumer Discretionary, Growth, Long-duration', class: 'green' };
+  if (growth > 0 && inflation > high_thresh) return { name: 'REFLATION', sectors: 'Energy, Materials, Industrials, Financials, Commodities, Value', class: 'yellow' };
+  if (growth <= 0 && inflation <= high_thresh) return { name: 'DISINFLATION', sectors: 'Utilities, Consumer Staples, Healthcare, Long bonds, Defensives', class: 'orange' };
+  return { name: 'STAGFLATION', sectors: 'Gold, Energy (selective), Commodities (selective), TIPS, Cash', class: 'red' };
+}
+
+// =========================================================
+// US DASHBOARD CALC
+// =========================================================
+function calcUS() {
+  const ism = val('ism_mfg'), svc = val('ism_svc'), umcsi = val('umcsi');
+  const y10 = val('us_10y'), y2 = val('us_2y'), pce = val('core_pce'), gdp = val('us_gdp'), dxy = val('dxy');
+  const wti = val('wti'), brent = val('brent'), crudeProd = val('us_crude_prod'), oilRigs = val('us_oil_rigs');
+  let html = '';
+  let st = ism >= 50 ? 'EXPANSION' : (ism >= 47.5 ? 'Mild contraction' : 'RECESSION SIGNAL');
+  let cls = ism >= 50 ? 'pos' : (ism >= 47.5 ? 'warn' : 'neg');
+  let int = ism >= 50 ? 'Above 50 = manufacturing growing. Above 47.5 broad expansion.' : 'Below 50 = contraction risk; Fed pivot historically follows within 3-15 months.';
+  html += indicatorCard('ISM Manufacturing PMI', ism, st, cls, int);
+  st = svc >= 50 ? 'EXPANSION' : 'Contraction'; cls = svc >= 50 ? 'pos' : 'neg';
+  int = svc >= 50 ? 'Services = 89% of US GDP. Expansion confirms broad growth.' : 'Services contraction = recession likely.';
+  html += indicatorCard('ISM Services PMI', svc, st, cls, int);
+  if (umcsi > 80) { st = 'BULLISH'; cls = 'pos'; int = 'Consumer confidence strong. Discretionary spending supports cyclicals.'; }
+  else if (umcsi >= 70) { st = 'Benign'; cls = 'neutral'; int = 'Steady-growth zone. No major signal.'; }
+  else if (umcsi >= 55) { st = 'BEARISH'; cls = 'warn'; int = 'Trough zone. Watch for reversal or further drop.'; }
+  else { st = 'EXTREMELY BEARISH'; cls = 'neg'; int = 'Below 55 = deep recession risk. Current divergence with hard data (ISM expanding) suggests inflation/tariff shock dominating consumer mood.'; }
+  html += indicatorCard('UMCSI Consumer Sentiment', umcsi, st, cls, int);
+  const spread = (y10 - y2) * 100;
+  if (spread > 30) { st = 'NORMAL curve'; cls = 'pos'; int = `Spread +${spread.toFixed(0)} bps. Expansion ahead; cyclicals favored.`; }
+  else if (spread > -30) { st = 'FLAT curve'; cls = 'warn'; int = `Spread ${spread > 0 ? '+' : ''}${spread.toFixed(0)} bps. Transition zone; defensive tilt advisable.`; }
+  else { st = 'INVERTED'; cls = 'neg'; int = `Spread ${spread.toFixed(0)} bps. Recession signal — 12-18 month lead historically.`; }
+  html += indicatorCard('US 10Y-2Y Spread', `${spread > 0 ? '+' : ''}${spread.toFixed(0)} bps`, st, cls, int);
+  if (pce > 3.0) { st = 'HOT'; cls = 'neg'; int = 'Above Fed target 2%; hiking pressure.'; }
+  else if (pce > 2.3) { st = 'Above target'; cls = 'warn'; int = 'Mild inflation persistence; Fed cautious.'; }
+  else { st = 'AT TARGET'; cls = 'pos'; int = 'Fed has room to cut if growth slows.'; }
+  html += indicatorCard('Core PCE Inflation', `${pce}%`, st, cls, int);
+  if (dxy > 105) { st = 'USD STRONG'; cls = 'neg'; int = 'Bearish for EM (incl. PSX); USD repatriation pressure.'; }
+  else if (dxy > 100) { st = 'USD neutral-strong'; cls = 'warn'; int = 'Mildly bearish for EM; manageable.'; }
+  else if (dxy >= 98) { st = 'USD neutral'; cls = 'neutral'; int = 'Balanced EM environment.'; }
+  else { st = 'USD WEAK'; cls = 'pos'; int = 'EM flows resume; bullish for KSE 100.'; }
+  html += indicatorCard('DXY Dollar Index', dxy, st, cls, int);
+  document.getElementById('us_indicators').innerHTML = html;
+  let eHtml = '';
+  const spreadBW = (isNaN(brent) || isNaN(wti)) ? null : (brent - wti);
+  let est, ecls, eint;
+  if (wti >= 90) { est = 'HIGH — net positive'; ecls = 'pos'; eint = 'For a net-exporter, elevated WTI lifts shale margins, E&P capex and energy-state employment. Consumer pump-cost drag is partly offset. Bullish Energy (XLE), oilfield services, Permian E&Ps.'; }
+  else if (wti >= 65) { est = 'MID — balanced'; ecls = 'neutral'; eint = 'Comfortable band: drilling economics work without choking demand. Neutral-to-mild-positive for US growth.'; }
+  else { est = 'LOW — drilling stress'; ecls = 'warn'; eint = 'Below ~$60-65 WTI, marginal shale wells turn uneconomic; rig count and capex cut, energy earnings fall. Headwind for energy complex despite consumer relief.'; }
+  eHtml += indicatorCard('WTI Crude (US benchmark)', '$' + (isNaN(wti)?'—':wti) + '/bbl', est, ecls, eint);
+  if (!isNaN(brent)) {
+    if (brent >= 95) { est = 'Firm global'; ecls = 'pos'; eint = 'Strong global crude demand/tight supply supports US export volumes and Gulf Coast realizations.'; }
+    else if (brent >= 65) { est = 'Balanced'; ecls = 'neutral'; eint = 'Healthy global pricing; no decisive signal.'; }
+    else { est = 'Soft global'; ecls = 'warn'; eint = 'Weak global demand caps US export economics.'; }
+    eHtml += indicatorCard('Brent (global benchmark)', '$' + brent + '/bbl', est, ecls, eint);
+  }
+  if (spreadBW !== null) {
+    if (spreadBW >= 6) { est = 'WIDE — export-positive'; ecls = 'pos'; eint = `Spread +$${spreadBW.toFixed(2)}. Wide Brent premium makes US crude exports highly competitive; bullish Gulf Coast exporters & midstream.`; }
+    else if (spreadBW >= 2) { est = 'Normal'; ecls = 'neutral'; eint = `Spread +$${spreadBW.toFixed(2)}. Typical transport-cost gap; export economics steady.`; }
+    else { est = 'NARROW — export-negative'; ecls = 'warn'; eint = `Spread +$${spreadBW.toFixed(2)}. Thin premium erodes US export arbitrage; watch cargo economics.`; }
+    eHtml += indicatorCard('Brent-WTI Spread', '$' + spreadBW.toFixed(2), est, ecls, eint);
+  }
+  if (!isNaN(crudeProd)) {
+    if (crudeProd >= 13.5) { est = 'NEAR RECORD'; ecls = 'pos'; eint = 'US output near all-time highs (~13.5M+ b/d) cements net-exporter status and energy-sector cash flow. Structural support for trade balance.'; }
+    else if (crudeProd >= 12.5) { est = 'Strong'; ecls = 'pos'; eint = 'Robust production; export engine intact.'; }
+    else { est = 'Declining'; ecls = 'warn'; eint = 'Falling output erodes export surplus and energy-sector contribution to GDP.'; }
+    eHtml += indicatorCard('US Crude Production', crudeProd + 'M b/d', est, ecls, eint);
+  }
+  if (!isNaN(oilRigs)) {
+    if (oilRigs >= 500) { est = 'Expanding drilling'; ecls = 'pos'; eint = 'Rising rigs signal producer confidence and future supply growth (lag ~6 months). Bullish oilfield services first.'; }
+    else if (oilRigs >= 380) { est = 'Disciplined'; ecls = 'neutral'; eint = 'Modern shale runs record output on far fewer rigs than the 2014 boom — efficiency decoupled rigs from production. Low rig count is NOT bearish if output holds near record.'; }
+    else { est = 'Contracting'; ecls = 'warn'; eint = 'Sub-380 oil rigs flags capex retreat; forward production risk if sustained.'; }
+    eHtml += indicatorCard('US Oil Rig Count', oilRigs + ' rigs', est, ecls, eint);
+  }
+  document.getElementById('us_energy_indicators').innerHTML = eHtml;
+  let oilBias;
+  if (wti >= 90 && crudeProd >= 13.0) oilBias = '<strong style="color:var(--green)">NET-POSITIVE</strong> — high prices + record output maximise the export surplus and energy-sector cash flow';
+  else if (wti < 65) oilBias = '<strong style="color:var(--gold)">MIXED-NEGATIVE</strong> — low prices relieve consumers but squeeze the now-large US energy complex';
+  else oilBias = '<strong style="color:var(--blue)">BALANCED</strong> — oil is roughly a wash for headline US growth at current levels';
+  document.getElementById('us_energy_banner').innerHTML =
+    `<strong>Net-Exporter Lens:</strong> The US has been a net petroleum exporter since 2020 (record ~2.8M b/d net in 2025), so oil is no longer a one-way tax on growth. Current read: ${oilBias}. Lead weight sits on <strong>production & rig trend</strong> (forward supply) rather than price level. ` +
+    (spreadBW !== null ? `Brent-WTI at $${spreadBW.toFixed(2)} ${spreadBW >= 6 ? 'favours' : 'is neutral-to-soft for'} US export arbitrage.` : '');
+  const regime = regimeOf(gdp, pce, 2, 2.5);
+  document.getElementById('us_regime_banner').className = 'alert-banner ' + regime.class;
+  document.getElementById('us_regime_banner').innerHTML = `<h3>US Regime: ${regime.name}</h3><p><b>GDP growth:</b> ${gdp}% | <b>Inflation:</b> ${pce}%</p><p style="margin-top:6px;"><b>Favored sectors:</b> ${regime.sectors}</p>`;
+  const ycHtml = `<div class="reading-box"><table><tr><th>Maturity</th><th>Yield</th><th>Spread vs 2Y</th></tr><tr><td>2Y Treasury</td><td>${y2}%</td><td>base</td></tr><tr><td>10Y Treasury</td><td>${y10}%</td><td>${(spread > 0 ? '+' : '') + spread.toFixed(0)} bps</td></tr></table><p style="margin-top:10px;"><strong>Reading:</strong> ${spread > 30 ? 'Normal curve — expansion expected. Favors cyclicals: Tech, Energy, Comm Services.' : spread > -30 ? 'Flat — transition zone, no decisive signal. Tilt mildly defensive.' : 'Inverted — recession signal, 12-18 month lead.'}</p></div>`;
+  document.getElementById('yield_curve_box').innerHTML = ycHtml;
+  document.getElementById('us_quadrant').innerHTML = quadrant(gdp > 0 ? 'Positive' : 'Negative', pce > 2.5 ? 'High' : 'Low', regime.name);
+  document.getElementById('us_sector_rec').innerHTML = generateUSRec(ism, svc, umcsi, spread, pce, gdp, dxy);
+}
+function quadrant(growth, inflation, currentRegime) {
+  const cells = [
+    { name: 'GOLDILOCKS', g: 'Positive', i: 'Low', color: '#FFF2CC' },
+    { name: 'REFLATION', g: 'Positive', i: 'High', color: '#C6EFCE' },
+    { name: 'DISINFLATION', g: 'Negative', i: 'Low', color: '#FFC7CE' },
+    { name: 'STAGFLATION', g: 'Negative', i: 'High', color: '#FCE4D6' }
+  ];
+  let html = '<table style="text-align:center;"><tr><th></th><th>LOW INFLATION</th><th>HIGH INFLATION</th></tr>';
+  ['Positive', 'Negative'].forEach(g => {
+    html += `<tr><th>${g.toUpperCase()} GROWTH</th>`;
+    ['Low', 'High'].forEach(i => {
+      const cell = cells.find(c => c.g === g && c.i === i);
+      const isActive = cell.name === currentRegime;
+      html += `<td style="background:${isActive ? '#1F3864' : cell.color}; color:${isActive ? 'white' : 'black'}; font-weight:${isActive ? '700' : '500'}; padding:18px; ${isActive ? 'box-shadow: 0 0 0 3px #BF8F00;' : ''}">${cell.name}${isActive ? ' ★' : ''}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</table>';
+  return html;
+}
+function generateUSRec(ism, svc, umcsi, spread, pce, gdp, dxy) {
+  const sectors = [
+    { name: 'Information Technology', bullish: ism >= 50 && spread >= -30 && umcsi >= 50, bearish: ism < 48 || (spread < -30 && umcsi < 55), holdings: 'TSM, NVDA, ANET, MU, TER, WDC, DELL, STX (Tier A); CRM, SMCI (Tier B)' },
+    { name: 'Communication Services', bullish: gdp > 0 && pce < 3, bearish: pce > 3.5 || gdp < 0, holdings: 'META (CORE)' },
+    { name: 'Energy', bullish: pce > 2.5 || dxy < 100, bearish: pce < 2 && dxy > 103, holdings: '(macro qualified — watch oil $75-82)' },
+    { name: 'Health Care', bullish: umcsi < 55 || pce > 3, bearish: ism > 56 && umcsi > 70, holdings: 'LLY (CORE), CI, NVO; WELL (REIT)' },
+    { name: 'Real Estate', bullish: spread > 50 && pce < 2.5, bearish: spread < -30, holdings: 'WELL, O' },
+    { name: 'Consumer Discretionary', bullish: umcsi > 70 && gdp > 2, bearish: umcsi < 55, holdings: '(AVOID — COT -29.1%, UMCSI bearish)' },
+    { name: 'Consumer Staples', bullish: umcsi < 50, bearish: ism > 55 && umcsi > 65, holdings: '(AVOID — COT -44.3%)' },
+    { name: 'Utilities', bullish: spread > 30 && pce < 3, bearish: spread < -30, holdings: 'VST on WATCH (AI power tailwind)' },
+  ];
+  let html = '<div class="grid grid-2">';
+  sectors.forEach(s => {
+    let cls = 'neutral', label = 'NEUTRAL';
+    if (s.bullish) { cls = 'pos'; label = 'BULLISH'; }
+    else if (s.bearish) { cls = 'neg'; label = 'BEARISH'; }
+    html += `<div class="indicator-card ${cls}"><div class="label">${s.name}</div><div class="status">${label}</div><div class="interp">${s.holdings}</div></div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+// =========================================================
+// PAKISTAN DASHBOARD CALC
+// =========================================================
+function calcPAK() {
+  const oil = val('oil_arab'), sbp = val('sbp_rate'), pkr = val('usd_pkr'), cpi = val('pak_cpi');
+  const res = val('sbp_reserves'), ca = val('pak_ca'), fis = val('pak_fiscal');
+  const reer = val('reer'), neer = val('neer'), rem = val('remittances'), ic = val('import_cover');
+  let html = '';
+  let st, cls, int;
+  if (oil > 90) { st = 'HIGH — Import pressure'; cls = 'neg'; int = 'Pakistan imports 80% of energy. CAD widens. Inflation rises.'; }
+  else if (oil > 80) { st = 'Elevated — Mixed'; cls = 'warn'; int = 'POS for E&P (OGDC, PPL, MARI); NEG for OMCs (PSO) and importers.'; }
+  else if (oil > 70) { st = 'Mid-range'; cls = 'neutral'; int = 'Manageable. Watch trend direction.'; }
+  else { st = 'Low — Relief'; cls = 'pos'; int = 'Import bill drops. CAD improves. Rate cuts possible.'; }
+  html += indicatorCard('Arab Light Crude', '$' + oil + '/bbl', st, cls, int);
+  const realRate = sbp - cpi;
+  if (sbp > 18) { st = 'Very tight'; cls = 'warn'; int = 'POS for Banks (NIM expansion). NEG for cyclicals.'; }
+  else if (sbp >= 11) { st = 'Tight'; cls = realRate > 0 ? 'pos' : 'warn'; int = (realRate > 0 ? 'Real rate positive' : 'Real rate negative — inflation eroding savings') + '. Banks benefit.'; }
+  else { st = 'Accommodative'; cls = 'neutral'; int = 'Stimulative for cyclicals (Cement, Auto). Reduced bank NIM.'; }
+  html += indicatorCard('SBP Policy Rate', sbp + '%', st, cls, int);
+  st = 'Stable'; cls = 'pos'; int = 'Range-bound. Supportive for foreign portfolio flows.';
+  html += indicatorCard('USD/PKR Spot', pkr, st, cls, int);
+  if (cpi > 15) { st = 'CRITICAL'; cls = 'neg'; int = 'Compresses real returns. Defensive sectors only.'; }
+  else if (cpi > 10) { st = 'High'; cls = 'warn'; int = 'Defensive yield favored (FFC, HINOON).'; }
+  else if (cpi > 6) { st = 'Moderate'; cls = 'neutral'; int = 'Above SBP target 5-7%; manageable.'; }
+  else { st = 'Low'; cls = 'pos'; int = 'Rate cut window. Cyclicals can rally.'; }
+  html += indicatorCard('Pakistan CPI YoY', cpi + '%', st, cls, int);
+  if (res < 6) { st = 'CRITICAL'; cls = 'neg'; int = 'Below 2 months import cover. Devaluation imminent risk.'; }
+  else if (res < 12) { st = 'Below adequate'; cls = 'warn'; int = '2-3 months cover. Sub-IMF target.'; }
+  else if (res < 20) { st = 'Adequate'; cls = 'pos'; int = 'Above IMF 3-month target. PKR stable.'; }
+  else { st = 'Strong'; cls = 'pos'; int = 'Strong buffer. PKR support.'; }
+  html += indicatorCard('SBP FX Reserves', '$' + res + 'bn', st, cls, int);
+  if (ca > 200) { st = 'SURPLUS'; cls = 'pos'; int = 'FX inflows. Reserves building. PKR stable.'; }
+  else if (ca > -200) { st = 'Balanced'; cls = 'neutral'; int = 'Manageable.'; }
+  else if (ca > -800) { st = 'Mild deficit'; cls = 'warn'; int = 'Watch trend. Sustained deficit drains reserves.'; }
+  else { st = 'LARGE DEFICIT'; cls = 'neg'; int = 'Major FX pressure. Devaluation pressure builds.'; }
+  html += indicatorCard('Current Account (monthly)', '$' + ca + 'M', st, cls, int);
+  if (fis > 7) { st = 'STRESSED'; cls = 'neg'; int = 'Crowds out private credit. Inflation pressure.'; }
+  else if (fis > 5) { st = 'High'; cls = 'warn'; int = 'IMF program target compliance risk.'; }
+  else { st = 'Manageable'; cls = 'pos'; int = 'Within IMF target.'; }
+  html += indicatorCard('Fiscal Deficit', fis + '% GDP', st, cls, int);
+  if (reer > 110) { st = 'EXTREME OVERVALUATION'; cls = 'neg'; int = 'Imminent depreciation pressure. Trim exporters.'; }
+  else if (reer > 105) { st = 'Overvalued (danger zone)'; cls = 'warn'; int = 'PKR strong in real terms. Exports facing headwind. Watch closely.'; }
+  else if (reer > 100) { st = 'Mildly overvalued'; cls = 'neutral'; int = 'Exports starting to lose competitiveness.'; }
+  else if (reer > 95) { st = 'Near fair value'; cls = 'pos'; int = 'Balanced trade competitiveness.'; }
+  else { st = 'UNDERVALUED'; cls = 'pos'; int = 'Strong export tailwind. Favor IT/pharma exporters.'; }
+  html += indicatorCard('REER', reer, st, cls, int);
+  document.getElementById('pak_seven_factors').innerHTML = html;
+  const pak_growth = 3.7;
+  let actualName;
+  if (cpi > 12 && pak_growth < 3) actualName = 'STAGFLATION';
+  else if (cpi > 10) actualName = 'REFLATION';
+  else if (cpi > 6) actualName = 'GOLDILOCKS (mild)';
+  else actualName = 'DISINFLATION (recovery)';
+  let regClass = 'yellow';
+  if (actualName.includes('STAGFLATION')) regClass = 'red';
+  else if (actualName.includes('REFLATION')) regClass = 'yellow';
+  else if (actualName.includes('GOLDILOCKS')) regClass = 'green';
+  else regClass = 'orange';
+  document.getElementById('pak_regime_banner').className = 'alert-banner ' + regClass;
+  document.getElementById('pak_regime_banner').innerHTML = `<h3>Pakistan Regime: ${actualName}</h3><p><b>GDP growth:</b> +3.7% (est) | <b>Inflation:</b> ${cpi}%</p><p style="margin-top:6px;"><b>Sector implication:</b> ${cpi > 10 ? 'Defensive yield (FFC, HINOON) + Banks (UBL — NIM expansion from rate hike). Avoid rate-sensitive cyclicals.' : 'Cyclicals can lead (Cement, Auto) if rates cut. IT exporters benefit if PKR weak.'}</p>`;
+  let reerInterp;
+  if (reer > 110) reerInterp = `REER ${reer}: EXTREME overvaluation — historical precedent suggests devaluation likely. NEER ${neer} confirms long-term nominal weakness. ACTION: Trim exporters (SYS, HINOON) by 30%.`;
+  else if (reer > 105) reerInterp = `REER ${reer}: Significant overvaluation — near 7.5-year high. PKR strong in real terms because Pakistan inflation (${cpi}%) far exceeds trading partners. SYS / HINOON growing DESPITE headwind = quality test. ACTION: Maintain positions but monitor monthly.`;
+  else if (reer > 100) reerInterp = `REER ${reer}: Mildly overvalued. Exporters facing mild FX headwind. NEUTRAL impact on stock thesis.`;
+  else if (reer > 95) reerInterp = `REER ${reer}: Near fair value. Balanced. NEUTRAL for exporters.`;
+  else reerInterp = `REER ${reer}: UNDERVALUED — strong export tailwind. ACTION: Overweight IT/pharma exporters.`;
+  document.getElementById('reer_box').innerHTML = `<div class="reading-box"><p><strong>REER ${reer} | NEER ${neer}</strong></p><p style="margin-top:8px;">${reerInterp}</p><p style="margin-top:8px;"><strong>Long-term NEER context:</strong> NEER has declined from ~62 in 2021 to ${neer} currently — confirming structural PKR weakness in nominal terms. The DIVERGENCE between high REER and low NEER reflects Pakistan's persistent inflation differential vs trading partners.</p></div>`;
+  const ca_pct = (ca * 12) / 35000 * 100;
+  const twin = Math.abs(ca_pct) + fis;
+  let twinReading;
+  if (twin > 14) twinReading = { txt: `Twin deficit ${twin.toFixed(1)}% — SEVERE (≥14%). Historical danger zone. Devaluation risk elevated.`, cls: 'neg' };
+  else if (twin > 10) twinReading = { txt: `Twin deficit ${twin.toFixed(1)}% — HIGH (10-14%). Monitor closely.`, cls: 'warn' };
+  else if (twin > 6) twinReading = { txt: `Twin deficit ${twin.toFixed(1)}% — MODERATE (6-10%). Manageable with discipline.`, cls: 'neutral' };
+  else twinReading = { txt: `Twin deficit ${twin.toFixed(1)}% — LOW. Healthy macro condition.`, cls: 'pos' };
+  document.getElementById('twin_deficit_box').innerHTML = `<div class="indicator-card ${twinReading.cls}"><div class="label">Twin Deficit (CA + Fiscal)</div><div class="value">${twin.toFixed(1)}% of GDP</div><div class="status">CA ${ca_pct.toFixed(2)}% + Fiscal ${fis}%</div><div class="interp">${twinReading.txt}</div></div>`;
+  const psxSectors = [
+    { name: 'Banks (UBL, MCB, MEBL)', bullish: sbp > 11, bearish: sbp < 7, note: 'NIM expansion from rate hike. UBL Tier A.' },
+    { name: 'E&P (OGDC, PPL, MARI)', bullish: oil > 75, bearish: oil < 65, note: 'USD-linked Arab Light pricing.' },
+    { name: 'Fertilizer (FFC)', bullish: cpi > 8, bearish: false, note: 'Defensive yield play. FFC Tier A.' },
+    { name: 'IT Exporters (SYS)', bullish: reer < 100, bearish: reer > 110, note: 'USD revenue hedge. Growing despite REER headwind currently.' },
+    { name: 'Pharma (HINOON, SEARL)', bullish: cpi > 8, bearish: false, note: 'Defensive + IMF deregulation. HINOON Tier A.' },
+    { name: 'Cement', bullish: sbp < 9, bearish: sbp > 12, note: 'Rate-sensitive. Currently HEADWIND.' },
+    { name: 'OMC (PSO)', bullish: false, bearish: oil > 100, note: 'Volume-driven. Government margin caps.' },
+    { name: 'Power Generation', bullish: false, bearish: true, note: 'Circular debt drag. AVOID.' },
+  ];
+  let psxHtml = '<div class="grid grid-2">';
+  psxSectors.forEach(s => {
+    let cls2 = 'neutral', label = 'NEUTRAL';
+    if (s.bullish) { cls2 = 'pos'; label = 'POSITIVE'; }
+    else if (s.bearish) { cls2 = 'neg'; label = 'NEGATIVE'; }
+    psxHtml += `<div class="indicator-card ${cls2}"><div class="label">${s.name}</div><div class="status">${label}</div><div class="interp">${s.note}</div></div>`;
+  });
+  psxHtml += '</div>';
+  document.getElementById('pak_sector_rec').innerHTML = psxHtml;
+}
+
+// =========================================================
+// DEVALUATION ALERT CALC
+// =========================================================
+function calcDevAlert() {
+  const oil = val('oil_arab'), sbp = val('sbp_rate'), cpi = val('pak_cpi');
+  const res = val('sbp_reserves'), ca = val('pak_ca'), fis = val('pak_fiscal');
+  const reer = val('reer'), ic = val('import_cover');
+  const realRate = sbp - cpi;
+  let scores = { reserves: 0, ca: 0, reer: 0, inflation: 0, fiscal: 0, oil: 0, realRate: 0 };
+  if (ic < 1.5) scores.reserves = 100; else if (ic < 2) scores.reserves = 85; else if (ic < 2.5) scores.reserves = 60; else if (ic < 3) scores.reserves = 35; else if (ic < 4) scores.reserves = 15; else scores.reserves = 0;
+  if (ca < -1500) scores.ca = 100; else if (ca < -1000) scores.ca = 85; else if (ca < -500) scores.ca = 60; else if (ca < 0) scores.ca = 35; else if (ca < 500) scores.ca = 10; else scores.ca = 0;
+  if (reer > 110) scores.reer = 100; else if (reer > 107) scores.reer = 85; else if (reer > 105) scores.reer = 65; else if (reer > 102) scores.reer = 40; else if (reer > 100) scores.reer = 20; else scores.reer = 0;
+  if (cpi > 20) scores.inflation = 100; else if (cpi > 15) scores.inflation = 80; else if (cpi > 12) scores.inflation = 60; else if (cpi > 10) scores.inflation = 45; else if (cpi > 8) scores.inflation = 25; else scores.inflation = 0;
+  if (fis > 8) scores.fiscal = 100; else if (fis > 7) scores.fiscal = 75; else if (fis > 6) scores.fiscal = 50; else if (fis > 5) scores.fiscal = 25; else scores.fiscal = 0;
+  if (oil > 110) scores.oil = 100; else if (oil > 90) scores.oil = 70; else if (oil > 80) scores.oil = 45; else if (oil > 70) scores.oil = 20; else scores.oil = 0;
+  if (realRate < -10) scores.realRate = 100; else if (realRate < -5) scores.realRate = 75; else if (realRate < -2) scores.realRate = 50; else if (realRate < 0) scores.realRate = 25; else scores.realRate = 0;
+  const composite = (scores.reserves * 0.25 + scores.ca * 0.20 + scores.reer * 0.15 + scores.inflation * 0.15 + scores.fiscal * 0.10 + scores.oil * 0.10 + scores.realRate * 0.05);
+  let bClass, bTitle, bText;
+  if (composite >= 70) { bClass = 'red'; bTitle = '🚨 RED ALERT — DEVALUATION RISK CRITICAL'; bText = 'Composite alert at <strong>' + composite.toFixed(0) + '/100</strong>. Multiple historical devaluation triggers active. Devaluation has historically followed within 3-6 months when this score >70. <strong>ACTION:</strong> Trim USD-PKR-exposed positions; reduce SYS/HINOON by 30-50%; build USD ADR exposure; consider Pakistan defensives only (FFC defensive yield).'; }
+  else if (composite >= 50) { bClass = 'orange'; bTitle = '⚠️ ORANGE WARNING — Elevated Devaluation Risk'; bText = 'Composite alert at <strong>' + composite.toFixed(0) + '/100</strong>. Several historical triggers active. Watch closely for accelerating deterioration. <strong>ACTION:</strong> Maintain Tier A positions but stop adding to PSX exposure; rotate to PSX defensives (FFC, HINOON, UBL); monitor weekly.'; }
+  else if (composite >= 30) { bClass = 'yellow'; bTitle = '⚡ YELLOW CAUTION — Building Risk'; bText = 'Composite alert at <strong>' + composite.toFixed(0) + '/100</strong>. Some indicators showing stress. Below historical crisis threshold but elevated. <strong>ACTION:</strong> No immediate action required. Continue current allocation. Re-check monthly.'; }
+  else { bClass = 'green'; bTitle = '✅ GREEN — PKR Stability Conditions'; bText = 'Composite alert at <strong>' + composite.toFixed(0) + '/100</strong>. Few historical triggers active. Macro environment supports PKR stability. <strong>ACTION:</strong> Maintain or add to PSX exposure. Tier A positions (UBL, FFC, SYS, HINOON) full size.'; }
+  const factors_present = [ic < 2.5, ca < -200, reer > 100, fis > 6.5, cpi > 12];
+  const factorsCount = factors_present.filter(f => f).length;
+  document.getElementById('devalert_main').innerHTML = `
+    <div class="alert-banner ${bClass}"><h3>${bTitle}</h3><p>${bText}</p></div>
+    <div class="indicator-card neutral" style="margin-top:16px;"><div class="label">Composite Devaluation Risk Score</div><div class="score-bar" style="height: 36px;"><div class="score-fill" style="width: ${composite}%"></div><div class="score-label">${composite.toFixed(0)} / 100</div></div></div>
+    <div class="reading-box" style="margin-top:16px;"><strong>5 Common Historical Factors Check:</strong> ${factorsCount} of 5 active
+      <ul style="margin-top:8px;">
+        <li style="color:${factors_present[0] ? '#C00000' : '#548235'};">${factors_present[0] ? '🔴' : '🟢'} Reserves below 2.5 months import cover: ${ic.toFixed(1)} months</li>
+        <li style="color:${factors_present[1] ? '#C00000' : '#548235'};">${factors_present[1] ? '🔴' : '🟢'} Current Account in deficit ($ -200M+): ${ca}M</li>
+        <li style="color:${factors_present[2] ? '#C00000' : '#548235'};">${factors_present[2] ? '🔴' : '🟢'} REER above 100: ${reer}</li>
+        <li style="color:${factors_present[3] ? '#C00000' : '#548235'};">${factors_present[3] ? '🔴' : '🟢'} Fiscal deficit above 6.5% GDP: ${fis}%</li>
+        <li style="color:${factors_present[4] ? '#C00000' : '#548235'};">${factors_present[4] ? '🔴' : '🟢'} Inflation above 12%: ${cpi}%</li>
+      </ul>
+      <p style="margin-top:12px; font-weight:600;">${factorsCount >= 4 ? '⚠️ 4+ of 5 historical patterns active — devaluation has followed within 6 months 100% of the time in past episodes.' : factorsCount >= 3 ? 'Building risk. 3+ patterns active.' : factorsCount >= 1 ? 'Limited risk.' : 'All 5 historical triggers CLEAR.'}</p>
+    </div>`;
+  let tbl = '<thead><tr><th>Trigger</th><th>Current Value</th><th>Score</th><th>Weight</th><th>Contribution</th></tr></thead><tbody>';
+  const rows = [
+    { name: 'FX Reserves Stress', value: ic.toFixed(1) + ' months', score: scores.reserves, weight: 25 },
+    { name: 'Current Account Deterioration', value: '$' + ca + 'M', score: scores.ca, weight: 20 },
+    { name: 'REER Overvaluation', value: reer.toFixed(2), score: scores.reer, weight: 15 },
+    { name: 'Inflation Pressure', value: cpi + '%', score: scores.inflation, weight: 15 },
+    { name: 'Fiscal Deficit Stress', value: fis + '%', score: scores.fiscal, weight: 10 },
+    { name: 'Oil Price Shock', value: '$' + oil, score: scores.oil, weight: 10 },
+    { name: 'Real Interest Rate', value: realRate.toFixed(1) + '%', score: scores.realRate, weight: 5 }
+  ];
+  rows.forEach(r => {
+    let cls = '';
+    if (r.score >= 70) cls = 'neg'; else if (r.score >= 50) cls = 'warn'; else if (r.score >= 30) cls = 'neutral'; else cls = 'pos';
+    tbl += `<tr class="${cls}"><td><b>${r.name}</b></td><td>${r.value}</td><td>${r.score}/100</td><td>${r.weight}%</td><td>${(r.score * r.weight / 100).toFixed(1)}</td></tr>`;
+  });
+  tbl += '</tbody>';
+  document.getElementById('dev_components').innerHTML = tbl;
+}
+
+// =========================================================
+// SECTORS PANEL
+// =========================================================
+function calcSectors() {
+  const ism = val('ism_mfg'), umcsi = val('umcsi'), pce = val('core_pce'), gdp = val('us_gdp');
+  let usHtml = '<table><thead><tr><th>GICS Sector</th><th>ETF</th><th>Regime Read</th><th>Our Holdings</th></tr></thead><tbody>';
+  const usSectors = [
+    ['Information Technology', 'IYW', ism >= 50 && pce < 3.5 ? 'BUY' : 'HOLD', 'TSM, NVDA, ANET, MU, TER, WDC, DELL, STX, CRM, SMCI'],
+    ['Communication Services', 'IYZ', gdp > 0 ? 'BUY' : 'HOLD', 'META (CORE)'],
+    ['Energy', 'IYE/XLE', pce > 2.5 ? 'BUY' : 'HOLD', 'macro qualified — watch oil'],
+    ['Health Care', 'IYH', umcsi < 60 ? 'BUY (defensive)' : 'HOLD', 'LLY (CORE), CI, NVO; WELL'],
+    ['Real Estate', 'IYR', val('us_10y') < 5 ? 'BUY' : 'HOLD', 'WELL, O'],
+    ['Utilities', 'IDU', val('us_10y') < 5 && pce < 3 ? 'BUY' : 'HOLD', 'VST WATCH'],
+    ['Consumer Discretionary', 'IYC', umcsi > 65 ? 'BUY' : 'AVOID', '(AVOID — UMCSI bearish)'],
+    ['Consumer Staples', 'IYK', umcsi < 55 ? 'BUY' : 'AVOID', '(AVOID — COT -44%)'],
+    ['Financials', 'IYF', val('us_10y') - val('us_2y') > 0 ? 'BUY' : 'HOLD', 'below COT threshold'],
+    ['Industrials', 'IYJ', ism >= 50 ? 'BUY' : 'HOLD', 'qualified, no Tier A'],
+    ['Materials', 'IYM', pce > 2.5 ? 'BUY' : 'HOLD', 'not qualified'],
+  ];
+  usSectors.forEach(s => {
+    let cls = s[2].includes('BUY') ? 'pos' : (s[2].includes('AVOID') ? 'neg' : 'warn');
+    usHtml += `<tr class="${cls}"><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td></tr>`;
+  });
+  usHtml += '</tbody></table>';
+  document.getElementById('us_sectors').innerHTML = usHtml;
+  const sbp = val('sbp_rate'), cpi = val('pak_cpi'), oil = val('oil_arab'), reer = val('reer');
+  let psxHtml = '<table><thead><tr><th>PSX Sector</th><th>GICS Map</th><th>Macro Signal</th><th>Our Holdings</th></tr></thead><tbody>';
+  const psxSectors = [
+    ['Commercial Banks', '40 Financials', sbp > 11 ? 'BUY (NIM ↑)' : 'HOLD', 'UBL Tier A'],
+    ['E&P (Oil & Gas)', '10 Energy', oil > 75 ? 'BUY' : 'HOLD', 'OGDC, PPL, MARI watch'],
+    ['Fertilizer', '15 Materials', 'BUY (defensive)', 'FFC Tier A'],
+    ['Pharma', '35 Health Care', 'BUY (defensive)', 'HINOON Tier A; SEARL Tier B'],
+    ['Tech/IT', '45 Information Technology', reer < 105 ? 'BUY' : 'HOLD', 'SYS Tier A'],
+    ['Cement', '15 Materials', sbp < 9 ? 'BUY' : 'AVOID', 'no Tier A'],
+    ['Refinery', '10 Energy', oil > 70 && oil < 90 ? 'HOLD' : 'AVOID', 'ATRL/NRL watch'],
+    ['OMC', '10 Energy', 'HOLD', 'PSO watch (volume-driven)'],
+    ['Power', '55 Utilities', 'AVOID', 'circular debt — EXCLUDED'],
+    ['Auto', '25 Consumer Discretionary', sbp < 10 ? 'BUY' : 'AVOID', 'rate-sensitive — EXCLUDED'],
+    ['Textile', '25 Consumer Discretionary', reer < 95 ? 'BUY' : 'AVOID', 'energy + FX — EXCLUDED'],
+  ];
+  psxSectors.forEach(s => {
+    let cls = s[2].includes('BUY') ? 'pos' : (s[2].includes('AVOID') ? 'neg' : 'warn');
+    psxHtml += `<tr class="${cls}"><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td></tr>`;
+  });
+  psxHtml += '</tbody></table>';
+  document.getElementById('psx_sectors').innerHTML = psxHtml;
+  let topHtml = '<table><thead><tr><th>Ticker</th><th>Sector</th><th>Tier</th><th>Sarmaaya</th><th>IG %</th><th>MoS</th><th>ROIC-WACC</th><th>Position</th></tr></thead><tbody>';
+  const picks = [
+    ['TSM', 'US Tech', 'A', '9/9', '90.7%', '+6.1%', '+22-25 EXCEPTIONAL', '5-7% CORE'],
+    ['LLY', 'US Health', 'A', '9/9', '86.4%', '+11.2%', '+21-25 EXCEPTIONAL', '4-6% CORE'],
+    ['ANET', 'US Tech', 'A', '9/9', '82.7%', '+10.4%', '+18-22 EXCEPTIONAL', '3-4%'],
+    ['META', 'US Comm Svc', 'A', '7/9', '82.7%', '+6.5%', '+18-20 EXCEPTIONAL', '4-5%'],
+    ['NVDA', 'US Tech', 'B', '9/9', '80.2%', '+2.9%', '+29-39 EXCEPTIONAL', '2-3%'],
+    ['MU', 'US Tech (Cyclic)', 'A', '7/9', '79.0%', '+19.3%', '+4-9 MARGINAL (cycle)', '4-6% TACTICAL'],
+    ['UBL', 'PSX Bank', 'A', '7/9', '79.0%', '+23.7%', '+4-6 MODERATE', '4-5%'],
+    ['FFC', 'PSX Fertilizer', 'A', '7/9', '85.8%', '+21.3%', '+4-8 MODERATE', '4-5%'],
+    ['SYS', 'PSX Tech', 'A', '9/9', '82.1%', '+17.2%', '+4-8 MODERATE', '3-4%'],
+    ['HINOON', 'PSX Pharma', 'A', '9/9', '80.9%', '+14.1%', '+6-10 MODERATE→STRONG', '2-3%'],
+  ];
+  picks.forEach(p => { topHtml += `<tr class="pos"><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td><td>${p[4]}</td><td>${p[5]}</td><td>${p[6]}</td><td>${p[7]}</td></tr>`; });
+  topHtml += '</tbody></table>';
+  document.getElementById('top_picks').innerHTML = topHtml;
+}
+
+// =========================================================
+// ALLOCATION ZONE (IM3) — Tab 7
+// =========================================================
+function calcZone() {
+  const ratePath = [
+    ['9-Sep-25',  11.00, 'HOLD',     'inherit',  null,    '—',          'transparent'],
+    ['27-Oct-25', 11.00, 'HOLD',     'inherit',  null,    '—',          'transparent'],
+    ['15-Dec-25', 10.50, 'CUT -50',  'Decreasing', 1.0,   'DARK GREEN', '#006100'],
+    ['26-Jan-26', 10.50, 'HOLD',     'inherit',  null,    '—',          'transparent'],
+    ['9-Mar-26',  10.50, 'HOLD',     'inherit',  null,    '—',          'transparent'],
+    ['27-Apr-26', 11.50, 'HIKE +100','Increasing', 0.2,   'RED',        '#FF0000'],
+    ['24-May-26', 11.50, 'CURRENT',  'inherit',  null,    '— (active RED from Apr 27)', 'transparent'],
+  ];
+  const kseMonthly = [
+    ['Sep 2025', 163848,  10.25, 11.00, 'DARK GREEN (carried)'],
+    ['Oct 2025', 161632,  -1.35, 11.00, 'DARK GREEN (carried)'],
+    ['Nov 2025', 166678,   3.12, 11.00, 'DARK GREEN (carried)'],
+    ['Dec 2025', 174054,   4.43, 10.50, 'DARK GREEN (CUT)'],
+    ['Jan 2026', 184174,   5.81, 10.50, 'DARK GREEN (carried)'],
+    ['Feb 2026', 168062,  -8.75, 10.50, 'DARK GREEN (carried)'],
+    ['Mar 2026', 148743, -11.50, 10.50, 'DARK GREEN (carried)'],
+    ['Apr 2026', 162994,   9.58, 11.50, 'RED (HIKE)'],
+    ['May 2026', 167844,   2.98, 11.50, 'RED (current)'],
+  ];
+  const cells = [
+    { name: 'DARK GREEN',  rateRel: 'Lesser than Mean',  dir: 'Decreasing', weight: 1.0, alloc: '100% Stocks / 0% Bonds / 0% Cash',  color: '#006100', textColor: '#FFFFFF' },
+    { name: 'LIGHT GREEN', rateRel: 'Greater than Mean', dir: 'Decreasing', weight: 0.8, alloc: '80% Stocks / 15% Bonds / 5% Cash',   color: '#92D050', textColor: '#000000' },
+    { name: 'YELLOW',      rateRel: 'Lesser than Mean',  dir: 'Increasing', weight: 0.6, alloc: '60% Stocks / 25% Bonds / 15% Cash',  color: '#FFFF00', textColor: '#000000' },
+    { name: 'RED',         rateRel: 'Greater than Mean', dir: 'Increasing', weight: 0.2, alloc: '20% Stocks / 60% Bonds / 20% Cash',  color: '#FF0000', textColor: '#FFFFFF' },
+  ];
+  const currentZone = 'RED';
+  let qHtml = '<table style="text-align:center; table-layout:fixed;"><tr><th></th><th>DECREASING (Rate Cuts)</th><th>INCREASING (Rate Hikes)</th></tr>';
+  ['Lesser than Mean', 'Greater than Mean'].forEach(rateRel => {
+    qHtml += `<tr><th style="text-align:left; padding:14px;">${rateRel.toUpperCase()}<br><span style="font-weight:400; font-size:11px; color:var(--grey-d);">(SBP &lt; 11.01%)${rateRel === 'Greater than Mean' ? '<br>(SBP > 11.01%)' : ''}</span></th>`;
+    ['Decreasing', 'Increasing'].forEach(dir => {
+      const cell = cells.find(c => c.rateRel === rateRel && c.dir === dir);
+      const isActive = cell.name === currentZone;
+      const star = isActive ? ' ★' : '';
+      const ring = isActive ? 'box-shadow: 0 0 0 4px #BF8F00, 0 4px 12px rgba(0,0,0,0.3);' : '';
+      qHtml += `<td style="background:${cell.color}; color:${cell.textColor}; padding:24px 16px; font-weight:700; ${ring}"><div style="font-size:18px; margin-bottom:6px;">${cell.name}${star}</div><div style="font-size:12px; font-weight:600;">Weight ${cell.weight}</div><div style="font-size:11px; font-weight:400; margin-top:8px;">${cell.alloc}</div>${isActive ? '<div style="font-size:12px; font-weight:700; margin-top:10px; padding:4px 8px; background:rgba(0,0,0,0.25); border-radius:4px; display:inline-block;">YOU ARE HERE</div>' : ''}</td>`;
+    });
+    qHtml += '</tr>';
+  });
+  qHtml += '</table>';
+  document.getElementById('zone_quadrant_box').innerHTML = qHtml;
+  let rpHtml = '<table><thead><tr><th>Date</th><th>SBP Rate</th><th>Action</th><th>vs Mean (11.01%)</th><th>Direction</th><th>Weight</th><th>Zone</th></tr></thead><tbody>';
+  ratePath.forEach(r => {
+    const [date, rate, action, dir, w, zoneLabel, color] = r;
+    const rateVsMean = rate > 11.01 ? 'GREATER' : (rate < 11.01 ? 'LESSER' : 'EQUAL');
+    const dirDisplay = dir === 'inherit' ? '(carry forward)' : dir;
+    const wDisplay = w === null ? '(carry)' : w;
+    const bgColor = color !== 'transparent' ? `background:${color};` : '';
+    const textColor = color === '#006100' || color === '#FF0000' ? 'color:white; font-weight:700;' : (color !== 'transparent' ? 'color:black; font-weight:700;' : '');
+    const cls = action === 'CUT -50' ? 'pos' : (action === 'HIKE +100' ? 'neg' : (action === 'CURRENT' ? 'warn' : ''));
+    rpHtml += `<tr class="${cls}"><td><b>${date}</b></td><td>${rate.toFixed(2)}%</td><td>${action}</td><td>${rateVsMean}</td><td>${dirDisplay}</td><td>${wDisplay}</td><td style="${bgColor}${textColor}">${zoneLabel}</td></tr>`;
+  });
+  rpHtml += '</tbody></table>';
+  document.getElementById('zone_rate_path').innerHTML = rpHtml;
+  let kHtml = '<table><thead><tr><th>Month-End</th><th>KSE-100 Close</th><th>MoM Change</th><th>SBP Rate</th><th>Active Zone</th></tr></thead><tbody>';
+  kseMonthly.forEach(k => {
+    const [m, close, mom, rate, zone] = k;
+    const momCls = mom > 0 ? 'pos' : (mom < 0 ? 'neg' : '');
+    const zoneCls = zone.includes('RED') ? 'neg' : (zone.includes('DARK GREEN') ? 'pos' : 'warn');
+    kHtml += `<tr class="${zoneCls}"><td><b>${m}</b></td><td>${close.toLocaleString()}</td><td class="${momCls}">${mom > 0 ? '+' : ''}${mom.toFixed(2)}%</td><td>${rate.toFixed(2)}%</td><td>${zone}</td></tr>`;
+  });
+  kHtml += '</tbody></table>';
+  document.getElementById('zone_kse_table').innerHTML = kHtml;
+  let aHtml = '<table><thead><tr><th>Zone</th><th>Weight</th><th>Risk HIGH (Muhammad 50s)</th><th>Risk MEDIUM</th><th>Risk LOW</th></tr></thead><tbody>';
+  const allocs = [
+    ['DARK GREEN',  1.0, '100% Stocks / 0% Bonds / 0% Cash',   '80% Stocks / 20% Bonds / 0% Cash',  '60% Stocks / 30% Bonds / 10% Cash', '#006100', '#FFFFFF'],
+    ['LIGHT GREEN', 0.8, '80% Stocks / 15% Bonds / 5% Cash',   '60% Stocks / 30% Bonds / 10% Cash', '40% Stocks / 50% Bonds / 10% Cash', '#92D050', '#000000'],
+    ['YELLOW',      0.6, '60% Stocks / 25% Bonds / 15% Cash',  '40% Stocks / 45% Bonds / 15% Cash', '20% Stocks / 65% Bonds / 15% Cash', '#FFFF00', '#000000'],
+    ['RED',         0.2, '20% Stocks / 60% Bonds / 20% Cash',  '10% Stocks / 65% Bonds / 25% Cash', '0% Stocks / 70% Bonds / 30% Cash',  '#FF0000', '#FFFFFF'],
+  ];
+  allocs.forEach(a => {
+    const [name, w, high, med, low, color, textColor] = a;
+    const isActive = name === currentZone;
+    const star = isActive ? ' ★' : '';
+    const rowStyle = isActive ? 'box-shadow: inset 0 0 0 3px #BF8F00;' : '';
+    aHtml += `<tr style="${rowStyle}"><td style="background:${color}; color:${textColor}; font-weight:700; text-align:center;">${name}${star}</td><td style="text-align:center; font-weight:700;">${w}</td><td${isActive ? ' style="background:#FFF2CC; font-weight:700;"' : ''}>${high}</td><td>${med}</td><td>${low}</td></tr>`;
+  });
+  aHtml += '</tbody></table>';
+  document.getElementById('zone_alloc_table').innerHTML = aHtml;
+}
+
+// =========================================================
+// MULTIBAGGER SCORING — Shared engine for PSX and US
+// =========================================================
+function scoreMultibagger(inp, market) {
+  let m1 = Math.min(12, Math.max(0, (inp.rev / 25) * 12));
+  let m2 = Math.min(14, Math.max(0, (inp.eps / 35) * 14));
+  let m3 = Math.min(10, Math.max(0, (inp.roe / 30) * 10));
+  let m4 = Math.min(10, Math.max(0, (inp.roce / 30) * 10));
+  let m5 = Math.min(8, Math.max(0, 8 - inp.de * 6));
+  let m6 = inp.ocf < 0.7 ? 0 : Math.min(8, ((inp.ocf - 0.7) / 0.5) * 8);
+  let m7;
+  if (market === 'psx') { m7 = Math.min(8, Math.max(0, (inp.sponsor / 50) * 8)); }
+  else { m7 = Math.min(8, Math.max(0, (inp.sponsor / 25) * 8)); }
+  let m8;
+  if (market === 'psx') {
+    if (inp.mcap < 5) m8 = 6; else if (inp.mcap < 30) m8 = 5; else if (inp.mcap < 100) m8 = 3; else m8 = 0;
+  } else {
+    if (inp.mcap < 300) m8 = 6; else if (inp.mcap < 2000) m8 = 5; else if (inp.mcap < 10000) m8 = 3; else m8 = 0;
+  }
+  let m9 = (inp.tam / 5) * 8;
+  let m10 = (inp.moat / 5) * 8;
+  let m11 = (inp.reinv / 5) * 4;
+  let m12 = (inp.owner / 5) * 4;
+  const subscores = [
+    {key: 'M1 Rev CAGR', pts: m1, max: 12, value: inp.rev + '%'},
+    {key: 'M2 EPS CAGR', pts: m2, max: 14, value: inp.eps + '%'},
+    {key: 'M3 ROE',      pts: m3, max: 10, value: inp.roe + '%'},
+    {key: 'M4 ROCE/ROIC',pts: m4, max: 10, value: inp.roce + '%'},
+    {key: 'M5 D/E',      pts: m5, max: 8,  value: inp.de},
+    {key: 'M6 OCF/NI',   pts: m6, max: 8,  value: inp.ocf},
+    {key: 'M7 ' + (market === 'psx' ? 'Sponsor %' : 'Insider %'), pts: m7, max: 8, value: inp.sponsor + '%'},
+    {key: 'M8 Market Cap', pts: m8, max: 6, value: market === 'psx' ? 'PKR ' + inp.mcap + 'bn' : '$' + inp.mcap + 'M'},
+    {key: 'M9 TAM Runway',     pts: m9, max: 8, value: ['', '<3x', '3-5x', '5-10x', '10-30x', '>30x'][inp.tam]},
+    {key: 'M10 Moat Type',     pts: m10, max: 8, value: ['', 'None', 'Weak', 'Cost/Switching', 'Brand/Network', 'Regulatory'][inp.moat]},
+    {key: 'M11 Reinvest',      pts: m11, max: 4, value: ['', 'Returning', 'Limited', 'Moderate', 'Strong', 'Exceptional'][inp.reinv]},
+    {key: 'M12 Owner Align',   pts: m12, max: 4, value: ['', 'Diluted', 'Holding', 'Stable >5yr', 'Founder >10yr', 'Founder + rising'][inp.owner]},
+  ];
+  const total = subscores.reduce((s, x) => s + x.pts, 0);
+  return {total, subscores};
+}
+function renderMbScoreBox(score, market) {
+  let band, color;
+  if (score.total >= 80) { band = 'HIGH-CONVICTION MULTIBAGGER CANDIDATE'; color = 'var(--green)'; }
+  else if (score.total >= 65) { band = 'STRONG CANDIDATE — verify with annual reports'; color = '#92D050'; }
+  else if (score.total >= 50) { band = 'WATCH LIST — track quarterly for improvements'; color = 'var(--gold)'; }
+  else { band = 'NOT A MULTIBAGGER (may be quality compounder — see Explosive Stocks track)'; color = 'var(--red)'; }
+  let scoreBar = `<div class="score-bar"><div class="score-fill" style="width:${score.total}%;"></div><div class="score-label">${score.total.toFixed(1)} / 100</div></div>`;
+  let banner = `<div style="background:${color}; color:white; padding:14px 18px; border-radius:8px; margin:10px 0; text-align:center; font-weight:700; font-size:15px; box-shadow: var(--shadow);">${band}</div>`;
+  let detail = '<table><thead><tr><th>Criterion</th><th>Your Input</th><th>Points</th><th>Max</th><th>Bar</th></tr></thead><tbody>';
+  score.subscores.forEach(s => {
+    const pct = (s.pts / s.max) * 100;
+    detail += `<tr><td><b>${s.key}</b></td><td>${s.value}</td><td>${s.pts.toFixed(1)}</td><td>${s.max}</td><td><div style="width:100%; background:#eee; height:14px; border-radius:7px; overflow:hidden;"><div style="width:${pct}%; background:var(--blue); height:100%;"></div></div></td></tr>`;
+  });
+  detail += '</tbody></table>';
+  return scoreBar + banner + detail;
+}
+function renderCompoundCalc(cagr, initialAmount, currency) {
+  const periods = [1, 3, 5, 7, 10, 12, 15, 20];
+  let html = `<table><thead><tr><th>Years Held</th><th>Portfolio Value</th><th>Multiple</th><th>Cumulative Gain</th></tr></thead><tbody>`;
+  periods.forEach(y => {
+    const fv = initialAmount * Math.pow(1 + cagr/100, y);
+    const mult = fv / initialAmount;
+    const formatted = currency + ' ' + (fv >= 1e9 ? (fv/1e9).toFixed(2) + 'bn' : fv >= 1e6 ? (fv/1e6).toFixed(2) + 'M' : fv.toLocaleString(undefined, {maximumFractionDigits: 0}));
+    const cls = mult >= 10 ? 'pos' : (mult >= 5 ? 'warn' : '');
+    html += `<tr class="${cls}"><td><b>${y}</b></td><td>${formatted}</td><td>${mult.toFixed(2)}x</td><td>${((mult - 1) * 100).toFixed(0)}%</td></tr>`;
+  });
+  html += '</tbody></table>';
+  html += `<p style="margin-top:10px; font-size:13px; color:var(--grey-d);"><strong>Coffee Can Reminder (Mayer):</strong> The hardest part isn't finding multibaggers — it's HOLDING them. Median 100-bagger had 3-4 drawdowns of 50%+ during its run. Discipline test: will you hold through a 50% drawdown if fundamentals intact?</p>`;
+  return html;
+}
+function renderFunnel(funnel, market) {
+  const total = funnel[0][1];
+  const sectorsCount = market === 'psx' ? 37 : 11;
+  const final = funnel[funnel.length - 1][1];
+  const moatRow = funnel.find(f => f[0].toLowerCase().includes('moat') || f[0].toLowerCase().includes('insider'));
+  const moatCount = moatRow ? moatRow[1] : 'n/a';
+  let html = '<div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:16px;">';
+  html += `<div class="indicator-card neutral"><div class="label">Total Stocks Screened</div><div class="value">${total.toLocaleString()}</div><div class="status">${market === 'psx' ? 'PSX listings' : 'NYSE+NASDAQ+AMEX'}</div></div>`;
+  html += `<div class="indicator-card neutral"><div class="label">Sectors Covered</div><div class="value">${sectorsCount}</div><div class="status">${market === 'psx' ? 'PSX sectors' : 'GICS sectors'}</div></div>`;
+  html += `<div class="indicator-card warn"><div class="label">Moat OR Insider Gate</div><div class="value">${typeof moatCount === 'number' ? moatCount.toLocaleString() : moatCount}</div><div class="status">Passed quality moat check</div></div>`;
+  html += `<div class="indicator-card pos"><div class="label">Final Candidates</div><div class="value">${final}</div><div class="status">Shortlist in Section 4</div></div>`;
+  html += '</div>';
+  html += '<table><thead><tr><th>Stage</th><th>Filter Applied</th><th style="text-align:right;">Stocks Remaining</th><th style="text-align:right;">% of Universe</th></tr></thead><tbody>';
+  funnel.forEach((f, i) => {
+    const pct = ((f[1] / total) * 100).toFixed(1);
+    const isMoat = f[0].toLowerCase().includes('moat') || f[0].toLowerCase().includes('insider');
+    const isFinal = i === funnel.length - 1;
+    const cls = isFinal ? 'pos' : (isMoat ? 'warn' : '');
+    html += `<tr class="${cls}"><td><b>${f[0]}</b></td><td>${f[2]}</td><td style="text-align:right; font-weight:700;">${f[1].toLocaleString()}</td><td style="text-align:right;">${pct}%</td></tr>`;
+  });
+  html += '</tbody></table>';
+  return html;
+}
+function renderSectorBreakdown(sectors, market) {
+  let html = '<table style="font-size:12px;"><thead><tr><th>Sector</th><th style="text-align:right;">Total Listed</th><th style="text-align:right;">Sweet Spot Tier</th><th style="text-align:right;">+ Growth Filter</th><th style="text-align:right;">+ Moat/Insider</th><th style="text-align:right;">Final Candidates</th></tr></thead><tbody>';
+  let totals = [0, 0, 0, 0, 0];
+  sectors.forEach(s => {
+    const cls = s[5] > 0 ? 'pos' : '';
+    html += `<tr class="${cls}"><td><b>${s[0]}</b></td>`;
+    for (let i = 1; i <= 5; i++) { const v = s[i]; totals[i-1] += v; html += `<td style="text-align:right;${i===5 && v>0 ? 'font-weight:700; color:var(--green);' : ''}">${v}</td>`; }
+    html += '</tr>';
+  });
+  html += `<tr style="border-top:2px solid var(--navy); font-weight:700; background:var(--light-blue);"><td><b>TOTAL</b></td>`;
+  totals.forEach(t => { html += `<td style="text-align:right;">${t.toLocaleString()}</td>`; });
+  html += '</tr></tbody></table>';
+  html += `<p style="margin-top:8px; font-size:12px; color:var(--grey-d);"><strong>Moat / Insider Gate explained:</strong> A stock passes if it has EITHER (a) a clear identifiable moat (brand, network effect, switching cost, regulatory monopoly, cost advantage), OR (b) ${market === 'psx' ? 'sponsor holding ≥40% AND insider buying disclosed in latest quarterly filing' : 'insider buying via SEC Form 4 in the past 90 days (any director or 10%+ holder)'}. Stocks without either are dropped because the multibagger thesis requires durable competitive advantage OR conviction from those closest to the business.</p>`;
+  return html;
+}
+function renderDecisionMatrix(mbScore, igScore, market, zacks) {
+  const mbBand = mbScore >= 80 ? 'high' : (mbScore >= 65 ? 'mid' : 'low');
+  const igBand = igScore >= 75 ? 'high' : (igScore >= 60 ? 'mid' : 'low');
+  const matrix = {
+    'high-high': {verdict: 'BOTH VALIDATED — Strongest signal',           cls: 'green',  desc: 'High multibagger potential + strong financials. Initiate position when macro permits (Tab 7 / Tab 2).'},
+    'high-mid':  {verdict: 'HIGH POTENTIAL, VERIFY FINANCIALS',           cls: 'yellow', desc: 'Multibagger potential is strong but financial strength is only moderate. Verify cash flow quality, debt service, OCF/NI before initiation.'},
+    'high-low':  {verdict: 'SPECULATIVE — Story stock risk',              cls: 'orange', desc: "Mayer's classic trap: high-potential thesis with weak financials. May still work but failure rate elevated. Position size very small if at all."},
+    'mid-high':  {verdict: 'QUALITY COMPOUNDER (not multibagger)',         cls: 'yellow', desc: 'Strong financials but limited multibagger optionality. Refer to your Explosive Stocks track instead — this is a quality-compounder candidate, not a multibagger.'},
+    'mid-mid':   {verdict: 'WATCH LIST — track quarterly',                cls: 'gold',   desc: 'Both dimensions moderate. Not high enough conviction either way. Monitor for improvement on either axis.'},
+    'mid-low':   {verdict: 'REJECT — weak financials, average potential', cls: 'red',    desc: 'Neither dimension justifies position. Pass.'},
+    'low-high':  {verdict: 'NOT A MULTIBAGGER — refer to Explosive',      cls: 'yellow', desc: 'Strong financials but no growth runway. Quality compounder / dividend play. Multibagger track not appropriate.'},
+    'low-mid':   {verdict: 'REJECT — no thesis on either dimension',      cls: 'red',    desc: 'Both scores below conviction threshold. Pass.'},
+    'low-low':   {verdict: 'REJECT — fails on both dimensions',           cls: 'red',    desc: 'Pass.'},
+  };
+  const key = mbBand + '-' + igBand;
+  const result = matrix[key];
+  const colors = {green: '#006100', yellow: '#92D050', gold: '#BF8F00', orange: '#ED7D31', red: '#C00000'};
+  const bg = colors[result.cls];
+  const textColor = ['green', 'orange', 'red'].includes(result.cls) ? '#FFFFFF' : '#000000';
+  let html = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">';
+  html += `<div style="background: var(--light-blue); padding:18px; border-radius:8px; border-left:5px solid var(--blue);"><div style="font-size:11px; color:var(--grey-d); text-transform:uppercase; font-weight:700;">Multibagger Score (potential)</div><div style="font-size:32px; font-weight:700; color:var(--navy); margin:6px 0;">${mbScore.toFixed(1)} / 100</div><div style="font-size:12px; color:var(--grey-d);">Band: <b>${mbBand.toUpperCase()}</b> (${mbBand === 'high' ? '≥80' : mbBand === 'mid' ? '65-79' : '<65'})</div></div>`;
+  html += `<div style="background:#FFF2CC; padding:18px; border-radius:8px; border-left:5px solid var(--gold);"><div style="font-size:11px; color:var(--grey-d); text-transform:uppercase; font-weight:700;">IG Score (financial strength)</div><div style="font-size:32px; font-weight:700; color:var(--navy); margin:6px 0;">${igScore} / 100</div><div style="font-size:12px; color:var(--grey-d);">Band: <b>${igBand.toUpperCase()}</b> (${igBand === 'high' ? '≥75' : igBand === 'mid' ? '60-74' : '<60'})</div></div>`;
+  html += '</div>';
+  if (market === 'us' && zacks) {
+    const zacksColors = {1: '#006100', 2: '#92D050', 3: '#FFFF00', 4: '#ED7D31', 5: '#C00000'};
+    const zacksText = {1: 'Strong Buy', 2: 'Buy', 3: 'Hold', 4: 'Sell', 5: 'Strong Sell'};
+    const zText = ['', '#FFFFFF', '#000000', '#000000', '#FFFFFF', '#FFFFFF'][zacks];
+    html += `<div style="background:${zacksColors[zacks]}; color:${zText}; padding:14px 18px; border-radius:8px; margin-bottom:16px; text-align:center; font-weight:700;">Zacks Rank: ${zacks} — ${zacksText[zacks]} <span style="font-weight:400; font-size:12px;">(informational only — earnings revision momentum signal, not blended into score)</span></div>`;
+  }
+  html += `<div style="background:${bg}; color:${textColor}; padding:20px 24px; border-radius:8px; text-align:center; box-shadow: var(--shadow);"><div style="font-size:18px; font-weight:700; margin-bottom:8px;">${result.verdict}</div><div style="font-size:13px; line-height:1.5; font-weight:400;">${result.desc}</div></div>`;
+  html += '<h4 style="margin-top:24px; font-size:14px; color:var(--navy);">Position on the 3×3 Decision Grid</h4>';
+  html += '<table style="text-align:center; margin-top:8px;"><tr><th></th><th>IG &lt;60 (Weak)</th><th>IG 60-74 (Moderate)</th><th>IG ≥75 (Strong)</th></tr>';
+  const gridRows = ['high', 'mid', 'low'];
+  const rowLabels = {high: 'MB ≥80<br><span style="font-size:10px;font-weight:400;">(High potential)</span>', mid: 'MB 65-79<br><span style="font-size:10px;font-weight:400;">(Moderate)</span>', low: 'MB &lt;65<br><span style="font-size:10px;font-weight:400;">(Low)</span>'};
+  gridRows.forEach(r => {
+    html += `<tr><th style="text-align:left;">${rowLabels[r]}</th>`;
+    ['low', 'mid', 'high'].forEach(c => {
+      const k = r + '-' + c;
+      const item = matrix[k];
+      const isActive = k === key;
+      const cellBg = colors[item.cls];
+      const cellText = ['green', 'orange', 'red'].includes(item.cls) ? '#FFFFFF' : '#000000';
+      const ring = isActive ? 'box-shadow: 0 0 0 4px #BF8F00, 0 4px 12px rgba(0,0,0,0.3);' : '';
+      const star = isActive ? ' ★' : '';
+      html += `<td style="background:${cellBg}; color:${cellText}; padding:14px 10px; font-size:11px; font-weight:700; ${ring}">${item.verdict.split(' — ')[0]}${star}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</table>';
+  html += '<p style="margin-top:10px; font-size:12px; color:var(--grey-d);"><strong>How to read:</strong> The two scores are independent and shown separately — not blended into a single number. The 3×3 grid simply maps where the two scores intersect to a verdict. You retain discretion to override based on factors outside the scorecards.</p>';
+  return html;
+}
+
+// =========================================================
+// PSX MULTIBAGGER — Tab 8
+// =========================================================
+function calcMbPsx() {
+  const inp = {
+    rev: val('psx_mb_rev'), eps: val('psx_mb_eps'), roe: val('psx_mb_roe'), roce: val('psx_mb_roce'),
+    de: val('psx_mb_de'), ocf: val('psx_mb_ocf'), sponsor: val('psx_mb_sponsor'), mcap: val('psx_mb_mcap'),
+    tam: parseInt(document.getElementById('psx_mb_tam').value),
+    moat: parseInt(document.getElementById('psx_mb_moat').value),
+    reinv: parseInt(document.getElementById('psx_mb_reinv').value),
+    owner: parseInt(document.getElementById('psx_mb_owner').value),
+  };
+  const score = scoreMultibagger(inp, 'psx');
+  document.getElementById('psx_mb_score_box').innerHTML = renderMbScoreBox(score, 'psx');
+  document.getElementById('psx_mb_compound_box').innerHTML = renderCompoundCalc(inp.eps, 1000000, 'PKR');
+  const psxFunnel = [
+    ['PSX Total Listed Companies',          561,  'Source: PSX official listings count May 2026'],
+    ['Outside KSE-30 (excl. large caps)',    480, 'Removed KSE-30 large caps (already in Explosive Stocks track)'],
+    ['Sweet Spot Tier (PKR 5-30bn market cap)', 150, 'Multibagger market cap range — informal PSX small-cap'],
+    ['+ Growth Filter (Fwd Earnings Growth >20%)', 30, 'Forecast earnings growth ≥20% per Simply Wall St + PSX broker reports'],
+    ['+ Moat OR Insider Gate (CRITICAL)',     18,  'Clear moat (brand/network/cost/switching/regulatory) OR sponsor holding ≥40% with recent insider buying'],
+    ['+ Multibagger Fit Assessment',         10,  'Manual qualitative review → Final candidate shortlist below'],
+  ];
+  document.getElementById('psx_mb_funnel').innerHTML = renderFunnel(psxFunnel, 'psx');
+  const psxSectors = [
+    ['Cement', 20, 10, 5, 4, 2], ['Banks', 22, 6, 2, 2, 0], ['Power / Utilities', 18, 12, 3, 2, 1],
+    ['Fertilizer', 7, 2, 1, 1, 0], ['Textile', 55, 30, 3, 1, 0], ['Technology / IT', 10, 5, 3, 2, 1],
+    ['Pharma', 12, 6, 2, 1, 0], ['E&P (Oil & Gas)', 5, 1, 1, 1, 0], ['OMC', 5, 2, 1, 1, 0],
+    ['Auto Assemblers', 8, 3, 2, 2, 1], ['Auto Parts', 15, 10, 2, 1, 0], ['Cable & Electrical', 10, 6, 1, 1, 0],
+    ['Engineering / Steel', 14, 8, 3, 3, 1], ['Glass / Ceramics', 5, 3, 2, 2, 1], ['Paper & Board', 10, 7, 1, 0, 0],
+    ['Refinery', 5, 1, 1, 1, 0], ['Packaging', 6, 4, 3, 3, 2], ['Food / Beverage', 20, 8, 2, 1, 1],
+    ['Sugar', 30, 15, 0, 0, 0], ['Insurance', 15, 5, 1, 0, 0], ['Transport / Logistics', 8, 3, 2, 2, 1],
+    ['Chemicals', 18, 8, 2, 1, 0], ['Real Estate / REIT', 6, 2, 1, 1, 0], ['Modarabas', 25, 10, 0, 0, 0],
+    ['Closed-End Mutual Funds', 15, 8, 0, 0, 0], ['Miscellaneous (12 other sectors)', 197, 11, 1, 0, 0],
+  ];
+  document.getElementById('psx_mb_sector_table').innerHTML = renderSectorBreakdown(psxSectors, 'psx');
+  document.getElementById('psx_mb_decision_matrix').innerHTML = renderDecisionMatrix(score.total, val('psx_mb_ig'), 'psx');
+  const tiers = [
+    ['Pure micro-cap zone', '< PKR 5bn', 'Highest 50-100x potential, highest failure rate, smallest positions'],
+    ['Sweet spot', 'PKR 5bn - 30bn', 'Mayer-equivalent median for PSX. Best risk-adjusted multibagger zone.'],
+    ['Late-stage multibagger', 'PKR 30bn - 100bn', '5-10x potential remaining. Add to existing winners here.'],
+    ['Reject — refer to Explosive Stocks track', '> PKR 100bn', 'Already large-cap by PSX informal convention. Treat as quality compounder.'],
+  ];
+  let tHtml = '<table><thead><tr><th>Tier</th><th>Market Cap Range</th><th>Profile</th></tr></thead><tbody>';
+  tiers.forEach((t, i) => { const cls = i <= 1 ? 'pos' : i === 2 ? 'warn' : 'neg'; tHtml += `<tr class="${cls}"><td><b>${t[0]}</b></td><td>${t[1]}</td><td>${t[2]}</td></tr>`; });
+  tHtml += '</tbody></table>';
+  document.getElementById('psx_mb_tiers_table').innerHTML = tHtml;
+  const live = [
+    ['MUGHAL', 'Mughal Iron & Steel', 'Steel', 26.3, 71.4, 123.4, 73, 45.1, 0, 'Sweet spot', 'HIGH-CONVICTION', 'High growth + 73% broker upside. Steel demand from infra revival. Active in re-roll mill expansion.'],
+    ['ECOP', 'EcoPack Limited', 'Packaging', 1.9, 39.2, 80.3, 105, 7.3, 5.1, 'Pure micro-cap', 'HIGH-CONVICTION', 'PKR 1.9bn micro-cap. 105% broker upside. PET preform niche. Highest 50-100x optionality if execution holds.'],
+    ['PIBTL', 'Pakistan Intl Bulk Terminal', 'Transport', 29.8, 16.7, 33.0, 98, 30.1, 0, 'Sweet spot', 'HIGH-CONVICTION', 'Karachi port coal terminal monopoly. 98% broker upside, 30%+ revenue growth from coal volumes.'],
+    ['GHGL', 'Ghani Glass', 'Glass/Materials', 35.0, 35.0, 65.9, 88, 11.9, 5.7, 'Late-stage', 'STRONG', 'Float glass duopoly. 88% upside per AHL. Defensive moat + dividend yield combo.'],
+    ['PABC', 'Pak Aluminum Beverage Cans', 'Packaging', 35.1, 97.1, 124.0, 28, 6.9, 0, 'Late-stage', 'STRONG', 'Beverage can duopoly. Already a 10x past multibagger (2018-24). 28% remaining target upside.'],
+    ['ACPL', 'Attock Cement', 'Cement', 36.5, 265.6, 337.3, 27, 27.6, 3.0, 'Late-stage', 'STRONG', '27% upside + 27.6% growth. Cement demand revival on infra spending.'],
+    ['NCPL', 'Nishat Chunian Power', 'Utilities', 27.4, 74.5, 38.0, -49, 0, 9.4, 'Sweet spot', 'WATCH', '9.4% dividend yield but broker target BELOW current price. Hold for income only; not a growth multibagger.'],
+    ['SYM', 'Symmetry Group', 'Software (IT)', 2.9, 10.3, null, null, -23.8, 0.5, 'Pure micro-cap', 'WATCH', 'PKR 2.9bn micro-cap IT play. Negative recent return. Watch quarterly results before commit.'],
+    ['IML', 'Ismail Industries', 'Food/Snacks', 2.7, 27.1, null, null, null, 0, 'Pure micro-cap', 'WATCH', 'PKR 2.7bn snacks brand (Bisconni). 69.6% 1Y return — may already be running. Verify TTM growth + sponsor.'],
+    ['SAZEW', 'Sazgar Engineering Works', 'Auto (3W+EV)', null, null, null, null, null, null, 'Sweet spot', 'STRONG', '3-wheeler + Haval SUV assembler. 7 broker picks for 2026. Verify current price + market cap.'],
+  ];
+  let liveHtml = '<table style="font-size:12px;"><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Mkt Cap (PKR bn)</th><th>Price</th><th>Target</th><th>Upside</th><th>Growth Fwd</th><th>Yield</th><th>Tier</th><th>Status</th><th>Thesis</th></tr></thead><tbody>';
+  live.forEach(s => {
+    const cls = s[10] === 'HIGH-CONVICTION' ? 'pos' : (s[10] === 'STRONG' ? 'warn' : '');
+    const fmt = v => v === null ? '—' : (typeof v === 'number' ? v.toLocaleString() : v);
+    const upcls = s[6] && s[6] > 50 ? 'style="background:#C6EFCE; font-weight:700;"' : (s[6] && s[6] > 25 ? 'style="background:#FFEB9C;"' : (s[6] && s[6] < 0 ? 'style="background:#FFC7CE;"' : ''));
+    liveHtml += `<tr class="${cls}"><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${fmt(s[3])}</td><td>${fmt(s[4])}</td><td>${fmt(s[5])}</td><td ${upcls}>${s[6] === null ? '—' : s[6] + '%'}</td><td>${s[7] === null ? '—' : s[7] + '%'}</td><td>${s[8] === null ? '—' : s[8] + '%'}</td><td>${s[9]}</td><td><b>${s[10]}</b></td><td>${s[11]}</td></tr>`;
+  });
+  liveHtml += '</tbody></table>';
+  liveHtml += '<p style="margin-top:10px; font-size:12px; color:var(--grey-d);"><strong>Notes:</strong> Upside % = Broker target vs current price. Growth Fwd = Simply Wall St forecasted earnings growth. Status reflects combined multibagger fit (size tier × growth × upside × moat). Verify EACH candidate via sponsor holding + annual report before any position initiation. Macro reads RED zone — limit new initiations to 20% of equity allocation per Tab 7.</p>';
+  document.getElementById('psx_mb_live_candidates').innerHTML = liveHtml;
+  const hist = [
+    ['SYS (Systems Limited)', '2017-2024', '~25x', 'Tech IT exports', 'Founder still chairman (Aezaz Hussain)', 'IT export boom + Visionet acquisition + reinvest at 25%+ ROCE'],
+    ['PABC (PAK Aluminum Beverage Cans)', '2018-2024', '~10x', 'Packaging', 'Niche beverage can monopoly in Pakistan', 'Coca-Cola/Pepsi capacity expansion + duopoly pricing power'],
+    ['SRVI (Service Industries)', '2019-2023', '~8x', 'Footwear export', 'Family-owned, export pivot', 'PKR weakness 2021-22 boosted dollar revenue; brand portfolio'],
+    ['EPCL (Engro Polymer)', '2020-2022', '~10x', 'Specialty Chemicals (PVC)', 'Engro group sponsor', 'PVC cycle peak + capacity expansion + import substitution'],
+    ['AIRLINK (Air Link Communication)', '2022-2024', '~5x', 'Tech distribution', 'Distribution monopoly for smartphone brands', 'Smartphone penetration + mobile manufacturing'],
+  ];
+  let hHtml = '<table><thead><tr><th>Stock</th><th>Run Period</th><th>Multiple</th><th>Sector</th><th>Key Signal</th><th>Engine</th></tr></thead><tbody>';
+  hist.forEach(h => { hHtml += `<tr class="pos"><td><b>${h[0]}</b></td><td>${h[1]}</td><td><b>${h[2]}</b></td><td>${h[3]}</td><td>${h[4]}</td><td>${h[5]}</td></tr>`; });
+  hHtml += '</tbody></table>';
+  document.getElementById('psx_mb_history_table').innerHTML = hHtml;
+  const cmp = [
+    ['Goal', 'Asymmetric upside via 10x+ over 10-15 years', 'Quality compounders showing an earnings inflection'],
+    ['Financial gate', 'Relaxed (cash tests exempted for growth phase)', 'Signal A (Rev & EPS ≥15%) + Signal B (EPS>20% & EPS/Rev>1.5); cash tests as guardrails'],
+    ['Valuation method', 'PEG <1.5 OR single-method DCF', '7-method IV triangulation + 15% MoS'],
+    ['Margin of Safety', '0% acceptable if growth + moat strong', '>15% required'],
+    ['Holding period', '10-20 years coffee-can', '1-3 years actively managed'],
+    ['Position size', '0.5-3% per name', '4-7% per name'],
+    ['Capital allocation', '20% of equity sleeve', '80% of equity sleeve'],
+    ['Market cap target', '<PKR 30bn (small/micro)', 'All market caps eligible'],
+    ['Macro filter', 'Tab 7 — relaxed action threshold', 'Tab 7 — strict action threshold'],
+    ['New criteria added', 'M7 sponsor, M9 TAM, M10 moat, M11 reinvest, M12 owner', 'Already covered by 7-method IV + ROIC vs WACC'],
+  ];
+  let cHtml = '<table><thead><tr><th>Dimension</th><th>Multibagger Track</th><th>Explosive Stocks Track</th></tr></thead><tbody>';
+  cmp.forEach(c => { cHtml += `<tr><td><b>${c[0]}</b></td><td>${c[1]}</td><td>${c[2]}</td></tr>`; });
+  cHtml += '</tbody></table>';
+  document.getElementById('psx_mb_comparison_table').innerHTML = cHtml;
+}
+
+// =========================================================
+// US MULTIBAGGER — Tab 9
+// =========================================================
+function calcMbUs() {
+  const inp = {
+    rev: val('us_mb_rev'), eps: val('us_mb_eps'), roe: val('us_mb_roe'), roce: val('us_mb_roic'),
+    de: val('us_mb_de'), ocf: val('us_mb_ocf'), sponsor: val('us_mb_insider'), mcap: val('us_mb_mcap'),
+    tam: parseInt(document.getElementById('us_mb_tam').value),
+    moat: parseInt(document.getElementById('us_mb_moat').value),
+    reinv: parseInt(document.getElementById('us_mb_reinv').value),
+    owner: parseInt(document.getElementById('us_mb_owner').value),
+  };
+  const score = scoreMultibagger(inp, 'us');
+  document.getElementById('us_mb_score_box').innerHTML = renderMbScoreBox(score, 'us');
+  document.getElementById('us_mb_compound_box').innerHTML = renderCompoundCalc(inp.eps, 10000, 'USD');
+  const usFunnel = [
+    ['NYSE + NASDAQ + AMEX Listed Equities', 5800, 'Total US-listed common stocks across 3 exchanges (incl. ADRs)'],
+    ['US-domiciled investable (Russell 3000)', 3000, 'Removes ADRs, OTC, ultra-illiquid. Russell 3000 = 98% of US equity market cap.'],
+    ['Small-cap zone (Russell 2000: $300M-$2bn)', 2000, 'Per FINRA / Russell 2000 small-cap definition'],
+    ['+ Zacks Rank 1 or 2 (earnings revisions)', 400, 'Top ~20% by earnings revision momentum. Informational filter only — not a hard gate.'],
+    ['+ Revenue Growth >15% YoY', 150, 'Multibagger profile: growth engine must be running'],
+    ['+ Moat OR Insider Buying Gate (CRITICAL)', 50, 'Clear moat (brand/network/cost/switching/regulatory) OR insider Form 4 buying past 90 days'],
+    ['+ Multibagger Fit Assessment', 8, 'Manual qualitative review → Final candidate shortlist below'],
+  ];
+  document.getElementById('us_mb_funnel').innerHTML = renderFunnel(usFunnel, 'us');
+  const usSectors = [
+    ['Information Technology', 950, 280, 60, 18, 1], ['Health Care', 820, 340, 45, 10, 2],
+    ['Industrials', 700, 260, 25, 8, 2], ['Consumer Discretionary', 600, 240, 20, 5, 1],
+    ['Financials', 750, 330, 15, 4, 1], ['Consumer Staples', 200, 60, 5, 1, 0],
+    ['Energy', 250, 85, 8, 2, 0], ['Materials', 220, 90, 7, 1, 0], ['Real Estate', 250, 140, 5, 0, 0],
+    ['Communication Services', 180, 60, 8, 1, 1], ['Utilities', 150, 35, 2, 0, 0], ['ADRs / Foreign Listings', 730, 80, 0, 0, 0],
+  ];
+  document.getElementById('us_mb_sector_table').innerHTML = renderSectorBreakdown(usSectors, 'us');
+  document.getElementById('us_mb_decision_matrix').innerHTML = renderDecisionMatrix(score.total, val('us_mb_ig'), 'us', parseInt(document.getElementById('us_mb_zacks').value));
+  const tiers = [
+    ['Nano-cap', '< $50M', 'Highest 100-bagger potential, highest liquidity risk'],
+    ['Micro-cap zone', '$50M - $300M', "Mayer's historical 100-bagger zone (median $500M in 2014 dollars)"],
+    ['Small-cap sweet spot', '$300M - $2bn', 'FINRA/Russell 2000 small-cap. Highest historical multibagger hit rate.'],
+    ['Mid-cap', '$2bn - $10bn', 'Late-stage multibagger zone. 5-10x potential remaining.'],
+    ['Large-cap — refer to Explosive Stocks track', '> $10bn', 'Multibagger potential largely capped. Quality compounder territory.'],
+  ];
+  let tHtml = '<table><thead><tr><th>Tier</th><th>Market Cap Range (USD)</th><th>Profile</th></tr></thead><tbody>';
+  tiers.forEach((t, i) => { const cls = i === 0 ? 'warn' : i <= 2 ? 'pos' : i === 3 ? 'warn' : 'neg'; tHtml += `<tr class="${cls}"><td><b>${t[0]}</b></td><td>${t[1]}</td><td>${t[2]}</td></tr>`; });
+  tHtml += '</tbody></table>';
+  document.getElementById('us_mb_tiers_table').innerHTML = tHtml;
+  const live = [
+    ['PLPC', 'Preformed Line Products', 'Power/Comm Infra', 420, 90, 21, 'Significant insider ownership', 2, 'Small-cap sweet spot', 'HIGH-CONVICTION', 'Energy + comms infrastructure. Profitable, clean balance sheet. Q3 rev +21% YoY. Family-controlled. Motley Fool small-cap AI pick.'],
+    ['MGNI', 'Magnite', 'AdTech', 1900, 13, 15, 'Mixed insider activity', 2, 'Small-cap sweet spot', 'STRONG', 'CTV ad-tech leader. Connected TV programmatic growth tailwind. Motley Fool 2026 small-cap recommendation.'],
+    ['SG', 'Sweetgreen', 'Fast Casual Dining', 1200, 11, 18, 'Founder still active', 3, 'Small-cap sweet spot', 'STRONG', 'Founder-led fast casual. Automated kitchen rollout. Motley Fool 2026 pick. Negative FCF currently — speculative but high optionality.'],
+    ['TOI', 'The Oncology Institute', 'Healthcare', 1240, 12, 41, 'Insider buying Mar-Apr 2026', 2, 'Small-cap sweet spot', 'STRONG', 'Q1 2026 revenue +41% YoY ($147M vs $104M). Healthcare services growth. Not yet profitable — verify path to FCF.'],
+    ['INMD', 'InMode', 'Med Devices', 2100, null, 5, 'Buyback program 10% of float', 3, 'Mid-cap (late stage)', 'WATCH', '77.8% gross margin specialty med devices. Earnings forecast -0.6% next 3yrs = headwind. Cheap valuation but limited growth.'],
+    ['TRS', 'TriMas Corporation', 'Packaging/Industrial', null, null, 10, 'Insider buying', 3, 'Sweet spot', 'WATCH', 'Q1 rev +10.4% YoY. Activist-driven restructuring. Insider conviction. Cyclical.'],
+    ['ADV', 'Advantage Solutions', 'Consumer Services', 1350, null, 0, 'Insider purchase Mar 2026', 4, 'Small-cap sweet spot', 'WATCH', 'Brand/retail services. Q4 2025 net loss $161M. Debt restructure in progress. Speculative turnaround.'],
+    ['PKBK', 'Parke Bancorp', 'Community Bank', 180, null, 33, 'Insider buying', 2, 'Micro-cap', 'WATCH', 'NJ community bank. Q1 NII +33% YoY ($22M vs $16M). 50% net income margin. Insider conviction. Pure micro-cap.'],
+  ];
+  let liveHtml = '<table style="font-size:12px;"><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Mkt Cap ($M)</th><th>Price</th><th>Rev Growth</th><th>Insider Signal</th><th>Zacks</th><th>Tier</th><th>Status</th><th>Thesis</th></tr></thead><tbody>';
+  live.forEach(s => {
+    const cls = s[9] === 'HIGH-CONVICTION' ? 'pos' : (s[9] === 'STRONG' ? 'warn' : '');
+    const fmt = v => v === null ? '—' : (typeof v === 'number' ? v.toLocaleString() : v);
+    const gcls = s[5] && s[5] > 30 ? 'style="background:#C6EFCE; font-weight:700;"' : (s[5] && s[5] > 15 ? 'style="background:#FFEB9C;"' : '');
+    liveHtml += `<tr class="${cls}"><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${fmt(s[3])}</td><td>${fmt(s[4])}</td><td ${gcls}>${s[5] === null ? '—' : s[5] + '%'}</td><td>${s[6]}</td><td>${s[7]}</td><td>${s[8]}</td><td><b>${s[9]}</b></td><td>${s[10]}</td></tr>`;
+  });
+  liveHtml += '</tbody></table>';
+  liveHtml += '<p style="margin-top:10px; font-size:12px; color:var(--grey-d);"><strong>Notes:</strong> Rev Growth = latest reported YoY. Insider Signal = SEC Form 4 / 13F activity. Zacks Rank informational only. Status reflects combined multibagger fit. Verify EACH via 10-K / latest 10-Q before initiation. US regime is mixed (Tab 2) — favor defensive small-caps over cyclicals until clarity.</p>';
+  document.getElementById('us_mb_live_candidates').innerHTML = liveHtml;
+  const hist = [
+    ['MNST (Monster Beverage)', '2004-2024', '~700x', 'Beverages', 'Founder Rodney Sacks; tiny float at start', 'Energy drink category creation + Coca-Cola distribution deal'],
+    ['NVDA (Nvidia)', '2016-2024', '~100x', 'Semiconductors', 'Founder Jensen Huang still CEO', 'GPU compute + AI data-center supercycle'],
+    ['AXON (Axon Enterprise)', '2016-2024', '~30x', 'Public-safety tech', 'Founder Rick Smith, insider holding', 'Taser → body-cam → cloud SaaS recurring revenue flywheel'],
+    ['DXCM (DexCom)', '2010-2021', '~40x', 'Med Devices (CGM)', 'Founder-led, high insider', 'Continuous glucose monitoring category leadership'],
+    ['CELH (Celsius Holdings)', '2019-2024', '~50x', 'Beverages', 'Founder + heavy insider', 'Fitness energy drink + PepsiCo distribution deal'],
+  ];
+  let hHtml = '<table><thead><tr><th>Stock</th><th>Run Period</th><th>Multiple</th><th>Sector</th><th>Key Signal</th><th>Engine</th></tr></thead><tbody>';
+  hist.forEach(h => { hHtml += `<tr class="pos"><td><b>${h[0]}</b></td><td>${h[1]}</td><td><b>${h[2]}</b></td><td>${h[3]}</td><td>${h[4]}</td><td>${h[5]}</td></tr>`; });
+  hHtml += '</tbody></table>';
+  document.getElementById('us_mb_history_table').innerHTML = hHtml;
+}
+
+// =========================================================
+// TAB 11 — EXPLOSIVE STOCKS (reads scanner explosive_us / explosive_psx)
+// =========================================================
+function explosiveVerdictClass(verdict) {
+  if (!verdict) return 'neutral';
+  const v = verdict.toUpperCase();
+  if (v.startsWith('EXPLOSIVE')) return 'pos';
+  if (v.startsWith('QUALITY-GROWTH')) return 'warn';
+  if (v.startsWith('INFLECTION')) return 'warn';
+  if (v.startsWith('NOT EXPLOSIVE')) return 'neg';
+  return 'neutral';
+}
+function sigDot(state) {
+  let color = '#d1d5db';
+  if (state === true) color = '#10b981';
+  else if (state === false) color = '#ef4444';
+  return `<span style="display:inline-block; width:11px; height:11px; border-radius:50%; background:${color};"></span>`;
+}
+function renderExplosiveTable(elId, rows, market) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!rows || rows.length === 0) {
+    let msg = 'Waiting for scan data…';
+    if (market === 'psx') msg = 'PSX fundamentals (revenue/EPS growth) are not available from any public API — all 10 candidates show INSUFFICIENT DATA. This is a structural data gap, not a bug. Verify each PSX candidate directly in the IM3 workbook using quarterly accounts.';
+    el.innerHTML = `<p style="color:var(--grey-d);">${msg}</p>`;
+    return;
+  }
+
+  const toggleId = elId + '_toggle';
+  const tbodyId  = elId + '_tbody';
+
+  // Separate rows into scored vs insufficient
+  const scoredRows = rows.filter(r => r.verdict !== 'INSUFFICIENT DATA');
+  const insuffRows  = rows.filter(r => r.verdict === 'INSUFFICIENT DATA');
+  const counts = {
+    explosive:     rows.filter(r => r.verdict && r.verdict.startsWith('EXPLOSIVE')).length,
+    qualityGrowth: rows.filter(r => r.verdict && r.verdict.startsWith('QUALITY-GROWTH')).length,
+    inflection:    rows.filter(r => r.verdict && r.verdict.startsWith('INFLECTION')).length,
+    notExplosive:  rows.filter(r => r.verdict === 'NOT EXPLOSIVE').length,
+    insufficient:  insuffRows.length,
+  };
+
+  // Summary bar
+  let summary = `<div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; font-size:13px; font-weight:600;">`;
+  if (counts.explosive)     summary += `<span style="background:var(--green-l); color:var(--green); padding:4px 10px; border-radius:6px;">🚀 ${counts.explosive} EXPLOSIVE</span>`;
+  if (counts.qualityGrowth) summary += `<span style="background:var(--orange-l); color:var(--orange); padding:4px 10px; border-radius:6px;">📈 ${counts.qualityGrowth} QUALITY-GROWTH</span>`;
+  if (counts.inflection)    summary += `<span style="background:var(--orange-l); color:var(--orange); padding:4px 10px; border-radius:6px;">⚡ ${counts.inflection} INFLECTION</span>`;
+  if (counts.notExplosive)  summary += `<span style="background:var(--red-l); color:var(--red); padding:4px 10px; border-radius:6px;">✗ ${counts.notExplosive} NOT EXPLOSIVE</span>`;
+  if (counts.insufficient)  summary += `<span style="background:#F3F4F6; color:#6B7280; padding:4px 10px; border-radius:6px; cursor:pointer;" onclick="document.getElementById('${toggleId}').click()">◌ ${counts.insufficient} no EPS data (hidden)</span>`;
+  summary += '</div>';
+
+  // Build table — scored rows only by default
+  const renderRow = r => {
+    const cls = explosiveVerdictClass(r.verdict);
+    const em  = v => (v === null || v === undefined) ? '—' : v;
+    const pct = v => (v === null || v === undefined) ? '—' : (v + '%');
+    const ratio = (r.eps_rev_ratio === null || r.eps_rev_ratio === undefined) ? '—' : Number(r.eps_rev_ratio).toFixed(2);
+    return `<tr class="${cls}"><td><b>${em(r.ticker)}</b></td><td>${em(r.name)}</td><td>${em(r.sector)}</td><td>${pct(r.rev_growth)}</td><td>${pct(r.eps_growth)}</td><td>${ratio}</td><td style="text-align:center;">${sigDot(r.signal_a)}</td><td style="text-align:center;">${sigDot(r.signal_b)}</td><td><b>${em(r.verdict)}</b></td></tr>`;
+  };
+
+  let html = summary;
+  html += `<table style="font-size:12px;"><thead><tr><th>Ticker</th><th>Name</th><th>Sector</th><th>Rev Gr</th><th>EPS Gr</th><th>EPS/Rev</th><th>Sig A</th><th>Sig B</th><th>Verdict</th></tr></thead>`;
+  html += `<tbody id="${tbodyId}">`;
+  scoredRows.forEach(r => { html += renderRow(r); });
+
+  // Hidden insufficient rows
+  if (insuffRows.length > 0) {
+    insuffRows.forEach(r => {
+      html += `<tr class="neutral exp-insuff" style="display:none;">${renderRow(r).replace('<tr class="neutral">','')}</tr>`.replace('<tr class="neutral exp-insuff" style="display:none;"><tr class="neutral">', '<tr class="neutral exp-insuff" style="display:none;">');
+    });
+  }
+  html += '</tbody></table>';
+
+  // Rebuild insufficient rows properly
+  html = summary;
+  html += `<table style="font-size:12px;"><thead><tr><th>Ticker</th><th>Name</th><th>Sector</th><th>Rev Gr</th><th>EPS Gr</th><th>EPS/Rev</th><th>Sig A</th><th>Sig B</th><th>Verdict</th></tr></thead><tbody id="${tbodyId}">`;
+  scoredRows.forEach(r => { html += renderRow(r); });
+  insuffRows.forEach(r  => {
+    const cls = explosiveVerdictClass(r.verdict);
+    const em  = v => (v === null || v === undefined) ? '—' : v;
+    const pct = v => (v === null || v === undefined) ? '—' : (v + '%');
+    const ratio = (r.eps_rev_ratio === null || r.eps_rev_ratio === undefined) ? '—' : Number(r.eps_rev_ratio).toFixed(2);
+    html += `<tr class="exp-insuff" style="display:none; background:#F9FAFB;"><td><b>${em(r.ticker)}</b></td><td>${em(r.name)}</td><td>${em(r.sector)}</td><td>${pct(r.rev_growth)}</td><td>${pct(r.eps_growth)}</td><td>${ratio}</td><td style="text-align:center;">${sigDot(r.signal_a)}</td><td style="text-align:center;">${sigDot(r.signal_b)}</td><td style="color:#9CA3AF;"><i>INSUFFICIENT DATA</i></td></tr>`;
+  });
+  html += '</tbody></table>';
+
+  if (insuffRows.length > 0) {
+    html += `<div style="margin-top:8px;"><label style="font-size:12px; color:var(--grey-d); cursor:pointer;"><input type="checkbox" id="${toggleId}" style="margin-right:6px;" onchange="document.querySelectorAll('#${elId} .exp-insuff').forEach(r=>r.style.display=this.checked?'':'none')">Show ${insuffRows.length} candidates with no EPS data (revenue-only screen — EPS needed to score)</label></div>`;
+  }
+
+  html += `<p style="margin-top:10px; font-size:11px; color:var(--grey-d);">Signal dots: <span style="color:#10b981;">●</span> fired &nbsp; <span style="color:#ef4444;">●</span> not fired &nbsp; <span style="color:#d1d5db;">●</span> undefined. &nbsp;|&nbsp; <strong>Note:</strong> Revenue and EPS growth are proxy signals. The IM3 workbook uses Operating Profit growth and NP/OP ratio as the true explosive trigger — verify each flagged name in IM3 before initiating.</p>`;
+
+  el.innerHTML = html;
+}
+function explosiveMacroBanner(market) {
+  if (market === 'us') {
+    let regimeName = '—';
+    try { regimeName = regimeOf(val('us_gdp'), val('core_pce'), 2, 2.5).name; } catch (e) {}
+    return `<strong>Macro gate (US):</strong> US explosive names are read against the Tab 2 Four-Regimes classification — currently <strong>${regimeName}</strong>. Size and sector-tilt explosive entries to the prevailing US regime. This track never uses the PSX Tab 7 Allocation Zone.`;
+  } else {
+    return `<strong>Macro gate (PSX):</strong> PSX explosive names are read against the Tab 7 IM3 Allocation Zone — currently <strong>RED (20% stocks / 60% bonds / 20% cash)</strong>. In RED, treat explosive PSX candidates as watchlist-building; scale entries up only as the zone improves toward LIGHT/DARK GREEN. This track never uses the Tab 2 US regime.`;
+  }
+}
+function calcExplosive() {
+  document.getElementById('explosive_us_macro').innerHTML = explosiveMacroBanner('us');
+  document.getElementById('explosive_psx_macro').innerHTML = explosiveMacroBanner('psx');
+  const usRows = (LIVE && Array.isArray(LIVE.explosive_us)) ? LIVE.explosive_us : [];
+  const psxRows = (LIVE && Array.isArray(LIVE.explosive_psx)) ? LIVE.explosive_psx : [];
+  renderExplosiveTable('explosive_us_table', usRows, 'us');
+  renderExplosiveTable('explosive_psx_table', psxRows, 'psx');
+}
+
+// =========================================================
+// LIVE DATA LOADER (data.json from GitHub Actions scanner)
+// =========================================================
+let LIVE = null;
+function setLiveStatus(state, scan, ver) {
+  const dot = document.getElementById('liveDot'), txt = document.getElementById('liveText');
+  if (state === 'ok') { dot.style.background = '#10b981'; txt.textContent = 'Live scan loaded'; }
+  else if (state === 'stale') { dot.style.background = '#f59e0b'; txt.textContent = 'Live scan (older)'; }
+  else if (state === 'none') { dot.style.background = '#ef4444'; txt.textContent = 'No scan data yet'; }
+  else { dot.style.background = '#9ca3af'; txt.textContent = 'Loading live scan…'; }
+  if (scan) document.getElementById('liveScan').textContent = scan;
+  if (ver) document.getElementById('liveVer').textContent = ver;
+}
+function renderTceTable(elId, rows, market) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!rows || rows.length === 0) {
+    el.innerHTML = `<p style="color:var(--grey-d);">${market === 'psx' ? 'No PSX TCE convergence in the latest scan — sparser PSX signals are normal.' : 'No US TCE convergence in the latest scan yet.'}</p>`;
+    return;
+  }
+  let html = '<table style="font-size:12px;"><thead><tr><th>Ticker</th><th>Name</th><th>Streams firing</th><th>Tier</th></tr></thead><tbody>';
+  rows.forEach(r => {
+    const tier = (r.tier || '').toUpperCase();
+    const cls = tier === 'HIGH' ? 'pos' : (tier === 'WATCH' ? 'warn' : '');
+    const streams = r.streams ? (Array.isArray(r.streams) ? r.streams.join(', ') : r.streams) : (r.streams_firing != null ? r.streams_firing : '—');
+    html += `<tr class="${cls}"><td><b>${r.ticker || '—'}</b></td><td>${r.name || '—'}</td><td>${streams}</td><td><b>${r.tier || '—'}</b></td></tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+function applyLive() {
+  if (!LIVE) { calcExplosive(); return; }
+  if (LIVE.tce_us || LIVE.tce_psx) {
+    renderTceTable('tce_us_table', LIVE.tce_us, 'us');
+    renderTceTable('tce_psx_table', LIVE.tce_psx, 'psx');
+  }
+  calcExplosive();
+}
+async function loadLiveData() {
+  setLiveStatus('loading');
+  try {
+    const resp = await fetch('./data.json?_=' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    LIVE = await resp.json();
+    const meta = LIVE.meta || {};
+    const scan = meta.last_scan_utc || '—';
+    const ver = meta.scan_version || '—';
+    let isStale = false;
+    if (meta.last_scan_utc) {
+      const ageH = (Date.now() - new Date(meta.last_scan_utc).getTime()) / 3.6e6;
+      if (ageH > 48) isStale = true;
+    }
+    setLiveStatus(isStale ? 'stale' : 'ok', scan, ver);
+    applyLive();
+  } catch (e) {
+    LIVE = null;
+    setLiveStatus('none', '—', '—');
+    calcExplosive();
+  }
+}
+function reloadLive() { loadLiveData(); }
+
+// =========================================================
+// MASTER RECALC + INIT
+// =========================================================
+function recalc() {
+  calcUS();
+  calcPAK();
+  calcDevAlert();
+  calcSectors();
+  calcZone();
+  calcMbPsx();
+  calcMbUs();
+  calcExplosive();
+}
+window.addEventListener('DOMContentLoaded', () => {
+  recalc();
+  loadLiveData();
+});
+</script>
+</body>
+</html>
