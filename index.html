@@ -905,21 +905,6 @@ function im3CellHTML(ticker) {
   </div>`;
 }
 
-  const gc = r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f';
-  const fc = r.pct>=75?'#059669':r.pct>=60?'#D97706':r.pct>=50?'#F97316':'#E11D48';
-  return `<div style="min-width:110px;cursor:pointer;" onclick="im3ToggleDetail('${ticker}')">
-    <div style="display:flex;align-items:center;gap:6px;">
-      <span class="im3-grade-badge ${gc}" style="padding:2px 7px;font-size:11px;">Grade ${r.grade}</span>
-      <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;">${r.score}/162</span>
-      ${r.is_bank?'<span style="font-size:9px;background:#EEF2FF;color:var(--navy);padding:1px 4px;border-radius:3px;font-weight:700;">BANK</span>':''}
-    </div>
-    <div class="im3-score-bar" style="margin-top:4px;height:5px;">
-      <div class="im3-score-fill" style="width:${r.pct}%;background:${fc};"></div>
-    </div>
-    <div style="font-size:10px;color:var(--grey-d);margin-top:2px;">${r.pct}% · click to expand</div>
-  </div>`;
-}
-
 // Toggle detail row open/closed
 function im3ToggleDetail(ticker) {
   const dr = document.getElementById(`im3-detail-${ticker}`);
