@@ -511,35 +511,57 @@ def print_result(r):
 
 # ── ENTRY POINT ──────────────────────────────────────────────────────────────
 def main():
-    args = [a.upper() for a in sys.argv[1:] if not a.startswith('--')]
+    import json as _json
+
+    args = sys.argv[1:]
+    json_mode = '--json' in args
+    args = [a for a in args if a != '--json']
 
     if not args:
+        if json_mode:
+            print('[]')
+            return
         print('\nIM3 162-Point Stock Scorer')
         print('Usage: python im3_score.py RBB MCB LOB')
+        print('       python im3_score.py --json RBB MCB LOB  (outputs JSON)')
         print()
         inp = input('Enter ticker(s): ').strip().upper()
         args = inp.split()
 
-    print(f"\nScoring: {', '.join(args)}")
-    print("~15 seconds per stock\n")
+    tickers = [a.upper() for a in args if not a.startswith('--')]
+
+    if not json_mode:
+        print(f"\nScoring: {', '.join(tickers)}")
+        print("~15 seconds per stock\n")
 
     results = []
-    for tk in args:
+    for tk in tickers:
         try:
             r = score_ticker(tk)
-            print_result(r)
-            results.append(r)
+            if json_mode:
+                results.append(r)
+            else:
+                print_result(r)
+                results.append(r)
         except Exception as e:
-            import traceback; traceback.print_exc()
-            print(f"\n  ERROR {tk}: {e}")
-        if len(args) > 1:
+            if json_mode:
+                results.append({'ticker': tk, 'error': str(e)})
+            else:
+                import traceback; traceback.print_exc()
+                print(f"\n  ERROR {tk}: {e}")
+        if len(tickers) > 1 and not json_mode:
             time.sleep(1)
+
+    if json_mode:
+        print(_json.dumps(results, default=str))
+        return
 
     if len(results) > 1:
         print('\nSUMMARY')
         print(f"{'#':<4}{'Ticker':<8}{'Score':<10}{'%':<8}{'Grade':<7}{'Bank':<6}MoS%")
         print('-'*50)
-        for i, r in enumerate(sorted(results, key=lambda x: x['pct'], reverse=True), 1):
+        for i, r in enumerate(sorted(results, key=lambda x: x.get('pct',0), reverse=True), 1):
+            if r.get('error'): continue
             mos = r['iv']['mos_pct']
             print(f"{i:<4}{r['ticker']:<8}{r['score']:<10}{r['pct']:<8}{r['grade']:<7}{'Y' if r['is_bank'] else '':<6}{str(mos)+'%' if mos is not None else '—'}")
         print()
