@@ -708,9 +708,13 @@ function calcExplosive(){
   // Load IM3 scores from data.json into im3Scores (no API call needed)
   if (LIVE && Array.isArray(LIVE.explosive_us)) {
     LIVE.explosive_us.forEach(r => {
-      if (r.im3 && !r.im3.error) {
-        im3Scores[r.ticker] = r.im3;
-      }
+      if (r.im3 && !r.im3.error) im3Scores[r.ticker] = r.im3;
+    });
+  }
+  // Also load IM3 scores for TCE stocks
+  if (LIVE && Array.isArray(LIVE.tce_us)) {
+    LIVE.tce_us.forEach(r => {
+      if (r.im3 && !r.im3.error) im3Scores[r.ticker] = r.im3;
     });
   }
   // Re-render cells that now have scores from data.json
