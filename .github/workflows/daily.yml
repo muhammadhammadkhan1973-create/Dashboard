@@ -43,12 +43,20 @@ jobs:
           with open('data.json') as f:
               data = json.load(f)
 
-          new_tickers = sorted([
+          # Explosive both-signal tickers
+          explosive = sorted([
               r['ticker'] for r in data.get('explosive_us', [])
               if r.get('verdict', '').startswith('EXPLOSIVE')
           ])
+          # TCE HIGH tickers (US only)
+          tce_high = sorted([
+              r['ticker'] for r in data.get('tce_us', [])
+              if r.get('tier') == 'HIGH'
+          ])
+          # Combined — score both
+          new_tickers = sorted(set(explosive + tce_high))
 
-          # Read previous explosive list (stored in data.json from last run)
+          # Read previous list (stored in data.json from last run)
           prev_tickers = sorted(data.get('im3_explosive_tickers', []))
 
           changed = new_tickers != prev_tickers
@@ -71,10 +79,17 @@ jobs:
           with open('data.json') as f:
               data = json.load(f)
 
-          explosive_tickers = [
+          # Explosive both-signal tickers
+          explosive = [
               r['ticker'] for r in data.get('explosive_us', [])
               if r.get('verdict', '').startswith('EXPLOSIVE')
           ]
+          # TCE HIGH tickers (US only)
+          tce_high = [
+              r['ticker'] for r in data.get('tce_us', [])
+              if r.get('tier') == 'HIGH'
+          ]
+          explosive_tickers = sorted(set(explosive + tce_high))
 
           if not explosive_tickers:
               print("No explosive stocks to score")
@@ -110,8 +125,12 @@ jobs:
           score_map = {s['ticker']: s for s in scores if 'error' not in s}
           print(f"Successfully scored: {list(score_map.keys())}")
 
-          # Write scores back into explosive_us records
+          # Write scores back into explosive_us AND tce_us records
           for record in data.get('explosive_us', []):
+              tk = record['ticker']
+              if tk in score_map:
+                  record['im3'] = score_map[tk]
+          for record in data.get('tce_us', []):
               tk = record['ticker']
               if tk in score_map:
                   record['im3'] = score_map[tk]
