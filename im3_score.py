@@ -182,8 +182,11 @@ def peter_lynch(peg, eg, eps):
     return peg * max(0.05, min(0.20, (eg or 5)/100)) * eps
 
 # ── MAIN SCORER ──────────────────────────────────────────────────────────────
+_json_mode = False  # set True by main() when --json used
+
 def score_ticker(ticker):
-    print(f"  Fetching {ticker}...", flush=True)
+    if not _json_mode:
+        print(f"  Fetching {ticker}...", flush=True)
     t = yf.Ticker(ticker)
 
     try:    info = t.info or {}
@@ -516,6 +519,9 @@ def main():
     args = sys.argv[1:]
     json_mode = '--json' in args
     args = [a for a in args if a != '--json']
+    # Suppress per-ticker print statements in JSON mode
+    global _json_mode
+    _json_mode = json_mode
 
     if not args:
         if json_mode:
