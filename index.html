@@ -915,13 +915,33 @@ function renderExplosiveTable(elId, rows, market) {
     if (scoredCount > 0) {
       html += `<span style="margin-left:auto;font-size:12px;color:var(--navy);font-weight:600;padding:5px 14px;background:#EEF2FF;border-radius:7px;">🧮 IM3 scored ${scoredCount}/${explosiveCount} — auto-updated by scanner</span>`;
     }
+    html += `<div style="width:100%;margin-top:8px;padding:8px 12px;background:#F8F7FF;border-left:3px solid var(--blue);border-radius:4px;font-size:11px;color:var(--grey-d);line-height:1.7;">
+      <strong style="color:var(--navy);">IM3 Quality Score</strong> — Investo Genie 162-point framework across 40 metrics in 6 sections:
+      <strong>Growth</strong> (revenue/profit CAGR, margins) ·
+      <strong>Stability</strong> (D/E, CFO trend, interest coverage) ·
+      <strong>Valuation</strong> (P/E, P/B, PEG, EV/EBITDA, margin of safety) ·
+      <strong>Inventory</strong> (turnover, receivables, CCC) ·
+      <strong>Cash Flow</strong> (FCF trend, CROIC, cash/debt) ·
+      <strong>Risk</strong> (Altman Z, Beneish M, Piotroski F, ROIC vs WACC) ·
+      Banks scored separately (NIM, CASA, ADR, NPL, CAR replace N/A metrics).
+      <strong>Grade A ≥75% · B ≥60% · C ≥50% · FAIL &lt;50%</strong> — click any score to expand all 40 metrics.
+    </div>`;
   }
   html+='</div>';
 
   html+=`<table style="font-size:12px;"><thead><tr>
     <th>Ticker</th><th>Name</th><th>Sector</th><th>Rev Gr</th><th>EPS Gr</th><th>EPS/Rev</th>
     <th>A</th><th>B</th><th>Verdict</th>
-    <th style="background:#312E81;min-width:130px;">IM3 Quality</th>
+    <th style="background:#312E81;min-width:130px;line-height:1.4;">
+      IM3 Quality
+      <div style="font-size:9px;font-weight:400;margin-top:3px;">
+        <span style="background:#D1FAE5;color:#065F46;padding:1px 4px;border-radius:3px;">A≥75%</span>
+        <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
+        <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
+        <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
+        <div style="opacity:0.75;margin-top:2px;">40 metrics · /162 pts</div>
+      </div>
+    </th>
   </tr></thead><tbody>`;
 
   [...scored,...insuff].forEach(r=>{
@@ -989,7 +1009,16 @@ function renderTceTable(elId, rows, market) {
 
   html+=`<table style="font-size:12px;"><thead><tr>
     <th>Ticker</th><th>Name</th><th>Score</th><th>Streams Firing</th><th>Tier</th>
-    <th style="background:#312E81;min-width:130px;">IM3 Quality</th>
+    <th style="background:#312E81;min-width:130px;line-height:1.4;">
+      IM3 Quality
+      <div style="font-size:9px;font-weight:400;margin-top:3px;">
+        <span style="background:#D1FAE5;color:#065F46;padding:1px 4px;border-radius:3px;">A≥75%</span>
+        <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
+        <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
+        <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
+        <div style="opacity:0.75;margin-top:2px;">40 metrics · /162 pts</div>
+      </div>
+    </th>
   </tr></thead><tbody>`;
 
   [...high,...watch,...ignore].forEach(r=>{
