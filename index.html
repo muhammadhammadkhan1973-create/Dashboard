@@ -480,6 +480,9 @@ function calcPAK(){
   html+=indicatorCard('Current Account','$'+ca+'M/mo',ca>200?'SURPLUS':ca>-200?'Balanced':ca>-800?'Mild deficit':'LARGE DEFICIT',ca>200?'pos':ca>-200?'neutral':ca>-800?'warn':'neg',ca>200?'FX inflows. Reserves building.':ca<-800?'Major FX pressure.':'Watch trend.');
   html+=indicatorCard('Fiscal Deficit',fis+'% GDP',fis>7?'STRESSED':fis>5?'High':'Manageable',fis>7?'neg':fis>5?'warn':'pos',fis>5?'Watch IMF program compliance.':'Within target.');
   html+=indicatorCard('REER',reer,reer>110?'EXTREME OVERVALUATIOn':reer>105?'Overvalued (danger zone)':reer>100?'Mildly overvalued':reer>95?'Near fair value':'UNDERVALUED',reer>110?'neg':reer>105?'warn':reer>100?'neutral':'pos',reer>105?'PKR strong in real terms. Exports facing headwind.':reer<95?'Strong export tailwind.':'Near balance.');
+  const kse=val('kse100'),rem=val('remittances');
+  html+=indicatorCard('KSE-100 Index',isNaN(kse)?'—':kse.toLocaleString(),'Live close','neutral','Updated from live scan when data.json loads; editable manually.');
+  html+=indicatorCard('Remittances','$'+(isNaN(rem)?'—':rem)+'bn/mo',rem>=3?'Strong inflow':rem>=2.5?'Adequate':'Weak',rem>=3?'pos':rem>=2.5?'neutral':'warn','Monthly worker remittances — key FX support for PKR.');
   document.getElementById('pak_seven_factors').innerHTML=html;
   const pak_growth=3.7;
   let actualName=cpi>12&&pak_growth<3?'STAGFLATION':cpi>10?'REFLATION':cpi>6?'GOLDILOCKS (mild)':'DISINFLATION';
@@ -562,21 +565,55 @@ function calcHist(){
 
 function calcSectors(){
   const ism=val('ism_mfg'),umcsi=val('umcsi'),pce=val('core_pce'),gdp=val('us_gdp');
+  // ── US sectors — driven by US regime inputs ──
   let usHtml='<table><thead><tr><th>GICS Sector</th><th>Regime Read</th><th>Holdings</th></tr></thead><tbody>';
   [{s:'Information Technology',b:ism>=50&&pce<3.5,n:'TSM, NVDA, ANET, MU, TER, WDC, DELL, STX'},{s:'Communication Services',b:gdp>0,n:'META (CORE)'},{s:'Energy',b:pce>2.5,n:'macro qualified'},{s:'Health Care',b:umcsi<60,n:'LLY (CORE), CI, NVO; WELL'},{s:'Consumer Discretionary',b:umcsi>65,n:'(AVOID — UMCSI bearish)'}].forEach(r=>{const cls=r.b?'pos':'warn';usHtml+=`<tr class="${cls}"><td><b>${r.s}</b></td><td>${r.b?'BUY':'HOLD/AVOID'}</td><td>${r.n}</td></tr>`;});
   document.getElementById('us_sectors').innerHTML=usHtml+'</tbody></table>';
-  document.getElementById('psx_sectors').innerHTML='<div class="reading-box">Banks (UBL): NIM expansion. FFC: Defensive yield. HINOON: Pharma defensive. SYS: IT exporters.</div>';
-  document.getElementById('top_picks').innerHTML='<div class="reading-box">Top Tier A: TSM, LLY, ANET, META (US) · UBL, FFC, SYS, HINOON (PSX)</div>';
+
+  // ── PSX sectors — now reactive to SBP rate, Arab Light oil, REER, CPI (was frozen text) ──
+  const sbp=val('sbp_rate'),oil=val('oil_arab'),reer=val('reer'),cpi=val('pak_cpi');
+  const psxSec=[
+    {s:'Banks (UBL, MCB, MEBL)', b:sbp>=11, x:sbp<7,  n:'NIM expansion when rates high. UBL/MCB Tier A.'},
+    {s:'E&P (OGDC, PPL, POL)',    b:oil>75,  x:oil<65, n:'USD-linked Arab Light pricing. Bullish >$75.'},
+    {s:'Fertilizer (FFC)',        b:true,    x:false,  n:'Defensive yield core. FFC Tier A.'},
+    {s:'IT Exporters (SYS)',      b:reer<100,x:reer>110,n:'USD revenue hedge; hurt by strong REER.'},
+    {s:'Pharma (HINOON)',         b:cpi>10,  x:false,  n:'Defensive; pricing power in high inflation. HINOON Tier A.'},
+    {s:'Cement (ACPL, MUGHAL)',   b:sbp<9,   x:sbp>12, n:'Rate-sensitive; headwind when SBP tight.'},
+    {s:'Refineries (ATRL, NRL)',  b:oil<70,  x:oil>95, n:'Refining margin widens when crude falls / product holds.'},
+    {s:'OMCs (PSO, APL)',         b:gdp>3,   x:false,  n:'Earnings = volume × fixed margin; track diesel volume.'},
+  ];
+  let psxHtml='<table><thead><tr><th>PSX Sector</th><th>Macro Read</th><th>Note</th></tr></thead><tbody>';
+  psxSec.forEach(r=>{let cls='warn',lab='NEUTRAL';if(r.b){cls='pos';lab='POSITIVE';}else if(r.x){cls='neg';lab='NEGATIVE';}psxHtml+=`<tr class="${cls}"><td><b>${r.s}</b></td><td>${lab}</td><td>${r.n}</td></tr>`;});
+  document.getElementById('psx_sectors').innerHTML=psxHtml+'</tbody></table>';
+
+  // ── Top picks — reflect current regime + PKR devaluation posture ──
+  const usRegime=regimeOf(gdp,pce).name;
+  const ic=val('import_cover'),ca=val('pak_ca'),fis=val('pak_fiscal');
+  const devFlags=[ic<2.5,ca<-200,reer>100,fis>6.5,cpi>12].filter(Boolean).length;
+  const usPick = (ism>=50&&pce<3.5) ? 'TSM, ANET, NVDA (Tech leadership intact)' : (umcsi<55||pce>3) ? 'LLY, CI, NVO (defensive Health Care)' : 'META, GOOGL (quality Comm Services)';
+  const psxPick = (sbp>=11) ? 'UBL, MCB (Banks — NIM), FFC (defensive yield)' : 'cyclicals can lead if SBP cuts';
+  const devNote = devFlags>=4 ? 'RED PKR risk — favor USD-linked E&P + IT exporters, trim import-sensitive.' : devFlags>=3 ? 'YELLOW PKR risk — keep defensive FFC/HINOON core.' : 'PKR stable — cyclical exposure acceptable.';
+  document.getElementById('top_picks').innerHTML=`<div class="reading-box"><strong>US (${usRegime}):</strong> ${usPick}<br><strong>PSX:</strong> ${psxPick}<br><strong>PKR devaluation (${devFlags}/5 firing):</strong> ${devNote}</div>`;
 }
+const SBP_MEAN=11.01;        // long-term policy-rate mean (Ammar Yaseen Excel)
+const SBP_PREV_RATE=10.50;    // policy rate prior to the latest MPC move (Apr 27 2026 hike)
 function calcZone(){
-  const cells=[{name:'DARK GREEN',rr:'Lesser',dir:'Decreasing',w:1.0,alloc:'100% Stocks',color:'#006100',tc:'#FFFFFF'},{name:'LIGHT GREEN',rr:'Greater',dir:'Decreasing',w:0.8,alloc:'80% Stocks',color:'#92D050',tc:'#000000'},{name:'YELLOW',rr:'Lesser',dir:'Increasing',w:0.6,alloc:'60% Stocks',color:'#FFFF00',tc:'#000000'},{name:'RED',rr:'Greater',dir:'Increasing',w:0.2,alloc:'20% Stocks',color:'#FF0000',tc:'#FFFFFF'}];
-  const curr='RED';
+  const cells=[{name:'DARK GREEN',rr:'Lesser',dir:'Decreasing',w:1.0,alloc:'100% Stocks / 0% Bonds / 0% Cash',color:'#006100',tc:'#FFFFFF'},{name:'LIGHT GREEN',rr:'Greater',dir:'Decreasing',w:0.8,alloc:'80% Stocks / 15% Bonds / 5% Cash',color:'#92D050',tc:'#000000'},{name:'YELLOW',rr:'Lesser',dir:'Increasing',w:0.6,alloc:'60% Stocks / 30% Bonds / 10% Cash',color:'#FFFF00',tc:'#000000'},{name:'RED',rr:'Greater',dir:'Increasing',w:0.2,alloc:'20% Stocks / 60% Bonds / 20% Cash',color:'#FF0000',tc:'#FFFFFF'}];
+  // Reactive: derive zone from the live/entered SBP rate vs mean + direction vs previous policy rate.
+  const sbp=val('sbp_rate');
+  const rr = (sbp>=SBP_MEAN) ? 'Greater' : 'Lesser';
+  const dir = (sbp>SBP_PREV_RATE) ? 'Increasing' : (sbp<SBP_PREV_RATE) ? 'Decreasing' : 'Increasing';
+  const active = cells.find(c=>c.rr===rr&&c.dir===dir) || cells[3];
+  const curr = active.name;
   let qHtml='<table style="text-align:center;"><tr><th></th><th>DECREASING</th><th>INCREASING</th></tr>';
-  ['Lesser','Greater'].forEach(rr=>{qHtml+=`<tr><th>${rr.toUpperCase()} THAN MEAN (11.01%)</th>`;['Decreasing','Increasing'].forEach(dir=>{const cell=cells.find(c=>c.rr===rr&&c.dir===dir);const isActive=cell.name===curr;qHtml+=`<td style="background:${cell.color};color:${cell.tc};padding:20px;font-weight:700;${isActive?'box-shadow:0 0 0 4px #BF8F00;':''}">${cell.name} (${cell.w})<br><small>${cell.alloc}</small>${isActive?'<br><b>★ YOU ARE HERE</b>':''}</td>`;});qHtml+='</tr>';});
+  ['Lesser','Greater'].forEach(rrx=>{qHtml+=`<tr><th>${rrx.toUpperCase()} THAN MEAN (11.01%)</th>`;['Decreasing','Increasing'].forEach(dirx=>{const cell=cells.find(c=>c.rr===rrx&&c.dir===dirx);const isActive=cell.name===curr;qHtml+=`<td style="background:${cell.color};color:${cell.tc};padding:20px;font-weight:700;${isActive?'box-shadow:0 0 0 4px #BF8F00;':''}">${cell.name} (${cell.w})<br><small>${cell.alloc}</small>${isActive?'<br><b>★ YOU ARE HERE</b>':''}</td>`;});qHtml+='</tr>';});
   document.getElementById('zone_quadrant_box').innerHTML=qHtml+'</table>';
-  document.getElementById('zone_rate_path').innerHTML='<div class="reading-box">Rate path: 11.00% (Sep-Oct 2025) → 10.50% (Dec cut) → 11.50% (Apr 2026 hike) → <strong>RED zone</strong></div>';
-  document.getElementById('zone_kse_table').innerHTML='<div class="reading-box">KSE-100: Sep 163,848 → Dec 174,054 → Mar 148,743 → May 167,844 (RED zone currently)</div>';
-  document.getElementById('zone_alloc_table').innerHTML='<div class="reading-box">RED zone (Weight 0.2): <strong>20% Stocks / 60% Bonds / 20% Cash</strong> for Risk HIGH profile.</div>';
+  // Dynamic banner (was a frozen RED string in the HTML)
+  const zb=document.getElementById('zone_banner');
+  if(zb){const zcls=curr==='DARK GREEN'||curr==='LIGHT GREEN'?'green':curr==='YELLOW'?'yellow':'red';zb.className='alert-banner '+zcls;zb.innerHTML=`<h3>CURRENT ZONE: ${curr} — ${active.alloc}</h3><p><b>SBP Rate:</b> ${sbp.toFixed(2)}% | <b>Mean:</b> ${SBP_MEAN}% | <b>Direction:</b> ${dir} (vs prior ${SBP_PREV_RATE}%)</p>`;}
+  document.getElementById('zone_rate_path').innerHTML='<div class="reading-box">Embedded MPC path (authoritative record, edit in code on each decision): 11.00% (Sep-Oct 2025) → 10.50% (Dec cut) → 11.50% (Apr 27 2026 hike). Current entered rate <strong>'+sbp.toFixed(2)+'%</strong> → <strong>'+curr+' zone</strong>.</div>';
+  document.getElementById('zone_kse_table').innerHTML='<div class="reading-box">KSE-100 monthly (reference): Sep 163,848 → Dec 174,054 → Mar 148,743 → May 167,844.</div>';
+  document.getElementById('zone_alloc_table').innerHTML=`<div class="reading-box">${curr} zone (Weight ${active.w}): <strong>${active.alloc}</strong> for Risk HIGH profile.</div>`;
 }
 function scoreMultibagger(inp,market){
   const m1=Math.min(12,Math.max(0,(inp.rev/25)*12));
@@ -960,8 +997,33 @@ function im3DetailHTML(ticker) {
   const r = im3Scores[ticker];
   if (!r || r.error) return `<td colspan="20"><div style="padding:12px;color:var(--red);">Error: ${r?.error||'No data'}</div></td>`;
 
-  const sectionOrder = ['growth','stability','valuation','inventory','cashflow','risk'];
-  const sectionLabels = {growth:'📈 Growth',stability:'🏗 Stability',valuation:'💰 Valuation',inventory:'📦 Inventory',cashflow:'💵 Cash Flow',risk:'🛡 Risk & Capital'};
+  // Map the flat 45-metric array back into the 6 IM3 sections (+ bank block).
+  const IM3_SECTIONS = [
+    {label:'📈 Growth',          keys:['rev_cagr','op_cagr','np_cagr','op_margin','np_margin','tax_rate','roe','eps_trend']},
+    {label:'🏗 Stability',       keys:['int_coverage','de_ratio','total_debt','current_ratio','cfo_trend','net_cash','ccfo_cpat','nfa_turn']},
+    {label:'💰 Valuation',       keys:['pe_ratio','peg_ratio','earn_yield','pb_ratio','graham_val','ps_ratio','div_yield','ev_ebitda','mos','val_shareholders']},
+    {label:'📦 Inventory',       keys:['inv_turn','dro','fat','ccc']},
+    {label:'💵 Cash Flow',       keys:['fcf_trend','croic','fcf_sale','fcf_cfo','cash_debt','cash_share']},
+    {label:'🛡 Risk & Capital',  keys:['altman_z','beneish_m','piotroski_f','roic_wacc']},
+    {label:'🏦 Bank Metrics',    keys:['nim','casa','adr','npl','car']},
+  ];
+  const IM3_LABELS = {
+    rev_cagr:'Revenue CAGR',op_cagr:'Operating CAGR',np_cagr:'Net Profit CAGR',op_margin:'Operating Margin',np_margin:'Net Margin',tax_rate:'Tax Rate',roe:'ROE',eps_trend:'EPS Trend',
+    int_coverage:'Interest Coverage',de_ratio:'D/E Ratio',total_debt:'Total Debt',current_ratio:'Current Ratio',cfo_trend:'CFO Trend',net_cash:'Net Cash',ccfo_cpat:'CFO/PAT',nfa_turn:'Fixed-Asset Turn',
+    pe_ratio:'P/E',peg_ratio:'PEG',earn_yield:'Earnings Yield',pb_ratio:'P/B',graham_val:'Graham Value',ps_ratio:'P/S',div_yield:'Dividend Yield',ev_ebitda:'EV/EBITDA',mos:'Margin of Safety',val_shareholders:'Value to Shareholders',
+    inv_turn:'Inventory Turn',dro:'Days Receivable',fat:'Fixed-Asset Turn',ccc:'Cash Conversion Cycle',
+    fcf_trend:'FCF Trend',croic:'CROIC',fcf_sale:'FCF/Sales',fcf_cfo:'FCF/CFO',cash_debt:'Cash/Debt',cash_share:'Cash/Share',
+    altman_z:'Altman Z',beneish_m:'Beneish M',piotroski_f:'Piotroski F',roic_wacc:'ROIC vs WACC',
+    nim:'NIM',casa:'CASA',adr:'ADR',npl:'NPL',car:'CAR',
+  };
+  const _m = Array.isArray(r.metrics) ? r.metrics : [];
+  const _byKey = {}; _m.forEach(m => { _byKey[m.key] = m; });
+  // Derive strengths/concerns from metrics when the scorer didn't supply them.
+  const _strengths = (r.top_strengths && r.top_strengths.length) ? r.top_strengths
+    : _m.filter(m=>m.verdict==='GOOD'&&m.max>0).sort((a,b)=>b.max-a.max).slice(0,4).map(m=>IM3_LABELS[m.key]||m.key);
+  const _concerns = (r.top_concerns && r.top_concerns.length) ? r.top_concerns
+    : _m.filter(m=>m.verdict==='BAD'&&m.max>0).sort((a,b)=>b.max-a.max).slice(0,4).map(m=>IM3_LABELS[m.key]||m.key);
+  const _gradeText = r.grade==='FAIL' ? 'F' : r.grade;
 
   let html = `<td colspan="20" style="padding:0;background:#F8F9FE;">
     <div style="padding:20px 24px;border-top:2px solid var(--navy);">
@@ -971,41 +1033,43 @@ function im3DetailHTML(ticker) {
       <div>
         <span style="font-family:var(--font-head);font-size:16px;font-weight:700;">${ticker} — IM3 Quality Score</span>
         ${r.is_bank?'<span style="background:#EEF2FF;color:var(--navy);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:8px;">🏦 BANK SCORING</span>':''}
-        <span class="im3-grade-badge ${r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f'}" style="margin-left:8px;">${r.score}/162 · ${r.pct}% · Grade ${r.grade}</span>
+        <span class="im3-grade-badge ${r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f'}" style="margin-left:8px;">${r.score}/162 · ${r.pct}% · Grade ${_gradeText}</span>
       </div>
       <button onclick="im3ToggleDetail('${ticker}')" style="background:none;border:1px solid #e5e7eb;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;color:var(--grey-d);">✕ Close</button>
     </div>
 
     <!-- Strengths / Concerns -->
-    ${(r.top_strengths||[]).length||(r.top_concerns||[]).length ? `
+    ${(_strengths.length||_concerns.length) ? `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
       <div style="background:var(--green-l);border-radius:8px;padding:12px 14px;">
         <div style="font-weight:700;color:#065F46;font-size:11px;margin-bottom:6px;">TOP STRENGTHS</div>
-        ${(r.top_strengths||[]).map(s=>`<div style="font-size:11px;color:#065F46;margin-bottom:3px;">✓ ${s}</div>`).join('')}
+        ${_strengths.map(s=>`<div style="font-size:11px;color:#065F46;margin-bottom:3px;">✓ ${s}</div>`).join('')}
       </div>
       <div style="background:var(--red-l);border-radius:8px;padding:12px 14px;">
         <div style="font-weight:700;color:#991B1B;font-size:11px;margin-bottom:6px;">TOP CONCERNS</div>
-        ${(r.top_concerns||[]).map(s=>`<div style="font-size:11px;color:#991B1B;margin-bottom:3px;">✗ ${s}</div>`).join('')}
+        ${_concerns.map(s=>`<div style="font-size:11px;color:#991B1B;margin-bottom:3px;">✗ ${s}</div>`).join('')}
       </div>
     </div>` : ''}
 
     <!-- Sections grid -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
-    ${sectionOrder.map(key => {
-      const sec = r.sections&&r.sections[key];
-      if (!sec||!sec.metrics||!sec.metrics.length) return '';
-      const sp = sec.max>0?Math.round(sec.score/sec.max*100):0;
+    ${IM3_SECTIONS.map(sec => {
+      const mets = sec.keys.map(k=>_byKey[k]).filter(m=>m && m.max>0);
+      if (!mets.length) return '';
+      const sscore = mets.reduce((a,m)=>a+(m.pts||0),0);
+      const smax   = mets.reduce((a,m)=>a+(m.max||0),0);
+      const sp = smax>0?Math.round(sscore/smax*100):0;
       const sc = sp>=75?'#065F46':sp>=50?'#92400E':'#991B1B';
       const sb = sp>=75?'#f0fdf4':sp>=50?'#fffbeb':'#fff1f2';
       return `<div style="background:${sb};border-radius:8px;padding:12px 14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-weight:700;font-size:12px;color:${sc};">${sectionLabels[key]||key}</div>
-          <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${sc};">${sec.score}/${sec.max}</div>
+          <div style="font-weight:700;font-size:12px;color:${sc};">${sec.label}</div>
+          <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${sc};">${sscore}/${smax}</div>
         </div>
-        ${sec.metrics.map(m=>{
+        ${mets.map(m=>{
           const vc=m.verdict==='GOOD'?'good':m.verdict==='WATCH'?'watch':m.verdict==='BAD'?'bad':'na';
           return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:4px;align-items:center;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:11px;">
-            <div style="font-weight:500;">${m.label||m.key}</div>
+            <div style="font-weight:500;">${IM3_LABELS[m.key]||m.key}</div>
             <div><span class="im3-verdict-pill ${vc}">${m.verdict}</span></div>
             <div style="font-family:var(--font-mono);font-weight:700;text-align:right;color:${m.pts===m.max?'var(--green)':m.pts===0?'#9ca3af':'var(--gold)'};">${m.pts}/${m.max}</div>
           </div>`;
@@ -1085,26 +1149,29 @@ function renderExplosiveTable(elId, rows, market) {
   }
   html+='</div>';
 
+  const showIM3 = (market==='us');
   html+=`<table style="font-size:12px;"><thead><tr>
     <th>Ticker</th><th>Name</th><th>Sector</th><th>Rev Gr</th><th>EPS Gr</th><th>EPS/Rev</th>
     <th>A</th><th>B</th><th>Verdict</th>
-    <th style="background:#312E81;min-width:130px;line-height:1.4;">
+    ${showIM3?`<th style="background:#312E81;min-width:130px;line-height:1.4;">
       IM3 Quality
       <div style="font-size:9px;font-weight:400;margin-top:3px;">
         <span style="background:#D1FAE5;color:#065F46;padding:1px 4px;border-radius:3px;">A≥75%</span>
         <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
         <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
         <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
-        <div style="opacity:0.75;margin-top:2px;">40 metrics · /162 pts</div>
+        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 pts</div>
       </div>
-    </th>
+    </th>`:''}
   </tr></thead><tbody>`;
 
   [...scored,...insuff].forEach(r=>{
     const cls=explosiveVerdictClass(r.verdict);
     const em=v=>(v===null||v===undefined)?'—':v;
     const pct=v=>(v===null||v===undefined)?'—':(v+'%');
-    const ratio=(r.eps_rev_ratio===null||r.eps_rev_ratio===undefined)?'—':Number(r.eps_rev_ratio).toFixed(2);
+    let _ratioVal=r.eps_rev_ratio;
+    if(_ratioVal===null||_ratioVal===undefined){ _ratioVal=(r.eps_growth!=null&&r.rev_growth!=null&&r.rev_growth!=0)?(r.eps_growth/r.rev_growth):(r.op_np_ratio!=null?r.op_np_ratio:null); }
+    const ratio=(_ratioVal===null||_ratioVal===undefined||isNaN(_ratioVal))?'—':Number(_ratioVal).toFixed(2);
     const tk=r.ticker||'';
 
     // Main data row
@@ -1118,11 +1185,11 @@ function renderExplosiveTable(elId, rows, market) {
       <td style="text-align:center;">${sigDot(r.signal_a)}</td>
       <td style="text-align:center;">${sigDot(r.signal_b)}</td>
       <td><b>${em(r.verdict)}</b></td>
-      <td data-im3-cell="${tk}"
+      ${showIM3?`<td data-im3-cell="${tk}"
           data-im3-ticker="${tk}"
           data-im3-name="${(r.name||tk).replace(/"/g,'')}"
           data-im3-sector="${(r.sector||'').replace(/"/g,'')}"
-          style="background:#EEF2FF;">${im3CellHTML(tk)}</td>
+          style="background:#EEF2FF;">${im3CellHTML(tk)}</td>`:''}
     </tr>`;
 
     // Hidden detail row — expands when IM3 score is clicked
@@ -1163,18 +1230,19 @@ function renderTceTable(elId, rows, market) {
   if(market==='us' && high.length) html+=`<span style="margin-left:auto;font-size:11px;color:var(--grey-d);">IM3 scores auto-updated by scanner</span>`;
   html+='</div>';
 
+  const showIM3T = (market==='us');
   html+=`<table style="font-size:12px;"><thead><tr>
     <th>Ticker</th><th>Name</th><th>Score</th><th>Streams Firing</th><th>Tier</th>
-    <th style="background:#312E81;min-width:130px;line-height:1.4;">
+    ${showIM3T?`<th style="background:#312E81;min-width:130px;line-height:1.4;">
       IM3 Quality
       <div style="font-size:9px;font-weight:400;margin-top:3px;">
         <span style="background:#D1FAE5;color:#065F46;padding:1px 4px;border-radius:3px;">A≥75%</span>
         <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
         <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
         <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
-        <div style="opacity:0.75;margin-top:2px;">40 metrics · /162 pts</div>
+        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 pts</div>
       </div>
-    </th>
+    </th>`:''}
   </tr></thead><tbody>`;
 
   [...high,...watch,...ignore].forEach(r=>{
@@ -1191,14 +1259,14 @@ function renderTceTable(elId, rows, market) {
     html+=`<tr class="${cls}">
       <td><b>${tk||'—'}</b></td>
       <td>${r.name||'—'}</td>
-      <td style="text-align:center;font-weight:700;">${r.score!=null?r.score:'—'}</td>
+      <td style="text-align:center;font-weight:700;">${(r.tce_score!=null?r.tce_score:(r.streams&&r.streams.total!=null?r.streams.total:(r.score!=null?r.score:'—')))}</td>
       <td style="font-size:11px;">${firedNames.join(' · ')||'—'}</td>
       <td><b style="color:${tier==='HIGH'?'var(--green)':tier==='WATCH'?'var(--orange)':'var(--grey-d)'};">${r.tier||'—'}</b></td>
-      <td data-im3-cell="${tk}"
+      ${showIM3T?`<td data-im3-cell="${tk}"
           data-im3-ticker="${tk}"
           data-im3-name="${(r.name||tk).replace(/"/g,'')}"
           data-im3-sector="${(r.sector||'').replace(/"/g,'')}"
-          style="background:#EEF2FF;">${im3CellHTML(tk)}</td>
+          style="background:#EEF2FF;">${im3CellHTML(tk)}</td>`:''}
     </tr>`;
     html+=`<tr id="im3-detail-${tk}-tce" class="im3-detail-closed" style="display:none;"></tr>`;
   });
@@ -1489,8 +1557,20 @@ function setLiveStatus(state,scan,ver){
   if(scan)document.getElementById('liveScan').textContent=scan;
   if(ver)document.getElementById('liveVer').textContent=ver;
 }
+function injectLiveMacros(){
+  // Push scanner values from data.json into the Tab-1 inputs so Tabs 2/3/4/6/7 reflect the live scan.
+  // Only fields the scanner actually provides are overwritten; everything else stays manual.
+  if(!LIVE||!LIVE.macros) return;
+  const M=LIVE.macros, U=M.us||{}, P=M.psx||{}, T=M.metals||{};
+  const set=(id,v)=>{ if(v===null||v===undefined||isNaN(v)) return; const el=document.getElementById(id); if(el) el.value=v; };
+  set('kse100',P.kse100); set('sbp_rate',P.sbp_rate); set('usd_pkr',P.usd_pkr); set('sbp_reserves',P.sbp_reserves);
+  set('wti',U.wti); set('brent',U.brent); set('fed_rate',U.fed_rate); set('core_pce',U.core_pce);
+  set('us_10y',U.us_10y); set('us_2y',U.us_2y); set('umcsi',U.umcsi); set('us_gdp',U.gdp_growth);
+  set('dxy',T.dxy!=null?T.dxy:U.dxy);
+}
 function applyLive(){
   if(LIVE&&LIVE.macros&&LIVE.macros.psx&&LIVE.macros.psx.usd_pkr){safe_lgPkr=LIVE.macros.psx.usd_pkr;}
+  injectLiveMacros();
   if(LIVE){
     renderTceTable('tce_us_table',LIVE.tce_us,'us');
     renderTceTable('tce_psx_table',LIVE.tce_psx,'psx');
