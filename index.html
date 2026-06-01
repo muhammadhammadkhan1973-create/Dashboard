@@ -250,12 +250,17 @@
       <div class="input-group"><label>USD/PKR Spot</label><input type="number" id="usd_pkr" value="278.50" step="0.1" oninput="recalc()"><span class="current-val">May 2026: 278.50</span></div>
       <div class="input-group"><label>Pakistan CPI YoY (%)</label><input type="number" id="pak_cpi" value="10.9" step="0.1" oninput="recalc()"><span class="current-val">Apr 2026: 10.9%</span></div>
       <div class="input-group"><label>SBP FX Reserves (USD bn)</label><input type="number" id="sbp_reserves" value="16.4" step="0.1" oninput="recalc()"><span class="current-val">Apr 2026: $16.40bn</span></div>
-      <div class="input-group"><label>Current Account (Monthly USD M)</label><input type="number" id="pak_ca" value="-324" step="1" oninput="recalc()"><span class="current-val">Apr 2026: -$324M</span></div>
+      <div class="input-group"><label>Current Account (Monthly USD M)</label><input type="number" id="pak_ca" value="120" step="1" oninput="recalc()"><span class="current-val">FY26: cumulative surplus (Feb/Mar +ve); single-mo varies</span></div>
       <div class="input-group"><label>Fiscal Deficit (% of GDP)</label><input type="number" id="pak_fiscal" value="6.0" step="0.1" oninput="recalc()"><span class="current-val">FY26 target: 5.9%</span></div>
       <div class="input-group"><label>REER</label><input type="number" id="reer" value="105.80" step="0.01" oninput="recalc()"><span class="current-val">Apr 2026: 105.80 (7.5-yr high)</span></div>
       <div class="input-group"><label>NEER</label><input type="number" id="neer" value="37.89" step="0.01" oninput="recalc()"><span class="current-val">Apr 2026: 37.89</span></div>
       <div class="input-group"><label>Remittances (Monthly USD bn)</label><input type="number" id="remittances" value="3.54" step="0.01" oninput="recalc()"><span class="current-val">Apr 2026: $3.54bn</span></div>
-      <div class="input-group"><label>Import Cover (months)</label><input type="number" id="import_cover" value="2.4" step="0.1" oninput="recalc()"><span class="current-val">Apr 2026: ~2.4 months</span></div>
+      <div class="input-group"><label>Import Cover (months)</label><input type="number" id="import_cover" value="2.62" step="0.01" oninput="recalc()"><span class="current-val">Dec 2025: ~2.62 months (AHL)</span></div>
+      <div class="input-group"><label>External Debt Service (FY USD bn)</label><input type="number" id="debt_service" value="25.4" step="0.1" oninput="recalc()"><span class="current-val">FY26: ~$25.4bn (SBP)</span></div>
+      <div class="input-group"><label>IMF Program Status</label><select id="imf_status" oninput="recalc()"><option value="2" selected>On-track (disbursing)</option><option value="1">SLA reached / pending board</option><option value="0">In negotiation</option><option value="-1">Off-track / stalled</option><option value="-2">No program / exited</option></select><span class="current-val">EFF+RSF on-track; $1.3bn May 2026</span></div>
+      <div class="input-group"><label>Short-Term Ext. Debt (USD bn)</label><input type="number" id="st_debt" value="4.2" step="0.1" oninput="recalc()"><span class="current-val">~$4.2bn still due (of $25.4bn FY26, $21.2bn already repaid/rolled). EWS ratio vs reserves</span></div>
+      <div class="input-group"><label>Monthly Import Bill (USD bn)</label><input type="number" id="import_bill" value="6.0" step="0.1" oninput="recalc()"><span class="current-val">FY25 imports ~$78bn → ~$6.0bn/mo</span></div>
+      <div class="input-group"><label>Export Growth (YoY %)</label><input type="number" id="export_growth" value="3.0" step="0.1" oninput="recalc()"><span class="current-val">FY25 exports ~$40.7bn; low growth = EWS flag</span></div>
       <div class="input-group"><label>KSE-100 Index</label><input type="number" id="kse100" value="167844" step="100" oninput="recalc()"><span class="current-val">May 22, 2026: 167,844</span></div>
     </div>
     <div class="btn-row">
@@ -267,7 +272,13 @@
   <!-- Panels 2-11 placeholders (full content from v4.1 preserved) -->
   <div id="us" class="panel"><h2 class="section-title">United States Macro Dashboard</h2><div id="us_regime_banner" class="alert-banner"></div><h3 class="subsection-title">Leading Indicators</h3><div class="grid grid-3" id="us_indicators"></div><h3 class="subsection-title">Energy Leading Indicators</h3><div id="us_energy_banner" class="reading-box"></div><div class="grid grid-3" id="us_energy_indicators"></div><h3 class="subsection-title">Yield Curve</h3><div id="yield_curve_box"></div><h3 class="subsection-title">Four Regimes Quadrant</h3><div id="us_quadrant"></div><h3 class="subsection-title">Composite Sector Recommendation</h3><div id="us_sector_rec"></div></div>
   <div id="pak" class="panel"><h2 class="section-title">Pakistan / PSX Macro Dashboard</h2><div id="pak_regime_banner" class="alert-banner"></div><h3 class="subsection-title">Seven Factors Status Board</h3><div class="grid grid-3" id="pak_seven_factors"></div><h3 class="subsection-title">REER / NEER</h3><div id="reer_box"></div><h3 class="subsection-title">Twin Deficit</h3><div id="twin_deficit_box"></div><h3 class="subsection-title">PSX Sector Implications</h3><div id="pak_sector_rec"></div></div>
-  <div id="devalert" class="panel"><h2 class="section-title">PKR Devaluation Early-Warning System</h2><div id="devalert_main"></div><h3 class="subsection-title">Trigger Component Scoring</h3><table id="dev_components"></table><div class="reading-box" style="font-size:12px;"><strong>How the 7-component score works:</strong> each trigger is scored 0–100 against its danger threshold, then weighted — FX Reserves 25% (&lt;2.5mo import cover = danger), Current Account 20% (deficit widening past -$200M), REER 15% (&gt;100 = PKR overvalued), Inflation 15% (&gt;12% CPI), Fiscal Deficit 10% (&gt;6.5% of GDP), Oil Price 10% (higher = import-bill pressure), Real Rate 5% (negative = capital-flight risk). The weighted sum is the Composite Devaluation Risk above. Historically, when 4+ of the 5 pattern flags turn red together, a PKR devaluation followed within 6 months.</div></div>
+  <div id="devalert" class="panel"><h2 class="section-title">PKR Devaluation Early-Warning System</h2><div id="devalert_main"></div>
+    <h3 class="subsection-title">① Distance to Crisis — Historical 4-of-5 Pattern</h3><div id="dev_distance"></div>
+    <h3 class="subsection-title">② Core Triggers (the cluster that fired before 2008/2013/2018/2022/2023)</h3><table id="dev_core"></table>
+    <h3 class="subsection-title">③ Accelerants &amp; EWS Ratios (academic crisis predictors)</h3><table id="dev_accel"></table>
+    <h3 class="subsection-title">④ Composite Risk Scoring</h3><table id="dev_components"></table>
+    <h3 class="subsection-title">⑤ KSE-100 6-Indicator Macro Panel (IM3 inverse-relationship read)</h3><div id="dev_kse6"></div>
+    <div class="reading-box" style="font-size:12px;"><strong>How to read:</strong> The 5 <b>core triggers</b> are the cluster present before every past PKR crash — when 4 of 5 fire together, devaluation historically followed within 6 months. <b>Accelerants</b> (fiscal, import bill, short-term-debt/reserves, export growth, real rate) are the academically-validated predictors that deepen risk. The <b>KSE 6-panel</b> reads the market's macro backdrop: rising oil + USD/PKR + inflation + rates + widening CAD = bearish for KSE; the reverse = bullish.</div></div>
   <div id="history" class="panel"><h2 class="section-title">Historical PKR Devaluation Episodes</h2><div style="overflow-x:auto;"><table class="historical-table"><thead><tr><th>Factor</th><th>2008</th><th>2013</th><th>2017-18</th><th>2022</th><th>2023</th><th>Common Pattern</th></tr></thead><tbody id="history_tbody"></tbody></table></div></div>
   <div id="sectors" class="panel"><h2 class="section-title">Sector &amp; Stock Implications</h2><h3 class="subsection-title">US Sectors</h3><div id="us_sectors"></div><h3 class="subsection-title">PSX Sectors</h3><div id="psx_sectors"></div><h3 class="subsection-title">Top Picks</h3><div id="top_picks"></div></div>
   <div id="zone" class="panel"><h2 class="section-title">IM3 Allocation Zone</h2><div id="zone_banner" class="alert-banner red"><h3>CURRENT ZONE: RED — 20% Stocks / 60% Bonds / 20% Cash</h3><p><b>SBP Rate:</b> 11.50% | <b>Mean:</b> 11.01% | <b>Direction:</b> Increasing</p></div><h3 class="subsection-title">Zone Quadrant</h3><div id="zone_quadrant_box"></div><h3 class="subsection-title">SBP Rate Path</h3><div id="zone_rate_path"></div><h3 class="subsection-title">KSE-100 Monthly</h3><div id="zone_kse_table"></div><h3 class="subsection-title">Asset Allocation by Zone</h3><div id="zone_alloc_table"></div></div>
@@ -503,10 +514,31 @@ function calcPAK(){
 // DEVALUATION ALERT
 // =========================================================
 function calcDevAlert(){
+  // ---- inputs ----
   const oil=val('oil_arab'),sbp=val('sbp_rate'),cpi=val('pak_cpi');
   const res=val('sbp_reserves'),ca=val('pak_ca'),fis=val('pak_fiscal'),reer=val('reer'),ic=val('import_cover');
+  const dsv=val('debt_service'),imf=val('imf_status'),stdebt=val('st_debt'),impbill=val('import_bill'),expg=val('export_growth'),rem=val('remittances');
   const realRate=sbp-cpi;
-  let scores={reserves:0,ca:0,reer:0,inflation:0,fiscal:0,oil:0,realRate:0};
+  const stToRes = res>0 ? stdebt/res : 99;        // EWS key ratio: short-term ext debt ÷ reserves
+
+  // ================= ① 5 CORE TRIGGERS (historical pattern) =================
+  // Each is the pre-crisis condition seen before 2008/2013/2018/2022/2023.
+  const core = [
+    {k:'Reserves < 2.5mo import cover', fire: ic<2.5,   now:ic.toFixed(2)+' mo',
+     note: ic<2.5?'Below crisis line':'Above safe line'},
+    {k:'Current account deficit widening', fire: ca<-200, now:'$'+ca+'M',
+     note: ca>=0?'Surplus — safe':ca<-1000?'Wide deficit':'Mild deficit'},
+    {k:'REER > 100 (PKR overvalued)', fire: reer>100, now:reer.toFixed(1),
+     note: reer>105?'Strongly overvalued':reer>100?'Overvalued':'Fair/undervalued'},
+    {k:'External debt service heavy', fire: (stToRes>1.0), now:'ST/Res '+stToRes.toFixed(2)+'x ($'+stdebt+'bn due vs $'+res+'bn)',
+     note: stToRes>1.0?'ST debt exceeds reserves (2018 pattern)':stToRes>0.5?'Manageable vs reserves':'Comfortably rollable'},
+    {k:'IMF program off-track', fire: imf<1, now: imf>=2?'On-track':imf==1?'SLA/pending':imf==0?'Negotiating':imf==-1?'Off-track':'No program',
+     note: imf<1?'No active disbursing program':'Active IMF support'},
+  ];
+  const fireCount = core.filter(c=>c.fire).length;
+
+  // ================= ④ COMPOSITE SCORE (richer 0-100 weighting) =================
+  let scores={reserves:0,ca:0,reer:0,inflation:0,fiscal:0,oil:0,realRate:0,stdebt:0};
   if(ic<1.5)scores.reserves=100;else if(ic<2)scores.reserves=85;else if(ic<2.5)scores.reserves=60;else if(ic<3)scores.reserves=35;else if(ic<4)scores.reserves=15;
   if(ca<-1500)scores.ca=100;else if(ca<-1000)scores.ca=85;else if(ca<-500)scores.ca=60;else if(ca<0)scores.ca=35;else if(ca<500)scores.ca=10;
   if(reer>110)scores.reer=100;else if(reer>107)scores.reer=85;else if(reer>105)scores.reer=65;else if(reer>102)scores.reer=40;else if(reer>100)scores.reer=20;
@@ -514,18 +546,89 @@ function calcDevAlert(){
   if(fis>8)scores.fiscal=100;else if(fis>7)scores.fiscal=75;else if(fis>6)scores.fiscal=50;else if(fis>5)scores.fiscal=25;
   if(oil>110)scores.oil=100;else if(oil>90)scores.oil=70;else if(oil>80)scores.oil=45;else if(oil>70)scores.oil=20;
   if(realRate<-10)scores.realRate=100;else if(realRate<-5)scores.realRate=75;else if(realRate<-2)scores.realRate=50;else if(realRate<0)scores.realRate=25;
-  const composite=scores.reserves*0.25+scores.ca*0.20+scores.reer*0.15+scores.inflation*0.15+scores.fiscal*0.10+scores.oil*0.10+scores.realRate*0.05;
+  if(stToRes>1.5)scores.stdebt=100;else if(stToRes>1.2)scores.stdebt=80;else if(stToRes>1.0)scores.stdebt=60;else if(stToRes>0.8)scores.stdebt=40;else if(stToRes>0.6)scores.stdebt=20;
+  // weights (sum 1.0): reserves .22, ca .18, reer .15, st-debt/res .12, inflation .12, fiscal .09, oil .07, realRate .05
+  const composite=scores.reserves*0.22+scores.ca*0.18+scores.reer*0.15+scores.stdebt*0.12+scores.inflation*0.12+scores.fiscal*0.09+scores.oil*0.07+scores.realRate*0.05;
+
+  // banner from composite AND core-trigger count (historical 4-of-5 dominates)
   let bClass,bTitle,bText;
-  if(composite>=70){bClass='red';bTitle='🚨 RED ALERT — DEVALUATION RISK CRITICAL';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>. Multiple triggers active.';}
-  else if(composite>=50){bClass='orange';bTitle='⚠️ ORANGE WARNING — Elevated Risk';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>. Several triggers active.';}
-  else if(composite>=30){bClass='yellow';bTitle='⚡ YELLOW CAUTION — Building Risk';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>. Some stress indicators.';}
-  else{bClass='green';bTitle='✅ GREEN — PKR Stability';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>. Few triggers active.';}
-  const fp=[ic<2.5,ca<-200,reer>100,fis>6.5,cpi>12];
-  const fc=fp.filter(f=>f).length;
-  document.getElementById('devalert_main').innerHTML=`<div class="alert-banner ${bClass}"><h3>${bTitle}</h3><p>${bText}</p></div><div class="indicator-card neutral" style="margin-top:16px;"><div class="label">Composite Devaluation Risk</div><div class="score-bar" style="height:36px;"><div class="score-fill" style="width:${composite}%"></div><div class="score-label">${composite.toFixed(0)}/100</div></div></div><div class="reading-box" style="margin-top:16px;"><strong>${fc} of 5 historical patterns active</strong><ul style="margin-top:8px;">${fp.map((f,i)=>`<li style="color:${f?'#C00000':'#548235'};">${f?'🔴':'🟢'} ${['Reserves <2.5mo import cover','CA deficit > -$200M','REER > 100','Fiscal > 6.5% GDP','CPI > 12%'][i]}</li>`).join('')}</ul></div>`;
-  let tbl='<thead><tr><th>Trigger</th><th>Value</th><th>Score</th><th>Weight</th><th>Contribution</th></tr></thead><tbody>';
-  [{name:'FX Reserves',value:ic.toFixed(1)+' months',score:scores.reserves,weight:25},{name:'Current Account',value:'$'+ca+'M',score:scores.ca,weight:20},{name:'REER',value:reer.toFixed(2),score:scores.reer,weight:15},{name:'Inflation',value:cpi+'%',score:scores.inflation,weight:15},{name:'Fiscal Deficit',value:fis+'%',score:scores.fiscal,weight:10},{name:'Oil Price',value:'$'+oil,score:scores.oil,weight:10},{name:'Real Rate',value:realRate.toFixed(1)+'%',score:scores.realRate,weight:5}].forEach(r=>{const cls=r.score>=70?'neg':r.score>=50?'warn':r.score>=30?'neutral':'pos';tbl+=`<tr class="${cls}"><td><b>${r.name}</b></td><td>${r.value}</td><td>${r.score}/100</td><td>${r.weight}%</td><td>${(r.score*r.weight/100).toFixed(1)}</td></tr>`;});
+  if(fireCount>=4||composite>=70){bClass='red';bTitle='🚨 RED ALERT — DEVALUATION RISK CRITICAL';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers firing — at/above the historical devaluation threshold.';}
+  else if(fireCount===3||composite>=50){bClass='orange';bTitle='⚠️ ORANGE WARNING — Elevated Risk';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers. One more trigger = historical danger zone.';}
+  else if(fireCount===2||composite>=30){bClass='yellow';bTitle='⚡ YELLOW CAUTION — Building Risk';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers. Structurally watchful, not pre-crisis.';}
+  else{bClass='green';bTitle='✅ GREEN — PKR Stability';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers. Far from the historical crash cluster.';}
+  document.getElementById('devalert_main').innerHTML=`<div class="alert-banner ${bClass}"><h3>${bTitle}</h3><p>${bText}</p></div><div class="indicator-card neutral" style="margin-top:16px;"><div class="label">Composite Devaluation Risk</div><div class="score-bar" style="height:36px;"><div class="score-fill" style="width:${composite}%"></div><div class="score-label">${composite.toFixed(0)}/100</div></div></div>`;
+
+  // ================= ① DISTANCE TO CRISIS =================
+  const dist = 4 - fireCount;   // triggers remaining to hit historical 4-of-5
+  let distMsg, distColor;
+  if(fireCount>=4){distMsg='AT the historical devaluation cluster (4+ of 5). Every past PKR crash had this.';distColor='#C00000';}
+  else if(fireCount===3){distMsg='ONE trigger away from the 4-of-5 crash cluster. High alert.';distColor='#C55A11';}
+  else if(fireCount===2){distMsg=dist+' triggers away from the historical cluster. Watchful but stable.';distColor='#BF8F00';}
+  else{distMsg=dist+' triggers away from the historical crash cluster. Risk is FAR, not near.';distColor='#548235';}
+  document.getElementById('dev_distance').innerHTML=`<div class="reading-box" style="border-left:5px solid ${distColor};"><div style="font-size:22px;font-weight:800;color:${distColor};">${fireCount} / 5 core triggers firing</div><div style="margin-top:6px;font-weight:600;">${distMsg}</div><div style="margin-top:6px;font-size:12px;color:var(--grey-d);">Distance to historical devaluation threshold: <b>${dist>0?dist+' more trigger'+(dist>1?'s':''):'reached'}</b>. Pattern basis: 2008, 2013, 2018, 2022, 2023 each had ≥4 of these firing within 6 months prior.</div></div>`;
+
+  // ================= ② CORE TRIGGER TABLE =================
+  let ct='<thead><tr><th>Core Trigger</th><th>Current</th><th>Status</th><th>Read</th></tr></thead><tbody>';
+  core.forEach(c=>{ct+=`<tr class="${c.fire?'neg':'pos'}"><td><b>${c.k}</b></td><td>${c.now}</td><td style="font-weight:700;color:${c.fire?'#C00000':'#548235'};">${c.fire?'🔴 FIRING':'🟢 clear'}</td><td>${c.note}</td></tr>`;});
+  document.getElementById('dev_core').innerHTML=ct+'</tbody>';
+
+  // ================= ③ ACCELERANTS & EWS RATIOS =================
+  const tradeBal = (rem*1) ;  // remittances monthly (USD bn) as inflow proxy
+  const accel = [
+    {k:'Short-term ext. debt ÷ reserves', v:stToRes.toFixed(2)+'x', bad:stToRes>1.0, warn:stToRes>0.8,
+     note:'EWS textbook ratio. >1.0x = can\'t roll debt without burning reserves (2018 pattern).'},
+    {k:'Fiscal deficit (% GDP)', v:fis.toFixed(1)+'%', bad:fis>6.5, warn:fis>5.5,
+     note:'2018 crash had 6.6%. Twin-deficit pressure on PKR.'},
+    {k:'Monthly import bill', v:'$'+impbill.toFixed(1)+'bn', bad:impbill>7, warn:impbill>6,
+     note:'Oil-driven import surge widens CAD; the 2022 fuel-import shock channel.'},
+    {k:'Export growth (YoY)', v:expg.toFixed(1)+'%', bad:expg<0, warn:expg<3,
+     note:'Low/negative export growth is a top EWS predictor (weak inflow side).'},
+    {k:'Remittances (monthly)', v:'$'+rem.toFixed(2)+'bn', bad:rem<2.5, warn:rem<3,
+     note:'Pakistan\'s #1 FX defense. ~$41bn/yr expected FY26; falling = danger.'},
+    {k:'Real interest rate', v:realRate.toFixed(1)+'%', bad:realRate<-2, warn:realRate<0,
+     note:'Negative real rates drive capital flight & dollarization.'},
+    {k:'Inflation (CPI YoY)', v:cpi.toFixed(1)+'%', bad:cpi>12, warn:cpi>10,
+     note:'Drives REER overvaluation; the accelerant, not the trigger.'},
+  ];
+  let at='<thead><tr><th>Accelerant / EWS Ratio</th><th>Value</th><th>Status</th><th>Why it matters</th></tr></thead><tbody>';
+  accel.forEach(r=>{const cls=r.bad?'neg':r.warn?'warn':'pos';const lab=r.bad?'🔴 stress':r.warn?'🟡 watch':'🟢 ok';at+=`<tr class="${cls}"><td><b>${r.k}</b></td><td>${r.v}</td><td style="font-weight:700;">${lab}</td><td style="font-size:11.5px;">${r.note}</td></tr>`;});
+  document.getElementById('dev_accel').innerHTML=at+'</tbody>';
+
+  // ================= ④ COMPOSITE COMPONENT TABLE =================
+  let tbl='<thead><tr><th>Component</th><th>Value</th><th>Score</th><th>Weight</th><th>Contribution</th></tr></thead><tbody>';
+  [{name:'FX Reserves',value:ic.toFixed(2)+' mo',score:scores.reserves,weight:22},
+   {name:'Current Account',value:'$'+ca+'M',score:scores.ca,weight:18},
+   {name:'REER',value:reer.toFixed(1),score:scores.reer,weight:15},
+   {name:'ST-Debt / Reserves',value:stToRes.toFixed(2)+'x',score:scores.stdebt,weight:12},
+   {name:'Inflation',value:cpi.toFixed(1)+'%',score:scores.inflation,weight:12},
+   {name:'Fiscal Deficit',value:fis.toFixed(1)+'%',score:scores.fiscal,weight:9},
+   {name:'Oil Price',value:'$'+oil,score:scores.oil,weight:7},
+   {name:'Real Rate',value:realRate.toFixed(1)+'%',score:scores.realRate,weight:5}
+  ].forEach(r=>{const cls=r.score>=70?'neg':r.score>=50?'warn':r.score>=30?'neutral':'pos';tbl+=`<tr class="${cls}"><td><b>${r.name}</b></td><td>${r.value}</td><td>${r.score}/100</td><td>${r.weight}%</td><td>${(r.score*r.weight/100).toFixed(1)}</td></tr>`;});
   document.getElementById('dev_components').innerHTML=tbl+'</tbody>';
+
+  // ================= ⑤ KSE-100 6-INDICATOR MACRO PANEL =================
+  const kse=val('kse100'), usdpkr=val('usd_pkr')||278.2;
+  // inverse-relationship read: each panel BEARISH/NEUTRAL/BULLISH for KSE
+  const p = [
+    {n:'KSE-100 Index', v:kse?kse.toLocaleString():'—', read:'Reference level', cls:'neutral'},
+    {n:'USD/PKR', v:usdpkr.toFixed(2), read: usdpkr>285?'PKR weakening → BEARISH':usdpkr>280?'Mild pressure → NEUTRAL':'Stable → BULLISH', cls: usdpkr>285?'neg':usdpkr>280?'neutral':'pos'},
+    {n:'Crude (Arab Light)', v:'$'+oil, read: oil>85?'High → import bill → BEARISH':oil<70?'Low → relief → BULLISH':'Mid-range → NEUTRAL', cls: oil>85?'neg':oil<70?'pos':'neutral'},
+    {n:'Inflation (CPI YoY)', v:cpi.toFixed(1)+'%', read: cpi>10?'High → real-return squeeze → BEARISH':cpi<7?'Tame → BULLISH':'Moderate → NEUTRAL', cls: cpi>10?'neg':cpi<7?'pos':'neutral'},
+    {n:'Interest Rate (SBP)', v:sbp.toFixed(2)+'%', read: sbp>=11?'High → hurdle rate → BEARISH (ex-Banks)':sbp<8?'Low → BULLISH':'Mid → NEUTRAL', cls: sbp>=11?'neg':sbp<8?'pos':'neutral'},
+    {n:'Current Account', v:'$'+ca+'M', read: ca<-200?'Deficit → FX pressure → BEARISH':ca>200?'Surplus → BULLISH':'Balanced → NEUTRAL', cls: ca<-200?'neg':ca>200?'pos':'neutral'},
+  ];
+  const negs=p.filter(x=>x.cls==='neg').length, poss=p.filter(x=>x.cls==='pos').length;
+  let verdict, vcolor;
+  if(negs>=4){verdict='BEARISH COMPOSITE';vcolor='#C00000';}
+  else if(negs>=3){verdict='MIXED-BEARISH';vcolor='#C55A11';}
+  else if(poss>=4){verdict='BULLISH COMPOSITE';vcolor='#548235';}
+  else{verdict='MIXED / NEUTRAL';vcolor='#BF8F00';}
+  let k6='<table><thead><tr><th>Panel</th><th>Current</th><th>Inverse-Relationship Read</th></tr></thead><tbody>';
+  p.forEach(x=>{k6+=`<tr class="${x.cls}"><td><b>${x.n}</b></td><td>${x.v}</td><td>${x.read}</td></tr>`;});
+  k6+='</tbody></table>';
+  k6+=`<div class="reading-box" style="margin-top:10px;border-left:5px solid ${vcolor};"><b style="color:${vcolor};">KSE-100 Macro Verdict: ${verdict}</b> — ${negs} bearish / ${poss} bullish of 6 panels. Reading rule: rising oil + USD/PKR + inflation + rates + widening CAD = bearish for KSE; the reverse = bullish. Use as the top-of-funnel PSX go/no-go.</div>`;
+  document.getElementById('dev_kse6').innerHTML=k6;
 }
 
 // =========================================================
