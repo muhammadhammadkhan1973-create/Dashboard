@@ -1343,6 +1343,14 @@ function applyLive(){
     renderTceTable('tce_us_table',LIVE.tce_us,'us');
     renderTceTable('tce_psx_table',LIVE.tce_psx,'psx');
   }
+  recalc();
+  calcUS();
+  calcPAK();
+  calcDevAlert();
+  calcSectors();
+  calcZone();
+  calcMbPsx();
+  calcMbUs();
   calcExplosive();
   calcMetals();
 }
