@@ -1,11 +1,11 @@
 {
   "meta": {
     "scan_version": "1.10.0",
-    "last_scan_utc": "2026-06-01T06:03:46.265283Z",
+    "last_scan_utc": "2026-06-01T06:32:38.314347Z",
     "errors": [],
     "warnings": [
       "FRED mfg_emp (MANEMP) failed: Too Many Requests.  Exceeded Rate Limit",
-      "FRED hy_spread (BAMLH0A0HYM2) failed: Too Many Requests.  Exceeded Rate Limit",
+      "FRED gdp_growth (A191RL1Q225SBEA) failed: Too Many Requests.  Exceeded Rate Limit",
       "FRED permits (PERMIT) failed: Too Many Requests.  Exceeded Rate Limit"
     ]
   },
@@ -27,18 +27,18 @@
       "umcsi_date": "2026-04-01",
       "mfg_emp": 12596.0,
       "gdp_growth": 1.6,
-      "gdp_growth_date": "2026-01-01",
       "industrial_prod": 102.5,
       "industrial_prod_date": "2026-04-01",
       "hy_spread": 2.72,
+      "hy_spread_date": "2026-05-28",
       "permits": 1423.0,
-      "wti": 89.83,
+      "wti": 90.06,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-01",
-      "brent": 93.3,
+      "brent": 93.64,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-01",
-      "brent_wti_spread": 3.47
+      "brent_wti_spread": 3.58
     },
     "psx": {
       "sbp_rate": 11.5,
@@ -50,13 +50,13 @@
       "kse100_date": "2026-06-01"
     },
     "metals": {
-      "gold_px": 4552.5,
+      "gold_px": 4536.6,
       "gold_px_date": "2026-06-01",
-      "silver_px": 76.14,
+      "silver_px": 75.86,
       "silver_px_date": "2026-06-01",
-      "platinum_px": 1952.1,
+      "platinum_px": 1945.1,
       "platinum_px_date": "2026-06-01",
-      "palladium_px": 1388.0,
+      "palladium_px": 1383.5,
       "palladium_px_date": "2026-06-01",
       "dxy": 99.0,
       "dxy_date": "2026-06-01",
@@ -74,7 +74,7 @@
       "walcl": 0.0,
       "walcl_change": 0.07,
       "walcl_date": "2026-05-27",
-      "imf_score": 1,
+      "imf_score": 0,
       "default_score": 1,
       "geo_score": 1
     }
@@ -688,7 +688,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.97,
         "total": 0
       }
@@ -1021,7 +1021,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 8,
+        "s1_news_count": 10,
         "s5_volume_ratio": 1.61,
         "s3_insider_count": 14,
         "total": 4
@@ -1624,25 +1624,6 @@
       }
     },
     {
-      "ticker": "AVBC",
-      "name": "Avidia Bancorp, Inc.",
-      "sector": "Financial Services",
-      "tce_score": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 1,
-        "s5_volume": 0,
-        "s1_news_count": 4,
-        "s5_volume_ratio": 0.62,
-        "s4_revisions_pct": 83.1,
-        "s3_insider_count": 19,
-        "total": 3
-      }
-    },
-    {
       "ticker": "ASPI",
       "name": "ASP Isotopes Inc.",
       "sector": "Basic Materials",
@@ -1654,7 +1635,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 9,
+        "s1_news_count": 10,
         "s5_volume_ratio": 1.1,
         "s3_insider_count": 5,
         "total": 3
@@ -1708,7 +1689,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 4,
+        "s1_news_count": 3,
         "s5_volume_ratio": 1.03,
         "s3_insider_count": 5,
         "total": 2
@@ -1733,6 +1714,24 @@
       }
     },
     {
+      "ticker": "AVBC",
+      "name": "Avidia Bancorp, Inc.",
+      "sector": "Financial Services",
+      "tce_score": 2,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s4_revisions": 1,
+        "s5_volume": 0,
+        "s1_news_count": 4,
+        "s5_volume_ratio": 0.62,
+        "s4_revisions_pct": 83.1,
+        "total": 2
+      }
+    },
+    {
       "ticker": "OABI",
       "name": "OmniAb, Inc.",
       "sector": "Healthcare",
@@ -1751,24 +1750,6 @@
       }
     },
     {
-      "ticker": "FWDI",
-      "name": "Forward Industries, Inc.",
-      "sector": "Consumer Cyclical",
-      "tce_score": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 2,
-        "s5_volume_ratio": 1.16,
-        "s3_insider_count": 10,
-        "total": 1
-      }
-    },
-    {
       "ticker": "RHLD",
       "name": "Resolute Holdings Management",
       "sector": "Industrials",
@@ -1784,6 +1765,23 @@
         "s5_volume_ratio": 0.76,
         "s3_insider_count": 5,
         "total": 1
+      }
+    },
+    {
+      "ticker": "FWDI",
+      "name": "Forward Industries, Inc.",
+      "sector": "Consumer Cyclical",
+      "tce_score": 0,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 2,
+        "s5_volume_ratio": 1.16,
+        "total": 0
       }
     }
   ],
