@@ -267,7 +267,7 @@
   <!-- Panels 2-11 placeholders (full content from v4.1 preserved) -->
   <div id="us" class="panel"><h2 class="section-title">United States Macro Dashboard</h2><div id="us_regime_banner" class="alert-banner"></div><h3 class="subsection-title">Leading Indicators</h3><div class="grid grid-3" id="us_indicators"></div><h3 class="subsection-title">Energy Leading Indicators</h3><div id="us_energy_banner" class="reading-box"></div><div class="grid grid-3" id="us_energy_indicators"></div><h3 class="subsection-title">Yield Curve</h3><div id="yield_curve_box"></div><h3 class="subsection-title">Four Regimes Quadrant</h3><div id="us_quadrant"></div><h3 class="subsection-title">Composite Sector Recommendation</h3><div id="us_sector_rec"></div></div>
   <div id="pak" class="panel"><h2 class="section-title">Pakistan / PSX Macro Dashboard</h2><div id="pak_regime_banner" class="alert-banner"></div><h3 class="subsection-title">Seven Factors Status Board</h3><div class="grid grid-3" id="pak_seven_factors"></div><h3 class="subsection-title">REER / NEER</h3><div id="reer_box"></div><h3 class="subsection-title">Twin Deficit</h3><div id="twin_deficit_box"></div><h3 class="subsection-title">PSX Sector Implications</h3><div id="pak_sector_rec"></div></div>
-  <div id="devalert" class="panel"><h2 class="section-title">PKR Devaluation Early-Warning System</h2><div id="devalert_main"></div><h3 class="subsection-title">Trigger Component Scoring</h3><table id="dev_components"></table><div class="reading-box"><strong>The 7 triggers (see v4.1 full text)</strong></div></div>
+  <div id="devalert" class="panel"><h2 class="section-title">PKR Devaluation Early-Warning System</h2><div id="devalert_main"></div><h3 class="subsection-title">Trigger Component Scoring</h3><table id="dev_components"></table><div class="reading-box" style="font-size:12px;"><strong>How the 7-component score works:</strong> each trigger is scored 0–100 against its danger threshold, then weighted — FX Reserves 25% (&lt;2.5mo import cover = danger), Current Account 20% (deficit widening past -$200M), REER 15% (&gt;100 = PKR overvalued), Inflation 15% (&gt;12% CPI), Fiscal Deficit 10% (&gt;6.5% of GDP), Oil Price 10% (higher = import-bill pressure), Real Rate 5% (negative = capital-flight risk). The weighted sum is the Composite Devaluation Risk above. Historically, when 4+ of the 5 pattern flags turn red together, a PKR devaluation followed within 6 months.</div></div>
   <div id="history" class="panel"><h2 class="section-title">Historical PKR Devaluation Episodes</h2><div style="overflow-x:auto;"><table class="historical-table"><thead><tr><th>Factor</th><th>2008</th><th>2013</th><th>2017-18</th><th>2022</th><th>2023</th><th>Common Pattern</th></tr></thead><tbody id="history_tbody"></tbody></table></div></div>
   <div id="sectors" class="panel"><h2 class="section-title">Sector &amp; Stock Implications</h2><h3 class="subsection-title">US Sectors</h3><div id="us_sectors"></div><h3 class="subsection-title">PSX Sectors</h3><div id="psx_sectors"></div><h3 class="subsection-title">Top Picks</h3><div id="top_picks"></div></div>
   <div id="zone" class="panel"><h2 class="section-title">IM3 Allocation Zone</h2><div id="zone_banner" class="alert-banner red"><h3>CURRENT ZONE: RED — 20% Stocks / 60% Bonds / 20% Cash</h3><p><b>SBP Rate:</b> 11.50% | <b>Mean:</b> 11.01% | <b>Direction:</b> Increasing</p></div><h3 class="subsection-title">Zone Quadrant</h3><div id="zone_quadrant_box"></div><h3 class="subsection-title">SBP Rate Path</h3><div id="zone_rate_path"></div><h3 class="subsection-title">KSE-100 Monthly</h3><div id="zone_kse_table"></div><h3 class="subsection-title">Asset Allocation by Zone</h3><div id="zone_alloc_table"></div></div>
@@ -563,37 +563,117 @@ function calcHist(){
   }).join('');
 }
 
-function calcSectors(){
-  const ism=val('ism_mfg'),umcsi=val('umcsi'),pce=val('core_pce'),gdp=val('us_gdp');
-  // ── US sectors — driven by US regime inputs ──
-  let usHtml='<table><thead><tr><th>GICS Sector</th><th>Regime Read</th><th>Holdings</th></tr></thead><tbody>';
-  [{s:'Information Technology',b:ism>=50&&pce<3.5,n:'TSM, NVDA, ANET, MU, TER, WDC, DELL, STX'},{s:'Communication Services',b:gdp>0,n:'META (CORE)'},{s:'Energy',b:pce>2.5,n:'macro qualified'},{s:'Health Care',b:umcsi<60,n:'LLY (CORE), CI, NVO; WELL'},{s:'Consumer Discretionary',b:umcsi>65,n:'(AVOID — UMCSI bearish)'}].forEach(r=>{const cls=r.b?'pos':'warn';usHtml+=`<tr class="${cls}"><td><b>${r.s}</b></td><td>${r.b?'BUY':'HOLD/AVOID'}</td><td>${r.n}</td></tr>`;});
-  document.getElementById('us_sectors').innerHTML=usHtml+'</tbody></table>';
+function calcSectors() {
+  // ===== US SECTORS — IQS+Zacks+COT engine (live), graceful fallback to macro regime =====
+  const ism = val('ism_mfg'), umcsi = val('umcsi'), pce = val('core_pce'), gdp = val('us_gdp');
+  const Z  = (LIVE && LIVE.zacks_sectors) ? LIVE.zacks_sectors : null;
+  const CF = (LIVE && LIVE.cot_futures)   ? LIVE.cot_futures   : null;
+  const holdings = {
+    'Information Technology':'TSM, NVDA, ANET, MU, TER, WDC, DELL, STX',
+    'Communication Services':'META (CORE)',
+    'Energy':'XOM, CVX, COP, EOG',
+    'Health Care':'LLY (CORE), CI, NVO; WELL',
+    'Real Estate':'WELL, O',
+    'Utilities':'VST, BE WATCH',
+    'Consumer Discretionary':'(rate-sensitive)',
+    'Consumer Staples':'WMT, KO, GIS, PG',
+    'Financials':'JPM, BAC',
+    'Industrials':'CAT, ETN, RTX',
+    'Materials':'macro qualified',
+  };
+  // COT signal mapping → which contract gates which sector (per IQS+Zacks Engine tab)
+  function cotFor(sector){
+    if(!CF) return null;
+    const sp=CF['SP500'], nd=CF['NASDAQ'], cr=CF['Crude'], ty=CF['10yr'];
+    if(sector==='Energy' && cr) return cr;
+    if(sector==='Information Technology' && nd) return nd;
+    if(sector==='Financials' && ty) return ty;
+    return sp || null;  // SP500 broad-market gate for all other sectors
+  }
+  let usHtml;
+  if (Z) {
+    // Live Zacks + COT qualification
+    usHtml = '<table><thead><tr><th>GICS Sector</th><th>Zacks #1/#2</th><th>COT (longs vs shorts)</th><th>Status</th><th>Our Holdings</th></tr></thead><tbody>';
+    const order = ['Health Care','Energy','Industrials','Consumer Staples','Financials','Information Technology','Utilities','Materials','Communication Services','Consumer Discretionary','Real Estate'];
+    order.forEach(sec => {
+      const z = Z[sec] || {top:0,total:0,pct_top:0,rank1:0,rank2:0};
+      const pct = z.pct_top || 0;
+      const cot = cotFor(sec);
+      const cotBull = cot ? cot.net > 0 : null;
+      // Status bands (IQS): high #1/#2 share + bullish COT = STRONG ADD
+      let status, cls;
+      if (pct >= 35 && cotBull) { status='🔥 STRONG ADD'; cls='pos'; }
+      else if (pct >= 25 || cotBull) { status='✅ ADD'; cls='pos'; }
+      else if (pct >= 12 && cotBull !== false) { status='⬛ HOLD'; cls='warn'; }
+      else if (pct < 8 && cotBull === false) { status='❌ AVOID'; cls='neg'; }
+      else { status='⚠️ REDUCE'; cls='warn'; }
+      const zCell = z.total ? `${z.top}/${z.total} <b>(${pct}%)</b><div style="font-size:10px;color:var(--grey-d);">#1:${z.rank1} · #2:${z.rank2}</div>` : '—';
+      const cotCell = cot
+        ? `${cot.signal}<div style="font-size:10px;color:var(--grey-d);">L ${(cot.long||0).toLocaleString()} / S ${(cot.short||0).toLocaleString()}</div>`
+        : '<span style="color:var(--grey-d);">—</span>';
+      usHtml += `<tr class="${cls}"><td><b>${sec}</b></td><td>${zCell}</td><td>${cotCell}</td><td><b>${status}</b></td><td>${holdings[sec]||''}</td></tr>`;
+    });
+    usHtml += '</tbody></table>';
+    const cotDate = CF && (CF.SP500||CF.Crude||{}).date;
+    usHtml += `<div class="reading-box" style="margin-top:10px;font-size:11px;">Stage-1 sector qualification: Zacks #1/#2 share + CFTC COT longs-vs-shorts. SP500 net gates the broad market; Crude→Energy, 10yr→Financials, NASDAQ→Tech.${cotDate?' COT as of '+cotDate+'.':''}</div>`;
+  } else {
+    // Fallback: original macro-regime reads (never blank if scanner blocks absent)
+    usHtml = '<table><thead><tr><th>GICS Sector</th><th>ETF</th><th>Regime Read</th><th>Our Holdings</th></tr></thead><tbody>';
+    const usSectors = [
+      ['Information Technology','IYW', ism>=50&&pce<3.5?'BUY':'HOLD', holdings['Information Technology']],
+      ['Communication Services','IYZ', gdp>0?'BUY':'HOLD', holdings['Communication Services']],
+      ['Energy','IYE/XLE', pce>2.5?'BUY':'HOLD', holdings['Energy']],
+      ['Health Care','IYH', umcsi<60?'BUY (defensive)':'HOLD', holdings['Health Care']],
+      ['Real Estate','IYR', val('us_10y')<5?'BUY':'HOLD', holdings['Real Estate']],
+      ['Utilities','IDU', val('us_10y')<5&&pce<3?'BUY':'HOLD', holdings['Utilities']],
+      ['Consumer Discretionary','IYC', umcsi>65?'BUY':'AVOID', holdings['Consumer Discretionary']],
+      ['Consumer Staples','IYK', umcsi<55?'BUY':'AVOID', holdings['Consumer Staples']],
+      ['Financials','IYF', val('us_10y')-val('us_2y')>0?'BUY':'HOLD', holdings['Financials']],
+      ['Industrials','IYJ', ism>=50?'BUY':'HOLD', holdings['Industrials']],
+      ['Materials','IYM', pce>2.5?'BUY':'HOLD', holdings['Materials']],
+    ];
+    usSectors.forEach(s=>{let cls=s[2].includes('BUY')?'pos':(s[2].includes('AVOID')?'neg':'warn');usHtml+=`<tr class="${cls}"><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td></tr>`;});
+    usHtml += '</tbody></table><div class="reading-box" style="margin-top:10px;font-size:11px;">Macro-regime fallback (Zacks/COT scan data not loaded). Live qualification appears after the next scan writes zacks_sectors + cot_futures.</div>';
+  }
+  document.getElementById('us_sectors').innerHTML = usHtml;
 
-  // ── PSX sectors — now reactive to SBP rate, Arab Light oil, REER, CPI (was frozen text) ──
-  const sbp=val('sbp_rate'),oil=val('oil_arab'),reer=val('reer'),cpi=val('pak_cpi');
-  const psxSec=[
-    {s:'Banks (UBL, MCB, MEBL)', b:sbp>=11, x:sbp<7,  n:'NIM expansion when rates high. UBL/MCB Tier A.'},
-    {s:'E&P (OGDC, PPL, POL)',    b:oil>75,  x:oil<65, n:'USD-linked Arab Light pricing. Bullish >$75.'},
-    {s:'Fertilizer (FFC)',        b:true,    x:false,  n:'Defensive yield core. FFC Tier A.'},
-    {s:'IT Exporters (SYS)',      b:reer<100,x:reer>110,n:'USD revenue hedge; hurt by strong REER.'},
-    {s:'Pharma (HINOON)',         b:cpi>10,  x:false,  n:'Defensive; pricing power in high inflation. HINOON Tier A.'},
-    {s:'Cement (ACPL, MUGHAL)',   b:sbp<9,   x:sbp>12, n:'Rate-sensitive; headwind when SBP tight.'},
-    {s:'Refineries (ATRL, NRL)',  b:oil<70,  x:oil>95, n:'Refining margin widens when crude falls / product holds.'},
-    {s:'OMCs (PSO, APL)',         b:gdp>3,   x:false,  n:'Earnings = volume × fixed margin; track diesel volume.'},
+  // ===== PSX SECTORS — macro-driven (no Zacks coverage), original 11 =====
+  const sbp = val('sbp_rate'), cpi = val('pak_cpi'), oil = val('oil_arab'), reer = val('reer');
+  let psxHtml = '<table><thead><tr><th>PSX Sector</th><th>GICS Map</th><th>Macro Signal</th><th>Our Holdings</th></tr></thead><tbody>';
+  const psxSectors = [
+    ['Commercial Banks','40 Financials', sbp>11?'BUY (NIM ↑)':'HOLD','UBL Tier A'],
+    ['E&P (Oil & Gas)','10 Energy', oil>75?'BUY':'HOLD','OGDC, PPL, MARI watch'],
+    ['Fertilizer','15 Materials','BUY (defensive)','FFC Tier A'],
+    ['Pharma','35 Health Care','BUY (defensive)','HINOON Tier A; SEARL Tier B'],
+    ['Tech/IT','45 Information Technology', reer<105?'BUY':'HOLD','SYS Tier A'],
+    ['Cement','15 Materials', sbp<9?'BUY':'AVOID','no Tier A'],
+    ['Refinery','10 Energy', oil>70&&oil<90?'HOLD':'AVOID','ATRL/NRL watch'],
+    ['OMC','10 Energy','HOLD','PSO watch (volume-driven)'],
+    ['Power','55 Utilities','AVOID','circular debt — EXCLUDED'],
+    ['Auto','25 Consumer Discretionary', sbp<10?'BUY':'AVOID','rate-sensitive — EXCLUDED'],
+    ['Textile','25 Consumer Discretionary', reer<95?'BUY':'AVOID','energy + FX — EXCLUDED'],
   ];
-  let psxHtml='<table><thead><tr><th>PSX Sector</th><th>Macro Read</th><th>Note</th></tr></thead><tbody>';
-  psxSec.forEach(r=>{let cls='warn',lab='NEUTRAL';if(r.b){cls='pos';lab='POSITIVE';}else if(r.x){cls='neg';lab='NEGATIVE';}psxHtml+=`<tr class="${cls}"><td><b>${r.s}</b></td><td>${lab}</td><td>${r.n}</td></tr>`;});
-  document.getElementById('psx_sectors').innerHTML=psxHtml+'</tbody></table>';
+  psxSectors.forEach(s=>{let cls=s[2].includes('BUY')?'pos':(s[2].includes('AVOID')?'neg':'warn');psxHtml+=`<tr class="${cls}"><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td></tr>`;});
+  psxHtml += '</tbody></table>';
+  document.getElementById('psx_sectors').innerHTML = psxHtml;
 
-  // ── Top picks — reflect current regime + PKR devaluation posture ──
-  const usRegime=regimeOf(gdp,pce).name;
-  const ic=val('import_cover'),ca=val('pak_ca'),fis=val('pak_fiscal');
-  const devFlags=[ic<2.5,ca<-200,reer>100,fis>6.5,cpi>12].filter(Boolean).length;
-  const usPick = (ism>=50&&pce<3.5) ? 'TSM, ANET, NVDA (Tech leadership intact)' : (umcsi<55||pce>3) ? 'LLY, CI, NVO (defensive Health Care)' : 'META, GOOGL (quality Comm Services)';
-  const psxPick = (sbp>=11) ? 'UBL, MCB (Banks — NIM), FFC (defensive yield)' : 'cyclicals can lead if SBP cuts';
-  const devNote = devFlags>=4 ? 'RED PKR risk — favor USD-linked E&P + IT exporters, trim import-sensitive.' : devFlags>=3 ? 'YELLOW PKR risk — keep defensive FFC/HINOON core.' : 'PKR stable — cyclical exposure acceptable.';
-  document.getElementById('top_picks').innerHTML=`<div class="reading-box"><strong>US (${usRegime}):</strong> ${usPick}<br><strong>PSX:</strong> ${psxPick}<br><strong>PKR devaluation (${devFlags}/5 firing):</strong> ${devNote}</div>`;
+  // ===== Top picks (original) =====
+  let topHtml = '<table><thead><tr><th>Ticker</th><th>Sector</th><th>Tier</th><th>Sarmaaya</th><th>IG %</th><th>MoS</th><th>ROIC-WACC</th><th>Position</th></tr></thead><tbody>';
+  const picks = [
+    ['TSM','US Tech','A','9/9','90.7%','+6.1%','+22-25 EXCEPTIONAL','5-7% CORE'],
+    ['LLY','US Health','A','9/9','86.4%','+11.2%','+21-25 EXCEPTIONAL','4-6% CORE'],
+    ['ANET','US Tech','A','9/9','82.7%','+10.4%','+18-22 EXCEPTIONAL','3-4%'],
+    ['META','US Comm Svc','A','7/9','82.7%','+6.5%','+18-20 EXCEPTIONAL','4-5%'],
+    ['NVDA','US Tech','B','9/9','80.2%','+2.9%','+29-39 EXCEPTIONAL','2-3%'],
+    ['MU','US Tech (Cyclic)','A','7/9','79.0%','+19.3%','+4-9 MARGINAL (cycle)','4-6% TACTICAL'],
+    ['UBL','PSX Bank','A','7/9','79.0%','+23.7%','+4-6 MODERATE','4-5%'],
+    ['FFC','PSX Fertilizer','A','7/9','85.8%','+21.3%','+4-8 MODERATE','4-5%'],
+    ['SYS','PSX Tech','A','9/9','82.1%','+17.2%','+4-8 MODERATE','3-4%'],
+    ['HINOON','PSX Pharma','A','9/9','80.9%','+14.1%','+6-10 MODERATE→STRONG','2-3%'],
+  ];
+  picks.forEach(p=>{topHtml+=`<tr class="pos"><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td><td>${p[4]}</td><td>${p[5]}</td><td>${p[6]}</td><td>${p[7]}</td></tr>`;});
+  topHtml += '</tbody></table>';
+  document.getElementById('top_picks').innerHTML = topHtml;
 }
 const SBP_MEAN=11.01;        // long-term policy-rate mean (Ammar Yaseen Excel)
 const SBP_PREV_RATE=10.50;    // policy rate prior to the latest MPC move (Apr 27 2026 hike)
@@ -1478,14 +1558,26 @@ function calcMetals(){
     const cotDate=document.getElementById('cot_date_badge');
     if(cotDate&&M.cot_date)cotDate.textContent='As of '+M.cot_date;
     const cotMetals=[
-      {name:'Gold',  net:M.cot_gold_net,  oi:M.cot_gold_oi,  pct:M.cot_gold_pct},
-      {name:'Silver',net:M.cot_silver_net,oi:M.cot_silver_oi,pct:M.cot_silver_pct},
-      {name:'Copper',net:M.cot_copper_net,oi:M.cot_copper_oi,pct:M.cot_copper_pct},
+      {name:'Gold',  net:M.cot_gold_net,  oi:M.cot_gold_oi,  pct:M.cot_gold_pct,  lng:M.cot_gold_long,  sht:M.cot_gold_short,  lpct:M.cot_gold_long_pct,  spct:M.cot_gold_short_pct},
+      {name:'Silver',net:M.cot_silver_net,oi:M.cot_silver_oi,pct:M.cot_silver_pct,lng:M.cot_silver_long,sht:M.cot_silver_short,lpct:M.cot_silver_long_pct,spct:M.cot_silver_short_pct},
+      {name:'Copper',net:M.cot_copper_net,oi:M.cot_copper_oi,pct:M.cot_copper_pct,lng:M.cot_copper_long,sht:M.cot_copper_short,lpct:M.cot_copper_long_pct,spct:M.cot_copper_short_pct},
     ];
     cotRows.innerHTML=cotMetals.map(c=>{
       if(c.pct==null)return`<div class="cot-row"><span style="font-weight:600;min-width:60px;">${c.name}</span><span style="color:var(--grey-d);">Awaiting scan data</span></div>`;
       const pct=c.pct,crowded=pct>20,color=crowded?'#EF4444':'#10B981';
-      return`<div class="cot-row"><span style="font-weight:600;min-width:60px;">${c.name}</span><span style="font-family:var(--font-mono);min-width:100px;">${c.net?c.net.toLocaleString():'—'} net</span><div class="cot-bar-wrap"><div class="cot-bar-fill" style="width:${Math.min(100,Math.abs(pct)*2)}%;background:${color};"></div></div><span style="font-family:var(--font-mono);min-width:50px;">${pct.toFixed(1)}%</span><span style="font-weight:700;color:${color};min-width:70px;">${crowded?'⚠ CROWDED':'OK'}</span></div>`;
+      // Long-vs-short split bar (shows when scanner provides the legs)
+      let lsBar='';
+      if(c.lng!=null&&c.sht!=null){
+        const tot=c.lng+c.sht||1, lw=Math.round(c.lng/tot*100), sw=100-lw;
+        lsBar=`<div style="display:flex;align-items:center;gap:6px;min-width:230px;">`
+          +`<span style="font-family:var(--font-mono);font-size:10.5px;color:#10B981;min-width:84px;">L ${c.lng.toLocaleString()}${c.lpct!=null?' ('+c.lpct.toFixed(1)+'%)':''}</span>`
+          +`<div style="flex:1;height:10px;border-radius:5px;overflow:hidden;display:flex;min-width:60px;background:#1f2937;">`
+          +`<div style="width:${lw}%;background:#10B981;"></div><div style="width:${sw}%;background:#EF4444;"></div></div>`
+          +`<span style="font-family:var(--font-mono);font-size:10.5px;color:#EF4444;min-width:84px;">S ${c.sht.toLocaleString()}${c.spct!=null?' ('+c.spct.toFixed(1)+'%)':''}</span></div>`;
+      } else {
+        lsBar=`<span style="font-size:10.5px;color:var(--grey-d);min-width:230px;">long/short split on next scan</span>`;
+      }
+      return`<div class="cot-row"><span style="font-weight:600;min-width:60px;">${c.name}</span><span style="font-family:var(--font-mono);min-width:100px;">${c.net?c.net.toLocaleString():'—'} net</span>${lsBar}<div class="cot-bar-wrap"><div class="cot-bar-fill" style="width:${Math.min(100,Math.abs(pct)*2)}%;background:${color};"></div></div><span style="font-family:var(--font-mono);min-width:50px;">${pct.toFixed(1)}%</span><span style="font-weight:700;color:${color};min-width:70px;">${crowded?'⚠ CROWDED':'OK'}</span></div>`;
     }).join('');
   }
 
