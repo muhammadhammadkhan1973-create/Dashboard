@@ -593,7 +593,13 @@ function calcSectors() {
   let usHtml;
   if (Z) {
     // Live Zacks + COT qualification
-    usHtml = '<table><thead><tr><th>GICS Sector</th><th>Zacks #1/#2</th><th>COT (longs vs shorts)</th><th>Status</th><th>Our Holdings</th></tr></thead><tbody>';
+    // Two distinct signal colours: ZACKS = indigo column, COT = green/red per COT Reference legend.
+    const Z_BG='#EEF0FF', Z_HEAD='#4F46E5', COT_HEAD='#0F766E';
+    usHtml = `<table><thead><tr>
+      <th>GICS Sector</th>
+      <th style="background:${Z_HEAD};color:#fff;">📊 Zacks #1/#2</th>
+      <th style="background:${COT_HEAD};color:#fff;">🟢🔴 COT (longs vs shorts)</th>
+      <th>Status</th><th>Our Holdings</th></tr></thead><tbody>`;
     const order = ['Health Care','Energy','Industrials','Consumer Staples','Financials','Information Technology','Utilities','Materials','Communication Services','Consumer Discretionary','Real Estate'];
     order.forEach(sec => {
       const z = Z[sec] || {top:0,total:0,pct_top:0,rank1:0,rank2:0};
@@ -607,15 +613,26 @@ function calcSectors() {
       else if (pct >= 12 && cotBull !== false) { status='⬛ HOLD'; cls='warn'; }
       else if (pct < 8 && cotBull === false) { status='❌ AVOID'; cls='neg'; }
       else { status='⚠️ REDUCE'; cls='warn'; }
-      const zCell = z.total ? `${z.top}/${z.total} <b>(${pct}%)</b><div style="font-size:10px;color:var(--grey-d);">#1:${z.rank1} · #2:${z.rank2}</div>` : '—';
-      const cotCell = cot
-        ? `${cot.signal}<div style="font-size:10px;color:var(--grey-d);">L ${(cot.long||0).toLocaleString()} / S ${(cot.short||0).toLocaleString()}</div>`
+      // ZACKS cell — indigo column tint; share text shaded by strength
+      const zColor = pct>=35?'#3730A3':pct>=20?'#4F46E5':pct>0?'#6366F1':'#9CA3AF';
+      const zCell = z.total
+        ? `<span style="font-weight:700;color:${zColor};">${z.top}/${z.total} (${pct}%)</span><div style="font-size:10px;color:#6366F1;">#1:${z.rank1} · #2:${z.rank2}</div>`
         : '<span style="color:var(--grey-d);">—</span>';
-      usHtml += `<tr class="${cls}"><td><b>${sec}</b></td><td>${zCell}</td><td>${cotCell}</td><td><b>${status}</b></td><td>${holdings[sec]||''}</td></tr>`;
+      // COT cell — GREEN if net>0 (more longs / bullish), RED if net<0 (more shorts / bearish) per COT Reference
+      let cotCell;
+      if (cot) {
+        const cc = cotBull ? '#059669' : '#DC2626';
+        const cbg = cotBull ? '#ECFDF5' : '#FEF2F2';
+        cotCell = `<span style="font-weight:700;color:${cc};background:${cbg};padding:1px 6px;border-radius:4px;">${cotBull?'🟢':'🔴'} ${cot.signal}</span>`
+          + `<div style="font-size:10px;color:var(--grey-d);">L <b style="color:#059669;">${(cot.long||0).toLocaleString()}</b> / S <b style="color:#DC2626;">${(cot.short||0).toLocaleString()}</b></div>`;
+      } else {
+        cotCell = '<span style="color:var(--grey-d);">—</span>';
+      }
+      usHtml += `<tr class="${cls}"><td><b>${sec}</b></td><td style="background:${Z_BG};">${zCell}</td><td>${cotCell}</td><td><b>${status}</b></td><td>${holdings[sec]||''}</td></tr>`;
     });
     usHtml += '</tbody></table>';
     const cotDate = CF && (CF.SP500||CF.Crude||{}).date;
-    usHtml += `<div class="reading-box" style="margin-top:10px;font-size:11px;">Stage-1 sector qualification: Zacks #1/#2 share + CFTC COT longs-vs-shorts. SP500 net gates the broad market; Crude→Energy, 10yr→Financials, NASDAQ→Tech.${cotDate?' COT as of '+cotDate+'.':''}</div>`;
+    usHtml += `<div class="reading-box" style="margin-top:10px;font-size:11px;"><span style="color:#4F46E5;font-weight:700;">■ Zacks</span> = % of sector\'s stocks ranked #1/#2 (indigo). <span style="color:#0F766E;font-weight:700;">■ COT</span> = CFTC longs-vs-shorts: <span style="color:#059669;font-weight:700;">🟢 net long = bullish, proceed</span> / <span style="color:#DC2626;font-weight:700;">🔴 net short = bearish, halt</span>. SP500 gates the broad market; Crude→Energy, 10yr→Financials, NASDAQ→Tech.${cotDate?' COT as of '+cotDate+'.':''}</div>`;
   } else {
     // Fallback: original macro-regime reads (never blank if scanner blocks absent)
     usHtml = '<table><thead><tr><th>GICS Sector</th><th>ETF</th><th>Regime Read</th><th>Our Holdings</th></tr></thead><tbody>';
