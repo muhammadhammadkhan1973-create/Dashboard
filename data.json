@@ -1,22 +1,21 @@
 {
   "meta": {
     "scan_version": "1.10.0",
-    "last_scan_utc": "2026-06-01T06:32:38.314347Z",
+    "last_scan_utc": "2026-06-01T12:03:52.085190Z",
     "errors": [],
     "warnings": [
-      "FRED mfg_emp (MANEMP) failed: Too Many Requests.  Exceeded Rate Limit",
+      "FRED cpi_yoy (CPIAUCSL) failed: Too Many Requests.  Exceeded Rate Limit",
       "FRED gdp_growth (A191RL1Q225SBEA) failed: Too Many Requests.  Exceeded Rate Limit",
-      "FRED permits (PERMIT) failed: Too Many Requests.  Exceeded Rate Limit"
+      "FRED industrial_prod (INDPRO) failed: Too Many Requests.  Exceeded Rate Limit"
     ]
   },
   "macros": {
     "us": {
       "fed_rate": 3.75,
-      "fed_rate_date": "2026-05-31",
+      "fed_rate_date": "2026-06-01",
       "core_pce": 3.29,
       "core_pce_date": "2026-04-01",
       "cpi_yoy": 3.95,
-      "cpi_yoy_date": "2026-04-01",
       "us_10y": 4.45,
       "us_10y_date": "2026-05-28",
       "us_2y": 3.99,
@@ -26,19 +25,20 @@
       "umcsi": 49.8,
       "umcsi_date": "2026-04-01",
       "mfg_emp": 12596.0,
+      "mfg_emp_date": "2026-04-01",
       "gdp_growth": 1.6,
       "industrial_prod": 102.5,
-      "industrial_prod_date": "2026-04-01",
       "hy_spread": 2.72,
       "hy_spread_date": "2026-05-28",
       "permits": 1423.0,
-      "wti": 90.06,
+      "permits_date": "2026-04-01",
+      "wti": 90.37,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-01",
-      "brent": 93.64,
+      "brent": 93.71,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-01",
-      "brent_wti_spread": 3.58
+      "brent_wti_spread": 3.34
     },
     "psx": {
       "sbp_rate": 11.5,
@@ -50,17 +50,17 @@
       "kse100_date": "2026-06-01"
     },
     "metals": {
-      "gold_px": 4536.6,
+      "gold_px": 4537.1,
       "gold_px_date": "2026-06-01",
-      "silver_px": 75.86,
+      "silver_px": 75.97,
       "silver_px_date": "2026-06-01",
-      "platinum_px": 1945.1,
+      "platinum_px": 1949.5,
       "platinum_px_date": "2026-06-01",
-      "palladium_px": 1383.5,
+      "palladium_px": 1377.5,
       "palladium_px_date": "2026-06-01",
-      "dxy": 99.0,
+      "dxy": 99.07,
       "dxy_date": "2026-06-01",
-      "gs_ratio": 59.8,
+      "gs_ratio": 59.7,
       "cot_date": "05/26/26",
       "cot_gold_net": 154260,
       "cot_gold_oi": 353489,
@@ -74,7 +74,7 @@
       "walcl": 0.0,
       "walcl_change": 0.07,
       "walcl_date": "2026-05-27",
-      "imf_score": 0,
+      "imf_score": 1,
       "default_score": 1,
       "geo_score": 1
     }
@@ -123,22 +123,22 @@
     ],
     [
       "Active US universe (NASDAQ-sourced)",
-      5760,
+      5756,
       "After ETFs/funds removed"
     ],
     [
       "Small-cap zone ($300M-$2bn) PRE-FILTERED",
-      1260,
+      1256,
       "Market cap filter at source"
     ],
     [
       "+ Revenue Growth >15% YoY",
-      178,
+      179,
       "Yahoo revenueGrowth + insider gate"
     ],
     [
       "+ Insider Holding >5%",
-      178,
+      179,
       "Sponsor/insider commitment"
     ],
     [
@@ -152,8 +152,8 @@
       "ticker": "MUGHAL",
       "name": "Mughal Iron & Steel",
       "sector": "Steel",
-      "price": 109.96,
-      "avg_volume": 2140500,
+      "price": 108.93,
+      "avg_volume": 1405000,
       "rev_growth": 18.2,
       "eps_growth": 32.5,
       "growth_source": "psx_annual",
@@ -164,8 +164,8 @@
       "ticker": "ECOP",
       "name": "EcoPack Limited",
       "sector": "Packaging",
-      "price": 33.79,
-      "avg_volume": 8000,
+      "price": 33.0,
+      "avg_volume": 4000,
       "rev_growth": 22.1,
       "eps_growth": 28.3,
       "growth_source": "psx_annual",
@@ -176,8 +176,8 @@
       "ticker": "PIBTL",
       "name": "Pakistan Intl Bulk Terminal",
       "sector": "Transport",
-      "price": 11.55,
-      "avg_volume": 43330500,
+      "price": 11.3,
+      "avg_volume": 11303500,
       "rev_growth": 15.8,
       "eps_growth": 12.1,
       "growth_source": "psx_annual",
@@ -188,8 +188,8 @@
       "ticker": "GHGL",
       "name": "Ghani Glass",
       "sector": "Glass",
-      "price": 48.85,
-      "avg_volume": 463500,
+      "price": 48.91,
+      "avg_volume": 354000,
       "rev_growth": 19.4,
       "eps_growth": 22.7,
       "growth_source": "psx_annual",
@@ -212,8 +212,8 @@
       "ticker": "ACPL",
       "name": "Attock Cement",
       "sector": "Cement",
-      "price": 179.24,
-      "avg_volume": 236600,
+      "price": 178.79,
+      "avg_volume": 147300,
       "rev_growth": 11.2,
       "eps_growth": 8.4,
       "growth_source": "psx_annual",
@@ -224,8 +224,8 @@
       "ticker": "SAZEW",
       "name": "Sazgar Engineering",
       "sector": "Auto",
-      "price": 177.62,
-      "avg_volume": 2178300,
+      "price": 182.92,
+      "avg_volume": 1697200,
       "rev_growth": 35.8,
       "eps_growth": 48.2,
       "growth_source": "psx_annual",
@@ -236,8 +236,8 @@
       "ticker": "NCPL",
       "name": "Nishat Chunian Power",
       "sector": "Utilities",
-      "price": 16.55,
-      "avg_volume": 956000,
+      "price": 16.35,
+      "avg_volume": 743000,
       "rev_growth": 9.1,
       "eps_growth": 14.3,
       "growth_source": "psx_annual",
@@ -569,7 +569,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 14,
+        "s1_news_count": 13,
         "s5_volume_ratio": 1.82,
         "total": 3
       }
@@ -578,34 +578,17 @@
       "ticker": "ECOP",
       "name": "EcoPack Limited",
       "sector": "Packaging",
-      "tce_score": 2,
+      "tce_score": 1,
       "tier": "IGNORE",
       "streams": {
-        "s1_news": 1,
+        "s1_news": 0,
         "s2_sponsor": 0,
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 3,
+        "s1_news_count": 2,
         "s5_volume_ratio": 1.31,
-        "total": 2
-      }
-    },
-    {
-      "ticker": "NCPL",
-      "name": "Nishat Chunian Power",
-      "sector": "Utilities",
-      "tce_score": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 0,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 8,
-        "s5_volume_ratio": 0.48,
-        "total": 2
+        "total": 1
       }
     },
     {
@@ -626,9 +609,9 @@
       }
     },
     {
-      "ticker": "PABC",
-      "name": "Pak Alum Beverage Cans",
-      "sector": "Packaging",
+      "ticker": "NCPL",
+      "name": "Nishat Chunian Power",
+      "sector": "Utilities",
       "tce_score": 1,
       "tier": "IGNORE",
       "streams": {
@@ -637,8 +620,8 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 3,
-        "s5_volume_ratio": 0.17,
+        "s1_news_count": 7,
+        "s5_volume_ratio": 0.48,
         "total": 1
       }
     },
@@ -673,6 +656,23 @@
         "s5_volume": 0,
         "s1_news_count": 0,
         "s5_volume_ratio": 0.58,
+        "total": 0
+      }
+    },
+    {
+      "ticker": "PABC",
+      "name": "Pak Alum Beverage Cans",
+      "sector": "Packaging",
+      "tce_score": 0,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 1,
+        "s5_volume_ratio": 0.17,
         "total": 0
       }
     },
@@ -741,7 +741,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 16,
+        "s1_news_count": 15,
         "s5_volume_ratio": 5.71,
         "s3_insider_count": 15,
         "total": 4
@@ -1021,7 +1021,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 10,
+        "s1_news_count": 9,
         "s5_volume_ratio": 1.61,
         "s3_insider_count": 14,
         "total": 4
@@ -1581,7 +1581,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 12,
+        "s1_news_count": 13,
         "s5_volume_ratio": 0.76,
         "s3_insider_count": 32,
         "total": 3
@@ -1599,7 +1599,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 8,
+        "s1_news_count": 10,
         "s5_volume_ratio": 1.22,
         "s3_insider_count": 22,
         "total": 3
@@ -1617,9 +1617,28 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 7,
+        "s1_news_count": 4,
         "s5_volume_ratio": 1.87,
         "s3_insider_count": 44,
+        "total": 3
+      }
+    },
+    {
+      "ticker": "AVBC",
+      "name": "Avidia Bancorp, Inc.",
+      "sector": "Financial Services",
+      "tce_score": 3,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 1,
+        "s4_revisions": 1,
+        "s5_volume": 0,
+        "s1_news_count": 4,
+        "s5_volume_ratio": 0.62,
+        "s4_revisions_pct": 83.1,
+        "s3_insider_count": 19,
         "total": 3
       }
     },
@@ -1635,28 +1654,10 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 10,
+        "s1_news_count": 9,
         "s5_volume_ratio": 1.1,
         "s3_insider_count": 5,
         "total": 3
-      }
-    },
-    {
-      "ticker": "NUVB",
-      "name": "Nuvation Bio Inc.",
-      "sector": "Healthcare",
-      "tce_score": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 7,
-        "s5_volume_ratio": 1.0,
-        "s3_insider_count": 20,
-        "total": 2
       }
     },
     {
@@ -1689,7 +1690,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 3,
+        "s1_news_count": 4,
         "s5_volume_ratio": 1.03,
         "s3_insider_count": 5,
         "total": 2
@@ -1707,27 +1708,9 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 6,
+        "s1_news_count": 7,
         "s5_volume_ratio": 1.06,
         "s3_insider_count": 5,
-        "total": 2
-      }
-    },
-    {
-      "ticker": "AVBC",
-      "name": "Avidia Bancorp, Inc.",
-      "sector": "Financial Services",
-      "tce_score": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s4_revisions": 1,
-        "s5_volume": 0,
-        "s1_news_count": 4,
-        "s5_volume_ratio": 0.62,
-        "s4_revisions_pct": 83.1,
         "total": 2
       }
     },
@@ -1750,6 +1733,41 @@
       }
     },
     {
+      "ticker": "NUVB",
+      "name": "Nuvation Bio Inc.",
+      "sector": "Healthcare",
+      "tce_score": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 6,
+        "s5_volume_ratio": 1.0,
+        "total": 1
+      }
+    },
+    {
+      "ticker": "FWDI",
+      "name": "Forward Industries, Inc.",
+      "sector": "Consumer Cyclical",
+      "tce_score": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 1,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 2,
+        "s5_volume_ratio": 1.16,
+        "s3_insider_count": 10,
+        "total": 1
+      }
+    },
+    {
       "ticker": "RHLD",
       "name": "Resolute Holdings Management",
       "sector": "Industrials",
@@ -1765,23 +1783,6 @@
         "s5_volume_ratio": 0.76,
         "s3_insider_count": 5,
         "total": 1
-      }
-    },
-    {
-      "ticker": "FWDI",
-      "name": "Forward Industries, Inc.",
-      "sector": "Consumer Cyclical",
-      "tce_score": 0,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 2,
-        "s5_volume_ratio": 1.16,
-        "total": 0
       }
     }
   ],
@@ -9251,6 +9252,314 @@
       }
     },
     {
+      "ticker": "JMSB",
+      "name": "John Marshall Bancorp, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 16.2,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 27.6,
+      "op_np_ratio": 1.7,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "EXPLOSIVE \u2014 both signals",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "im3": {
+        "ticker": "JMSB",
+        "name": "John Marshall Bancorp, Inc.",
+        "sector": "Financial Services",
+        "is_bank": true,
+        "price": 21.27,
+        "score": 84,
+        "pct": 51.9,
+        "grade": "C",
+        "metrics": [
+          {
+            "key": "rev_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "op_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "np_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "op_margin",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "np_margin",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "tax_rate",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "int_coverage",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 0
+          },
+          {
+            "key": "de_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "total_debt",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "current_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 0
+          },
+          {
+            "key": "cfo_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "net_cash",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "ccfo_cpat",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "nfa_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "roe",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "eps_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "pe_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "peg_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "earn_yield",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "pb_ratio",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "graham_val",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "ps_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "div_yield",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "ev_ebitda",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "mos",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "val_shareholders",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "inv_turn",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 0
+          },
+          {
+            "key": "dro",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 0
+          },
+          {
+            "key": "fat",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 0
+          },
+          {
+            "key": "ccc",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 0
+          },
+          {
+            "key": "fcf_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "croic",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "fcf_sale",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "fcf_cfo",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "cash_debt",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "cash_share",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "altman_z",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "beneish_m",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "piotroski_f",
+            "verdict": "GOOD",
+            "pts": 10,
+            "max": 10
+          },
+          {
+            "key": "roic_wacc",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "nim",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 4
+          },
+          {
+            "key": "casa",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "adr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "npl",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "car",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 4
+          }
+        ],
+        "piotroski": 7,
+        "altman_z": null,
+        "beneish_m": 2.49,
+        "iv": {
+          "dcf_eps": 1372.19,
+          "graham": 25.09,
+          "peter_lynch": null,
+          "composite": 698.64,
+          "mos_pct": 97.0
+        }
+      }
+    },
+    {
       "ticker": "ABX",
       "name": "Abacus Global Management, Inc.",
       "sector": "Financial Services",
@@ -12551,6 +12860,7 @@
     "EGBN",
     "FSBC",
     "HYLN",
+    "JMSB",
     "KRNY",
     "LOB",
     "MCB",
