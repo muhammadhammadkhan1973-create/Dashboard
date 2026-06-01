@@ -408,8 +408,152 @@ def fetch_psx_macros():
         if lg is not None:
             out['reer'] = lg
 
+    # v1.11: pak_ca and pak_fiscal have no live source yet — seed last-good so the
+    # Gold tab's Pakistan factors don't silently fall back to Tab-1 manual values.
+    for _k in ('pak_ca', 'pak_fiscal', 'neer'):
+        if out.get(_k) is None:
+            _lg = safe_get(EXISTING, 'macros', 'psx', _k)
+            if _lg is not None:
+                out[_k] = _lg
+
     return out
 
+
+# =============================================================
+# 2c. COT FUTURES (sector gating) — CFTC Socrata, ported verbatim from M1 fetchCOT()
+#     SP500/10yr/VIX/NASDAQ from TFF (Asset Manager net); Crude from Disaggregated (Managed Money).
+# =============================================================
+COT_KEYWORDS = {
+    'SP500':  'S&P 500',
+    '10yr':   'UST 10Y NOTE',
+    'VIX':    'VIX FUTURES',
+    'NASDAQ': 'NASDAQ-100',
+}
+COT_KEYWORDS_COMMODITIES = {'Crude': 'WTI-PHYSICAL'}
+
+def fetch_cot_futures():
+    """5 index/commodity COT contracts used to gate US sector selection.
+    Returns {contract: {long, short, net, signal, date}}.  Never raises."""
+    out = {}
+    headers = {'User-Agent': UA}
+    # --- TFF financial futures: SP500, 10yr, VIX, NASDAQ ---
+    try:
+        url = ('https://publicreporting.cftc.gov/resource/gpe5-46if.json'
+               '?$order=report_date_as_yyyy_mm_dd DESC&$limit=100')
+        rows = requests.get(url, headers=headers, timeout=20).json()
+        found = set()
+        for rec in rows:
+            name = str(rec.get('market_and_exchange_names', '')).upper()
+            for key, kw in COT_KEYWORDS.items():
+                if key in found:
+                    continue
+                if kw.upper() in name:
+                    lng = float(rec.get('asset_mgr_positions_long', 0) or 0)
+                    sht = float(rec.get('asset_mgr_positions_short', 0) or 0)
+                    net = lng - sht
+                    out[key] = {'long': int(lng), 'short': int(sht), 'net': int(net),
+                                'signal': ('VERY BULLISH' if net > 500000 else 'BULLISH' if net > 0
+                                           else 'BEARISH' if net > -500000 else 'VERY BEARISH'),
+                                'date': rec.get('report_date_as_yyyy_mm_dd')}
+                    found.add(key)
+        log(f'  ✓ COT futures (TFF): {len(found)}/4 [{", ".join(sorted(found))}]')
+    except Exception as e:
+        warn(f'COT futures (TFF) failed: {e}')
+    # --- Disaggregated: Crude (Managed Money) ---
+    try:
+        url = ('https://publicreporting.cftc.gov/resource/72hh-3qpy.json'
+               '?$order=report_date_as_yyyy_mm_dd DESC&$limit=200')
+        rows = requests.get(url, headers=headers, timeout=20).json()
+        for rec in rows:
+            name = str(rec.get('market_and_exchange_names', '')).upper()
+            if 'WTI-PHYSICAL' in name and 'NEW YORK' in name:
+                lng = float(rec.get('m_money_positions_long_all', 0) or 0)
+                sht = float(rec.get('m_money_positions_short_all', 0) or 0)
+                net = lng - sht
+                out['Crude'] = {'long': int(lng), 'short': int(sht), 'net': int(net),
+                                'signal': ('VERY BULLISH' if net > 200000 else 'BULLISH' if net > 0
+                                           else 'BEARISH' if net > -200000 else 'VERY BEARISH'),
+                                'date': rec.get('report_date_as_yyyy_mm_dd')}
+                break
+        log(f'  ✓ COT futures Crude: {"found" if "Crude" in out else "not found"}')
+    except Exception as e:
+        warn(f'COT futures (Crude) failed: {e}')
+    # last-good fallback
+    if not out:
+        lg = safe_get(EXISTING, 'cot_futures')
+        if lg:
+            out = lg
+    return out
+
+# =============================================================
+# 2d. ZACKS SECTOR ENGINE — per-ticker rank scrape (M1 quote-feed method),
+#     #1/#2 grouped by GICS sector to qualify sectors.  Never raises.
+# =============================================================
+ZACKS_SECTOR_UNIVERSE = {
+    # Fixed S&P representative list across all 11 GICS sectors (large-cap sector read).
+    'Information Technology': ['MSFT','NVDA','AVGO','AAPL','ORCL','CRM','AMD','ADBE','CSCO','ACN','TXN','QCOM','INTC','IBM','NOW','MU','AMAT','LRCX','ANET','DELL'],
+    'Health Care':           ['LLY','UNH','JNJ','ABBV','MRK','TMO','ABT','ISRG','DHR','PFE','AMGN','BMY','CI','GILD','VRTX','CVS','MDT','ELV','REGN','HCA'],
+    'Financials':            ['JPM','BAC','WFC','GS','MS','SPGI','AXP','BLK','C','SCHW','CB','PGR','MMC','BX','PNC','USB','TFC','AON','ICE','COF'],
+    'Consumer Discretionary':['AMZN','TSLA','HD','MCD','NKE','LOW','BKNG','SBUX','TJX','ORLY','GM','F','MAR','CMG','ROST','HLT','YUM','DHI','LEN','AZO'],
+    'Communication Services':['GOOGL','META','NFLX','DIS','TMUS','VZ','T','CMCSA','CHTR','EA','TTWO','WBD','OMC','LYV','MTCH','FOXA','PARA','NWSA','IPG','DASH'],
+    'Industrials':           ['CAT','GE','RTX','UNP','HON','ETN','BA','LMT','DE','UPS','ADP','GD','NOC','EMR','CSX','ITW','MMM','FDX','WM','PH'],
+    'Consumer Staples':      ['WMT','PG','KO','PEP','COST','MDLZ','PM','MO','CL','TGT','KMB','GIS','SYY','KHC','STZ','KR','HSY','KDP','MNST','ADM'],
+    'Energy':                ['XOM','CVX','COP','EOG','SLB','MPC','PSX','OXY','WMB','VLO','PXD','HES','KMI','OKE','HAL','DVN','FANG','BKR','MRO','CTRA'],
+    'Materials':             ['LIN','SHW','APD','ECL','FCX','NEM','NUE','DOW','DD','CTVA','PPG','VMC','MLM','ALB','IFF','LYB','STLD','CF','MOS','BALL'],
+    'Utilities':             ['NEE','DUK','SO','D','AEP','SRE','EXC','XEL','PEG','ED','VST','WEC','EIX','AWK','DTE','PCG','AEE','CNP','CMS','ATO'],
+    'Real Estate':           ['PLD','AMT','EQIX','WELL','CCI','PSA','O','SPG','DLR','VICI','CBRE','EXR','AVB','EQR','VTR','SBAC','WY','INVH','ARE','MAA'],
+}
+def _gics_from_yahoo(sec):
+    if not sec: return None
+    s = sec.lower()
+    m = {'technology':'Information Technology','healthcare':'Health Care','financial':'Financials',
+         'consumer cyclical':'Consumer Discretionary','communication':'Communication Services',
+         'industrials':'Industrials','consumer defensive':'Consumer Staples','energy':'Energy',
+         'basic materials':'Materials','utilities':'Utilities','real estate':'Real Estate'}
+    for k,v in m.items():
+        if k in s: return v
+    return None
+
+def fetch_zacks_sectors(survivors=None):
+    """Scrape per-ticker Zacks rank for the fixed S&P universe + scan survivors (deduped),
+    keep #1/#2, group by GICS sector. Returns {sector:{rank1,rank2,top,total,pct_top,top_tickers}}."""
+    # Build universe: fixed list (with known sector) + survivors (sector from their record)
+    uni = {}  # ticker -> gics sector
+    for sec, tickers in ZACKS_SECTOR_UNIVERSE.items():
+        for t in tickers:
+            uni[t] = sec
+    if survivors:
+        for r in survivors:
+            tk = r.get('ticker'); g = _gics_from_yahoo(r.get('sector'))
+            if tk and g and tk not in uni:
+                uni[tk] = g
+    tickers = sorted(uni.keys())
+    log(f'=== Zacks sector scrape: {len(tickers)} tickers (~{len(tickers)*2.5/60:.0f} min) ===')
+    sectors = {s: {'rank1':0,'rank2':0,'top':0,'total':0,'pct_top':0.0,'top_tickers':[]}
+               for s in ZACKS_SECTOR_UNIVERSE}
+    fails = 0
+    for i, tk in enumerate(tickers):
+        sec = uni[tk]
+        if sec not in sectors:
+            sectors[sec] = {'rank1':0,'rank2':0,'top':0,'total':0,'pct_top':0.0,'top_tickers':[]}
+        try:
+            time.sleep(2.5)
+            d = requests.get(f'https://quote-feed.zacks.com/index?t={tk}',
+                             headers={'User-Agent':'Mozilla/5.0'}, timeout=15).json()
+            rec = d.get(tk, {}) or {}
+            rank = rec.get('zacks_rank')
+            rank = int(rank) if rank not in (None,'','null') else None
+            sectors[sec]['total'] += 1
+            if rank == 1:
+                sectors[sec]['rank1'] += 1; sectors[sec]['top'] += 1; sectors[sec]['top_tickers'].append(tk)
+            elif rank == 2:
+                sectors[sec]['rank2'] += 1; sectors[sec]['top'] += 1; sectors[sec]['top_tickers'].append(tk)
+        except Exception:
+            fails += 1
+    for s, v in sectors.items():
+        v['pct_top'] = round(v['top']/v['total']*100, 1) if v['total'] else 0.0
+    log(f'  Zacks sector scrape done: {fails} failures of {len(tickers)}')
+    return sectors
 
 # =============================================================
 # 2b. METALS DATA — Tab 12 Gold & Metals
@@ -505,16 +649,21 @@ def fetch_metals():
             ]:
                 nc_l, nc_s, oi = parse_cot_block(pat)
                 if nc_l is not None and oi:
-                    out[f'{pfx}_net'] = nc_l - nc_s
-                    out[f'{pfx}_oi']  = oi
-                    out[f'{pfx}_pct'] = round((nc_l - nc_s) / oi * 100, 1)
-                    log(f'  ✓ COT {metal}: net={out[f"{pfx}_net"]:,} ({out[f"{pfx}_pct"]}% OI)')
+                    out[f'{pfx}_net']  = nc_l - nc_s
+                    out[f'{pfx}_oi']   = oi
+                    out[f'{pfx}_pct']  = round((nc_l - nc_s) / oi * 100, 1)
+                    # v1.11: keep the long/short legs so the dashboard can show longs vs shorts
+                    out[f'{pfx}_long']      = nc_l
+                    out[f'{pfx}_short']     = nc_s
+                    out[f'{pfx}_long_pct']  = round(nc_l / oi * 100, 1)
+                    out[f'{pfx}_short_pct'] = round(nc_s / oi * 100, 1)
+                    log(f'  ✓ COT {metal}: long={nc_l:,} short={nc_s:,} net={out[f"{pfx}_net"]:,} ({out[f"{pfx}_pct"]}% OI)')
 
     except Exception as e:
         warn(f'COT CFTC fetch failed: {e}')
-        for k in ('cot_gold_net','cot_gold_oi','cot_gold_pct',
-                  'cot_silver_net','cot_silver_oi','cot_silver_pct',
-                  'cot_copper_net','cot_copper_oi','cot_copper_pct','cot_date'):
+        for k in ('cot_gold_net','cot_gold_oi','cot_gold_pct','cot_gold_long','cot_gold_short','cot_gold_long_pct','cot_gold_short_pct',
+                  'cot_silver_net','cot_silver_oi','cot_silver_pct','cot_silver_long','cot_silver_short','cot_silver_long_pct','cot_silver_short_pct',
+                  'cot_copper_net','cot_copper_oi','cot_copper_pct','cot_copper_long','cot_copper_short','cot_copper_long_pct','cot_copper_short_pct','cot_date'):
             lg = safe_get(EXISTING, 'macros', 'metals', k)
             if lg is not None:
                 out[k] = lg
@@ -2274,6 +2423,22 @@ def main():
     except Exception as e:
         log(f'Rate path crashed: {e}')
         data['rate_path'] = EXISTING.get('rate_path', [])
+
+    # v1.11: COT index/commodity futures for US sector gating (SP500/Crude/10yr/VIX/NASDAQ)
+    try:
+        data['cot_futures'] = fetch_cot_futures()
+    except Exception as e:
+        log(f'COT futures crashed: {e}')
+        data['meta']['errors'].append(f'cot_futures: {e}')
+        data['cot_futures'] = EXISTING.get('cot_futures', {})
+
+    # v1.11: Zacks #1/#2 grouped by GICS sector (fixed S&P universe + this run's survivors)
+    try:
+        data['zacks_sectors'] = fetch_zacks_sectors(us_all_survivors)
+    except Exception as e:
+        log(f'Zacks sectors crashed: {e}')
+        data['meta']['errors'].append(f'zacks_sectors: {e}')
+        data['zacks_sectors'] = EXISTING.get('zacks_sectors', {})
 
     data['meta']['warnings'] = list(WARNINGS)
 
