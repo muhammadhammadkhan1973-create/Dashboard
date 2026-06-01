@@ -528,6 +528,38 @@ function calcDevAlert(){
 // =========================================================
 // SECTORS, ZONE, MULTIBAGGER — stubs that render core content
 // =========================================================
+function calcHist(){
+  const rows = [
+    {factor:'Trigger',           y2008:'Global Financial Crisis — commodity shock',  y2013:'Balance of payments crisis',           y2017:'Political uncertainty + CAD widening',   y2022:'Post-COVID import surge + political crisis', y2023:'IMF program delays + reserve depletion',  pattern:'External shock or domestic policy gap'},
+    {factor:'USD/PKR Move',      y2008:'60→80 (+33%)',  y2013:'98→110 (+12%)',  y2017:'105→124 (+18%)',  y2022:'180→240 (+33%)',  y2023:'240→307 (+28%)',  pattern:'20–35% devaluation per episode'},
+    {factor:'FX Reserves',       y2008:'$8B → $3B',     y2013:'$6B → $3B',      y2017:'$16B → $7B',      y2022:'$16B → $4B',      y2023:'$4B → $3B',       pattern:'Reserves fall below $4B before IMF'},
+    {factor:'Current Account',   y2008:'-8% of GDP',    y2013:'-1% of GDP',     y2017:'-4% of GDP',      y2022:'-4.6% of GDP',    y2023:'-0.5% of GDP',    pattern:'CAD widens → pressures PKR'},
+    {factor:'Inflation Peak',    y2008:'25% YoY',       y2013:'9% YoY',         y2017:'6% YoY',           y2022:'48% YoY',         y2023:'38% YoY',         pattern:'Inflation lags devaluation by 3–6 months'},
+    {factor:'SBP Rate Peak',     y2008:'15%',           y2013:'10%',            y2017:'7%',               y2022:'22%',             y2023:'22%',             pattern:'Rate hikes follow devaluation'},
+    {factor:'IMF Program',       y2008:'SBA $7.6B',     y2013:'EFF $6.7B',      y2017:'No program',       y2022:'EFF $6B revival',  y2023:'SBA $3B',         pattern:'IMF bailout follows every major episode'},
+    {factor:'KSE-100 Reaction',  y2008:'-50% peak-trough', y2013:'+40% in 12m', y2017:'-20% then +60%',  y2022:'-35% then +60%',  y2023:'-20% then +80%',  pattern:'Market falls then rallies post-stabilisation'},
+    {factor:'Duration',          y2008:'18 months',     y2013:'12 months',      y2017:'24 months',        y2022:'18 months',       y2023:'12 months',       pattern:'12–24 months per full cycle'},
+    {factor:'Gold (PKR terms)',  y2008:'+80%',          y2013:'+15%',           y2017:'+25%',             y2022:'+60%',            y2023:'+45%',            pattern:'Gold outperforms in PKR terms every episode'},
+  ];
+
+  const tbody = document.getElementById('history_tbody');
+  if(!tbody) return;
+  
+  const cols = ['factor','y2008','y2013','y2017','y2022','y2023','pattern'];
+  tbody.innerHTML = rows.map((r,i) => {
+    const bg = i%2===0 ? 'background:#fafafa;' : '';
+    return '<tr style="' + bg + '">' + 
+      cols.map((c,ci) => {
+        const isFirst = ci===0;
+        const isLast = ci===6;
+        const style = isFirst ? 'font-weight:600;color:var(--navy);padding:8px 12px;' 
+                    : isLast  ? 'background:#FFF3CD;font-style:italic;padding:8px 12px;color:#856404;'
+                    : 'padding:8px 12px;color:var(--ink);';
+        return '<td style="' + style + 'border-bottom:1px solid #eee;">' + r[c] + '</td>';
+      }).join('') + '</tr>';
+  }).join('');
+}
+
 function calcSectors(){
   const ism=val('ism_mfg'),umcsi=val('umcsi'),pce=val('core_pce'),gdp=val('us_gdp');
   let usHtml='<table><thead><tr><th>GICS Sector</th><th>Regime Read</th><th>Holdings</th></tr></thead><tbody>';
@@ -1347,6 +1379,7 @@ function applyLive(){
   calcUS();
   calcPAK();
   calcDevAlert();
+  calcHist();
   calcSectors();
   calcZone();
   calcMbPsx();
