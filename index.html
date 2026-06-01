@@ -699,29 +699,149 @@ function calcMbPsx(){
   const inp={rev:val('psx_mb_rev'),eps:val('psx_mb_eps'),roe:val('psx_mb_roe'),roce:val('psx_mb_roce'),de:val('psx_mb_de'),ocf:val('psx_mb_ocf'),sponsor:val('psx_mb_sponsor'),mcap:val('psx_mb_mcap'),tam:parseInt(document.getElementById('psx_mb_tam').value),moat:parseInt(document.getElementById('psx_mb_moat').value),reinv:parseInt(document.getElementById('psx_mb_reinv').value),owner:parseInt(document.getElementById('psx_mb_owner').value)};
   const score=scoreMultibagger(inp,'psx');
   document.getElementById('psx_mb_score_box').innerHTML=renderMbScoreBox(score);
+  document.getElementById('psx_mb_compound_box').innerHTML=renderCompoundCalc(inp.eps,1000000,'PKR');
+  const psxFunnel=[
+    ['PSX Total Listed Companies',561,'Source: PSX official listings count May 2026'],
+    ['Outside KSE-30 (excl. large caps)',480,'Removed KSE-30 large caps (already in Explosive Stocks track)'],
+    ['Sweet Spot Tier (PKR 5-30bn market cap)',150,'Multibagger market cap range — informal PSX small-cap'],
+    ['+ Growth Filter (Fwd Earnings Growth >20%)',30,'Forecast earnings growth >=20% per Simply Wall St + PSX broker reports'],
+    ['+ Moat OR Insider Gate (CRITICAL)',18,'Clear moat (brand/network/cost/switching/regulatory) OR sponsor holding >=40% with recent insider buying'],
+    ['+ Multibagger Fit Assessment',10,'Manual qualitative review -> Final candidate shortlist below'],
+  ];
+  document.getElementById('psx_mb_funnel').innerHTML=renderFunnel(psxFunnel,'psx');
+  const psxSectors=[
+    ['Cement',20,10,5,4,2],['Banks',22,6,2,2,0],['Power / Utilities',18,12,3,2,1],
+    ['Fertilizer',7,2,1,1,0],['Textile',55,30,3,1,0],['Technology / IT',10,5,3,2,1],
+    ['Pharma',12,6,2,1,0],['E&P (Oil & Gas)',5,1,1,1,0],['OMC',5,2,1,1,0],
+    ['Auto Assemblers',8,3,2,2,1],['Auto Parts',15,10,2,1,0],['Cable & Electrical',10,6,1,1,0],
+    ['Engineering / Steel',14,8,3,3,1],['Glass / Ceramics',5,3,2,2,1],['Paper & Board',10,7,1,0,0],
+    ['Refinery',5,1,1,1,0],['Packaging',6,4,3,3,2],['Food / Beverage',20,8,2,1,1],
+    ['Sugar',30,15,0,0,0],['Insurance',15,5,1,0,0],['Transport / Logistics',8,3,2,2,1],
+    ['Chemicals',18,8,2,1,0],['Real Estate / REIT',6,2,1,1,0],['Modarabas',25,10,0,0,0],
+    ['Closed-End Mutual Funds',15,8,0,0,0],['Miscellaneous (12 other sectors)',197,11,1,0,0],
+  ];
+  document.getElementById('psx_mb_sector_table').innerHTML=renderSectorBreakdown(psxSectors,'psx');
   const igScore=val('psx_mb_ig');
-  document.getElementById('psx_mb_decision_matrix').innerHTML=`<div style="background:var(--light-blue);padding:16px;border-radius:8px;"><strong>MB Score: ${score.total.toFixed(1)}/100 | IG Score: ${igScore}/100</strong><br>Both scores shown separately — not blended.</div>`;
-  document.getElementById('psx_mb_compound_box').innerHTML=`<div class="reading-box">At ${inp.eps}% EPS CAGR: PKR 1M → PKR ${(1000000*Math.pow(1+inp.eps/100,15)/1e6).toFixed(1)}M in 15 years (${(Math.pow(1+inp.eps/100,15)).toFixed(1)}x)</div>`;
-  document.getElementById('psx_mb_tiers_table').innerHTML='<div class="reading-box">Sweet spot: PKR 5–30bn market cap (micro-to-small).</div>';
-  document.getElementById('psx_mb_funnel').innerHTML='<div class="reading-box">561 PSX listed → 10 final candidates (MUGHAL, ECOP, PIBTL, GHGL, PABC, ACPL, NCPL, SYM, IML, SAZEW)</div>';
-  document.getElementById('psx_mb_sector_table').innerHTML='';
-  document.getElementById('psx_mb_live_candidates').innerHTML='<div class="reading-box">Top candidates: MUGHAL (steel, HIGH-CONVICTION), ECOP (packaging micro-cap), PIBTL (port terminal monopoly)</div>';
-  document.getElementById('psx_mb_history_table').innerHTML='<div class="reading-box">Past multibaggers: SYS (~25x 2017-24), PABC (~10x 2018-24), EPCL (~10x 2020-22)</div>';
-  document.getElementById('psx_mb_comparison_table').innerHTML='<div class="reading-box">Multibagger track: 10-20yr hold, relaxed cash tests, qualitative moat gates. Explosive track: 1-3yr, Signal A+B, strict cash guardrails.</div>';
+  document.getElementById('psx_mb_decision_matrix').innerHTML=renderDecisionMatrix(score.total,igScore,'psx');
+  const tiers=[
+    ['Pure micro-cap zone','< PKR 5bn','Highest 50-100x potential, highest failure rate, smallest positions'],
+    ['Sweet spot','PKR 5bn - 30bn','Mayer-equivalent median for PSX. Best risk-adjusted multibagger zone.'],
+    ['Late-stage multibagger','PKR 30bn - 100bn','5-10x potential remaining. Add to existing winners here.'],
+    ['Reject — refer to Explosive Stocks track','> PKR 100bn','Already large-cap by PSX informal convention. Treat as quality compounder.'],
+  ];
+  let tHtml='<table><thead><tr><th>Tier</th><th>Market Cap Range</th><th>Profile</th></tr></thead><tbody>';
+  tiers.forEach((t,i)=>{const cls=i===0?'pos':i===1?'pos':i===2?'warn':'neg';tHtml+=`<tr class="${cls}"><td><b>${t[0]}</b></td><td>${t[1]}</td><td>${t[2]}</td></tr>`;});
+  tHtml+='</tbody></table>';
+  document.getElementById('psx_mb_tiers_table').innerHTML=tHtml;
+  const live=[
+    ['MUGHAL','Mughal Iron & Steel','Steel',26.3,71.4,123.4,73,45.1,0,'Sweet spot','HIGH-CONVICTION','High growth + 73% broker upside. Steel demand from infra revival. Active in re-roll mill expansion.'],
+    ['ECOP','EcoPack Limited','Packaging',1.9,39.2,80.3,105,7.3,5.1,'Pure micro-cap','HIGH-CONVICTION','PKR 1.9bn micro-cap. 105% broker upside. PET preform niche. Highest 50-100x optionality if execution holds.'],
+    ['PIBTL','Pakistan Intl Bulk Terminal','Transport',29.8,16.7,33.0,98,30.1,0,'Sweet spot','HIGH-CONVICTION','Karachi port coal terminal monopoly. 98% broker upside, 30%+ revenue growth from coal volumes.'],
+    ['GHGL','Ghani Glass','Glass/Materials',35.0,35.0,65.9,88,11.9,5.7,'Late-stage','STRONG','Float glass duopoly. 88% upside per AHL. Defensive moat + dividend yield combo.'],
+    ['PABC','Pak Aluminum Beverage Cans','Packaging',35.1,97.1,124.0,28,6.9,0,'Late-stage','STRONG','Beverage can duopoly. Already a 10x past multibagger (2018-24). 28% remaining target upside.'],
+    ['ACPL','Attock Cement','Cement',36.5,265.6,337.3,27,27.6,3.0,'Late-stage','STRONG','27% upside + 27.6% growth. Cement demand revival on infra spending.'],
+    ['NCPL','Nishat Chunian Power','Utilities',27.4,74.5,38.0,-49,0,9.4,'Sweet spot','WATCH','9.4% dividend yield but broker target BELOW current price. Hold for income only; not a growth multibagger.'],
+    ['SYM','Symmetry Group','Software (IT)',2.9,10.3,null,null,-23.8,0.5,'Pure micro-cap','WATCH','PKR 2.9bn micro-cap IT play. Negative recent return. Watch quarterly results before commit.'],
+    ['IML','Ismail Industries','Food/Snacks',2.7,27.1,null,null,null,0,'Pure micro-cap','WATCH','PKR 2.7bn snacks brand (Bisconni). 69.6% 1Y return — may already be running. Verify TTM growth + sponsor.'],
+    ['SAZEW','Sazgar Engineering Works','Auto (3W+EV)',null,null,null,null,null,null,'Sweet spot','STRONG','3-wheeler + Haval SUV assembler. 7 broker picks for 2026. Verify current price + market cap.'],
+  ];
+  let liveHtml='<table style="font-size:12px;"><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Mkt Cap (PKR bn)</th><th>Price</th><th>Target</th><th>Upside</th><th>Growth Fwd</th><th>Yield</th><th>Tier</th><th>Status</th><th>Thesis</th></tr></thead><tbody>';
+  live.forEach(s=>{const cls=s[10]==='HIGH-CONVICTION'?'pos':(s[10]==='STRONG'?'warn':'');const fmt=v=>v===null?'—':(typeof v==='number'?v.toLocaleString():v);const upcls=s[6]&&s[6]>50?'style="background:#C6EFCE; font-weight:700;"':(s[6]&&s[6]>25?'style="background:#FFEB9C;"':(s[6]&&s[6]<0?'style="background:#FFC7CE;"':''));liveHtml+=`<tr class="${cls}"><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${fmt(s[3])}</td><td>${fmt(s[4])}</td><td>${fmt(s[5])}</td><td ${upcls}>${s[6]===null?'—':s[6]+'%'}</td><td>${s[7]===null?'—':s[7]+'%'}</td><td>${s[8]===null?'—':s[8]+'%'}</td><td>${s[9]}</td><td><b>${s[10]}</b></td><td>${s[11]}</td></tr>`;});
+  liveHtml+='</tbody></table>';
+  liveHtml+='<p style="margin-top:10px; font-size:12px; color:var(--grey-d);"><strong>Notes:</strong> Upside % = Broker target vs current price. Growth Fwd = Simply Wall St forecasted earnings growth. Verify EACH candidate via Sarmaaya 6/9 + sponsor holding + annual report before any position initiation. Macro reads RED zone — limit new initiations to 20% of equity allocation per Tab 7.</p>';
+  document.getElementById('psx_mb_live_candidates').innerHTML=liveHtml;
+  const hist=[
+    ['SYS (Systems Limited)','2017-2024','~25x','Tech IT exports','Founder still chairman (Aezaz Hussain)','IT export boom + Visionet acquisition + reinvest at 25%+ ROCE'],
+    ['PABC (PAK Aluminum Beverage Cans)','2018-2024','~10x','Packaging','Niche beverage can monopoly in Pakistan','Coca-Cola/Pepsi capacity expansion + duopoly pricing power'],
+    ['SRVI (Service Industries)','2019-2023','~8x','Footwear export','Family-owned, export pivot','PKR weakness 2021-22 boosted dollar revenue; brand portfolio'],
+    ['EPCL (Engro Polymer)','2020-2022','~10x','Specialty Chemicals (PVC)','Engro group sponsor','PVC cycle peak + capacity expansion + import substitution'],
+    ['AIRLINK (Air Link Communication)','2022-2024','~5x','Tech distribution','Distribution monopoly for smartphone brands','Smartphone penetration + mobile manufacturing'],
+  ];
+  let hHtml='<table><thead><tr><th>Stock</th><th>Run Period</th><th>Multiple</th><th>Sector</th><th>Key Signal</th><th>Engine</th></tr></thead><tbody>';
+  hist.forEach(h=>{hHtml+=`<tr class="pos"><td><b>${h[0]}</b></td><td>${h[1]}</td><td><b>${h[2]}</b></td><td>${h[3]}</td><td>${h[4]}</td><td>${h[5]}</td></tr>`;});
+  hHtml+='</tbody></table>';
+  document.getElementById('psx_mb_history_table').innerHTML=hHtml;
+  const cmp=[
+    ['Goal','Asymmetric upside via 10x+ over 10-15 years','Quality compounders at reasonable price'],
+    ['Sarmaaya gate','6/9 acceptable (C3, C5 exempted for growth phase)','9/9 required (strict)'],
+    ['Valuation method','PEG <1.5 OR single-method DCF','7-method IV triangulation + 15% MoS'],
+    ['Margin of Safety','0% acceptable if growth + moat strong','>15% required'],
+    ['Holding period','10-20 years coffee-can','1-3 years actively managed'],
+    ['Position size','0.5-3% per name','4-7% per name'],
+    ['Capital allocation','20% of equity sleeve','80% of equity sleeve'],
+    ['Market cap target','<PKR 30bn (small/micro)','All market caps eligible'],
+    ['Macro filter','Tab 7 — relaxed action threshold','Tab 7 — strict action threshold'],
+  ];
+  let cHtml='<table><thead><tr><th>Dimension</th><th>Multibagger Track</th><th>Explosive Stocks Track</th></tr></thead><tbody>';
+  cmp.forEach(c=>{cHtml+=`<tr><td><b>${c[0]}</b></td><td>${c[1]}</td><td>${c[2]}</td></tr>`;});
+  cHtml+='</tbody></table>';
+  document.getElementById('psx_mb_comparison_table').innerHTML=cHtml;
 }
 function calcMbUs(){
   const inp={rev:val('us_mb_rev'),eps:val('us_mb_eps'),roe:val('us_mb_roe'),roce:val('us_mb_roic'),de:val('us_mb_de'),ocf:val('us_mb_ocf'),sponsor:val('us_mb_insider'),mcap:val('us_mb_mcap'),tam:parseInt(document.getElementById('us_mb_tam').value),moat:parseInt(document.getElementById('us_mb_moat').value),reinv:parseInt(document.getElementById('us_mb_reinv').value),owner:parseInt(document.getElementById('us_mb_owner').value)};
   const score=scoreMultibagger(inp,'us');
   document.getElementById('us_mb_score_box').innerHTML=renderMbScoreBox(score);
-  document.getElementById('us_mb_decision_matrix').innerHTML=`<div style="background:var(--light-blue);padding:16px;border-radius:8px;"><strong>MB Score: ${score.total.toFixed(1)}/100 | IG: ${val('us_mb_ig')}/100 | Zacks: ${document.getElementById('us_mb_zacks').value}</strong></div>`;
-  document.getElementById('us_mb_compound_box').innerHTML=`<div class="reading-box">At ${inp.eps}% EPS CAGR: $10,000 → $${(10000*Math.pow(1+inp.eps/100,15)).toLocaleString(undefined,{maximumFractionDigits:0})} in 15 years</div>`;
-  document.getElementById('us_mb_tiers_table').innerHTML='<div class="reading-box">Sweet spot: $300M–$2B (Russell 2000 small-cap).</div>';
-  document.getElementById('us_mb_funnel').innerHTML='<div class="reading-box">5,800 US-listed → 8 final candidates (PLPC, MGNI, SG, TOI, INMD, TRS, ADV, PKBK)</div>';
-  document.getElementById('us_mb_sector_table').innerHTML='';
-  document.getElementById('us_mb_live_candidates').innerHTML='<div class="reading-box">Top: PLPC (HIGH-CONVICTION, power infra), TOI (healthcare +41% rev), MGNI (CTV ad-tech)</div>';
-  document.getElementById('us_mb_history_table').innerHTML='<div class="reading-box">Past: MNST 700x, NVDA 100x, AXON 30x, CELH 50x</div>';
+  document.getElementById('us_mb_compound_box').innerHTML=renderCompoundCalc(inp.eps,10000,'USD');
+  const usFunnel=[
+    ['NYSE + NASDAQ + AMEX Listed Equities',5800,'Total US-listed common stocks across 3 exchanges (incl. ADRs)'],
+    ['US-domiciled investable (Russell 3000)',3000,'Removes ADRs, OTC, ultra-illiquid. Russell 3000 = 98% of US equity market cap.'],
+    ['Small-cap zone (Russell 2000: $300M-$2bn)',2000,'Per FINRA / Russell 2000 small-cap definition'],
+    ['+ Zacks Rank 1 or 2 (earnings revisions)',400,'Top ~20% by earnings revision momentum. Informational filter only — not a hard gate.'],
+    ['+ Revenue Growth >15% YoY',150,'Multibagger profile: growth engine must be running'],
+    ['+ Moat OR Insider Buying Gate (CRITICAL)',50,'Clear moat (brand/network/cost/switching/regulatory) OR insider Form 4 buying past 90 days'],
+    ['+ Multibagger Fit Assessment',8,'Manual qualitative review -> Final candidate shortlist below'],
+  ];
+  document.getElementById('us_mb_funnel').innerHTML=renderFunnel(usFunnel,'us');
+  const usSectors=[
+    ['Information Technology',950,280,60,18,1],['Health Care',820,340,45,10,2],['Industrials',700,260,25,8,2],
+    ['Consumer Discretionary',600,240,20,5,1],['Financials',750,330,15,4,1],['Consumer Staples',200,60,5,1,0],
+    ['Energy',250,85,8,2,0],['Materials',220,90,7,1,0],['Real Estate',250,140,5,0,0],
+    ['Communication Services',180,60,8,1,1],['Utilities',150,35,2,0,0],['ADRs / Foreign Listings',730,80,0,0,0],
+  ];
+  document.getElementById('us_mb_sector_table').innerHTML=renderSectorBreakdown(usSectors,'us');
+  const igScore=val('us_mb_ig');
+  const zacks=parseInt(document.getElementById('us_mb_zacks').value);
+  document.getElementById('us_mb_decision_matrix').innerHTML=renderDecisionMatrix(score.total,igScore,'us',zacks);
+  const tiers=[
+    ['Nano-cap','< $50M','Highest 100-bagger potential, highest liquidity risk'],
+    ['Micro-cap zone','$50M - $300M',"Mayer's historical 100-bagger zone (median $500M in 2014 dollars)"],
+    ['Small-cap sweet spot','$300M - $2bn','FINRA/Russell 2000 small-cap. Highest historical multibagger hit rate.'],
+    ['Mid-cap','$2bn - $10bn','Late-stage multibagger zone. 5-10x potential remaining.'],
+    ['Large-cap — refer to Explosive Stocks track','> $10bn','Multibagger potential largely capped. Quality compounder territory.'],
+  ];
+  let tHtml='<table><thead><tr><th>Tier</th><th>Market Cap Range (USD)</th><th>Profile</th></tr></thead><tbody>';
+  tiers.forEach((t,i)=>{const cls=i===0?'warn':i<=2?'pos':i===3?'warn':'neg';tHtml+='<tr class="'+cls+'"><td><b>'+t[0]+'</b></td><td>'+t[1]+'</td><td>'+t[2]+'</td></tr>';});
+  tHtml+='</tbody></table>';
+  document.getElementById('us_mb_tiers_table').innerHTML=tHtml;
+  const live=[
+    ['PLPC','Preformed Line Products','Power/Comm Infra',420,90,21,'Significant insider ownership',2,'Small-cap sweet spot','HIGH-CONVICTION','Energy + comms infrastructure. Profitable, clean balance sheet. Q3 rev +21% YoY. Family-controlled. Motley Fool small-cap AI pick.'],
+    ['MGNI','Magnite','AdTech',1900,13,15,'Mixed insider activity',2,'Small-cap sweet spot','STRONG','CTV ad-tech leader. Connected TV programmatic growth tailwind. Motley Fool 2026 small-cap recommendation.'],
+    ['SG','Sweetgreen','Fast Casual Dining',1200,11,18,'Founder still active',3,'Small-cap sweet spot','STRONG','Founder-led fast casual. Automated kitchen rollout. Motley Fool 2026 pick. Negative FCF currently — speculative but high optionality.'],
+    ['TOI','The Oncology Institute','Healthcare',1240,12,41,'Insider buying Mar-Apr 2026',2,'Small-cap sweet spot','STRONG','Q1 2026 revenue +41% YoY ($147M vs $104M). Healthcare services growth. Not yet profitable — verify path to FCF.'],
+    ['INMD','InMode','Med Devices',2100,null,5,'Buyback program 10% of float',3,'Mid-cap (late stage)','WATCH','77.8% gross margin specialty med devices. Earnings forecast -0.6% next 3yrs = headwind. Cheap valuation but limited growth.'],
+    ['TRS','TriMas Corporation','Packaging/Industrial',null,null,10,'Insider buying',3,'Sweet spot','WATCH','Q1 rev +10.4% YoY. Activist-driven restructuring. Insider conviction. Cyclical.'],
+    ['ADV','Advantage Solutions','Consumer Services',1350,null,0,'Insider purchase Mar 2026',4,'Small-cap sweet spot','WATCH','Brand/retail services. Q4 2025 net loss $161M. Debt restructure in progress. Speculative turnaround.'],
+    ['PKBK','Parke Bancorp','Community Bank',180,null,33,'Insider buying',2,'Micro-cap','WATCH','NJ community bank. Q1 NII +33% YoY ($22M vs $16M). 50% net income margin. Insider conviction. Pure micro-cap.'],
+  ];
+  let liveHtml='<table style="font-size:12px;"><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Mkt Cap ($M)</th><th>Price</th><th>Rev Growth</th><th>Insider Signal</th><th>Zacks</th><th>Tier</th><th>Status</th><th>Thesis</th></tr></thead><tbody>';
+  live.forEach(s=>{const cls=s[9]==='HIGH-CONVICTION'?'pos':(s[9]==='STRONG'?'warn':'');const fmt=v=>v===null?'—':(typeof v==='number'?'$'+v.toLocaleString():v);const growthCls=s[5]&&s[5]>20?'style="background:#C6EFCE; font-weight:700;"':(s[5]&&s[5]>10?'style="background:#FFEB9C;"':'');const zacksBg={1:'#006100',2:'#92D050',3:'#FFFF00',4:'#ED7D31',5:'#C00000'}[s[7]]||'#CCCCCC';const zacksText=[1,4,5].includes(s[7])?'#FFFFFF':'#000000';liveHtml+='<tr class="'+cls+'"><td><b>'+s[0]+'</b></td><td>'+s[1]+'</td><td>'+s[2]+'</td><td>'+(s[3]===null?'—':'$'+s[3]+'M')+'</td><td>'+fmt(s[4])+'</td><td '+growthCls+'>'+(s[5]===null?'—':s[5]+'%')+'</td><td>'+s[6]+'</td><td style="background:'+zacksBg+'; color:'+zacksText+'; font-weight:700; text-align:center;">'+s[7]+'</td><td>'+s[8]+'</td><td><b>'+s[9]+'</b></td><td>'+s[10]+'</td></tr>';});
+  liveHtml+='</tbody></table>';
+  liveHtml+='<p style="margin-top:10px; font-size:12px; color:var(--grey-d);"><strong>Notes:</strong> Zacks Rank 1=Strong Buy, 2=Buy, 3=Hold, 4=Sell, 5=Strong Sell. Rev Growth = most recent quarterly YoY. Insider Signal = SEC Form 4 filings activity. Verify via 10-K / 10-Q + insider ownership % on SEC EDGAR before initiation.</p>';
+  document.getElementById('us_mb_live_candidates').innerHTML=liveHtml;
+  const hist=[
+    ['NVDA','2015-2025','~70x','Semiconductors','Founder-CEO Jensen Huang','AI inference monopoly + CUDA moat + datacenter compute demand'],
+    ['MELI (MercadoLibre)','2016-2024','~15x','E-commerce LatAm','Founder-CEO Marcos Galperin','LatAm e-commerce + fintech (Mercado Pago) cross-sell'],
+    ['AXON','2019-2024','~12x','Defense Tech','Founder Rick Smith still active','Tasers + body cameras + cloud platform recurring revenue'],
+    ['ENPH','2019-2022','~30x','Solar microinverters','Founder-CTO Raghu Belur active','Residential solar boom + IRA tax credits + product cycle'],
+    ['TPL (Texas Pacific Land)','2018-2024','~7x','Permian Basin land','Insider-driven board, low float','Shale oil royalty + water rights monopoly in Permian'],
+    ['ANET (Arista) pre-2019','2014-2019','~5x','Data center networking','Founder + Ken Duda 10%+ insider','Cloud datacenter switching displacement of Cisco'],
+    ['MSCI','2010-2020','~12x','Index/ESG data','Spin-off from MS, capital-light platform','Index licensing fees + ESG data subscriptions'],
+  ];
+  let hHtml='<table><thead><tr><th>Stock</th><th>Run Period</th><th>Multiple</th><th>Sector</th><th>Key Signal</th><th>Engine</th></tr></thead><tbody>';
+  hist.forEach(h=>{hHtml+='<tr class="pos"><td><b>'+h[0]+'</b></td><td>'+h[1]+'</td><td><b>'+h[2]+'</b></td><td>'+h[3]+'</td><td>'+h[4]+'</td><td>'+h[5]+'</td></tr>';});
+  hHtml+='</tbody></table>';
+  document.getElementById('us_mb_history_table').innerHTML=hHtml;
 }
-
 // =========================================================
 // TCE + EXPLOSIVE
 // =========================================================
