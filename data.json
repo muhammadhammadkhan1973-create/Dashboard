@@ -1,13 +1,9 @@
 {
   "meta": {
     "scan_version": "1.10.0",
-    "last_scan_utc": "2026-06-01T12:03:52.085190Z",
+    "last_scan_utc": "2026-06-01T13:00:17.975586Z",
     "errors": [],
-    "warnings": [
-      "FRED cpi_yoy (CPIAUCSL) failed: Too Many Requests.  Exceeded Rate Limit",
-      "FRED gdp_growth (A191RL1Q225SBEA) failed: Too Many Requests.  Exceeded Rate Limit",
-      "FRED industrial_prod (INDPRO) failed: Too Many Requests.  Exceeded Rate Limit"
-    ]
+    "warnings": []
   },
   "macros": {
     "us": {
@@ -16,6 +12,7 @@
       "core_pce": 3.29,
       "core_pce_date": "2026-04-01",
       "cpi_yoy": 3.95,
+      "cpi_yoy_date": "2026-04-01",
       "us_10y": 4.45,
       "us_10y_date": "2026-05-28",
       "us_2y": 3.99,
@@ -27,18 +24,20 @@
       "mfg_emp": 12596.0,
       "mfg_emp_date": "2026-04-01",
       "gdp_growth": 1.6,
+      "gdp_growth_date": "2026-01-01",
       "industrial_prod": 102.5,
+      "industrial_prod_date": "2026-04-01",
       "hy_spread": 2.72,
       "hy_spread_date": "2026-05-28",
       "permits": 1423.0,
       "permits_date": "2026-04-01",
-      "wti": 90.37,
+      "wti": 89.42,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-01",
-      "brent": 93.71,
+      "brent": 92.7,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-01",
-      "brent_wti_spread": 3.34
+      "brent_wti_spread": 3.28
     },
     "psx": {
       "sbp_rate": 11.5,
@@ -50,17 +49,17 @@
       "kse100_date": "2026-06-01"
     },
     "metals": {
-      "gold_px": 4537.1,
+      "gold_px": 4537.3,
       "gold_px_date": "2026-06-01",
-      "silver_px": 75.97,
+      "silver_px": 76.14,
       "silver_px_date": "2026-06-01",
-      "platinum_px": 1949.5,
+      "platinum_px": 1953.8,
       "platinum_px_date": "2026-06-01",
-      "palladium_px": 1377.5,
+      "palladium_px": 1380.5,
       "palladium_px_date": "2026-06-01",
-      "dxy": 99.07,
+      "dxy": 99.06,
       "dxy_date": "2026-06-01",
-      "gs_ratio": 59.7,
+      "gs_ratio": 59.6,
       "cot_date": "05/26/26",
       "cot_gold_net": 154260,
       "cot_gold_oi": 353489,
@@ -74,7 +73,7 @@
       "walcl": 0.0,
       "walcl_change": 0.07,
       "walcl_date": "2026-05-27",
-      "imf_score": 1,
+      "imf_score": 0,
       "default_score": 1,
       "geo_score": 1
     }
@@ -427,8 +426,8 @@
       "name": "Gloo Holdings, Inc.",
       "sector": "Technology",
       "industry": "Software - Application",
-      "market_cap": 452416160,
-      "market_cap_m": 452.0,
+      "market_cap": 442341856,
+      "market_cap_m": 442.0,
       "price": 5.49,
       "rev_growth": 417.7,
       "eps_growth": -77.4,
@@ -569,7 +568,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 13,
+        "s1_news_count": 14,
         "s5_volume_ratio": 1.82,
         "total": 3
       }
@@ -741,7 +740,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 15,
+        "s1_news_count": 16,
         "s5_volume_ratio": 5.71,
         "s3_insider_count": 15,
         "total": 4
@@ -1021,7 +1020,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 9,
+        "s1_news_count": 8,
         "s5_volume_ratio": 1.61,
         "s3_insider_count": 14,
         "total": 4
@@ -1581,7 +1580,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 13,
+        "s1_news_count": 12,
         "s5_volume_ratio": 0.76,
         "s3_insider_count": 32,
         "total": 3
@@ -1599,7 +1598,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 10,
+        "s1_news_count": 11,
         "s5_volume_ratio": 1.22,
         "s3_insider_count": 22,
         "total": 3
@@ -1661,6 +1660,24 @@
       }
     },
     {
+      "ticker": "NUVB",
+      "name": "Nuvation Bio Inc.",
+      "sector": "Healthcare",
+      "tce_score": 2,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 1,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 6,
+        "s5_volume_ratio": 1.0,
+        "s3_insider_count": 20,
+        "total": 2
+      }
+    },
+    {
       "ticker": "PRTA",
       "name": "Prothena Corporation plc",
       "sector": "Healthcare",
@@ -1675,24 +1692,6 @@
         "s1_news_count": 3,
         "s5_volume_ratio": 0.99,
         "s3_insider_count": 15,
-        "total": 2
-      }
-    },
-    {
-      "ticker": "SBET",
-      "name": "SharpLink, Inc.",
-      "sector": "Financial Services",
-      "tce_score": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 4,
-        "s5_volume_ratio": 1.03,
-        "s3_insider_count": 5,
         "total": 2
       }
     },
@@ -1733,19 +1732,20 @@
       }
     },
     {
-      "ticker": "NUVB",
-      "name": "Nuvation Bio Inc.",
-      "sector": "Healthcare",
+      "ticker": "SBET",
+      "name": "SharpLink, Inc.",
+      "sector": "Financial Services",
       "tce_score": 1,
       "tier": "IGNORE",
       "streams": {
-        "s1_news": 1,
+        "s1_news": 0,
         "s2_sponsor": 0,
-        "s3_insider": 0,
+        "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 6,
-        "s5_volume_ratio": 1.0,
+        "s1_news_count": 0,
+        "s5_volume_ratio": 1.03,
+        "s3_insider_count": 5,
         "total": 1
       }
     },
@@ -3760,9 +3760,9 @@
         "beneish_m": 2.93,
         "iv": {
           "dcf_eps": 1362.98,
-          "graham": 25.77,
+          "graham": 25.83,
           "peter_lynch": null,
-          "composite": 694.37,
+          "composite": 694.41,
           "mos_pct": 97.3
         }
       }
@@ -4684,9 +4684,9 @@
         "beneish_m": 1.61,
         "iv": {
           "dcf_eps": 1839.4,
-          "graham": 42.51,
+          "graham": 42.25,
           "peter_lynch": 0.07,
-          "composite": 627.33,
+          "composite": 627.24,
           "mos_pct": 93.1
         }
       }
@@ -7703,11 +7703,11 @@
         "altman_z": null,
         "beneish_m": 1.57,
         "iv": {
-          "dcf_eps": 499.27,
-          "graham": 12.47,
-          "peter_lynch": -0.23,
-          "composite": 255.87,
-          "mos_pct": 96.8
+          "dcf_eps": 367.88,
+          "graham": 10.7,
+          "peter_lynch": -0.17,
+          "composite": 189.29,
+          "mos_pct": 95.6
         }
       }
     },
