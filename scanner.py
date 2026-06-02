@@ -63,7 +63,7 @@ US_SMALL_CAP_MAX  = 2_000_000_000
 US_REV_GROWTH_MIN = 0.15
 
 US_CANDIDATE_POOL = 15    # top survivors fed to TCE (slow, network-heavy)
-US_SCAN_WORKERS   = 4     # parallel Yahoo screen workers (8 tripped 'Invalid Crumb' rate-limit; 4 = safe. Drop to 2 if survived count still craters)
+US_SCAN_WORKERS   = 2     # parallel Yahoo screen workers. 8 hard-throttled, 4 still capped survivors + poisoned the EPS session. 2 = balanced. Set to 1 for guaranteed-complete sequential (~18min).
 US_EXPLOSIVE_POOL = 200   # survivors fed to explosive screen (fast, no network)
 
 PSX_SWEET_SPOT_MIN = 5_000_000_000
@@ -905,7 +905,8 @@ def screen_us_universe():
     from concurrent.futures import ThreadPoolExecutor, as_completed
     import random as _rand
     def _scan_one(tk):
-        time.sleep(_rand.uniform(0.2, 0.5))   # throttle: keep request rate under Yahoo's limit (8 workers w/o delay tripped 'Invalid Crumb')
+        if US_SCAN_WORKERS > 1:
+            time.sleep(_rand.uniform(0.2, 0.5))   # throttle only when parallel; workers=1 stays pure sequential
         try:
             return screen_us_stock(tk, yf)
         except Exception:
@@ -955,22 +956,35 @@ def screen_us_universe():
     eps_missing = [c for c in candidates[:US_EXPLOSIVE_POOL] if c.get('eps_growth') is None]
     if eps_missing:
         log(f'  Fetching income_stmt EPS for {len(eps_missing)} survivors missing earningsGrowth...')
+        # The parallel screen can poison Yahoo's shared crumb, making every income_stmt call
+        # fail (0/N). Recover: cooldown to let the throttle decay, then a fresh session + one
+        # retry per ticker. (No-op cost when the screen was sequential.)
+        if US_SCAN_WORKERS > 1:
+            time.sleep(20)
+        try:
+            import requests as _rq
+            _sess = _rq.Session(); _sess.headers.update({'User-Agent': UA})
+        except Exception:
+            _sess = None
         for c in eps_missing:
-            try:
-                stmt = yf.Ticker(c['ticker']).income_stmt
-                if stmt is not None and not stmt.empty and stmt.shape[1] >= 2:
-                    for label in ['Diluted EPS', 'Basic EPS']:
-                        if label in stmt.index:
-                            row = stmt.loc[label].dropna()
-                            if len(row) >= 2:
-                                curr, prev = float(row.iloc[0]), float(row.iloc[1])
-                                if prev != 0:
-                                    c['eps_growth'] = round((curr - prev) / abs(prev) * 100, 1)
-                                    c['growth_source'] = 'yf_stmt'
-                                    eps_hits += 1
-                            break
-            except Exception:
-                pass
+            for _att in range(2):
+                try:
+                    tk = yf.Ticker(c['ticker'], session=_sess) if _sess is not None else yf.Ticker(c['ticker'])
+                    stmt = tk.income_stmt
+                    if stmt is not None and not stmt.empty and stmt.shape[1] >= 2:
+                        for label in ['Diluted EPS', 'Basic EPS']:
+                            if label in stmt.index:
+                                row = stmt.loc[label].dropna()
+                                if len(row) >= 2:
+                                    curr, prev = float(row.iloc[0]), float(row.iloc[1])
+                                    if prev != 0:
+                                        c['eps_growth'] = round((curr - prev) / abs(prev) * 100, 1)
+                                        c['growth_source'] = 'yf_stmt'
+                                        eps_hits += 1
+                                break
+                        break   # got a statement (with or without EPS row) — don't retry
+                except Exception:
+                    time.sleep(3)   # backoff, then one retry
             time.sleep(YF_DELAY)
         log(f'  EPS enriched {eps_hits}/{len(eps_missing)} previously-None survivors')
     else:
