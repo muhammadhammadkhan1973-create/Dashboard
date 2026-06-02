@@ -821,7 +821,17 @@ def screen_us_stock(ticker, yf_module):
             'pe':           info.get('trailingPE'),
             'forward_pe':   info.get('forwardPE'),
             'insider_pct':  round(float(insider) * 100, 1),
-            'ocf_ni':       None,
+            # ROIC best-effort proxy: returnOnAssets if present (yfinance info has no clean ROIC).
+            # Dashboard treats this as a proxy; full ROIC needs financials, deferred to keep the scan fast.
+            'roic':         (round(float(info['returnOnAssets']) * 100, 1)
+                             if info.get('returnOnAssets') is not None else None),
+            # OCF/NI from info: operatingCashflow / netIncomeToCommon (both free in the same .info call).
+            'ocf_ni':       (round(float(info['operatingCashflow']) / float(info['netIncomeToCommon']), 2)
+                             if info.get('operatingCashflow') and info.get('netIncomeToCommon') else None),
+            'gross_margin': (round(float(info['grossMargins']) * 100, 1)
+                             if info.get('grossMargins') is not None else None),
+            'op_margin':    (round(float(info['operatingMargins']) * 100, 1)
+                             if info.get('operatingMargins') is not None else None),
         }
     except Exception:
         return None
