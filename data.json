@@ -1,7 +1,7 @@
 {
   "meta": {
     "scan_version": "1.12.0",
-    "last_scan_utc": "2026-06-02T21:08:24.750107Z",
+    "last_scan_utc": "2026-06-02T21:14:22.270695Z",
     "errors": [],
     "warnings": []
   },
@@ -31,13 +31,13 @@
       "hy_spread_date": "2026-06-01",
       "permits": 1423.0,
       "permits_date": "2026-04-01",
-      "wti": 93.43,
+      "wti": 93.39,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-02",
-      "brent": 95.79,
+      "brent": 95.78,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-02",
-      "brent_wti_spread": 2.36
+      "brent_wti_spread": 2.39
     },
     "psx": {
       "sbp_rate": 11.5,
@@ -52,15 +52,15 @@
       "pak_fiscal": 5.4
     },
     "metals": {
-      "gold_px": 4517.8,
+      "gold_px": 4519.2,
       "gold_px_date": "2026-06-02",
-      "silver_px": 75.43,
+      "silver_px": 75.44,
       "silver_px_date": "2026-06-02",
-      "platinum_px": 1937.7,
+      "platinum_px": 1938.2,
       "platinum_px_date": "2026-06-02",
-      "palladium_px": 1391.0,
+      "palladium_px": 1392.5,
       "palladium_px_date": "2026-06-02",
-      "dxy": 99.22,
+      "dxy": 99.21,
       "dxy_date": "2026-06-02",
       "gs_ratio": 59.9,
       "cot_date": "05/26/26",
@@ -147,12 +147,12 @@
     ],
     [
       "+ Revenue Growth >15% YoY",
-      99,
+      100,
       "Yahoo revenueGrowth + insider gate"
     ],
     [
       "+ Insider Holding >5%",
-      99,
+      100,
       "Sponsor/insider commitment"
     ],
     [
@@ -583,7 +583,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 9,
+        "s1_news_count": 8,
         "total": 2
       }
     },
@@ -679,7 +679,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 1,
+        "s1_news_count": 0,
         "total": 0
       }
     },
@@ -745,25 +745,8 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 18,
+        "s1_news_count": 17,
         "s3_insider_count": 37,
-        "total": 3
-      }
-    },
-    {
-      "ticker": "SERV",
-      "name": "Serve Robotics Inc.",
-      "sector": "Industrials",
-      "tce_score": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 12,
-        "s3_insider_count": 21,
         "total": 3
       }
     },
@@ -796,7 +779,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 22,
+        "s1_news_count": 23,
         "s3_insider_count": 14,
         "total": 3
       }
@@ -813,7 +796,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 11,
+        "s1_news_count": 9,
         "s3_insider_count": 5,
         "total": 3
       }
@@ -881,8 +864,25 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 3,
+        "s1_news_count": 4,
         "s3_insider_count": 5,
+        "total": 2
+      }
+    },
+    {
+      "ticker": "SERV",
+      "name": "Serve Robotics Inc.",
+      "sector": "Industrials",
+      "tce_score": 2,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 1,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 6,
+        "s3_insider_count": 21,
         "total": 2
       }
     },
@@ -2018,6 +2018,285 @@
       "im3": {
         "ticker": "ELA",
         "name": "ELA",
+        "sector": "\u2014",
+        "is_bank": false,
+        "price": null,
+        "score": 2,
+        "pct": 1.2,
+        "grade": "FAIL",
+        "metrics": [
+          {
+            "key": "rev_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "op_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "np_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "op_margin",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "np_margin",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "tax_rate",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "int_coverage",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 2
+          },
+          {
+            "key": "de_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "total_debt",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "current_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "cfo_trend",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "net_cash",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "ccfo_cpat",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "nfa_turn",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "roe",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "eps_trend",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "pe_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "peg_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "earn_yield",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "pb_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "graham_val",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "ps_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "div_yield",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "ev_ebitda",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "mos",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "val_shareholders",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "inv_turn",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "dro",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "fat",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "ccc",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "fcf_trend",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "croic",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "fcf_sale",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "fcf_cfo",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "cash_debt",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "cash_share",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "altman_z",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "beneish_m",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "piotroski_f",
+            "verdict": "BAD",
+            "pts": 2,
+            "max": 10
+          },
+          {
+            "key": "roic_wacc",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          }
+        ],
+        "piotroski": 0,
+        "altman_z": null,
+        "beneish_m": null,
+        "iv": {
+          "dcf_eps": null,
+          "graham": null,
+          "peter_lynch": null,
+          "composite": null,
+          "mos_pct": null
+        }
+      }
+    },
+    {
+      "ticker": "IDR",
+      "name": "Idaho Strategic Resources, Inc.",
+      "sector": "Basic Materials",
+      "rev_growth": 99.0,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 239.8,
+      "op_np_ratio": 2.42,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "EXPLOSIVE \u2014 both signals",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false,
+      "im3": {
+        "ticker": "IDR",
+        "name": "IDR",
         "sector": "\u2014",
         "is_bank": false,
         "price": null,
@@ -6240,6 +6519,7 @@
     "GCT",
     "GHM",
     "GLP",
+    "IDR",
     "LINC",
     "LPG",
     "PKE",
