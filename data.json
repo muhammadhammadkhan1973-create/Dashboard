@@ -1,7 +1,7 @@
 {
   "meta": {
     "scan_version": "1.12.0",
-    "last_scan_utc": "2026-06-02T21:14:22.270695Z",
+    "last_scan_utc": "2026-06-02T21:25:28.334353Z",
     "errors": [],
     "warnings": []
   },
@@ -60,7 +60,7 @@
       "platinum_px_date": "2026-06-02",
       "palladium_px": 1392.5,
       "palladium_px_date": "2026-06-02",
-      "dxy": 99.21,
+      "dxy": 99.2,
       "dxy_date": "2026-06-02",
       "gs_ratio": 59.9,
       "cot_date": "05/26/26",
@@ -147,12 +147,12 @@
     ],
     [
       "+ Revenue Growth >15% YoY",
-      100,
+      135,
       "Yahoo revenueGrowth + insider gate"
     ],
     [
       "+ Insider Holding >5%",
-      100,
+      135,
       "Sponsor/insider commitment"
     ],
     [
@@ -274,12 +274,12 @@
       "ticker": "IML",
       "name": "Ismail Industries",
       "sector": "Food",
-      "price": 29.25,
-      "avg_volume": 1500,
+      "price": null,
+      "avg_volume": null,
       "rev_growth": 16.7,
       "eps_growth": 21.4,
       "growth_source": "psx_annual",
-      "data_source": "psx_eod",
+      "data_source": "cached",
       "status": "WATCH"
     }
   ],
@@ -300,6 +300,25 @@
       "pe": null,
       "forward_pe": -81.66667,
       "insider_pct": 18.6,
+      "ocf_ni": null,
+      "status": "HIGH-CONVICTION"
+    },
+    {
+      "ticker": "PRTA",
+      "name": "Prothena Corporation plc",
+      "sector": "Healthcare",
+      "industry": "Biotechnology",
+      "market_cap": 481126208,
+      "market_cap_m": 481.0,
+      "price": 9.19,
+      "rev_growth": 1706.4,
+      "eps_growth": null,
+      "growth_source": "yahoo",
+      "roe": -40.3,
+      "debt_equity": 0.02,
+      "pe": null,
+      "forward_pe": -7.0152674,
+      "insider_pct": 20.2,
       "ocf_ni": null,
       "status": "HIGH-CONVICTION"
     },
@@ -339,7 +358,7 @@
       "forward_pe": 2.9195979,
       "insider_pct": 7.1,
       "ocf_ni": null,
-      "status": "HIGH-CONVICTION"
+      "status": "STRONG"
     },
     {
       "ticker": "SERV",
@@ -357,6 +376,25 @@
       "pe": null,
       "forward_pe": -5.038889,
       "insider_pct": 8.7,
+      "ocf_ni": null,
+      "status": "STRONG"
+    },
+    {
+      "ticker": "INV",
+      "name": "Innventure, Inc.",
+      "sector": "Financial Services",
+      "industry": "Asset Management",
+      "market_cap": 575706560,
+      "market_cap_m": 576.0,
+      "price": 6.85,
+      "rev_growth": 544.2,
+      "eps_growth": null,
+      "growth_source": "yahoo",
+      "roe": -47.4,
+      "debt_equity": 0.05,
+      "pe": null,
+      "forward_pe": -114.166664,
+      "insider_pct": 31.8,
       "ocf_ni": null,
       "status": "STRONG"
     },
@@ -380,6 +418,44 @@
       "status": "STRONG"
     },
     {
+      "ticker": "DVLT",
+      "name": "Datavault AI Inc.",
+      "sector": "Technology",
+      "industry": "Software - Infrastructure",
+      "market_cap": 433769952,
+      "market_cap_m": 434.0,
+      "price": 0.507,
+      "rev_growth": 443.1,
+      "eps_growth": null,
+      "growth_source": "yahoo",
+      "roe": -81.2,
+      "debt_equity": 0.03,
+      "pe": null,
+      "forward_pe": null,
+      "insider_pct": 30.9,
+      "ocf_ni": null,
+      "status": "STRONG"
+    },
+    {
+      "ticker": "GLOO",
+      "name": "Gloo Holdings, Inc.",
+      "sector": "Technology",
+      "industry": "Software - Application",
+      "market_cap": 451592128,
+      "market_cap_m": 452.0,
+      "price": 5.48,
+      "rev_growth": 417.7,
+      "eps_growth": null,
+      "growth_source": "yahoo",
+      "roe": -185.0,
+      "debt_equity": 0.28,
+      "pe": null,
+      "forward_pe": 60.888885,
+      "insider_pct": 82.5,
+      "ocf_ni": null,
+      "status": "WATCH"
+    },
+    {
       "ticker": "UMAC",
       "name": "Unusual Machines, Inc.",
       "sector": "Technology",
@@ -396,7 +472,7 @@
       "forward_pe": -167.09999,
       "insider_pct": 6.6,
       "ocf_ni": null,
-      "status": "STRONG"
+      "status": "WATCH"
     },
     {
       "ticker": "RHLD",
@@ -415,7 +491,7 @@
       "forward_pe": null,
       "insider_pct": 52.6,
       "ocf_ni": null,
-      "status": "STRONG"
+      "status": "WATCH"
     },
     {
       "ticker": "ASPI",
@@ -434,7 +510,7 @@
       "forward_pe": -7.958574,
       "insider_pct": 13.0,
       "ocf_ni": null,
-      "status": "STRONG"
+      "status": "WATCH"
     },
     {
       "ticker": "GOLD",
@@ -492,82 +568,6 @@
       "insider_pct": 43.2,
       "ocf_ni": null,
       "status": "WATCH"
-    },
-    {
-      "ticker": "SPRY",
-      "name": "ARS Pharmaceuticals, Inc.",
-      "sector": "Healthcare",
-      "industry": "Biotechnology",
-      "market_cap": 883799040,
-      "market_cap_m": 884.0,
-      "price": 8.9,
-      "rev_growth": 184.5,
-      "eps_growth": null,
-      "growth_source": "yahoo",
-      "roe": -136.4,
-      "debt_equity": 2.79,
-      "pe": null,
-      "forward_pe": -9.295039,
-      "insider_pct": 16.3,
-      "ocf_ni": null,
-      "status": "WATCH"
-    },
-    {
-      "ticker": "SKYT",
-      "name": "SkyWater Technology, Inc.",
-      "sector": "Technology",
-      "industry": "Semiconductors",
-      "market_cap": 1963755520,
-      "market_cap_m": 1964.0,
-      "price": 39.91,
-      "rev_growth": 162.1,
-      "eps_growth": null,
-      "growth_source": "yahoo",
-      "roe": 95.8,
-      "debt_equity": 1.27,
-      "pe": 17.055555,
-      "forward_pe": -196.2819,
-      "insider_pct": 25.5,
-      "ocf_ni": null,
-      "status": "WATCH"
-    },
-    {
-      "ticker": "NRGV",
-      "name": "Energy Vault Holdings, Inc.",
-      "sector": "Utilities",
-      "industry": "Utilities - Renewable",
-      "market_cap": 1044522688,
-      "market_cap_m": 1045.0,
-      "price": 5.86,
-      "rev_growth": 156.4,
-      "eps_growth": null,
-      "growth_source": "yahoo",
-      "roe": -136.3,
-      "debt_equity": 3.23,
-      "pe": null,
-      "forward_pe": -42.877007,
-      "insider_pct": 15.6,
-      "ocf_ni": null,
-      "status": "WATCH"
-    },
-    {
-      "ticker": "AKTS",
-      "name": "Aktis Oncology, Inc.",
-      "sector": "Healthcare",
-      "industry": "Biotechnology",
-      "market_cap": 1119921152,
-      "market_cap_m": 1120.0,
-      "price": 20.26,
-      "rev_growth": 123.0,
-      "eps_growth": null,
-      "growth_source": "yahoo",
-      "roe": 0.0,
-      "debt_equity": 0.02,
-      "pe": null,
-      "forward_pe": -9.325663,
-      "insider_pct": 14.1,
-      "ocf_ni": null,
-      "status": "WATCH"
     }
   ],
   "tce_psx": [
@@ -599,7 +599,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 12,
+        "s1_news_count": 13,
         "total": 2
       }
     },
@@ -679,7 +679,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 1,
         "total": 0
       }
     },
@@ -745,8 +745,25 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 17,
+        "s1_news_count": 18,
         "s3_insider_count": 37,
+        "total": 3
+      }
+    },
+    {
+      "ticker": "SERV",
+      "name": "Serve Robotics Inc.",
+      "sector": "Industrials",
+      "tce_score": 3,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 1,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 10,
+        "s3_insider_count": 21,
         "total": 3
       }
     },
@@ -819,23 +836,6 @@
       }
     },
     {
-      "ticker": "NRGV",
-      "name": "Energy Vault Holdings, Inc.",
-      "sector": "Utilities",
-      "tce_score": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 10,
-        "s3_insider_count": 18,
-        "total": 3
-      }
-    },
-    {
       "ticker": "NUVB",
       "name": "Nuvation Bio Inc.",
       "sector": "Healthcare",
@@ -849,6 +849,23 @@
         "s5_volume": 0,
         "s1_news_count": 7,
         "s3_insider_count": 10,
+        "total": 2
+      }
+    },
+    {
+      "ticker": "PRTA",
+      "name": "Prothena Corporation plc",
+      "sector": "Healthcare",
+      "tce_score": 2,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 1,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 3,
+        "s3_insider_count": 15,
         "total": 2
       }
     },
@@ -870,9 +887,9 @@
       }
     },
     {
-      "ticker": "SERV",
-      "name": "Serve Robotics Inc.",
-      "sector": "Industrials",
+      "ticker": "DVLT",
+      "name": "Datavault AI Inc.",
+      "sector": "Technology",
       "tce_score": 2,
       "tier": "IGNORE",
       "streams": {
@@ -881,8 +898,25 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 6,
-        "s3_insider_count": 21,
+        "s1_news_count": 7,
+        "s3_insider_count": 14,
+        "total": 2
+      }
+    },
+    {
+      "ticker": "GLOO",
+      "name": "Gloo Holdings, Inc.",
+      "sector": "Technology",
+      "tce_score": 2,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 1,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 3,
+        "s3_insider_count": 5,
         "total": 2
       }
     },
@@ -901,6 +935,23 @@
         "s1_news_count": 5,
         "s3_insider_count": 4,
         "total": 2
+      }
+    },
+    {
+      "ticker": "INV",
+      "name": "Innventure, Inc.",
+      "sector": "Financial Services",
+      "tce_score": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 1,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 2,
+        "s3_insider_count": 46,
+        "total": 1
       }
     },
     {
@@ -934,57 +985,6 @@
         "s5_volume": 0,
         "s1_news_count": 3,
         "s3_insider_count": 0,
-        "total": 1
-      }
-    },
-    {
-      "ticker": "SPRY",
-      "name": "ARS Pharmaceuticals, Inc.",
-      "sector": "Healthcare",
-      "tce_score": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 3,
-        "s3_insider_count": 0,
-        "total": 1
-      }
-    },
-    {
-      "ticker": "SKYT",
-      "name": "SkyWater Technology, Inc.",
-      "sector": "Technology",
-      "tce_score": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 1,
-        "s3_insider_count": 12,
-        "total": 1
-      }
-    },
-    {
-      "ticker": "AKTS",
-      "name": "Aktis Oncology, Inc.",
-      "sector": "Healthcare",
-      "tce_score": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 3,
-        "s3_insider_count": 1,
         "total": 1
       }
     }
@@ -1180,13 +1180,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "LPG",
-        "name": "LPG",
-        "sector": "\u2014",
+        "name": "Dorian LPG Ltd.",
+        "sector": "Energy",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 40.9,
+        "score": 129,
+        "pct": 79.6,
+        "grade": "A",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -1208,14 +1208,14 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
@@ -1226,68 +1226,68 @@
           },
           {
             "key": "int_coverage",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 2,
             "max": 2
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
@@ -1298,146 +1298,146 @@
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "div_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "GOOD",
+            "pts": 10,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 7,
+        "altman_z": 6.58,
+        "beneish_m": 2.05,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
+          "dcf_eps": 4181.02,
+          "graham": 52.15,
           "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "composite": 2116.59,
+          "mos_pct": 98.1
         }
       }
     },
@@ -1459,13 +1459,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "AVAH",
-        "name": "AVAH",
-        "sector": "\u2014",
+        "name": "Aveanna Healthcare Holdings Inc.",
+        "sector": "Healthcare",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 6.47,
+        "score": 99,
+        "pct": 61.1,
+        "grade": "B",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -1487,86 +1487,86 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "int_coverage",
-            "verdict": "NA",
+            "verdict": "BAD",
             "pts": 0,
             "max": 2
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
@@ -1577,26 +1577,26 @@
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
@@ -1607,20 +1607,20 @@
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
@@ -1631,14 +1631,14 @@
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
@@ -1649,74 +1649,74 @@
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "WATCH",
+            "pts": 6,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 5,
+        "altman_z": -0.67,
+        "beneish_m": 2.13,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
+          "dcf_eps": 1059.85,
+          "graham": 5.49,
           "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "composite": 532.67,
+          "mos_pct": 98.8
         }
       }
     },
@@ -1738,13 +1738,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "GLP",
-        "name": "GLP",
-        "sector": "\u2014",
+        "name": "Global Partners LP",
+        "sector": "Energy",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 49.26,
+        "score": 92,
+        "pct": 56.8,
+        "grade": "C",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -1766,200 +1766,200 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "int_coverage",
-            "verdict": "NA",
+            "verdict": "BAD",
             "pts": 0,
             "max": 2
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "peg_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "div_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
@@ -1970,30 +1970,309 @@
           },
           {
             "key": "beneish_m",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "piotroski_f",
+            "verdict": "WATCH",
+            "pts": 6,
+            "max": 10
+          },
+          {
+            "key": "roic_wacc",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          }
+        ],
+        "piotroski": 4,
+        "altman_z": null,
+        "beneish_m": 2.86,
+        "iv": {
+          "dcf_eps": 1848.16,
+          "graham": 29.8,
+          "peter_lynch": 0.65,
+          "composite": 626.21,
+          "mos_pct": 92.1
+        }
+      }
+    },
+    {
+      "ticker": "JOUT",
+      "name": "Johnson Outdoors Inc.",
+      "sector": "Consumer Cyclical",
+      "rev_growth": 15.5,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 304.5,
+      "op_np_ratio": 19.65,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "EXPLOSIVE \u2014 both signals",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false,
+      "im3": {
+        "ticker": "JOUT",
+        "name": "Johnson Outdoors Inc.",
+        "sector": "Consumer Cyclical",
+        "is_bank": false,
+        "price": 44.89,
+        "score": 115,
+        "pct": 71.0,
+        "grade": "B",
+        "metrics": [
+          {
+            "key": "rev_cagr",
             "verdict": "NA",
             "pts": 0,
             "max": 5
           },
           {
-            "key": "piotroski_f",
+            "key": "op_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "np_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "op_margin",
             "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "np_margin",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "tax_rate",
+            "verdict": "WATCH",
             "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "int_coverage",
+            "verdict": "BAD",
+            "pts": 0,
+            "max": 2
+          },
+          {
+            "key": "de_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "total_debt",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "current_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "cfo_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "net_cash",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "ccfo_cpat",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "nfa_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "roe",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "eps_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "pe_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "peg_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "earn_yield",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "pb_ratio",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "graham_val",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "ps_ratio",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "div_yield",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "ev_ebitda",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "mos",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "val_shareholders",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "inv_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "dro",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "fat",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "ccc",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "fcf_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "croic",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "fcf_sale",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "fcf_cfo",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "cash_debt",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "cash_share",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "altman_z",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "beneish_m",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "piotroski_f",
+            "verdict": "WATCH",
+            "pts": 6,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 4,
+        "altman_z": 11.97,
+        "beneish_m": 3.01,
         "iv": {
-          "dcf_eps": null,
+          "dcf_eps": -2934.29,
           "graham": null,
-          "peter_lynch": null,
+          "peter_lynch": -2.85,
           "composite": null,
           "mos_pct": null
         }
@@ -2017,13 +2296,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "ELA",
-        "name": "ELA",
-        "sector": "\u2014",
+        "name": "Envela Corporation",
+        "sector": "Consumer Cyclical",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 24.64,
+        "score": 97,
+        "pct": 59.9,
+        "grade": "C",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -2045,86 +2324,86 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "int_coverage",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 2,
             "max": 2
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
@@ -2135,26 +2414,26 @@
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
@@ -2165,116 +2444,116 @@
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "WATCH",
+            "pts": 6,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 5,
+        "altman_z": 10.67,
+        "beneish_m": 2.13,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
+          "dcf_eps": 700.73,
+          "graham": 7.25,
           "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "composite": 353.99,
+          "mos_pct": 93.0
         }
       }
     },
@@ -2296,13 +2575,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "IDR",
-        "name": "IDR",
-        "sector": "\u2014",
+        "name": "Idaho Strategic Resources, Inc.",
+        "sector": "Basic Materials",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 38.52,
+        "score": 110,
+        "pct": 67.9,
+        "grade": "B",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -2324,20 +2603,20 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
@@ -2348,62 +2627,62 @@
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
@@ -2414,26 +2693,26 @@
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
@@ -2444,116 +2723,116 @@
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "WATCH",
+            "pts": 6,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 5,
+        "altman_z": 91.93,
+        "beneish_m": 1.47,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
+          "dcf_eps": 1049.86,
+          "graham": 13.29,
           "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "composite": 531.58,
+          "mos_pct": 92.8
         }
       }
     },
@@ -2575,13 +2854,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "PKE",
-        "name": "PKE",
-        "sector": "\u2014",
+        "name": "Park Aerospace Corp.",
+        "sector": "Industrials",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 33.17,
+        "score": 115,
+        "pct": 71.0,
+        "grade": "B",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -2603,20 +2882,20 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
@@ -2627,212 +2906,212 @@
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "peg_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "div_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "GOOD",
+            "pts": 10,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 7,
+        "altman_z": 501.7,
+        "beneish_m": 1.36,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
-          "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "dcf_eps": 503.36,
+          "graham": 8.86,
+          "peter_lynch": 0.11,
+          "composite": 170.77,
+          "mos_pct": 80.6
         }
       }
     },
@@ -2854,13 +3133,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "WLKP",
-        "name": "WLKP",
-        "sector": "\u2014",
+        "name": "Westlake Chemical Partners LP",
+        "sector": "Basic Materials",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 23.27,
+        "score": 106,
+        "pct": 65.4,
+        "grade": "B",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -2882,86 +3161,86 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "int_coverage",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 2,
             "max": 2
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
@@ -2972,110 +3251,110 @@
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "div_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
@@ -3086,32 +3365,32 @@
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "WATCH",
+            "pts": 6,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           }
         ],
-        "piotroski": 0,
+        "piotroski": 4,
         "altman_z": null,
-        "beneish_m": null,
+        "beneish_m": 2.8,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
+          "dcf_eps": 1208.75,
+          "graham": 21.01,
           "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "composite": 614.88,
+          "mos_pct": 96.2
         }
       }
     },
@@ -3150,13 +3429,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "LINC",
-        "name": "LINC",
-        "sector": "\u2014",
+        "name": "Lincoln Educational Services Corporation",
+        "sector": "Consumer Defensive",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 49.06,
+        "score": 92,
+        "pct": 56.8,
+        "grade": "C",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -3178,116 +3457,116 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "int_coverage",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 2,
             "max": 2
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "peg_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
@@ -3298,116 +3577,116 @@
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "GOOD",
+            "pts": 10,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 6,
+        "altman_z": 4.34,
+        "beneish_m": 2.72,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
-          "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "dcf_eps": 589.4,
+          "graham": 9.5,
+          "peter_lynch": 0.5,
+          "composite": 199.8,
+          "mos_pct": 75.4
         }
       }
     },
@@ -3446,14 +3725,31 @@
       "is_financial": true
     },
     {
-      "ticker": "ANIP",
-      "name": "ANI Pharmaceuticals, Inc.",
-      "sector": "Healthcare",
-      "rev_growth": 20.5,
+      "ticker": "BWB",
+      "name": "Bridgewater Bancshares, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 46.2,
       "op_growth": null,
       "np_growth": null,
-      "eps_growth": 86.1,
-      "op_np_ratio": 4.2,
+      "eps_growth": 87.1,
+      "op_np_ratio": 1.89,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
+      "ticker": "PAYS",
+      "name": "Paysign, Inc.",
+      "sector": "Technology",
+      "rev_growth": 50.8,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 86.5,
+      "op_np_ratio": 1.7,
       "signal_a": true,
       "signal_b": true,
       "verdict": "EXPLOSIVE \u2014 both signals",
@@ -3462,14 +3758,14 @@
       "fidelity": "im3_screen",
       "is_financial": false,
       "im3": {
-        "ticker": "ANIP",
-        "name": "ANIP",
-        "sector": "\u2014",
+        "ticker": "PAYS",
+        "name": "Paysign, Inc.",
+        "sector": "Technology",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 7.4,
+        "score": 106,
+        "pct": 65.4,
+        "grade": "B",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -3491,20 +3787,20 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
@@ -3515,14 +3811,293 @@
           },
           {
             "key": "de_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "total_debt",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "current_ratio",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "cfo_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "net_cash",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "ccfo_cpat",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "nfa_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "roe",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "eps_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "pe_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "peg_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "earn_yield",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "pb_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "graham_val",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "ps_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "div_yield",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "ev_ebitda",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "mos",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "val_shareholders",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "inv_turn",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "dro",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "fat",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "ccc",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "fcf_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "croic",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "fcf_sale",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "fcf_cfo",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "cash_debt",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "cash_share",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "altman_z",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "beneish_m",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "piotroski_f",
+            "verdict": "WATCH",
+            "pts": 6,
+            "max": 10
+          },
+          {
+            "key": "roic_wacc",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          }
+        ],
+        "piotroski": 5,
+        "altman_z": 10.6,
+        "beneish_m": 5.35,
+        "iv": {
+          "dcf_eps": 156.56,
+          "graham": 1.94,
+          "peter_lynch": null,
+          "composite": 79.25,
+          "mos_pct": 90.7
+        }
+      }
+    },
+    {
+      "ticker": "ANIP",
+      "name": "ANI Pharmaceuticals, Inc.",
+      "sector": "Healthcare",
+      "rev_growth": 20.5,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 86.1,
+      "op_np_ratio": 4.2,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "EXPLOSIVE \u2014 both signals",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false,
+      "im3": {
+        "ticker": "ANIP",
+        "name": "ANIP",
+        "sector": "\u2014",
+        "is_bank": false,
+        "price": null,
+        "score": 86,
+        "pct": 53.1,
+        "grade": "C",
+        "metrics": [
+          {
+            "key": "rev_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "op_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "np_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "op_margin",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "np_margin",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "tax_rate",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "int_coverage",
+            "verdict": "GOOD",
+            "pts": 2,
+            "max": 2
+          },
+          {
+            "key": "de_ratio",
             "verdict": "NA",
             "pts": 0,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
@@ -3533,26 +4108,26 @@
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
@@ -3563,8 +4138,8 @@
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
@@ -3623,62 +4198,62 @@
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
@@ -3689,37 +4264,37 @@
           },
           {
             "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "GOOD",
+            "pts": 10,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 7,
+        "altman_z": 1.77,
+        "beneish_m": 2.36,
         "iv": {
-          "dcf_eps": null,
+          "dcf_eps": 3057.49,
           "graham": null,
           "peter_lynch": null,
-          "composite": null,
+          "composite": 3057.49,
           "mos_pct": null
         }
       }
@@ -3733,6 +4308,23 @@
       "np_growth": null,
       "eps_growth": 86.0,
       "op_np_ratio": 3.37,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
+      "ticker": "SFST",
+      "name": "Southern First Bancshares, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 26.2,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 83.1,
+      "op_np_ratio": 3.17,
       "signal_a": true,
       "signal_b": true,
       "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
@@ -3759,13 +4351,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "GHM",
-        "name": "GHM",
-        "sector": "\u2014",
+        "name": "Graham Corporation",
+        "sector": "Industrials",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 106.11,
+        "score": 103,
+        "pct": 63.6,
+        "grade": "B",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -3787,20 +4379,20 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
@@ -3811,92 +4403,92 @@
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "peg_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
@@ -3907,116 +4499,116 @@
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "GOOD",
+            "pts": 10,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 7,
+        "altman_z": 25.73,
+        "beneish_m": 1.39,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
-          "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "dcf_eps": 1022.23,
+          "graham": 17.28,
+          "peter_lynch": 0.63,
+          "composite": 346.71,
+          "mos_pct": 69.4
         }
       }
     },
@@ -4055,13 +4647,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "DMLP",
-        "name": "DMLP",
-        "sector": "\u2014",
+        "name": "Dorchester Minerals, L.P.",
+        "sector": "Energy",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 28.06,
+        "score": 106,
+        "pct": 65.4,
+        "grade": "B",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -4083,14 +4675,14 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
@@ -4107,116 +4699,116 @@
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "peg_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 3
           },
           {
             "key": "div_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
@@ -4227,14 +4819,14 @@
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
@@ -4245,38 +4837,38 @@
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
@@ -4287,32 +4879,32 @@
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "WATCH",
+            "pts": 6,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           }
         ],
-        "piotroski": 0,
+        "piotroski": 5,
         "altman_z": null,
-        "beneish_m": null,
+        "beneish_m": 1.76,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
-          "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "dcf_eps": 1239.79,
+          "graham": 14.18,
+          "peter_lynch": 0.06,
+          "composite": 418.01,
+          "mos_pct": 93.3
         }
       }
     },
@@ -4325,6 +4917,23 @@
       "np_growth": null,
       "eps_growth": 58.3,
       "op_np_ratio": 1.68,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
+      "ticker": "NFBK",
+      "name": "Northfield Bancorp, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 24.5,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 56.7,
+      "op_np_ratio": 2.31,
       "signal_a": true,
       "signal_b": true,
       "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
@@ -4351,13 +4960,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "GCT",
-        "name": "GCT",
-        "sector": "\u2014",
+        "name": "GigaCloud Technology Inc.",
+        "sector": "Technology",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 34.49,
+        "score": 126,
+        "pct": 77.8,
+        "grade": "A",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -4379,116 +4988,116 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "int_coverage",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 2,
             "max": 2
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "peg_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
@@ -4499,118 +5108,135 @@
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "WATCH",
+            "pts": 6,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 4,
+        "altman_z": 2.95,
+        "beneish_m": 2.13,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
-          "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "dcf_eps": 3306.14,
+          "graham": 33.55,
+          "peter_lynch": 0.19,
+          "composite": 1113.3,
+          "mos_pct": 96.9
         }
       }
+    },
+    {
+      "ticker": "KRNY",
+      "name": "Kearny Financial",
+      "sector": "Financial Services",
+      "rev_growth": 17.5,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 50.5,
+      "op_np_ratio": 2.89,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
     },
     {
       "ticker": "WLFC",
@@ -4630,13 +5256,13 @@
       "is_financial": false,
       "im3": {
         "ticker": "WLFC",
-        "name": "WLFC",
-        "sector": "\u2014",
+        "name": "Willis Lease Finance Corporation",
+        "sector": "Industrials",
         "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
+        "price": 174.53,
+        "score": 113,
+        "pct": 69.8,
+        "grade": "B",
         "metrics": [
           {
             "key": "rev_cagr",
@@ -4658,158 +5284,158 @@
           },
           {
             "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "int_coverage",
-            "verdict": "NA",
+            "verdict": "BAD",
             "pts": 0,
             "max": 2
           },
           {
             "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "peg_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
             "key": "div_yield",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
             "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
@@ -4820,76 +5446,93 @@
           },
           {
             "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
             "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
             "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "BAD",
+            "pts": 1,
             "max": 5
           },
           {
             "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
+            "verdict": "WATCH",
+            "pts": 6,
             "max": 10
           },
           {
             "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           }
         ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
+        "piotroski": 5,
+        "altman_z": 0.44,
+        "beneish_m": 2.95,
         "iv": {
-          "dcf_eps": null,
-          "graham": null,
-          "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
+          "dcf_eps": 14173.12,
+          "graham": 176.21,
+          "peter_lynch": 2.89,
+          "composite": 4784.07,
+          "mos_pct": 96.4
         }
       }
+    },
+    {
+      "ticker": "PDLB",
+      "name": "Ponce Financial Group, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 15.1,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 44.0,
+      "op_np_ratio": 2.91,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
     },
     {
       "ticker": "FSBC",
@@ -4977,6 +5620,40 @@
       "is_financial": false
     },
     {
+      "ticker": "GCBC",
+      "name": "Greene County Bancorp, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 23.4,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 31.5,
+      "op_np_ratio": 1.35,
+      "signal_a": true,
+      "signal_b": false,
+      "verdict": "QUALITY-GROWTH (Signal A only)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
+      "ticker": "NPB",
+      "name": "Northpointe Bancshares, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 27.9,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 26.5,
+      "op_np_ratio": 0.95,
+      "signal_a": true,
+      "signal_b": false,
+      "verdict": "QUALITY-GROWTH (Signal A only)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
       "ticker": "RDVT",
       "name": "Red Violet, Inc.",
       "sector": "Technology",
@@ -4992,6 +5669,23 @@
       "growth_source": "yahoo",
       "fidelity": "im3_screen",
       "is_financial": false
+    },
+    {
+      "ticker": "UNTY",
+      "name": "Unity Bancorp, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 16.1,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 23.9,
+      "op_np_ratio": 1.48,
+      "signal_a": true,
+      "signal_b": false,
+      "verdict": "QUALITY-GROWTH (Signal A only)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
     },
     {
       "ticker": "CCB",
@@ -5045,6 +5739,23 @@
       "is_financial": false
     },
     {
+      "ticker": "BSVN",
+      "name": "Bank7 Corp.",
+      "sector": "Financial Services",
+      "rev_growth": 15.8,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 15.7,
+      "op_np_ratio": 0.99,
+      "signal_a": true,
+      "signal_b": false,
+      "verdict": "QUALITY-GROWTH (Signal A only)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
       "ticker": "TCBX",
       "name": "Third Coast Bancshares, Inc.",
       "sector": "Financial Services",
@@ -5070,6 +5781,23 @@
       "np_growth": null,
       "eps_growth": 10.3,
       "op_np_ratio": 0.28,
+      "signal_a": false,
+      "signal_b": false,
+      "verdict": "NOT EXPLOSIVE",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
+      "ticker": "OBT",
+      "name": "Orange County Bancorp, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 17.0,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 10.0,
+      "op_np_ratio": 0.59,
       "signal_a": false,
       "signal_b": false,
       "verdict": "NOT EXPLOSIVE",
@@ -5172,6 +5900,23 @@
       "np_growth": null,
       "eps_growth": -8.2,
       "op_np_ratio": -0.44,
+      "signal_a": false,
+      "signal_b": false,
+      "verdict": "NOT EXPLOSIVE",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "CLMB",
+      "name": "Climb Global Solutions, Inc.",
+      "sector": "Technology",
+      "rev_growth": 32.1,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": -10.0,
+      "op_np_ratio": -0.31,
       "signal_a": false,
       "signal_b": false,
       "verdict": "NOT EXPLOSIVE",
@@ -5351,6 +6096,23 @@
       "is_financial": false
     },
     {
+      "ticker": "PRTA",
+      "name": "Prothena Corporation plc",
+      "sector": "Healthcare",
+      "rev_growth": 1706.4,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
       "ticker": "PGEN",
       "name": "Precigen, Inc.",
       "sector": "Healthcare",
@@ -5402,10 +6164,61 @@
       "is_financial": false
     },
     {
+      "ticker": "INV",
+      "name": "Innventure, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 544.2,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
       "ticker": "HYLN",
       "name": "Hyliion Holdings Corp.",
       "sector": "Consumer Cyclical",
       "rev_growth": 479.1,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "DVLT",
+      "name": "Datavault AI Inc.",
+      "sector": "Technology",
+      "rev_growth": 443.1,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "GLOO",
+      "name": "Gloo Holdings, Inc.",
+      "sector": "Technology",
+      "rev_growth": 417.7,
       "op_growth": null,
       "np_growth": null,
       "eps_growth": null,
@@ -5555,6 +6368,40 @@
       "is_financial": false
     },
     {
+      "ticker": "NUAI",
+      "name": "New Era Energy & Digital, Inc.",
+      "sector": "Technology",
+      "rev_growth": 145.8,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "COFS",
+      "name": "ChoiceOne Financial Services, I",
+      "sector": "Financial Services",
+      "rev_growth": 135.0,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
       "ticker": "AKTS",
       "name": "Aktis Oncology, Inc.",
       "sector": "Healthcare",
@@ -5640,10 +6487,61 @@
       "is_financial": false
     },
     {
+      "ticker": "FIP",
+      "name": "FTAI Infrastructure Inc.",
+      "sector": "Industrials",
+      "rev_growth": 95.9,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "SRTA",
+      "name": "Strata Critical Medical, Inc.",
+      "sector": "Healthcare",
+      "rev_growth": 87.4,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
       "ticker": "AEVA",
       "name": "Aeva Technologies, Inc.",
       "sector": "Technology",
       "rev_growth": 85.9,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "UPB",
+      "name": "Upstream Bio, Inc.",
+      "sector": "Healthcare",
+      "rev_growth": 82.7,
       "op_growth": null,
       "np_growth": null,
       "eps_growth": null,
@@ -5742,6 +6640,23 @@
       "is_financial": false
     },
     {
+      "ticker": "OSS",
+      "name": "One Stop Systems, Inc.",
+      "sector": "Technology",
+      "rev_growth": 55.0,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
       "ticker": "ENVX",
       "name": "Enovix Corporation",
       "sector": "Industrials",
@@ -5827,10 +6742,44 @@
       "is_financial": true
     },
     {
+      "ticker": "TOI",
+      "name": "The Oncology Institute, Inc.",
+      "sector": "Healthcare",
+      "rev_growth": 41.2,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
       "ticker": "MRVI",
       "name": "Maravai LifeSciences Holdings, ",
       "sector": "Healthcare",
       "rev_growth": 40.5,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "PANL",
+      "name": "Pangaea Logistics Solutions Ltd",
+      "sector": "Industrials",
+      "rev_growth": 38.9,
       "op_growth": null,
       "np_growth": null,
       "eps_growth": null,
@@ -5912,6 +6861,23 @@
       "is_financial": false
     },
     {
+      "ticker": "TREE",
+      "name": "LendingTree, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 36.5,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
       "ticker": "WYFI",
       "name": "WhiteFiber, Inc.",
       "sector": "Technology",
@@ -5980,6 +6946,23 @@
       "is_financial": false
     },
     {
+      "ticker": "ALTI",
+      "name": "AlTi Global, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 28.1,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
       "ticker": "BFLY",
       "name": "Butterfly Network, Inc.",
       "sector": "Healthcare",
@@ -5997,10 +6980,44 @@
       "is_financial": false
     },
     {
+      "ticker": "OOMA",
+      "name": "Ooma, Inc.",
+      "sector": "Technology",
+      "rev_growth": 24.8,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
       "ticker": "KDK",
       "name": "Kodiak AI, Inc.",
       "sector": "Technology",
       "rev_growth": 24.4,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "FSTR",
+      "name": "L.B. Foster Company",
+      "sector": "Industrials",
+      "rev_growth": 23.9,
       "op_growth": null,
       "np_growth": null,
       "eps_growth": null,
@@ -6167,6 +7184,40 @@
       "is_financial": false
     },
     {
+      "ticker": "WEAV",
+      "name": "Weave Communications, Inc.",
+      "sector": "Healthcare",
+      "rev_growth": 17.4,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "MAX",
+      "name": "MediaAlpha, Inc.",
+      "sector": "Communication Services",
+      "rev_growth": 17.3,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
       "ticker": "AMPL",
       "name": "Amplitude, Inc.",
       "sector": "Technology",
@@ -6188,6 +7239,40 @@
       "name": "Wealthfront Corporation",
       "sector": "Technology",
       "rev_growth": 16.3,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "TRC",
+      "name": "Tejon Ranch Co",
+      "sector": "Industrials",
+      "rev_growth": 15.8,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "SES",
+      "name": "SES AI Corporation",
+      "sector": "Consumer Cyclical",
+      "rev_growth": 15.8,
       "op_growth": null,
       "np_growth": null,
       "eps_growth": null,
@@ -6252,9 +7337,43 @@
       "is_financial": false
     },
     {
+      "ticker": "WTI",
+      "name": "W&T Offshore, Inc.",
+      "sector": "Energy",
+      "rev_growth": 15.5,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
       "ticker": "MRLN",
       "name": "Merlin, Inc.",
       "sector": "Industrials",
+      "rev_growth": 15.4,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": null,
+      "op_np_ratio": null,
+      "signal_a": null,
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "VITL",
+      "name": "Vital Farms, Inc.",
+      "sector": "Consumer Defensive",
       "rev_growth": 15.4,
       "op_growth": null,
       "np_growth": null,
@@ -6520,8 +7639,10 @@
     "GHM",
     "GLP",
     "IDR",
+    "JOUT",
     "LINC",
     "LPG",
+    "PAYS",
     "PKE",
     "WLFC",
     "WLKP"
