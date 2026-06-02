@@ -734,7 +734,8 @@ function calcSectors() {
       usHtml += `<tr class="${cls}"><td><b>${sec}</b></td><td style="background:${Z_BG};">${zCell}</td><td>${cotCell}</td><td><b>${status}</b></td><td>${holdings[sec]||''}</td></tr>`;
     });
     usHtml += '</tbody></table>';
-    const cotDate = CF && (CF.SP500||CF.Crude||{}).date;
+    const cotDateRaw = CF && (CF.SP500||CF.Crude||{}).date;
+    const cotDate = fmtCotDate(cotDateRaw);
     usHtml += `<div class="reading-box" style="margin-top:10px;font-size:11px;"><span style="color:#4F46E5;font-weight:700;">■ Zacks</span> = % of sector\'s stocks ranked #1/#2 (indigo). <span style="color:#0F766E;font-weight:700;">■ COT</span> = CFTC longs-vs-shorts: <span style="color:#059669;font-weight:700;">🟢 net long = bullish, proceed</span> / <span style="color:#DC2626;font-weight:700;">🔴 net short = bearish, halt</span>. SP500 gates the broad market; Crude→Energy, 10yr→Financials, NASDAQ→Tech.${cotDate?' COT as of '+cotDate+'.':''}</div>`;
   } else {
     // Fallback: original macro-regime reads (never blank if scanner blocks absent)
@@ -1455,7 +1456,7 @@ function renderTceTable(elId, rows, market) {
 
   const showIM3T = (market==='us');
   html+=`<table style="font-size:12px;"><thead><tr>
-    <th>Ticker</th><th>Name</th><th>Score</th><th>Streams Firing</th><th>Tier</th>
+    <th>Ticker</th><th>Name</th><th>Convergence /5</th><th>Streams Firing (with magnitude)</th><th>Tier</th>
     ${showIM3T?`<th style="background:#312E81;min-width:130px;line-height:1.4;">
       IM3 Quality
       <div style="font-size:9px;font-weight:400;margin-top:3px;">
@@ -1478,12 +1479,30 @@ function renderTceTable(elId, rows, market) {
     } else if(Array.isArray(r.streams)){
       firedNames=r.streams.map(k=>STREAM_LABELS[k]||k);
     }
+    // Score (0-5) and a mini horizontal bar showing X/5 filled
+    const sc = (r.tce_score!=null?r.tce_score:(r.streams&&r.streams.total!=null?r.streams.total:(r.score!=null?r.score:null)));
+    const scN = (sc==null||isNaN(sc))?0:Number(sc);
+    const barColor = scN>=4?'var(--green)':scN>=3?'var(--orange)':'#9ca3af';
+    const scoreBar = `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+        <div style="font-weight:700;font-size:13px;">${sc==null?'—':scN}<span style="font-size:9px;color:var(--grey-d);">/5</span></div>
+        <div style="display:flex;height:7px;width:62px;border-radius:4px;overflow:hidden;border:1px solid #e5e7eb;">
+          ${[0,1,2,3,4].map(i=>`<div style="flex:1;background:${i<scN?barColor:'#f1f5f9'};${i<4?'border-right:1px solid #fff;':''}"></div>`).join('')}
+        </div></div>`;
+    // Stream magnitudes — show HOW STRONGLY each fired, not just that it did
+    const st = (r.streams&&typeof r.streams==='object'&&!Array.isArray(r.streams)) ? r.streams : {};
+    const mags = [];
+    if(st.s1_news===1)     mags.push(`<span style="color:#065F46;">📰 News${st.s1_news_count!=null?' '+st.s1_news_count:''}</span>`);
+    if(st.s2_sponsor===1)  mags.push(`<span style="color:#065F46;">🤝 Sponsor</span>`);
+    if(st.s3_insider===1)  mags.push(`<span style="color:#065F46;">👤 Insider${st.s3_insider_count!=null?' '+st.s3_insider_count:''}</span>`);
+    if(st.s4_revisions===1)mags.push(`<span style="color:#065F46;">📈 Revisions</span>`);
+    if(st.s5_volume===1)   mags.push(`<span style="color:#065F46;">📊 Vol${st.s5_volume_ratio!=null?' '+Number(st.s5_volume_ratio).toFixed(1)+'×':''}</span>`);
+    const streamsCell = mags.length ? mags.join(' · ') : (firedNames.join(' · ')||'—');
 
     html+=`<tr class="${cls}">
       <td><b>${tk||'—'}</b></td>
       <td>${r.name||'—'}</td>
-      <td style="text-align:center;font-weight:700;">${(r.tce_score!=null?r.tce_score:(r.streams&&r.streams.total!=null?r.streams.total:(r.score!=null?r.score:'—')))}</td>
-      <td style="font-size:11px;">${firedNames.join(' · ')||'—'}</td>
+      <td style="text-align:center;">${scoreBar}</td>
+      <td style="font-size:11px;line-height:1.6;">${streamsCell}</td>
       <td><b style="color:${tier==='HIGH'?'var(--green)':tier==='WATCH'?'var(--orange)':'var(--grey-d)'};">${r.tier||'—'}</b></td>
       ${showIM3T?`<td data-im3-cell="${tk}"
           data-im3-ticker="${tk}"
@@ -1699,7 +1718,7 @@ function calcMetals(){
   const cotRows=document.getElementById('cot_rows');
   if(cotRows){
     const cotDate=document.getElementById('cot_date_badge');
-    if(cotDate&&M.cot_date)cotDate.textContent='As of '+M.cot_date;
+    if(cotDate&&M.cot_date)cotDate.textContent='As of '+fmtCotDate(M.cot_date);
     const cotMetals=[
       {name:'Gold',  net:M.cot_gold_net,  oi:M.cot_gold_oi,  pct:M.cot_gold_pct,  lng:M.cot_gold_long,  sht:M.cot_gold_short,  lpct:M.cot_gold_long_pct,  spct:M.cot_gold_short_pct},
       {name:'Silver',net:M.cot_silver_net,oi:M.cot_silver_oi,pct:M.cot_silver_pct,lng:M.cot_silver_long,sht:M.cot_silver_short,lpct:M.cot_silver_long_pct,spct:M.cot_silver_short_pct},
@@ -1789,8 +1808,32 @@ function setLiveStatus(state,scan,ver){
   else if(state==='stale'){dot.style.background='#f59e0b';txt.textContent='Live scan (older)';}
   else if(state==='none'){dot.style.background='#ef4444';txt.textContent='No scan data yet';}
   else{dot.style.background='#9ca3af';txt.textContent='Loading live scan…';}
-  if(scan)document.getElementById('liveScan').textContent=scan;
+  if(scan)document.getElementById('liveScan').textContent=fmtScanTime(scan);
   if(ver)document.getElementById('liveVer').textContent=ver;
+}
+function fmtCotDate(raw){
+  // COT report date → clean "26 May 2026". Handles ISO (futures) and MM/DD/YY (metals).
+  if(!raw) return '';
+  let d;
+  if(/^\d{2}\/\d{2}\/\d{2}$/.test(raw)){ const [m,dd,y]=raw.split('/'); d=new Date(2000+ +y, +m-1, +dd); }
+  else { d=new Date(raw); }
+  if(isNaN(d.getTime())) return raw;
+  try{ return new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',year:'numeric'}).format(d); }
+  catch(e){ return raw; }
+}
+function fmtScanTime(iso){
+  // Convert the raw UTC scan timestamp to readable Dubai time (GST, UTC+4).
+  if(!iso||iso==='—') return '—';
+  const d=new Date(iso);
+  if(isNaN(d.getTime())) return iso;
+  try{
+    const s=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Dubai',weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}).format(d);
+    return s+' GST';
+  }catch(e){
+    // fallback: manual UTC+4
+    const t=new Date(d.getTime()+4*3600*1000);
+    return t.toISOString().slice(0,16).replace('T',' ')+' GST';
+  }
 }
 function injectLiveMacros(){
   // Push scanner values from data.json into the Tab-1 inputs so Tabs 2/3/4/6/7 reflect the live scan.
