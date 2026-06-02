@@ -1,7 +1,7 @@
 {
   "meta": {
     "scan_version": "1.10.0",
-    "last_scan_utc": "2026-06-02T05:48:43.556333Z",
+    "last_scan_utc": "2026-06-02T06:31:41.411280Z",
     "errors": [],
     "warnings": []
   },
@@ -31,13 +31,13 @@
       "hy_spread_date": "2026-05-31",
       "permits": 1423.0,
       "permits_date": "2026-04-01",
-      "wti": 91.12,
+      "wti": 91.16,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-02",
-      "brent": 94.02,
+      "brent": 94.05,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-02",
-      "brent_wti_spread": 2.9
+      "brent_wti_spread": 2.89
     },
     "psx": {
       "sbp_rate": 11.5,
@@ -49,15 +49,15 @@
       "kse100_date": "2026-06-02"
     },
     "metals": {
-      "gold_px": 4554.3,
+      "gold_px": 4558.4,
       "gold_px_date": "2026-06-02",
-      "silver_px": 76.94,
+      "silver_px": 76.96,
       "silver_px_date": "2026-06-02",
-      "platinum_px": 1971.0,
+      "platinum_px": 1974.6,
       "platinum_px_date": "2026-06-02",
-      "palladium_px": 1403.5,
+      "palladium_px": 1413.5,
       "palladium_px_date": "2026-06-02",
-      "dxy": 99.15,
+      "dxy": 99.09,
       "dxy_date": "2026-06-02",
       "gs_ratio": 59.2,
       "cot_date": "05/26/26",
@@ -580,7 +580,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 13,
+        "s1_news_count": 14,
         "s5_volume_ratio": 1.72,
         "total": 3
       }
@@ -699,7 +699,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.84,
         "total": 0
       }
@@ -1032,7 +1032,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 9,
+        "s1_news_count": 10,
         "s5_volume_ratio": 1.62,
         "s3_insider_count": 14,
         "total": 4
@@ -1312,7 +1312,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 25,
+        "s1_news_count": 24,
         "s5_volume_ratio": 1.47,
         "s3_insider_count": 13,
         "total": 4
@@ -1592,27 +1592,9 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 18,
+        "s1_news_count": 17,
         "s5_volume_ratio": 0.79,
         "s3_insider_count": 37,
-        "total": 3
-      }
-    },
-    {
-      "ticker": "SERV",
-      "name": "Serve Robotics Inc.",
-      "sector": "Industrials",
-      "tce_score": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 10,
-        "s5_volume_ratio": 1.27,
-        "s3_insider_count": 21,
         "total": 3
       }
     },
@@ -1635,25 +1617,6 @@
       }
     },
     {
-      "ticker": "AVBC",
-      "name": "Avidia Bancorp, Inc.",
-      "sector": "Financial Services",
-      "tce_score": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 1,
-        "s5_volume": 0,
-        "s1_news_count": 4,
-        "s5_volume_ratio": 0.63,
-        "s4_revisions_pct": 83.1,
-        "s3_insider_count": 18,
-        "total": 3
-      }
-    },
-    {
       "ticker": "ASPI",
       "name": "ASP Isotopes Inc.",
       "sector": "Basic Materials",
@@ -1665,7 +1628,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 9,
+        "s1_news_count": 10,
         "s5_volume_ratio": 1.14,
         "s3_insider_count": 5,
         "total": 3
@@ -1690,38 +1653,19 @@
       }
     },
     {
-      "ticker": "NUVB",
-      "name": "Nuvation Bio Inc.",
-      "sector": "Healthcare",
+      "ticker": "SERV",
+      "name": "Serve Robotics Inc.",
+      "sector": "Industrials",
       "tce_score": 2,
       "tier": "IGNORE",
       "streams": {
         "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 6,
-        "s5_volume_ratio": 1.04,
-        "s3_insider_count": 10,
-        "total": 2
-      }
-    },
-    {
-      "ticker": "PRTA",
-      "name": "Prothena Corporation plc",
-      "sector": "Healthcare",
-      "tce_score": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 3,
-        "s5_volume_ratio": 0.98,
-        "s3_insider_count": 15,
+        "s1_news_count": 11,
+        "s5_volume_ratio": 1.27,
         "total": 2
       }
     },
@@ -1744,38 +1688,71 @@
       }
     },
     {
-      "ticker": "FWDI",
-      "name": "Forward Industries, Inc.",
-      "sector": "Consumer Cyclical",
+      "ticker": "AVBC",
+      "name": "Avidia Bancorp, Inc.",
+      "sector": "Financial Services",
       "tce_score": 2,
       "tier": "IGNORE",
       "streams": {
         "s1_news": 1,
         "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 0,
+        "s3_insider": 0,
+        "s4_revisions": 1,
         "s5_volume": 0,
-        "s1_news_count": 3,
-        "s5_volume_ratio": 1.17,
-        "s3_insider_count": 10,
+        "s1_news_count": 4,
+        "s5_volume_ratio": 0.63,
+        "s4_revisions_pct": 83.1,
         "total": 2
       }
     },
     {
-      "ticker": "SBET",
-      "name": "SharpLink, Inc.",
-      "sector": "Financial Services",
+      "ticker": "NUVB",
+      "name": "Nuvation Bio Inc.",
+      "sector": "Healthcare",
       "tce_score": 1,
       "tier": "IGNORE",
       "streams": {
-        "s1_news": 0,
+        "s1_news": 1,
         "s2_sponsor": 0,
-        "s3_insider": 1,
+        "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 2,
-        "s5_volume_ratio": 1.06,
-        "s3_insider_count": 5,
+        "s1_news_count": 3,
+        "s5_volume_ratio": 1.04,
+        "total": 1
+      }
+    },
+    {
+      "ticker": "PRTA",
+      "name": "Prothena Corporation plc",
+      "sector": "Healthcare",
+      "tce_score": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 3,
+        "s5_volume_ratio": 0.98,
+        "total": 1
+      }
+    },
+    {
+      "ticker": "FWDI",
+      "name": "Forward Industries, Inc.",
+      "sector": "Consumer Cyclical",
+      "tce_score": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 3,
+        "s5_volume_ratio": 1.17,
         "total": 1
       }
     },
@@ -1795,6 +1772,23 @@
         "s5_volume_ratio": 0.76,
         "s3_insider_count": 5,
         "total": 1
+      }
+    },
+    {
+      "ticker": "SBET",
+      "name": "SharpLink, Inc.",
+      "sector": "Financial Services",
+      "tce_score": 0,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 2,
+        "s5_volume_ratio": 1.06,
+        "total": 0
       }
     }
   ],
