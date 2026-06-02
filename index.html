@@ -838,7 +838,10 @@ function calcZone(){
   if(zb){const zcls=curr==='DARK GREEN'||curr==='LIGHT GREEN'?'green':curr==='YELLOW'?'yellow':'red';zb.className='alert-banner '+zcls;zb.innerHTML=`<h3>CURRENT ZONE: ${curr} — ${active.alloc}</h3><p><b>SBP Rate:</b> ${sbp.toFixed(2)}% | <b>Mean:</b> ${SBP_MEAN}% | <b>Direction:</b> ${dir} (vs prior ${SBP_PREV_RATE}%)</p>`;}
   document.getElementById('zone_rate_path').innerHTML='<div class="reading-box">Embedded MPC path (authoritative record, edit in code on each decision): 11.00% (Sep-Oct 2025) → 10.50% (Dec cut) → 11.50% (Apr 27 2026 hike). Current entered rate <strong>'+sbp.toFixed(2)+'%</strong> → <strong>'+curr+' zone</strong>.</div>';
   document.getElementById('zone_kse_table').innerHTML='<div class="reading-box">KSE-100 monthly (reference): Sep 163,848 → Dec 174,054 → Mar 148,743 → May 167,844.</div>';
-  document.getElementById('zone_alloc_table').innerHTML=`<div class="reading-box">${curr} zone (Weight ${active.w}): <strong>${active.alloc}</strong> for Risk HIGH profile.</div>`;
+  const favSectors=(curr==='DARK GREEN'||curr==='LIGHT GREEN')
+    ? 'Cyclicals lead — Cement, IT, Auto, Engineering, Textile'
+    : 'Defensives lead — Banks, Oil/E&P, Fertilizer, Power, Utilities';
+  document.getElementById('zone_alloc_table').innerHTML=`<div class="reading-box">${curr} zone (Weight ${active.w}): <strong>${active.alloc}</strong> for Risk HIGH profile.<br><strong>Sector rotation:</strong> ${favSectors}. <span style="color:var(--grey-d);">(Tab 6 has the live sector board.)</span></div>`;
 }
 function scoreMultibagger(inp,market){
   // V2: quantitative factors (85) + PEG valuation (in the 85) + soft capped at 15, plus HARD GATES.
@@ -1130,11 +1133,11 @@ function calcMbUs(){
 // =========================================================
 // TCE + EXPLOSIVE
 // =========================================================
-function explosiveVerdictClass(v){if(!v)return'neutral';const u=v.toUpperCase();if(u.startsWith('EXPLOSIVE'))return'pos';if(u.startsWith('QUALITY-GROWTH')||u.startsWith('INFLECTION'))return'warn';if(u.startsWith('NOT EXPLOSIVE'))return'neg';return'neutral';}
+function explosiveVerdictClass(v){if(!v)return'neutral';const u=v.toUpperCase();if(u.startsWith('EXPLOSIVE'))return'pos';if(u.startsWith('FINANCIAL'))return'warn';if(u.startsWith('QUALITY-GROWTH')||u.startsWith('INFLECTION'))return'warn';if(u.startsWith('NOT EXPLOSIVE'))return'neg';return'neutral';}
 function sigDot(s){const c=s===true?'#10b981':s===false?'#ef4444':'#d1d5db';return`<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${c};"></span>`;}
 
 function explosiveMacroBanner(market){
-  if(market==='us'){let rn='—';try{rn=regimeOf(val('us_gdp'),val('core_pce')).name;}catch(e){}return`<strong>Macro gate (US):</strong> ${rn}. Explosive names sized to US regime. Never uses PSX Allocation Zone.`;}
+  if(market==='us'){let rn='—';try{const slope=val('us_10y')-val('us_2y');const g=(isNaN(slope)?0:(slope>0?1:-1));rn=regimeOf(g,val('core_pce')).name;}catch(e){}return`<strong>Macro gate (US):</strong> ${rn} (growth axis = yield-curve slope, consistent with Tab 6). Explosive names sized to US regime. Never uses PSX Allocation Zone.`;}
   return`<strong>Macro gate (PSX):</strong> RED Zone (20% stocks). Treat explosive PSX candidates as watchlist only until zone improves.`;
 }
 function calcExplosive(){
@@ -1368,6 +1371,7 @@ function renderExplosiveTable(elId, rows, market) {
   const counts={
     explosive: rows.filter(r=>r.verdict&&r.verdict.startsWith('EXPLOSIVE')).length,
     quality:   rows.filter(r=>r.verdict&&r.verdict.startsWith('QUALITY-GROWTH')).length,
+    financial: rows.filter(r=>r.verdict&&r.verdict.startsWith('FINANCIAL')).length,
     not:       rows.filter(r=>r.verdict==='NOT EXPLOSIVE').length,
     insuff:    insuff.length
   };
@@ -1375,6 +1379,7 @@ function renderExplosiveTable(elId, rows, market) {
   let html=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:600;align-items:center;">`;
   if(counts.explosive) html+=`<span style="background:var(--green-l);color:var(--green);padding:4px 10px;border-radius:6px;">🚀 ${counts.explosive} EXPLOSIVE</span>`;
   if(counts.quality)   html+=`<span style="background:var(--orange-l);color:var(--orange);padding:4px 10px;border-radius:6px;">📈 ${counts.quality} QUALITY-GROWTH</span>`;
+  if(counts.financial) html+=`<span style="background:#EEF2FF;color:var(--navy);padding:4px 10px;border-radius:6px;">🏦 ${counts.financial} FINANCIAL → bank model (System B)</span>`;
   if(counts.not)       html+=`<span style="background:var(--red-l);color:var(--red);padding:4px 10px;border-radius:6px;">✗ ${counts.not} NOT EXPLOSIVE</span>`;
   if(counts.insuff)    html+=`<span style="background:#F3F4F6;color:#6B7280;padding:4px 10px;border-radius:6px;">◌ ${counts.insuff} INSUFFICIENT DATA</span>`;
   if(market==='us') {
@@ -1854,7 +1859,9 @@ async function loadLiveData(){
     if(!resp.ok)throw new Error('HTTP '+resp.status);
     LIVE=await resp.json();
     const meta=LIVE.meta||{};
-    const scan=meta.last_scan_utc||'—';
+    const scan=meta.last_scan_utc
+      ? (function(){try{return new Date(meta.last_scan_utc).toLocaleString('en-GB',{timeZone:'Asia/Dubai',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' GST';}catch(e){return meta.last_scan_utc;}})()
+      : '—';
     const ver=meta.scan_version||'—';
     let isStale=false;
     if(meta.last_scan_utc){const ageH=(Date.now()-new Date(meta.last_scan_utc).getTime())/3.6e6;if(ageH>48)isStale=true;}
