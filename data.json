@@ -1,7 +1,7 @@
 {
   "meta": {
     "scan_version": "1.12.0",
-    "last_scan_utc": "2026-06-02T21:03:45.915804Z",
+    "last_scan_utc": "2026-06-02T21:08:24.750107Z",
     "errors": [],
     "warnings": []
   },
@@ -31,13 +31,13 @@
       "hy_spread_date": "2026-06-01",
       "permits": 1423.0,
       "permits_date": "2026-04-01",
-      "wti": 93.39,
+      "wti": 93.43,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-02",
       "brent": 95.79,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-02",
-      "brent_wti_spread": 2.4
+      "brent_wti_spread": 2.36
     },
     "psx": {
       "sbp_rate": 11.5,
@@ -52,13 +52,13 @@
       "pak_fiscal": 5.4
     },
     "metals": {
-      "gold_px": 4517.5,
+      "gold_px": 4517.8,
       "gold_px_date": "2026-06-02",
-      "silver_px": 75.4,
+      "silver_px": 75.43,
       "silver_px_date": "2026-06-02",
-      "platinum_px": 1938.4,
+      "platinum_px": 1937.7,
       "platinum_px_date": "2026-06-02",
-      "palladium_px": 1392.0,
+      "palladium_px": 1391.0,
       "palladium_px_date": "2026-06-02",
       "dxy": 99.22,
       "dxy_date": "2026-06-02",
@@ -147,12 +147,12 @@
     ],
     [
       "+ Revenue Growth >15% YoY",
-      119,
+      99,
       "Yahoo revenueGrowth + insider gate"
     ],
     [
       "+ Insider Holding >5%",
-      119,
+      99,
       "Sponsor/insider commitment"
     ],
     [
@@ -380,25 +380,6 @@
       "status": "STRONG"
     },
     {
-      "ticker": "FWDI",
-      "name": "Forward Industries, Inc.",
-      "sector": "Consumer Cyclical",
-      "industry": "Footwear & Accessories",
-      "market_cap": 335311808,
-      "market_cap_m": 335.0,
-      "price": 4.49,
-      "rev_growth": 315.0,
-      "eps_growth": null,
-      "growth_source": "yahoo",
-      "roe": -373.0,
-      "debt_equity": 0.1,
-      "pe": null,
-      "forward_pe": -11225.0,
-      "insider_pct": 30.4,
-      "ocf_ni": null,
-      "status": "STRONG"
-    },
-    {
       "ticker": "UMAC",
       "name": "Unusual Machines, Inc.",
       "sector": "Technology",
@@ -453,7 +434,7 @@
       "forward_pe": -7.958574,
       "insider_pct": 13.0,
       "ocf_ni": null,
-      "status": "WATCH"
+      "status": "STRONG"
     },
     {
       "ticker": "GOLD",
@@ -568,6 +549,25 @@
       "insider_pct": 15.6,
       "ocf_ni": null,
       "status": "WATCH"
+    },
+    {
+      "ticker": "AKTS",
+      "name": "Aktis Oncology, Inc.",
+      "sector": "Healthcare",
+      "industry": "Biotechnology",
+      "market_cap": 1119921152,
+      "market_cap_m": 1120.0,
+      "price": 20.26,
+      "rev_growth": 123.0,
+      "eps_growth": null,
+      "growth_source": "yahoo",
+      "roe": 0.0,
+      "debt_equity": 0.02,
+      "pe": null,
+      "forward_pe": -9.325663,
+      "insider_pct": 14.1,
+      "ocf_ni": null,
+      "status": "WATCH"
     }
   ],
   "tce_psx": [
@@ -583,7 +583,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 8,
+        "s1_news_count": 9,
         "total": 2
       }
     },
@@ -813,7 +813,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 9,
+        "s1_news_count": 11,
         "s3_insider_count": 5,
         "total": 3
       }
@@ -881,25 +881,8 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 4,
+        "s1_news_count": 3,
         "s3_insider_count": 5,
-        "total": 2
-      }
-    },
-    {
-      "ticker": "FWDI",
-      "name": "Forward Industries, Inc.",
-      "sector": "Consumer Cyclical",
-      "tce_score": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 4,
-        "s3_insider_count": 10,
         "total": 2
       }
     },
@@ -985,6 +968,23 @@
         "s5_volume": 0,
         "s1_news_count": 1,
         "s3_insider_count": 12,
+        "total": 1
+      }
+    },
+    {
+      "ticker": "AKTS",
+      "name": "Aktis Oncology, Inc.",
+      "sector": "Healthcare",
+      "tce_score": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 3,
+        "s3_insider_count": 1,
         "total": 1
       }
     }
@@ -3150,23 +3150,6 @@
       "is_financial": true
     },
     {
-      "ticker": "WSBF",
-      "name": "Waterstone Financial, Inc.",
-      "sector": "Financial Services",
-      "rev_growth": 17.2,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 104.6,
-      "op_np_ratio": 6.08,
-      "signal_a": true,
-      "signal_b": true,
-      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
       "ticker": "MCB",
       "name": "Metropolitan Bank Holding Corp.",
       "sector": "Financial Services",
@@ -3776,285 +3759,6 @@
       "is_financial": true
     },
     {
-      "ticker": "ELMD",
-      "name": "Electromed, Inc.",
-      "sector": "Healthcare",
-      "rev_growth": 18.4,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 66.7,
-      "op_np_ratio": 3.63,
-      "signal_a": true,
-      "signal_b": true,
-      "verdict": "EXPLOSIVE \u2014 both signals",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": false,
-      "im3": {
-        "ticker": "ELMD",
-        "name": "ELMD",
-        "sector": "\u2014",
-        "is_bank": false,
-        "price": null,
-        "score": 2,
-        "pct": 1.2,
-        "grade": "FAIL",
-        "metrics": [
-          {
-            "key": "rev_cagr",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "op_cagr",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 1
-          },
-          {
-            "key": "np_cagr",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 1
-          },
-          {
-            "key": "op_margin",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "np_margin",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "tax_rate",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "int_coverage",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 2
-          },
-          {
-            "key": "de_ratio",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "total_debt",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "current_ratio",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "cfo_trend",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "net_cash",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "ccfo_cpat",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "nfa_turn",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "roe",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "eps_trend",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "peg_ratio",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "earn_yield",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "pb_ratio",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "graham_val",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "ps_ratio",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "div_yield",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "ev_ebitda",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "mos",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "inv_turn",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "dro",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "fat",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "ccc",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "fcf_trend",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "croic",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "fcf_sale",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "fcf_cfo",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          },
-          {
-            "key": "cash_debt",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "cash_share",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "beneish_m",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
-            "max": 10
-          },
-          {
-            "key": "roic_wacc",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 3
-          }
-        ],
-        "piotroski": 0,
-        "altman_z": null,
-        "beneish_m": null,
-        "iv": {
-          "dcf_eps": null,
-          "graham": null,
-          "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
-        }
-      }
-    },
-    {
       "ticker": "DMLP",
       "name": "Dorchester Minerals, L.P.",
       "sector": "Energy",
@@ -4630,23 +4334,6 @@
       }
     },
     {
-      "ticker": "CHMG",
-      "name": "Chemung Financial Corp",
-      "sector": "Financial Services",
-      "rev_growth": 19.1,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 51.7,
-      "op_np_ratio": 2.71,
-      "signal_a": true,
-      "signal_b": true,
-      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
       "ticker": "WLFC",
       "name": "Willis Lease Finance Corporatio",
       "sector": "Industrials",
@@ -4926,23 +4613,6 @@
       }
     },
     {
-      "ticker": "BCML",
-      "name": "BayCom Corp",
-      "sector": "Financial Services",
-      "rev_growth": 15.8,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 47.0,
-      "op_np_ratio": 2.97,
-      "signal_a": true,
-      "signal_b": true,
-      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
       "ticker": "FSBC",
       "name": "Five Star Bancorp",
       "sector": "Financial Services",
@@ -4954,40 +4624,6 @@
       "signal_a": true,
       "signal_b": true,
       "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
-      "ticker": "PCB",
-      "name": "PCB Bancorp",
-      "sector": "Financial Services",
-      "rev_growth": 17.6,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 39.6,
-      "op_np_ratio": 2.25,
-      "signal_a": true,
-      "signal_b": true,
-      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
-      "ticker": "PKBK",
-      "name": "Parke Bancorp, Inc.",
-      "sector": "Financial Services",
-      "rev_growth": 35.3,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 52.3,
-      "op_np_ratio": 1.48,
-      "signal_a": true,
-      "signal_b": false,
-      "verdict": "QUALITY-GROWTH (Signal A only)",
       "cash_guardrails": "na_confirm_im3",
       "growth_source": "yahoo",
       "fidelity": "im3_screen",
@@ -5062,23 +4698,6 @@
       "is_financial": false
     },
     {
-      "ticker": "LWAY",
-      "name": "Lifeway Foods, Inc.",
-      "sector": "Consumer Defensive",
-      "rev_growth": 36.7,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 30.4,
-      "op_np_ratio": 0.83,
-      "signal_a": true,
-      "signal_b": false,
-      "verdict": "QUALITY-GROWTH (Signal A only)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
       "ticker": "RDVT",
       "name": "Red Violet, Inc.",
       "sector": "Technology",
@@ -5130,23 +4749,6 @@
       "is_financial": true
     },
     {
-      "ticker": "AVBH",
-      "name": "Avidbank Holdings, Inc.",
-      "sector": "Financial Services",
-      "rev_growth": 29.2,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 18.3,
-      "op_np_ratio": 0.63,
-      "signal_a": true,
-      "signal_b": false,
-      "verdict": "QUALITY-GROWTH (Signal A only)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
       "ticker": "PBT",
       "name": "Permian Basin Royalty Trust",
       "sector": "Energy",
@@ -5162,23 +4764,6 @@
       "growth_source": "yahoo",
       "fidelity": "im3_screen",
       "is_financial": false
-    },
-    {
-      "ticker": "PLBC",
-      "name": "Plumas Bancorp",
-      "sector": "Financial Services",
-      "rev_growth": 32.4,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 15.0,
-      "op_np_ratio": 0.46,
-      "signal_a": true,
-      "signal_b": false,
-      "verdict": "QUALITY-GROWTH (Signal A only)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
     },
     {
       "ticker": "TCBX",
@@ -5230,23 +4815,6 @@
       "growth_source": "yahoo",
       "fidelity": "im3_screen",
       "is_financial": false
-    },
-    {
-      "ticker": "COSO",
-      "name": "CoastalSouth Bancshares, Inc.",
-      "sector": "Financial Services",
-      "rev_growth": 18.4,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 8.5,
-      "op_np_ratio": 0.46,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
     },
     {
       "ticker": "SKWD",
@@ -5419,23 +4987,6 @@
       "is_financial": true
     },
     {
-      "ticker": "NWFL",
-      "name": "Norwood Financial Corp.",
-      "sector": "Financial Services",
-      "rev_growth": 33.4,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -44.7,
-      "op_np_ratio": -1.34,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
       "ticker": "MPB",
       "name": "Mid Penn Bancorp",
       "sector": "Financial Services",
@@ -5444,40 +4995,6 @@
       "np_growth": null,
       "eps_growth": -49.3,
       "op_np_ratio": -1.48,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
-      "ticker": "CXDO",
-      "name": "Crexendo, Inc.",
-      "sector": "Communication Services",
-      "rev_growth": 29.0,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -54.2,
-      "op_np_ratio": -1.87,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
-      "ticker": "AII",
-      "name": "American Integrity Insurance Gr",
-      "sector": "Financial Services",
-      "rev_growth": 26.5,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -63.4,
-      "op_np_ratio": -2.39,
       "signal_a": false,
       "signal_b": false,
       "verdict": "NOT EXPLOSIVE",
@@ -5610,23 +5127,6 @@
       "name": "Hyliion Holdings Corp.",
       "sector": "Consumer Cyclical",
       "rev_growth": 479.1,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": null,
-      "op_np_ratio": null,
-      "signal_a": null,
-      "signal_b": null,
-      "verdict": "INSUFFICIENT DATA",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
-      "ticker": "FWDI",
-      "name": "Forward Industries, Inc.",
-      "sector": "Consumer Cyclical",
-      "rev_growth": 315.0,
       "op_growth": null,
       "np_growth": null,
       "eps_growth": null,
@@ -5810,23 +5310,6 @@
       "is_financial": false
     },
     {
-      "ticker": "RILY",
-      "name": "BRC Group Holdings, Inc.",
-      "sector": "Financial Services",
-      "rev_growth": 113.4,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": null,
-      "op_np_ratio": null,
-      "signal_a": null,
-      "signal_b": null,
-      "verdict": "INSUFFICIENT DATA",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
       "ticker": "TIC",
       "name": "TIC Solutions, Inc.",
       "sector": "Industrials",
@@ -5882,23 +5365,6 @@
       "name": "Aeva Technologies, Inc.",
       "sector": "Technology",
       "rev_growth": 85.9,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": null,
-      "op_np_ratio": null,
-      "signal_a": null,
-      "signal_b": null,
-      "verdict": "INSUFFICIENT DATA",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
-      "ticker": "FENC",
-      "name": "Fennec Pharmaceuticals Inc.",
-      "sector": "Healthcare",
-      "rev_growth": 72.6,
       "op_growth": null,
       "np_growth": null,
       "eps_growth": null,
@@ -6029,23 +5495,6 @@
       "growth_source": "yahoo",
       "fidelity": "im3_screen",
       "is_financial": false
-    },
-    {
-      "ticker": "SSSS",
-      "name": "SuRo Capital Corp.",
-      "sector": "Financial Services",
-      "rev_growth": 46.7,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": null,
-      "op_np_ratio": null,
-      "signal_a": null,
-      "signal_b": null,
-      "verdict": "INSUFFICIENT DATA",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
     },
     {
       "ticker": "EVGO",
@@ -6201,23 +5650,6 @@
       "is_financial": false
     },
     {
-      "ticker": "PINE",
-      "name": "Alpine Income Property Trust, I",
-      "sector": "Real Estate",
-      "rev_growth": 29.6,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": null,
-      "op_np_ratio": null,
-      "signal_a": null,
-      "signal_b": null,
-      "verdict": "INSUFFICIENT DATA",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
       "ticker": "CBLL",
       "name": "CeriBell, Inc.",
       "sector": "Healthcare",
@@ -6256,23 +5688,6 @@
       "name": "Bally's Corporation",
       "sector": "Consumer Cyclical",
       "rev_growth": 28.3,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": null,
-      "op_np_ratio": null,
-      "signal_a": null,
-      "signal_b": null,
-      "verdict": "INSUFFICIENT DATA",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
-      "ticker": "SVCO",
-      "name": "Silvaco Group, Inc.",
-      "sector": "Technology",
-      "rev_growth": 26.0,
       "op_growth": null,
       "np_growth": null,
       "eps_growth": null,
@@ -6357,23 +5772,6 @@
       "ticker": "DAKT",
       "name": "Daktronics, Inc.",
       "sector": "Technology",
-      "rev_growth": 21.6,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": null,
-      "op_np_ratio": null,
-      "signal_a": null,
-      "signal_b": null,
-      "verdict": "INSUFFICIENT DATA",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
-      "ticker": "IVVD",
-      "name": "Invivyd, Inc.",
-      "sector": "Healthcare",
       "rev_growth": 21.6,
       "op_growth": null,
       "np_growth": null,
@@ -6839,7 +6237,6 @@
     "AVAH",
     "DMLP",
     "ELA",
-    "ELMD",
     "GCT",
     "GHM",
     "GLP",
