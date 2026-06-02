@@ -243,25 +243,19 @@ def fetch_us_macros():
         except Exception:
             pass
 
-        # Baker Hughes rig count (F1) — longer timeout + retry across mirror endpoints
-        _rig_urls = ['https://rigcount.bakerhughes.com/rig-count-overview',
-                     'https://rigcount.bakerhughes.com/na-rig-count']
-        import re as _re
-        for _ru in _rig_urls:
-            if out.get('us_oil_rigs') is not None:
-                break
-            for _attempt in range(2):
-                try:
-                    rr = requests.get(_ru, headers={'User-Agent': UA}, timeout=20)
-                    if rr.status_code == 200:
-                        mm = _re.search(r'U\.?S\.?\s*Oil[^0-9]{0,40}(\d{3,4})', rr.text)
-                        if mm:
-                            out['us_oil_rigs'] = int(mm.group(1))
-                            log(f'  ✓ US oil rigs (Baker Hughes): {out["us_oil_rigs"]}')
-                            break
-                except Exception as e:
-                    if _attempt == 1:
-                        log(f'  · Rig count ({_ru.rsplit("/",1)[-1]}): {e}')
+        # Baker Hughes rig count (F1) — single quick attempt. It reliably blocks the
+        # GitHub runner, so don't burn ~80s retrying; fall straight through to last-good.
+        try:
+            import re as _re
+            rr = requests.get('https://rigcount.bakerhughes.com/rig-count-overview',
+                              headers={'User-Agent': UA}, timeout=8)
+            if rr.status_code == 200:
+                mm = _re.search(r'U\.?S\.?\s*Oil[^0-9]{0,40}(\d{3,4})', rr.text)
+                if mm:
+                    out['us_oil_rigs'] = int(mm.group(1))
+                    log(f'  ✓ US oil rigs (Baker Hughes): {out["us_oil_rigs"]}')
+        except Exception as e:
+            log(f'  · Rig count (last-good): {e}')
         if out.get('us_oil_rigs') is None:
             lg = safe_get(EXISTING, 'macros', 'us', 'us_oil_rigs')
             if lg is not None:
@@ -2521,8 +2515,26 @@ def main():
         data['cot_futures'] = EXISTING.get('cot_futures', {})
 
     # v1.11: Zacks #1/#2 grouped by GICS sector (fixed S&P universe + this run's survivors)
+    # Cadence gate: Zacks ranks update ~weekly, but the scrape costs ~17 min. Skip it if the
+    # last scrape is <7 days old and carry forward last-good (sector breadth is stable
+    # intra-week); otherwise scrape and stamp the date.
+    _prev_z = EXISTING.get('zacks_sectors', {}) or {}
+    _prev_scraped = _prev_z.get('_scraped_utc') if isinstance(_prev_z, dict) else None
+    _z_age = None
+    _z_fresh = False
+    if _prev_scraped:
+        try:
+            _z_age = (dt.datetime.utcnow() - dt.datetime.fromisoformat(str(_prev_scraped).replace('Z', ''))).days
+            _z_fresh = _z_age < 7
+        except Exception:
+            _z_fresh = False
     try:
-        data['zacks_sectors'] = fetch_zacks_sectors(us_all_survivors)
+        if _z_fresh:
+            log(f'  → Zacks scrape skipped (last scrape {_z_age}d ago, <7d) — carrying forward last-good')
+            data['zacks_sectors'] = _prev_z
+        else:
+            data['zacks_sectors'] = fetch_zacks_sectors(us_all_survivors)
+            data['zacks_sectors']['_scraped_utc'] = dt.datetime.utcnow().isoformat() + 'Z'
     except Exception as e:
         log(f'Zacks sectors crashed: {e}')
         data['meta']['errors'].append(f'zacks_sectors: {e}')
