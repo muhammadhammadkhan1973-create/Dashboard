@@ -63,7 +63,7 @@ US_SMALL_CAP_MAX  = 2_000_000_000
 US_REV_GROWTH_MIN = 0.15
 
 US_CANDIDATE_POOL = 15    # top survivors fed to TCE (slow, network-heavy)
-US_SCAN_WORKERS   = 8     # parallel Yahoo screen workers (tune down if rate-limited)
+US_SCAN_WORKERS   = 4     # parallel Yahoo screen workers (8 tripped 'Invalid Crumb' rate-limit; 4 = safe. Drop to 2 if survived count still craters)
 US_EXPLOSIVE_POOL = 200   # survivors fed to explosive screen (fast, no network)
 
 PSX_SWEET_SPOT_MIN = 5_000_000_000
@@ -903,7 +903,9 @@ def screen_us_universe():
     # (each call builds its own yf.Ticker, no shared state). Tune US_SCAN_WORKERS down if
     # Yahoo rate-limits (watch the survived count). Validates on the live run.
     from concurrent.futures import ThreadPoolExecutor, as_completed
+    import random as _rand
     def _scan_one(tk):
+        time.sleep(_rand.uniform(0.2, 0.5))   # throttle: keep request rate under Yahoo's limit (8 workers w/o delay tripped 'Invalid Crumb')
         try:
             return screen_us_stock(tk, yf)
         except Exception:
