@@ -220,6 +220,7 @@
     <button class="tab" onclick="showPanel('tce', this)">10. TCE Convergence</button>
     <button class="tab" onclick="showPanel('explosive', this)">11. Explosive Stocks</button>
     <button class="tab metals-tab" onclick="showPanel('metals', this)">12. Gold &amp; Metals</button>
+    <button class="tab" onclick="showPanel('etf', this)">13. ETF Builder</button>
   </div>
 
   <!-- PANELS 1-11: identical to v4.1 — placeholder divs maintain structure -->
@@ -380,6 +381,16 @@
     </div>
   </div>
 
+</div>
+
+<div id="etf" class="panel">
+  <h2 class="section-title">ETF Builder — Consensus %-Portfolio (regime + Zacks breadth)</h2>
+  <div id="etf_intro"></div>
+  <div id="etf_banner" style="margin:12px 0;"></div>
+  <h3 class="panel-title" style="margin-top:18px;">Recommended allocation</h3>
+  <div id="etf_table"></div>
+  <h3 class="panel-title" style="margin-top:18px;">Recommended vs your current holdings</h3>
+  <div id="etf_compare"></div>
 </div>
 
 <div class="footer">
@@ -1851,6 +1862,7 @@ function applyLive(){
   calcMbUs();
   calcExplosive();
   calcMetals();
+  calcETF();
 }
 async function loadLiveData(){
   setLiveStatus('loading');
@@ -1876,6 +1888,52 @@ function reloadLive(){loadLiveData();}
 // =========================================================
 // MASTER RECALC + INIT
 // =========================================================
+function calcETF(){
+  const intro=document.getElementById('etf_intro');
+  if(intro) intro.innerHTML='<div class="reading-box">Target %-portfolio from the live US regime (favored sectors) weighted by <b>Zacks #1/#2 breadth</b>, plus equal-weight + small/mid ballast, normalized to 100% — then compared to your holdings\u2019 sector mix. Consensus here = regime + Zacks-breadth signal (real scan data), not scraped ETF holdings.</div>';
+  const ycSlope=(val('us_10y')-val('us_2y')), pce=val('core_pce'), ism=val('ism_mfg');
+  const growthAxis=(isNaN(ycSlope)?0:(ycSlope>0?1:-1))+(isNaN(ism)?0:(ism>=50?0.4:-0.4));
+  let reg; try{reg=regimeOf(growthAxis,pce);}catch(e){reg={name:'—'};}
+  const REGIME_FAVORED={
+    'GOLDILOCKS':['Information Technology','Communication Services','Consumer Discretionary','Financials','Industrials','Materials'],
+    'REFLATION':['Energy','Materials','Industrials','Financials','Consumer Discretionary'],
+    'DISINFLATION':['Utilities','Consumer Staples','Health Care','Real Estate'],
+    'STAGFLATION':['Energy','Consumer Staples','Utilities','Communication Services'],
+  };
+  const favored=REGIME_FAVORED[reg.name]||[];
+  const ETF={'Information Technology':'IYW','Financials':'IYF','Energy':'IYE','Materials':'IYM','Industrials':'IYJ','Consumer Discretionary':'IYC','Consumer Staples':'IYK','Health Care':'IYH','Utilities':'IDU','Real Estate':'IYR','Communication Services':'IYZ'};
+  const Z=(LIVE&&LIVE.zacks_sectors)?LIVE.zacks_sectors:{};
+  const convict={}; let sumConv=0;
+  favored.forEach(s=>{const t=(Z[s]&&Z[s].top)?Z[s].top:1; convict[s]=t; sumConv+=t;});
+  if(sumConv===0) sumConv=favored.length||1;
+  const CORE=70, BALLAST=30;
+  const rows=[];
+  favored.forEach(s=>{rows.push({etf:ETF[s]||'\u2014', sector:s, pct:CORE*(convict[s]/sumConv), conv:convict[s], note:(Z[s]?`${Z[s].top} of ${Z[s].total} are Zacks #1/#2`:'breadth n/a')});});
+  rows.push({etf:'RSP', sector:'Equal-weight S&P 500', pct:BALLAST*0.5, conv:'\u2014', note:'reduces mega-cap concentration'});
+  rows.push({etf:'IJR', sector:'Small-cap core', pct:BALLAST*0.25, conv:'\u2014', note:'small-cap ballast'});
+  rows.push({etf:'IJH', sector:'Mid-cap core', pct:BALLAST*0.25, conv:'\u2014', note:'mid-cap ballast'});
+  const zcls=reg.name==='GOLDILOCKS'?'green':reg.name==='REFLATION'?'yellow':reg.name==='STAGFLATION'?'red':'orange';
+  document.getElementById('etf_banner').innerHTML=`<div class="alert-banner ${zcls}"><h3>Regime: ${reg.name} \u2014 favored sectors lead the build</h3><p>Favored: ${favored.join(', ')||'\u2014'}. Core ${CORE}% weighted by Zacks #1/#2 breadth; ${BALLAST}% ballast (RSP + small/mid).</p></div>`;
+  let t='<table><thead><tr><th>ETF</th><th>Sleeve / Sector</th><th>Target %</th><th>Conviction</th><th>Basis</th></tr></thead><tbody>';
+  rows.forEach(r=>{t+=`<tr><td><b>${r.etf}</b></td><td>${r.sector}</td><td style="text-align:right;font-weight:700;">${r.pct.toFixed(1)}%</td><td style="text-align:center;">${r.conv}</td><td style="font-size:11.5px;color:var(--grey-d);">${r.note}</td></tr>`;});
+  const tot=rows.reduce((a,r)=>a+r.pct,0);
+  t+=`<tr style="border-top:2px solid var(--navy);font-weight:700;"><td>TOTAL</td><td></td><td style="text-align:right;">${tot.toFixed(0)}%</td><td></td><td></td></tr>`;
+  document.getElementById('etf_table').innerHTML=t+'</tbody></table>';
+  const holdingsBySector={'Energy':['XOM','CVX','COP','EOG'],'Information Technology':['MSFT'],'Communication Services':['GOOGL','META'],'Health Care':['UNH'],'Consumer Staples':['GIS','KO']};
+  const nHold=Object.values(holdingsBySector).reduce((a,v)=>a+v.length,0);
+  const recBySector={}; favored.forEach(s=>{const r=rows.find(x=>x.sector===s); if(r) recBySector[s]=r.pct;});
+  const allSectors=[...new Set([...favored,...Object.keys(holdingsBySector)])];
+  let c='<table><thead><tr><th>Sector</th><th>Your current %</th><th>Recommended %</th><th>Gap</th><th>Action</th></tr></thead><tbody>';
+  allSectors.forEach(s=>{
+    const cur=(holdingsBySector[s]?holdingsBySector[s].length/nHold*100:0);
+    const rec=(recBySector[s]||0), gap=rec-cur;
+    const act=gap>8?'\u2b06 ADD exposure':gap<-8?'\u2b07 TRIM':'\u2713 roughly aligned';
+    const cls=gap>8?'pos':gap<-8?'neg':'';
+    c+=`<tr class="${cls}"><td><b>${s}</b>${holdingsBySector[s]?' ('+holdingsBySector[s].join(', ')+')':''}</td><td style="text-align:right;">${cur.toFixed(0)}%</td><td style="text-align:right;">${rec.toFixed(0)}%</td><td style="text-align:right;font-weight:700;">${gap>0?'+':''}${gap.toFixed(0)}%</td><td>${act}</td></tr>`;
+  });
+  c+='</tbody></table><div class="reading-box" style="margin-top:10px;font-size:12px;">Current % assumes equal weight across your 10 holdings. The remaining '+BALLAST+'% recommended (RSP + small/mid) is broad-market and not attributed to a single sector.</div>';
+  document.getElementById('etf_compare').innerHTML=c;
+}
 function recalc(){
   calcUS();
   calcPAK();
@@ -1886,6 +1944,7 @@ function recalc(){
   calcMbUs();
   calcExplosive();
   calcMetals();
+  calcETF();
 }
 window.addEventListener('DOMContentLoaded',()=>{
   recalc();
