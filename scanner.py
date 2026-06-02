@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.10.0'
+SCAN_VERSION = '1.12.0'
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -63,6 +63,7 @@ US_SMALL_CAP_MAX  = 2_000_000_000
 US_REV_GROWTH_MIN = 0.15
 
 US_CANDIDATE_POOL = 15    # top survivors fed to TCE (slow, network-heavy)
+US_SCAN_WORKERS   = 8     # parallel Yahoo screen workers (tune down if rate-limited)
 US_EXPLOSIVE_POOL = 200   # survivors fed to explosive screen (fast, no network)
 
 PSX_SWEET_SPOT_MIN = 5_000_000_000
@@ -898,23 +899,35 @@ def screen_us_universe():
     log(f'  Screening {total} pre-filtered tickers via Yahoo Finance...')
     start = time.time()
 
-    for i, ticker in enumerate(tickers):
-        if i > 0 and i % 50 == 0:
-            elapsed = time.time() - start
-            rate = i / elapsed if elapsed > 0 else 0
-            eta = (total - i) / rate / 60 if rate > 0 else 0
-            log(f'  Progress: {i}/{total} ({i/total*100:.0f}%) — '
-                f'survived: {len(candidates)} — ETA: {eta:.1f}min')
-
-        result = screen_us_stock(ticker, yf)
-        if result is not None:
-            candidates.append(result)
-
-        if time.time() - start > 2400:
-            warn(f'US scan TIME CAP hit at {i}/{total}, stopping early')
-            break
-
-        time.sleep(YF_DELAY)
+    # Parallelized Yahoo screen (was ~16 min sequential). screen_us_stock is thread-safe
+    # (each call builds its own yf.Ticker, no shared state). Tune US_SCAN_WORKERS down if
+    # Yahoo rate-limits (watch the survived count). Validates on the live run.
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    def _scan_one(tk):
+        try:
+            return screen_us_stock(tk, yf)
+        except Exception:
+            return None
+    done = 0
+    ex = ThreadPoolExecutor(max_workers=US_SCAN_WORKERS)
+    try:
+        futures = [ex.submit(_scan_one, tk) for tk in tickers]
+        for fut in as_completed(futures):
+            done += 1
+            result = fut.result()
+            if result is not None:
+                candidates.append(result)
+            if done % 100 == 0:
+                elapsed = time.time() - start
+                rate = done / elapsed if elapsed > 0 else 0
+                eta = (total - done) / rate / 60 if rate > 0 else 0
+                log(f'  Progress: {done}/{total} ({done/total*100:.0f}%) — '
+                    f'survived: {len(candidates)} — ETA: {eta:.1f}min')
+            if time.time() - start > 2400:
+                warn(f'US scan TIME CAP hit at {done}/{total}, stopping early')
+                break
+    finally:
+        ex.shutdown(wait=False, cancel_futures=True)
 
     elapsed = time.time() - start
     log(f'  US scan: {elapsed/60:.1f}min, {len(candidates)} candidates passed all gates')
