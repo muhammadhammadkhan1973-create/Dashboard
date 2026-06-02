@@ -243,18 +243,25 @@ def fetch_us_macros():
         except Exception:
             pass
 
-        # Baker Hughes rig count
-        try:
-            rr = requests.get('https://rigcount.bakerhughes.com/rig-count-overview',
-                              headers={'User-Agent': UA}, timeout=5)
-            if rr.status_code == 200:
-                import re as _re
-                mm = _re.search(r'U\.?S\.?\s*Oil[^0-9]{0,40}(\d{3,4})', rr.text)
-                if mm:
-                    out['us_oil_rigs'] = int(mm.group(1))
-                    log(f'  ✓ US oil rigs (Baker Hughes): {out["us_oil_rigs"]}')
-        except Exception as e:
-            log(f'  · Rig count: {e}')
+        # Baker Hughes rig count (F1) — longer timeout + retry across mirror endpoints
+        _rig_urls = ['https://rigcount.bakerhughes.com/rig-count-overview',
+                     'https://rigcount.bakerhughes.com/na-rig-count']
+        import re as _re
+        for _ru in _rig_urls:
+            if out.get('us_oil_rigs') is not None:
+                break
+            for _attempt in range(2):
+                try:
+                    rr = requests.get(_ru, headers={'User-Agent': UA}, timeout=20)
+                    if rr.status_code == 200:
+                        mm = _re.search(r'U\.?S\.?\s*Oil[^0-9]{0,40}(\d{3,4})', rr.text)
+                        if mm:
+                            out['us_oil_rigs'] = int(mm.group(1))
+                            log(f'  ✓ US oil rigs (Baker Hughes): {out["us_oil_rigs"]}')
+                            break
+                except Exception as e:
+                    if _attempt == 1:
+                        log(f'  · Rig count ({_ru.rsplit("/",1)[-1]}): {e}')
         if out.get('us_oil_rigs') is None:
             lg = safe_get(EXISTING, 'macros', 'us', 'us_oil_rigs')
             if lg is not None:
@@ -414,7 +421,41 @@ def fetch_psx_macros():
         if lg is not None:
             out['pak_cpi'] = lg
 
-    log('  → SBP reserves: official page is PDF; keeping last-good (manual override)')
+    # F4/F3: best-effort live fetch (free, Trading Economics) for the slow-moving Pakistan
+    # macros that had no live source. Fully guarded — on ANY failure the last-good fallbacks
+    # below apply, so this can never break the run. Validates on the live run (TE may block
+    # bots; last-good remains the reliable backstop — spot-check against broker monthlies).
+    def _te(slug, label):
+        try:
+            rr = requests.get('https://tradingeconomics.com/pakistan/' + slug,
+                              headers={'User-Agent': UA}, timeout=12)
+            if rr.status_code != 200:
+                return None
+            txt = re.sub(r'<[^>]+>', ' ', rr.text)
+            m = re.search(label + r'[^0-9\-]{0,40}(-?\d{1,4}(?:\.\d{1,2})?)', txt, re.I)
+            return float(m.group(1)) if m else None
+        except Exception:
+            return None
+    try:
+        if out.get('pak_cpi') is None:
+            v = _te('inflation-cpi', 'Inflation Rate')
+            if v is not None: out['pak_cpi'] = v; log(f'  ✓ Pak CPI (TE): {v}%')
+        if out.get('reer') is None:
+            v = _te('real-effective-exchange-rate', 'Real Effective')
+            if v is not None: out['reer'] = v; log(f'  ✓ REER (TE): {v}')
+        if out.get('pak_ca') is None:
+            v = _te('current-account', 'Current Account')
+            if v is not None: out['pak_ca'] = v; log(f'  ✓ Current account (TE): {v}')
+        if out.get('pak_fiscal') is None:
+            v = _te('government-budget', 'Government Budget')
+            if v is not None: out['pak_fiscal'] = v; log(f'  ✓ Fiscal balance (TE): {v}% GDP')
+        if out.get('sbp_reserves') is None:
+            v = _te('foreign-exchange-reserves', 'Foreign Exchange Reserves')
+            if v is not None: out['sbp_reserves'] = round(v/1000.0, 2) if v > 1000 else v; log(f'  ✓ SBP reserves (TE): {out["sbp_reserves"]}')
+    except Exception as e:
+        log(f'  · TE Pakistan macros (best-effort): {e}')
+
+    log('  → SBP reserves: official page is PDF; keeping last-good if TE missed (manual override)')
     if out.get('sbp_reserves') is None:
         lg = safe_get(EXISTING, 'macros', 'psx', 'sbp_reserves')
         if lg is not None:
@@ -626,10 +667,10 @@ def fetch_metals():
             if len(s) >= 2:
                 current = float(s.iloc[-1])
                 prior   = float(s.iloc[-5]) if len(s) >= 5 else float(s.iloc[0])
-                out['walcl']        = round(current / 1e9, 1)
+                out['walcl']        = round(current / 1e6, 2)   # FRED WALCL is $millions -> store $trillions
                 out['walcl_change'] = round((current - prior) / prior * 100, 2)
                 out['walcl_date']   = str(s.index[-1].date())
-                log(f'  ✓ WALCL: ${out["walcl"]}bn ({out["walcl_change"]:+.2f}%)')
+                log(f'  ✓ WALCL: ${out["walcl"]}T ({out["walcl_change"]:+.2f}%)')
         except Exception as e:
             warn(f'WALCL FRED failed: {e}')
             for k in ('walcl', 'walcl_change'):
@@ -738,6 +779,21 @@ def fetch_metals():
 # =============================================================
 # 3. US UNIVERSE
 # =============================================================
+_LARGE_CAP_CACHE = None
+def us_large_cap_set():
+    """Decision 5: fixed S&P-200 large-caps (all 11 GICS) + holdings + thematic names,
+    merged into the small-cap universe so the screen also covers large-cap sectors."""
+    global _LARGE_CAP_CACHE
+    if _LARGE_CAP_CACHE is None:
+        s = set()
+        for _tk in ZACKS_SECTOR_UNIVERSE.values():
+            s.update(_tk)
+        s.update(['XOM','CVX','COP','EOG','GOOGL','MSFT','META','UNH','GIS','KO',
+                  'NVDA','TSM','ANET','MU','WDC','STX','DELL','AMD','LLY','AVGO'])
+        _LARGE_CAP_CACHE = s
+    return _LARGE_CAP_CACHE
+
+
 def fetch_us_universe():
     log('Fetching US universe (NASDAQ-sourced top tickers)...')
     url = 'https://raw.githubusercontent.com/Ate329/top-us-stock-tickers/main/tickers/all.csv'
@@ -756,9 +812,12 @@ def fetch_us_universe():
                 if sym and sym.replace('.','').replace('-','').isalnum() and len(sym) <= 5:
                     if US_SMALL_CAP_MIN <= mc_val <= US_SMALL_CAP_MAX:
                         tickers.append(sym)
-            log(f'  Got {len(tickers)} small-cap US tickers (pre-filtered $300M-$2B)')
-            if len(tickers) > 0:
-                return tickers
+            large = us_large_cap_set()
+            _scset = set(tickers)
+            merged = tickers + [t for t in large if t not in _scset]
+            log(f'  Got {len(tickers)} small-cap + {len(merged)-len(tickers)} large-cap = {len(merged)} merged US tickers (Decision 5)')
+            if len(merged) > 0:
+                return merged
     except Exception as e:
         warn(f'Primary US universe failed: {e}')
 
@@ -794,8 +853,9 @@ def screen_us_stock(ticker, yf_module):
         market_cap = info.get('marketCap', 0) or 0
         if market_cap == 0:
             return None
-        if not (US_SMALL_CAP_MIN <= market_cap <= US_SMALL_CAP_MAX):
-            return None
+        if ticker not in us_large_cap_set():
+            if not (US_SMALL_CAP_MIN <= market_cap <= US_SMALL_CAP_MAX):
+                return None  # small-cap path keeps the $300M-$2B band; large-cap set bypasses ceiling (Decision 5)
         rev_growth = info.get('revenueGrowth')
         if rev_growth is None or rev_growth < US_REV_GROWTH_MIN:
             return None
@@ -821,17 +881,7 @@ def screen_us_stock(ticker, yf_module):
             'pe':           info.get('trailingPE'),
             'forward_pe':   info.get('forwardPE'),
             'insider_pct':  round(float(insider) * 100, 1),
-            # ROIC best-effort proxy: returnOnAssets if present (yfinance info has no clean ROIC).
-            # Dashboard treats this as a proxy; full ROIC needs financials, deferred to keep the scan fast.
-            'roic':         (round(float(info['returnOnAssets']) * 100, 1)
-                             if info.get('returnOnAssets') is not None else None),
-            # OCF/NI from info: operatingCashflow / netIncomeToCommon (both free in the same .info call).
-            'ocf_ni':       (round(float(info['operatingCashflow']) / float(info['netIncomeToCommon']), 2)
-                             if info.get('operatingCashflow') and info.get('netIncomeToCommon') else None),
-            'gross_margin': (round(float(info['grossMargins']) * 100, 1)
-                             if info.get('grossMargins') is not None else None),
-            'op_margin':    (round(float(info['operatingMargins']) * 100, 1)
-                             if info.get('operatingMargins') is not None else None),
+            'ocf_ni':       None,
         }
     except Exception:
         return None
@@ -1318,6 +1368,16 @@ def run_explosive(candidates, market='us'):
             if rec is None:
                 rec = score_explosive_candidate(c)
 
+            # Bank/financial carve-out: OP/NP explosive conditions are invalid for
+            # banks & financials (no operating-profit / CFO>NP semantics), so they
+            # mechanically pass and flood the list. Flag them so they don't count as
+            # EXPLOSIVE; score via IM3 System B (bank-adjusted) downstream instead.
+            if rec is not None:
+                _sec = (rec.get('sector') or '')
+                rec['is_financial'] = _sec in ('Financial Services', 'Financials')
+                if rec['is_financial'] and str(rec.get('verdict','')).startswith('EXPLOSIVE'):
+                    rec['verdict'] = 'FINANCIAL — score via bank model (IM3 System B)'
+
             if rec:
                 out.append(rec)
                 log(f'  {rec["ticker"]}: A={rec["signal_a"]} '
@@ -1329,7 +1389,8 @@ def run_explosive(candidates, market='us'):
                              r.get('signal_a') is True,
                              r.get('op_growth') or r.get('eps_growth') or -999), reverse=True)
     both = sum(1 for r in out if r['verdict'].startswith('EXPLOSIVE'))
-    log(f'  EXPLOSIVE: {both} both-signal of {len(out)} scored')
+    fin  = sum(1 for r in out if r.get('is_financial'))
+    log(f'  EXPLOSIVE: {both} both-signal (non-financial) of {len(out)} scored; {fin} financials flagged for bank model')
     return out
 
 
