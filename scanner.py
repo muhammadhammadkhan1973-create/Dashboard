@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.12.8'  # CPI live-monthly via TheGlobalEconomy (PBS-sourced); fixed pak_cpi last-good indent; REER/CA/Fiscal stay manual (no free monthly feed)
+SCAN_VERSION = '1.12.9'  # CPI parser hardened (both date orders, commas, ws-collapse) + raw-HTML [diag] to pin TheGlobalEconomy structure
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -444,21 +444,30 @@ def fetch_psx_macros():
     # CPI YoY — primary: TheGlobalEconomy (PBS-sourced, monthly, fetchable & parseable),
     # then PBS direct, then TE (below), then last-good. The _tge helper reads the most-recent
     # row of a TheGlobalEconomy per-indicator page and is reusable for other PSX macros.
-    def _tge(slug):
+    def _tge(slug, diag=False):
         try:
             rr = requests.get(f'https://www.theglobaleconomy.com/Pakistan/{slug}/',
                               headers={'User-Agent': UA}, timeout=15)
             if rr.status_code != 200:
+                if diag: log(f'    · [diag] TGE {slug}: HTTP {rr.status_code}')
                 return None
             txt = re.sub(r'<[^>]+>', ' ', rr.text)
+            txt = re.sub(r'\s+', ' ', txt)            # collapse newlines/tabs so the row is contiguous
             i = txt.find('Recent values')
-            seg = txt[i:i + 600] if i >= 0 else txt
-            m = re.search(r'(\d{4})\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(-?\d+(?:\.\d+)?)', seg)
-            return float(m.group(2)) if m else None
-        except Exception:
+            seg = txt[i:i + 500] if i >= 0 else txt
+            # accept "YYYY Mon <val>" or "Mon YYYY <val>"; values may carry commas
+            m = re.search(r'(?:(?:19|20)\d{2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)|'
+                          r'(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(?:19|20)\d{2})'
+                          r'\s+(-?[\d,]+(?:\.\d+)?)', seg)
+            if not m:
+                if diag: log(f'    · [diag] TGE {slug}: 200 len={len(rr.text)} hasRecent={i>=0} seg={seg[:170]!r}')
+                return None
+            return float(m.group(1).replace(',', ''))
+        except Exception as e:
+            if diag: log(f'    · [diag] TGE {slug}: {type(e).__name__} {str(e)[:80]}')
             return None
     try:
-        v = _tge('inflation_annual')   # CPI YoY %, monthly (e.g. 7.30 for Mar 2026)
+        v = _tge('inflation_annual', diag=True)   # CPI YoY %, monthly (e.g. 7.30 for Mar 2026)
         if v is not None:
             out['pak_cpi'] = v
             log(f'  ✓ Pak CPI YoY (TheGlobalEconomy): {v}%')
@@ -538,8 +547,8 @@ def fetch_psx_macros():
             if _lg is not None:
                 out[_k] = _lg
 
-    _manual = [k for k in ('reer', 'pak_cpi', 'pak_ca', 'pak_fiscal') if out.get(k) is not None]
-    log(f'  → REER/CPI/CA/Fiscal: no free live feed — manual/last-good (update quarterly from AKD/Topline economy report). Carried: {_manual or "none yet"}')
+    _manual = [k for k in ('reer', 'pak_ca', 'pak_fiscal') if out.get(k) is not None]
+    log(f'  → REER/CA/Fiscal: no free monthly feed — manual/last-good (quarterly from AKD/Topline). CPI via TheGlobalEconomy when parsed, else last-good. Carried: {_manual or "none"}')
 
     return out
 
