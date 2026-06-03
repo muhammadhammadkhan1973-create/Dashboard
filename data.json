@@ -1,14 +1,14 @@
 {
   "meta": {
-    "scan_version": "1.12.5",
-    "last_scan_utc": "2026-06-03T11:53:56.664199Z",
+    "scan_version": "1.12.6",
+    "last_scan_utc": "2026-06-03T12:28:05.692888Z",
     "errors": [],
     "warnings": []
   },
   "macros": {
     "us": {
       "fed_rate": 3.75,
-      "fed_rate_date": "2026-06-02",
+      "fed_rate_date": "2026-06-03",
       "core_pce": 3.29,
       "core_pce_date": "2026-04-01",
       "cpi_yoy": 3.95,
@@ -31,13 +31,13 @@
       "hy_spread_date": "2026-06-01",
       "permits": 1423.0,
       "permits_date": "2026-04-01",
-      "wti": 95.73,
+      "wti": 96.12,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-03",
-      "brent": 97.97,
+      "brent": 98.25,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-03",
-      "brent_wti_spread": 2.24,
+      "brent_wti_spread": 2.13,
       "fomc": {
         "title": "Minutes of the Federal Open Market Committee, April 28-29, 2026",
         "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260520a.htm",
@@ -86,15 +86,15 @@
       "pak_fiscal": 5.4
     },
     "metals": {
-      "gold_px": 4489.0,
+      "gold_px": 4485.7,
       "gold_px_date": "2026-06-03",
-      "silver_px": 74.71,
+      "silver_px": 74.61,
       "silver_px_date": "2026-06-03",
-      "platinum_px": 1931.0,
+      "platinum_px": 1925.6,
       "platinum_px_date": "2026-06-03",
-      "palladium_px": 1372.0,
+      "palladium_px": 1365.0,
       "palladium_px_date": "2026-06-03",
-      "dxy": 99.32,
+      "dxy": 99.36,
       "dxy_date": "2026-06-03",
       "gs_ratio": 60.1,
       "cot_date": "05/26/26",
@@ -181,12 +181,12 @@
     ],
     [
       "+ Revenue Growth >15% YoY",
-      183,
+      186,
       "Yahoo revenueGrowth + insider gate"
     ],
     [
       "+ Insider Holding >5%",
-      183,
+      186,
       "Sponsor/insider commitment"
     ],
     [
@@ -475,8 +475,8 @@
       "name": "Gloo Holdings, Inc.",
       "sector": "Technology",
       "industry": "Software - Application",
-      "market_cap": 441536128,
-      "market_cap_m": 442.0,
+      "market_cap": 451592128,
+      "market_cap_m": 452.0,
       "price": 5.48,
       "rev_growth": 417.7,
       "eps_growth": -77.4,
@@ -1349,7 +1349,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 9,
+        "s1_news_count": 10,
         "s5_volume_ratio": 1.4,
         "s3_insider_count": 15,
         "total": 4
@@ -1964,7 +1964,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 9,
+        "s1_news_count": 10,
         "s5_volume_ratio": 1.17,
         "s3_insider_count": 5,
         "total": 3
@@ -3237,6 +3237,23 @@
       "is_financial": true
     },
     {
+      "ticker": "MS",
+      "name": "Morgan Stanley",
+      "sector": "Financial Services",
+      "rev_growth": 16.3,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 31.9,
+      "op_np_ratio": 1.96,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
       "ticker": "ABX",
       "name": "Abacus Global Management, Inc.",
       "sector": "Financial Services",
@@ -4325,6 +4342,23 @@
       "is_financial": false
     },
     {
+      "ticker": "AMZN",
+      "name": "Amazon.com, Inc.",
+      "sector": "Consumer Cyclical",
+      "rev_growth": 12.4,
+      "op_growth": 16.6,
+      "np_growth": 31.1,
+      "eps_growth": 74.8,
+      "op_np_ratio": 1.87,
+      "signal_a": false,
+      "signal_b": false,
+      "verdict": "NOT EXPLOSIVE",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yf_stmt_im3",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
       "ticker": "TRC",
       "name": "Tejon Ranch Co",
       "sector": "Industrials",
@@ -4387,6 +4421,23 @@
       "signal_a": false,
       "signal_b": null,
       "verdict": "INSUFFICIENT DATA",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yf_stmt_im3",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "ORCL",
+      "name": "Oracle Corporation",
+      "sector": "Technology",
+      "rev_growth": 8.4,
+      "op_growth": 12.3,
+      "np_growth": 18.9,
+      "eps_growth": 24.5,
+      "op_np_ratio": 1.54,
+      "signal_a": false,
+      "signal_b": false,
+      "verdict": "NOT EXPLOSIVE",
       "cash_guardrails": "na_confirm_im3",
       "growth_source": "yf_stmt_im3",
       "fidelity": "im3_screen",
@@ -7197,8 +7248,8 @@
     "_scraped_utc": "2026-06-02T19:46:41.194806Z"
   },
   "etf_overlap": {
-    "_scraped_utc": "2026-06-03T11:14:54.363411Z",
-    "_scan_version": "1.12.5",
+    "_scraped_utc": "2026-06-03T12:41:47.857483Z",
+    "_scan_version": "1.12.6",
     "etfs_scanned": 30,
     "etfs_with_holdings": 30,
     "source_etfs": [
@@ -7447,7 +7498,7 @@
       {
         "ticker": "MU",
         "etf_count": 23,
-        "agg_weight": 158.45,
+        "agg_weight": 158.56,
         "conviction": 91.8,
         "zacks_confirmed": true,
         "in_etfs": [
@@ -7460,7 +7511,7 @@
           "KNCT",
           "PSI"
         ],
-        "alloc_pct": 13.1
+        "alloc_pct": 13.12
       },
       {
         "ticker": "NVDA",
@@ -7483,8 +7534,8 @@
       {
         "ticker": "AMD",
         "etf_count": 20,
-        "agg_weight": 92.82,
-        "conviction": 55.6,
+        "agg_weight": 92.72,
+        "conviction": 55.5,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -7496,12 +7547,12 @@
           "PSI",
           "PWB"
         ],
-        "alloc_pct": 7.68
+        "alloc_pct": 7.67
       },
       {
         "ticker": "AVGO",
         "etf_count": 16,
-        "agg_weight": 77.69,
+        "agg_weight": 77.75,
         "conviction": 45.6,
         "zacks_confirmed": false,
         "in_etfs": [
@@ -7514,13 +7565,13 @@
           "PWB",
           "QQQ"
         ],
-        "alloc_pct": 6.42
+        "alloc_pct": 6.43
       },
       {
         "ticker": "AAPL",
         "etf_count": 12,
-        "agg_weight": 90.99,
-        "conviction": 45.6,
+        "agg_weight": 90.95,
+        "conviction": 45.5,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -7537,8 +7588,8 @@
       {
         "ticker": "INTC",
         "etf_count": 18,
-        "agg_weight": 68.26,
-        "conviction": 44.7,
+        "agg_weight": 67.95,
+        "conviction": 44.6,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -7550,12 +7601,12 @@
           "KNCT",
           "QQQ"
         ],
-        "alloc_pct": 5.64
+        "alloc_pct": 5.62
       },
       {
         "ticker": "LRCX",
         "etf_count": 17,
-        "agg_weight": 41.95,
+        "agg_weight": 41.91,
         "conviction": 44.4,
         "zacks_confirmed": true,
         "in_etfs": [
@@ -7573,7 +7624,7 @@
       {
         "ticker": "AMAT",
         "etf_count": 17,
-        "agg_weight": 38.0,
+        "agg_weight": 37.96,
         "conviction": 43.0,
         "zacks_confirmed": true,
         "in_etfs": [
@@ -7591,8 +7642,8 @@
       {
         "ticker": "QCOM",
         "etf_count": 18,
-        "agg_weight": 48.25,
-        "conviction": 37.7,
+        "agg_weight": 48.29,
+        "conviction": 37.8,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -7609,8 +7660,8 @@
       {
         "ticker": "TXN",
         "etf_count": 14,
-        "agg_weight": 32.44,
-        "conviction": 37.6,
+        "agg_weight": 32.31,
+        "conviction": 37.5,
         "zacks_confirmed": true,
         "in_etfs": [
           "FTEC",
@@ -7622,7 +7673,7 @@
           "QQQM",
           "QTEC"
         ],
-        "alloc_pct": 2.68
+        "alloc_pct": 2.67
       },
       {
         "ticker": "CSCO",
@@ -7658,12 +7709,12 @@
           "SNPG",
           "VGT"
         ],
-        "alloc_pct": 5.23
+        "alloc_pct": 5.24
       },
       {
         "ticker": "KLAC",
         "etf_count": 17,
-        "agg_weight": 36.58,
+        "agg_weight": 36.54,
         "conviction": 32.5,
         "zacks_confirmed": false,
         "in_etfs": [
@@ -7694,7 +7745,7 @@
           "QQQM",
           "SNPG"
         ],
-        "alloc_pct": 3.43
+        "alloc_pct": 3.44
       },
       {
         "ticker": "CVX",
@@ -7713,8 +7764,8 @@
       {
         "ticker": "MRVL",
         "etf_count": 10,
-        "agg_weight": 36.04,
-        "conviction": 24.2,
+        "agg_weight": 35.97,
+        "conviction": 24.1,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -7745,8 +7796,8 @@
       {
         "ticker": "MPWR",
         "etf_count": 10,
-        "agg_weight": 21.97,
-        "conviction": 19.3,
+        "agg_weight": 21.82,
+        "conviction": 19.2,
         "zacks_confirmed": false,
         "in_etfs": [
           "BIBL",
@@ -7758,12 +7809,12 @@
           "RSPT",
           "SOXQ"
         ],
-        "alloc_pct": 1.82
+        "alloc_pct": 1.8
       },
       {
         "ticker": "SNDK",
         "etf_count": 10,
-        "agg_weight": 19.68,
+        "agg_weight": 19.72,
         "conviction": 18.5,
         "zacks_confirmed": false,
         "in_etfs": [
@@ -7814,7 +7865,7 @@
       {
         "ticker": "PANW",
         "etf_count": 10,
-        "agg_weight": 13.53,
+        "agg_weight": 13.72,
         "conviction": 16.4,
         "zacks_confirmed": false,
         "in_etfs": [
@@ -7827,7 +7878,7 @@
           "QTEC",
           "SNPG"
         ],
-        "alloc_pct": 1.12
+        "alloc_pct": 1.13
       },
       {
         "ticker": "PLTR",
