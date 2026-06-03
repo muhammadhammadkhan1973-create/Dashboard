@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.12.6'  # F4: FRED-primary REER (RBPKBIS) + Pak CPI YoY (PAKCPIALLMINMEI) before TE/last-good, one-time [diag]
+SCAN_VERSION = '1.12.8'  # CPI live-monthly via TheGlobalEconomy (PBS-sourced); fixed pak_cpi last-good indent; REER/CA/Fiscal stay manual (no free monthly feed)
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -441,47 +441,49 @@ def fetch_psx_macros():
         if lg is not None:
             out['sbp_rate'] = lg
 
-    try:
-        r = requests.get('https://www.pbs.gov.pk/cpi', headers=headers, timeout=15)
-        if r.status_code == 200:
-            m = re.search(r'(\d{1,2}\.\d{1,2})\s*(?:percent|%)', r.text, re.I)
-            if m:
-                out['pak_cpi'] = float(m.group(1))
-                log(f'  ✓ Pak CPI (PBS): {out["pak_cpi"]}%')
-    except Exception as e:
-        log(f'  · Pak CPI: {e}')
-
-    # F4: FRED is the reliable machine-readable source for REER + CPI (the scanner already uses
-    # FRED every run). BIS Real Effective Exchange Rate, Pakistan + OECD/IMF Pakistan CPI index.
-    # One-time [diag] so the live run confirms the series IDs; fully guarded → falls through to
-    # the TE attempt and last-good below on any failure, so it can never break the run.
-    try:
-        from fredapi import Fred
-        _fr = Fred(api_key=FRED_KEY)
-        def _fred_pk(sid):
-            try:
-                s = _fr.get_series(sid).dropna()
-                return s if (s is not None and len(s)) else None
-            except Exception as e:
-                log(f'    · [diag] FRED {sid}: {type(e).__name__} {str(e)[:90]}')
+    # CPI YoY — primary: TheGlobalEconomy (PBS-sourced, monthly, fetchable & parseable),
+    # then PBS direct, then TE (below), then last-good. The _tge helper reads the most-recent
+    # row of a TheGlobalEconomy per-indicator page and is reusable for other PSX macros.
+    def _tge(slug):
+        try:
+            rr = requests.get(f'https://www.theglobaleconomy.com/Pakistan/{slug}/',
+                              headers={'User-Agent': UA}, timeout=15)
+            if rr.status_code != 200:
                 return None
-        if out.get('reer') is None:
-            s = _fred_pk('RBPKBIS')   # BIS broad real effective exchange rate, Pakistan (monthly)
-            if s is not None:
-                out['reer'] = round(float(s.iloc[-1]), 1)
-                log(f'  ✓ REER (FRED RBPKBIS): {out["reer"]}')
-        if out.get('pak_cpi') is None:
-            s = _fred_pk('PAKCPIALLMINMEI')   # CPI all items index, Pakistan (monthly)
-            if s is not None and len(s) > 12:
-                out['pak_cpi'] = round((float(s.iloc[-1]) / float(s.iloc[-13]) - 1) * 100, 1)
-                log(f'  ✓ Pak CPI YoY (FRED PAKCPIALLMINMEI): {out["pak_cpi"]}%')
+            txt = re.sub(r'<[^>]+>', ' ', rr.text)
+            i = txt.find('Recent values')
+            seg = txt[i:i + 600] if i >= 0 else txt
+            m = re.search(r'(\d{4})\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(-?\d+(?:\.\d+)?)', seg)
+            return float(m.group(2)) if m else None
+        except Exception:
+            return None
+    try:
+        v = _tge('inflation_annual')   # CPI YoY %, monthly (e.g. 7.30 for Mar 2026)
+        if v is not None:
+            out['pak_cpi'] = v
+            log(f'  ✓ Pak CPI YoY (TheGlobalEconomy): {v}%')
+        else:
+            log('    · [diag] TheGlobalEconomy inflation_annual: no value parsed')
     except Exception as e:
-        log(f'  · FRED Pakistan macros (best-effort): {e}')
-
+        log(f'  · Pak CPI (TheGlobalEconomy): {e}')
+    if out.get('pak_cpi') is None:
+        try:
+            r = requests.get('https://www.pbs.gov.pk/cpi', headers=headers, timeout=15)
+            if r.status_code == 200:
+                m = re.search(r'(\d{1,2}\.\d{1,2})\s*(?:percent|%)', r.text, re.I)
+                if m:
+                    out['pak_cpi'] = float(m.group(1)); log(f'  ✓ Pak CPI (PBS): {out["pak_cpi"]}%')
+        except Exception as e:
+            log(f'  · Pak CPI (PBS): {e}')
     if out.get('pak_cpi') is None:
         lg = safe_get(EXISTING, 'macros', 'psx', 'pak_cpi')
         if lg is not None:
             out['pak_cpi'] = lg
+
+    # F4 source resolution: CPI is now live-monthly via TheGlobalEconomy. REER / Current Account /
+    # Fiscal have NO free monthly fetchable feed (SBP/PBS=PDF; FRED Pakistan=annual-only; TE blocks
+    # bots; TheGlobalEconomy & World Bank carry these three only annually). They stay best-effort TE
+    # → last-good → Tab-1 manual (update quarterly from the AKD/Topline economy report).
 
     # F4/F3: best-effort live fetch (free, Trading Economics) for the slow-moving Pakistan
     # macros that had no live source. Fully guarded — on ANY failure the last-good fallbacks
@@ -535,6 +537,9 @@ def fetch_psx_macros():
             _lg = safe_get(EXISTING, 'macros', 'psx', _k)
             if _lg is not None:
                 out[_k] = _lg
+
+    _manual = [k for k in ('reer', 'pak_cpi', 'pak_ca', 'pak_fiscal') if out.get(k) is not None]
+    log(f'  → REER/CPI/CA/Fiscal: no free live feed — manual/last-good (update quarterly from AKD/Topline economy report). Carried: {_manual or "none yet"}')
 
     return out
 
