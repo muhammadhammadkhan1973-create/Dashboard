@@ -242,7 +242,7 @@
       <div class="input-group"><label>DXY (US Dollar Index)<span class="desc">&gt;105 strong, &lt;98 weak</span></label><input type="number" id="dxy" value="99.5" step="0.1" oninput="recalc()"><span class="current-val">May 2026: ~99-100</span></div>
       <div class="input-group"><label>WTI Crude ($/bbl)</label><input type="number" id="wti" value="95.0" step="0.5" oninput="recalc()"><span class="current-val">May 2026: ~$95</span></div>
       <div class="input-group"><label>Brent Crude ($/bbl)</label><input type="number" id="brent" value="100.0" step="0.5" oninput="recalc()"><span class="current-val">May 2026: ~$100</span></div>
-      <div class="input-group"><label>US Oil Rig Count</label><input type="number" id="us_oil_rigs" value="425" step="1" oninput="recalc()"><span class="current-val">May 22, 2026: 425</span></div>
+      <div class="input-group"><label>US Rotary Rigs (total, EIA)</label><input type="number" id="us_oil_rigs" value="544" step="1" oninput="recalc()"><span class="current-val">EIA monthly · total oil+gas</span></div>
       <div class="input-group"><label>US Crude Production (M bbl/d)</label><input type="number" id="us_crude_prod" value="13.57" step="0.01" oninput="recalc()"><span class="current-val">May 2026: ~13.57M b/d</span></div>
     </div>
     <h3 class="subsection-title">Pakistan — Seven Factors</h3>
@@ -433,7 +433,7 @@
 // =========================================================
 const defaults = {
   ism_mfg:52.7,ism_svc:53.6,umcsi:44.8,us_10y:4.45,us_2y:4.00,fed_rate:4.375,
-  core_pce:2.7,us_gdp:2.1,dxy:99.5,wti:95.0,brent:100.0,us_crude_prod:13.57,us_oil_rigs:425,
+  core_pce:2.7,us_gdp:2.1,dxy:99.5,wti:95.0,brent:100.0,us_crude_prod:13.57,us_oil_rigs:544,
   oil_arab:78,sbp_rate:11.50,usd_pkr:278.50,pak_cpi:10.9,sbp_reserves:16.4,
   pak_ca:-324,pak_fiscal:6.0,reer:105.80,neer:37.89,remittances:3.54,import_cover:2.4,kse100:167844
 };
@@ -491,7 +491,7 @@ function calcUS(){
   let eHtml='';
   eHtml+=indicatorCard('WTI Crude','$'+wti+'/bbl',wti>=90?'HIGH — net positive':wti>=65?'MID — balanced':'LOW — drilling stress',wti>=90?'pos':wti>=65?'neutral':'warn',wti>=90?'Elevated WTI lifts shale margins. Bullish Energy (XLE).':'Mid-band manageable.');
   eHtml+=indicatorCard('US Crude Production',crudeProd+'M b/d',crudeProd>=13.5?'NEAR RECORD':crudeProd>=12.5?'Strong':'Declining',crudeProd>=12.5?'pos':'warn',crudeProd>=13.5?'Near all-time highs. Structural export surplus.':'Watch production trend.');
-  eHtml+=indicatorCard('US Oil Rigs',oilRigs+' rigs',oilRigs>=500?'Expanding':oilRigs>=380?'Disciplined':'Contracting',oilRigs>=380?'pos':'warn',oilRigs>=380?'Modern shale discipline: high output on fewer rigs.':'Sub-380 flags capex retreat.');
+  eHtml+=indicatorCard('US Rotary Rigs (total)',oilRigs+' rigs',oilRigs>=700?'High activity':oilRigs>=560?'Steady':'Subdued',oilRigs>=560?'pos':'warn','Total US oil+gas rotary rigs (EIA, monthly). <b>Why it is here:</b> a leading supply gauge — rigs drilling now become production in 6–12 months, so falling rigs tighten future crude supply (bullish oil, supports the &ldquo;Arab&nbsp;Light&nbsp;&gt;$60 = overweight E&amp;P&rdquo; tilt and your XOM·CVX·COP·EOG), while rising rigs add supply. Shale efficiency means high output on fewer rigs, so read the <i>trend</i>, not just the level.');
   document.getElementById('us_energy_indicators').innerHTML=eHtml;
   document.getElementById('us_energy_banner').innerHTML='<strong>Net-Exporter Lens:</strong> US net petroleum exporter since 2020. Oil is now a partial hedge, not a pure cost. Lead weight on production trend (forward supply), not price alone.';
   const regime=regimeOf(gdp,pce);
