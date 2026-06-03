@@ -25,7 +25,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests yfinance pandas feedparser python-dateutil fredapi
+          pip install requests yfinance pandas feedparser python-dateutil fredapi openpyxl
 
       - name: Run scanner
         env:
