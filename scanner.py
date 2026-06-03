@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.12.10'  # CPI parser: decode &nbsp; entity between year/month (TheGlobalEconomy) — pinned via raw-HTML diag
+SCAN_VERSION = '1.12.12'  # rig count: dead Baker Hughes -> EIA total rotary rigs (fetchable third-party, monthly)
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -244,24 +244,31 @@ def fetch_us_macros():
         except Exception:
             pass
 
-        # Baker Hughes rig count (F1) — single quick attempt. It reliably blocks the
-        # GitHub runner, so don't burn ~80s retrying; fall straight through to last-good.
+        # US rotary rig count (F1) — third-party fetchable source: EIA (US gov) republishes the
+        # Baker Hughes count as monthly "Crude Oil & Natural Gas Rotary Rigs in Operation".
+        # Baker Hughes' own site blocks the runner; TE/YCharts are bot-blocked/paywalled. EIA gives
+        # TOTAL rigs (oil+gas) — a high-correlation E&P-activity proxy (oil-only is BH-proprietary).
         try:
-            import re as _re
-            rr = requests.get('https://rigcount.bakerhughes.com/rig-count-overview',
-                              headers={'User-Agent': UA}, timeout=8)
+            rr = requests.get('https://www.eia.gov/dnav/ng/hist/e_ertrr0_xr0_nus_cm.htm',
+                              headers={'User-Agent': UA}, timeout=(3, 6))
             if rr.status_code == 200:
-                mm = _re.search(r'U\.?S\.?\s*Oil[^0-9]{0,40}(\d{3,4})', rr.text)
-                if mm:
-                    out['us_oil_rigs'] = int(mm.group(1))
-                    log(f'  ✓ US oil rigs (Baker Hughes): {out["us_oil_rigs"]}')
+                t = re.sub(r'<[^>]+>', ' ', rr.text).replace('&nbsp;', ' ')
+                cut = t.find('No Data Reported')
+                if cut > 0:
+                    t = t[:cut]
+                vals = [int(n.replace(',', '')) for n in re.findall(r'\d[\d,]{1,5}', t)]
+                for v in reversed(vals):           # most-recent plausible rig value; skip year tokens
+                    if 100 <= v <= 6000 and not (1900 <= v <= 2100):
+                        out['us_oil_rigs'] = v
+                        log(f'  ✓ US rotary rigs (EIA, total oil+gas): {v}')
+                        break
         except Exception as e:
-            log(f'  · Rig count (last-good): {e}')
+            log(f'  · US rigs (EIA): {e}')
         if out.get('us_oil_rigs') is None:
             lg = safe_get(EXISTING, 'macros', 'us', 'us_oil_rigs')
             if lg is not None:
                 out['us_oil_rigs'] = lg
-                log('  · Baker Hughes rig count unreachable; using last-good')
+                log('  · US rigs: EIA unreachable; using last-good')
 
         # FOMC / Fed monetary-policy announcements (live — official Fed press-release RSS)
         try:
