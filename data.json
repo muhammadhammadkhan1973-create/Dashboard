@@ -1,7 +1,7 @@
 {
   "meta": {
-    "scan_version": "1.12.3",
-    "last_scan_utc": "2026-06-03T09:26:50.134268Z",
+    "scan_version": "1.12.4",
+    "last_scan_utc": "2026-06-03T09:42:35.116118Z",
     "errors": [],
     "warnings": []
   },
@@ -31,13 +31,13 @@
       "hy_spread_date": "2026-06-01",
       "permits": 1423.0,
       "permits_date": "2026-04-01",
-      "wti": 96.27,
+      "wti": 96.44,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-03",
-      "brent": 98.47,
+      "brent": 98.65,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-03",
-      "brent_wti_spread": 2.2,
+      "brent_wti_spread": 2.21,
       "fomc": {
         "title": "Minutes of the Federal Open Market Committee, April 28-29, 2026",
         "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260520a.htm",
@@ -86,15 +86,15 @@
       "pak_fiscal": 5.4
     },
     "metals": {
-      "gold_px": 4475.8,
+      "gold_px": 4472.0,
       "gold_px_date": "2026-06-03",
-      "silver_px": 74.45,
+      "silver_px": 74.43,
       "silver_px_date": "2026-06-03",
-      "platinum_px": 1930.7,
+      "platinum_px": 1926.4,
       "platinum_px_date": "2026-06-03",
-      "palladium_px": 1374.5,
+      "palladium_px": 1373.0,
       "palladium_px_date": "2026-06-03",
-      "dxy": 99.36,
+      "dxy": 99.38,
       "dxy_date": "2026-06-03",
       "gs_ratio": 60.1,
       "cot_date": "05/26/26",
@@ -736,7 +736,7 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.8,
         "total": 0
       }
@@ -789,7 +789,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 12,
+        "s1_news_count": 10,
         "s5_volume_ratio": 1.32,
         "s3_insider_count": 19,
         "total": 4
@@ -1069,7 +1069,7 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 10,
+        "s1_news_count": 9,
         "s5_volume_ratio": 6.26,
         "s3_insider_count": 8,
         "total": 4
@@ -1898,6 +1898,24 @@
       }
     },
     {
+      "ticker": "OABI",
+      "name": "OmniAb, Inc.",
+      "sector": "Healthcare",
+      "tce_score": 4,
+      "tier": "HIGH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 1,
+        "s4_revisions": 0,
+        "s5_volume": 1,
+        "s1_news_count": 8,
+        "s5_volume_ratio": 2.8,
+        "s3_insider_count": 5,
+        "total": 4
+      }
+    },
+    {
       "ticker": "PGEN",
       "name": "Precigen, Inc.",
       "sector": "Healthcare",
@@ -1912,24 +1930,6 @@
         "s1_news_count": 18,
         "s5_volume_ratio": 0.88,
         "s3_insider_count": 37,
-        "total": 3
-      }
-    },
-    {
-      "ticker": "INV",
-      "name": "Innventure, Inc.",
-      "sector": "Financial Services",
-      "tce_score": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 1,
-        "s1_news_count": 3,
-        "s5_volume_ratio": 2.03,
-        "s3_insider_count": 47,
         "total": 3
       }
     },
@@ -1964,26 +1964,8 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 10,
+        "s1_news_count": 8,
         "s5_volume_ratio": 1.17,
-        "s3_insider_count": 5,
-        "total": 3
-      }
-    },
-    {
-      "ticker": "OABI",
-      "name": "OmniAb, Inc.",
-      "sector": "Healthcare",
-      "tce_score": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 1,
-        "s1_news_count": 7,
-        "s5_volume_ratio": 2.8,
         "s3_insider_count": 5,
         "total": 3
       }
@@ -2025,20 +2007,20 @@
       }
     },
     {
-      "ticker": "SBET",
-      "name": "SharpLink, Inc.",
+      "ticker": "INV",
+      "name": "Innventure, Inc.",
       "sector": "Financial Services",
       "tce_score": 2,
       "tier": "IGNORE",
       "streams": {
-        "s1_news": 1,
+        "s1_news": 0,
         "s2_sponsor": 0,
         "s3_insider": 1,
         "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 5,
-        "s5_volume_ratio": 1.05,
-        "s3_insider_count": 5,
+        "s5_volume": 1,
+        "s1_news_count": 2,
+        "s5_volume_ratio": 2.03,
+        "s3_insider_count": 47,
         "total": 2
       }
     },
@@ -2058,6 +2040,24 @@
         "s5_volume_ratio": 1.23,
         "s3_insider_count": 10,
         "total": 2
+      }
+    },
+    {
+      "ticker": "SBET",
+      "name": "SharpLink, Inc.",
+      "sector": "Financial Services",
+      "tce_score": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 1,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 2,
+        "s5_volume_ratio": 1.05,
+        "s3_insider_count": 5,
+        "total": 1
       }
     },
     {
@@ -7831,6 +7831,7 @@
     "AVAH",
     "DVLT",
     "HYLN",
+    "OABI",
     "PKE",
     "SERV",
     "UMAC"
