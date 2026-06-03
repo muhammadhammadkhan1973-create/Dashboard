@@ -567,6 +567,144 @@ def _gics_from_yahoo(sec):
         if k in s: return v
     return None
 
+# ===================== Smart-Money ETF Holdings Overlap (Part D) =====================
+# Screen a broad ETF candidate universe through Zacks Rank, keep #1/#2, fetch each
+# survivor's holdings, aggregate by stock to find CONVICTION OVERLAP, flag Zacks-confirmed
+# names. Weekly cadence (holdings barely move week-to-week). The Zacks rank screen reuses
+# the same quote-feed endpoint the stock scrape uses (proven on the runner). The holdings
+# fetch hits stockanalysis.com — that domain isn't on the sandbox allowlist, so it validates
+# on the GitHub run; the aggregation/ranking below is pure logic and is unit-tested locally.
+# Fixed universe: the user's top-30 Zacks Rank-#1, US, Equities ETFs by 1-Year performance
+# (from the Zacks ETF screener, 2026-06-03). NO per-run rank screening — these are
+# pre-confirmed #1; the scan only fetches their holdings and builds the overlap. Refresh
+# this list quarterly when Zacks re-ranks. Holdings fetch (stockanalysis.com) validates on
+# the GitHub run; the aggregation/ranking below is pure logic and is unit-tested locally.
+TOP_ETFS = [
+    'FTXL','PSI','SOXX','SOXQ','XSD','IGPT','PSCT','KNCT','VLUE','RSPT',
+    'XNTK','XLK','QTEC','IDGT','IGM','FTEC','VGT','IYW','PWB','VDE',
+    'XLE','QQQM','QQQ','VTWO','RPG','BIBL','SNPG','VB','VONV','IWD',
+]
+ETF_OVERLAP_TOP_N = 25     # number of consensus stocks to surface
+
+# Authoritative per-ETF metrics from the user's Zacks ETF screen (2026-06-03): (name, YTD%, 1Y%).
+# 3Y% and expense ratio aren't in the Zacks ETF export, so the scan fetches those two from
+# Yahoo (validates on the GitHub run; shows None/'—' if Yahoo doesn't return them).
+ETF_META = {
+ 'FTXL':('First Trust NASDAQ Semiconductor ETF',100.1,215.4),
+ 'PSI':('Invesco Semiconductors ETF',94.8,201.9),
+ 'SOXX':('iShares Semiconductor ETF',90.0,179.9),
+ 'SOXQ':('Invesco PHLX Semiconductor ETF',83.1,173.0),
+ 'XSD':('SPDR S&P Semiconductor ETF',87.0,172.2),
+ 'IGPT':('Invesco AI and Next Gen Software ETF',71.3,127.9),
+ 'PSCT':('Invesco S&P SmallCap Info Technology ETF',50.8,100.8),
+ 'KNCT':('Invesco Next Gen Connectivity ETF',60.8,99.2),
+ 'VLUE':('iShares MSCI USA Value Factor ETF',47.8,91.0),
+ 'RSPT':('Invesco S&P 500 Equal Weight Technology ETF',45.9,77.9),
+ 'XNTK':('SPDR NYSE Technology ETF',35.8,74.9),
+ 'XLK':('Technology Select Sector SPDR ETF',36.1,70.2),
+ 'QTEC':('First Trust NASDAQ-100 Technology ETF',42.7,70.0),
+ 'IDGT':('iShares U.S. Digital Infrastructure & RE ETF',53.3,66.0),
+ 'IGM':('iShares Expanded Tech Sector ETF',31.0,65.0),
+ 'FTEC':('Fidelity MSCI Info Technology Index ETF',32.1,65.0),
+ 'VGT':('Vanguard Information Technology ETF',31.9,64.4),
+ 'IYW':('iShares U.S. Technology ETF',29.2,63.2),
+ 'PWB':('Invesco Large Cap Growth ETF',27.8,47.1),
+ 'VDE':('Vanguard Energy ETF',29.3,45.1),
+ 'XLE':('Energy Select Sector SPDR ETF',29.0,44.2),
+ 'QQQM':('Invesco NASDAQ 100 ETF',21.0,43.7),
+ 'QQQ':('Invesco QQQ',21.0,43.6),
+ 'VTWO':('Vanguard Russell 2000 ETF',17.6,42.2),
+ 'RPG':('Invesco S&P 500 Pure Growth ETF',30.0,41.8),
+ 'BIBL':('Inspire 100 ETF',20.9,38.5),
+ 'SNPG':('Xtrackers S&P 500 Growth ETF',10.8,30.7),
+ 'VB':('Vanguard Small-Cap ETF',14.0,30.0),
+ 'VONV':('Vanguard Russell 1000 Value ETF',13.3,27.9),
+ 'IWD':('iShares Russell 1000 Value ETF',13.3,27.8),
+}
+
+def fetch_etf_meta(etf):
+    """3Y return + expense ratio for an ETF via Yahoo. Guarded; returns {y3, expense} (None if missing)."""
+    out = {'y3': None, 'expense': None}
+    try:
+        import yfinance as _yf
+        t = _yf.Ticker(etf)
+        try:
+            h = t.history(period='3y')
+            c = h['Close'].dropna() if (h is not None and not h.empty) else None
+            if c is not None and len(c) > 2:
+                out['y3'] = round((float(c.iloc[-1]) / float(c.iloc[0]) - 1) * 100, 1)
+        except Exception:
+            pass
+        try:
+            info = t.info or {}
+            ex = info.get('netExpenseRatio') or info.get('annualReportExpenseRatio')
+            if ex is not None:
+                ex = float(ex); out['expense'] = round(ex * 100 if ex < 1 else ex, 2)
+        except Exception:
+            pass
+    except Exception as e:
+        log(f'    · meta fetch failed for {etf}: {e}')
+    return out
+
+def fetch_etf_holdings(etf):
+    """Best-effort free holdings via stockanalysis.com -> [{ticker, weight}]. Guarded to []."""
+    out = []
+    try:
+        r = requests.get(f'https://stockanalysis.com/api/symbol/e/{etf}/holdings',
+                         headers={'User-Agent': UA, 'Accept':'application/json'}, timeout=20)
+        j = r.json()
+        data_node = j.get('data') if isinstance(j, dict) else None
+        rows = []
+        if isinstance(data_node, dict):
+            rows = data_node.get('list') or data_node.get('holdings') or []
+        elif isinstance(data_node, list):
+            rows = data_node
+        for row in rows:
+            sym = row.get('symbol') or row.get('s') or row.get('ticker')
+            wt  = row.get('weight')  or row.get('w') or row.get('percent') or row.get('assetPercent')
+            if sym and wt is not None:
+                try:
+                    out.append({'ticker': str(sym).upper().strip(),
+                                'weight': float(str(wt).replace('%','').strip())})
+                except Exception:
+                    pass
+    except Exception as e:
+        log(f'    · holdings fetch failed for {etf}: {e}')
+    return out
+
+def build_etf_overlap(rank12_etfs, holdings_map, zacks_top_tickers, top_n=ETF_OVERLAP_TOP_N):
+    """Aggregate holdings across Zacks #1/#2 ETFs. conviction = blend(weight, breadth) with a
+    Zacks-confirmed boost. Pure logic / unit-tested. Returns ranked top-N consensus stocks."""
+    agg = {}
+    for e in rank12_etfs:
+        tk = e['etf']
+        for h in holdings_map.get(tk, []):
+            s = (h.get('ticker') or '').upper().strip()
+            if not s or len(s) > 6 or s == tk:
+                continue
+            a = agg.setdefault(s, {'weight_sum':0.0, 'etfs':set()})
+            a['weight_sum'] += float(h.get('weight') or 0)
+            a['etfs'].add(tk)
+    n_etf = max(len(rank12_etfs), 1)
+    max_w = max((a['weight_sum'] for a in agg.values()), default=1.0) or 1.0
+    zset = set(zacks_top_tickers or [])
+    rows = []
+    for s, a in agg.items():
+        breadth = len(a['etfs'])
+        w_norm = a['weight_sum'] / max_w
+        b_norm = breadth / n_etf
+        zc = s in zset
+        conviction = round(100*(0.55*w_norm + 0.35*b_norm) + (10 if zc else 0), 1)
+        rows.append({'ticker': s, 'etf_count': breadth, 'agg_weight': round(a['weight_sum'],2),
+                     'conviction': conviction, 'zacks_confirmed': zc, 'in_etfs': sorted(a['etfs'])[:8]})
+    rows.sort(key=lambda r: (-r['conviction'], -r['etf_count'], -r['agg_weight']))
+    top = rows[:top_n]
+    tot_w = sum(r['agg_weight'] for r in top) or 1.0
+    for r in top:
+        r['alloc_pct'] = round(r['agg_weight'] / tot_w * 100, 2)   # mirror-able weight across the shown names
+    return top
+# =====================================================================================
+
 def fetch_zacks_sectors(survivors=None):
     """Scrape per-ticker Zacks rank for the fixed S&P universe + scan survivors (deduped),
     keep #1/#2, group by GICS sector. Returns {sector:{rank1,rank2,top,total,pct_top,top_tickers}}."""
@@ -2568,6 +2706,50 @@ def main():
         log(f'Zacks sectors crashed: {e}')
         data['meta']['errors'].append(f'zacks_sectors: {e}')
         data['zacks_sectors'] = EXISTING.get('zacks_sectors', {})
+
+    # Smart-Money ETF Holdings Overlap (Part D) — weekly cadence (holdings barely move).
+    _zacks_tops = []
+    for _sec, _v in (data.get('zacks_sectors') or {}).items():
+        if isinstance(_v, dict):
+            _zacks_tops += _v.get('top_tickers', [])
+    _prev_etf = EXISTING.get('etf_overlap', {}) or {}
+    _etf_fresh = False; _etf_age = None
+    _es = _prev_etf.get('_scraped_utc') if isinstance(_prev_etf, dict) else None
+    if _es:
+        try:
+            _etf_age = (dt.datetime.utcnow() - dt.datetime.fromisoformat(str(_es).replace('Z',''))).days
+            _etf_fresh = _etf_age < 7
+        except Exception:
+            _etf_fresh = False
+    try:
+        if _etf_fresh and _prev_etf.get('stocks'):
+            log(f'  → ETF holdings overlap skipped (last scrape {_etf_age}d ago, <7d) — carrying forward last-good')
+            data['etf_overlap'] = _prev_etf
+        else:
+            _r12 = [{'etf': t, 'zacks_rank': 1} for t in TOP_ETFS]
+            _hmap = {}; _src = []
+            for _e in _r12:
+                _tk = _e['etf']
+                _hmap[_tk] = fetch_etf_holdings(_tk)
+                _nm, _ytd, _y1 = ETF_META.get(_tk, (_tk, None, None))
+                _m = fetch_etf_meta(_tk)
+                _src.append({'ticker': _tk, 'name': _nm, 'ytd': _ytd, 'y1': _y1,
+                             'y3': _m['y3'], 'expense': _m['expense']})
+                time.sleep(0.5)
+            _stocks = build_etf_overlap(_r12, _hmap, _zacks_tops)
+            _got = sum(1 for v in _hmap.values() if v)
+            data['etf_overlap'] = {
+                '_scraped_utc': dt.datetime.utcnow().isoformat() + 'Z',
+                'etfs_scanned': len(TOP_ETFS),
+                'etfs_with_holdings': _got,
+                'source_etfs': _src,
+                'stocks': _stocks,
+            }
+            log(f'  ETF overlap: {_got}/{len(TOP_ETFS)} ETFs returned holdings -> top {len(_stocks)} consensus stocks')
+    except Exception as e:
+        log(f'ETF overlap crashed: {e}')
+        data['meta']['errors'].append(f'etf_overlap: {e}')
+        data['etf_overlap'] = EXISTING.get('etf_overlap', {})
 
     data['meta']['warnings'] = list(WARNINGS)
 
