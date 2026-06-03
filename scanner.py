@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.12.12'  # rig count: dead Baker Hughes -> EIA total rotary rigs (fetchable third-party, monthly)
+SCAN_VERSION = '1.12.13'  # rig: cadence-gate EIA fetch to weekly + 12s read window (was 6s timeout); ~0 cost most runs
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -244,30 +244,42 @@ def fetch_us_macros():
         except Exception:
             pass
 
-        # US rotary rig count (F1) — third-party fetchable source: EIA (US gov) republishes the
-        # Baker Hughes count as monthly "Crude Oil & Natural Gas Rotary Rigs in Operation".
-        # Baker Hughes' own site blocks the runner; TE/YCharts are bot-blocked/paywalled. EIA gives
-        # TOTAL rigs (oil+gas) — a high-correlation E&P-activity proxy (oil-only is BH-proprietary).
-        try:
-            rr = requests.get('https://www.eia.gov/dnav/ng/hist/e_ertrr0_xr0_nus_cm.htm',
-                              headers={'User-Agent': UA}, timeout=(3, 6))
-            if rr.status_code == 200:
-                t = re.sub(r'<[^>]+>', ' ', rr.text).replace('&nbsp;', ' ')
-                cut = t.find('No Data Reported')
-                if cut > 0:
-                    t = t[:cut]
-                vals = [int(n.replace(',', '')) for n in re.findall(r'\d[\d,]{1,5}', t)]
-                for v in reversed(vals):           # most-recent plausible rig value; skip year tokens
-                    if 100 <= v <= 6000 and not (1900 <= v <= 2100):
-                        out['us_oil_rigs'] = v
-                        log(f'  ✓ US rotary rigs (EIA, total oil+gas): {v}')
-                        break
-        except Exception as e:
-            log(f'  · US rigs (EIA): {e}')
-        if out.get('us_oil_rigs') is None:
-            lg = safe_get(EXISTING, 'macros', 'us', 'us_oil_rigs')
-            if lg is not None:
-                out['us_oil_rigs'] = lg
+        # US rotary rig count (F1) — third-party source: EIA (US gov) republishes the Baker Hughes
+        # count as monthly "Crude Oil & Natural Gas Rotary Rigs in Operation" (TOTAL oil+gas; oil-only
+        # is BH-proprietary & bot-blocked at TE/YCharts). Data is monthly + the page is heavy, so
+        # cadence-gate to weekly (like ETF/Zacks): ~0 cost most runs, the rare fetch gets a real read window.
+        _rig_prev = safe_get(EXISTING, 'macros', 'us', 'us_oil_rigs')
+        _rig_utc = safe_get(EXISTING, 'macros', 'us', 'us_rigs_utc')
+        _rig_age = None
+        if _rig_utc:
+            try:
+                _rig_age = (dt.datetime.utcnow() - dt.datetime.fromisoformat(str(_rig_utc).replace('Z', ''))).days
+            except Exception:
+                _rig_age = None
+        if _rig_prev is not None and _rig_age is not None and _rig_age < 7:
+            out['us_oil_rigs'] = _rig_prev
+            out['us_rigs_utc'] = _rig_utc
+            log(f'  → US rigs skipped (EIA fetch {_rig_age}d ago, <7d) — last-good {_rig_prev}')
+        else:
+            try:
+                rr = requests.get('https://www.eia.gov/dnav/ng/hist/e_ertrr0_xr0_nus_cm.htm',
+                                  headers={'User-Agent': UA}, timeout=(4, 12))
+                if rr.status_code == 200:
+                    t = re.sub(r'<[^>]+>', ' ', rr.text).replace('&nbsp;', ' ')
+                    cut = t.find('No Data Reported')
+                    if cut > 0:
+                        t = t[:cut]
+                    vals = [int(n.replace(',', '')) for n in re.findall(r'\d[\d,]{1,5}', t)]
+                    for v in reversed(vals):           # most-recent plausible rig value; skip year tokens
+                        if 100 <= v <= 6000 and not (1900 <= v <= 2100):
+                            out['us_oil_rigs'] = v
+                            out['us_rigs_utc'] = dt.datetime.utcnow().isoformat() + 'Z'
+                            log(f'  ✓ US rotary rigs (EIA, total oil+gas): {v}')
+                            break
+            except Exception as e:
+                log(f'  · US rigs (EIA): {e}')
+            if out.get('us_oil_rigs') is None and _rig_prev is not None:
+                out['us_oil_rigs'] = _rig_prev
                 log('  · US rigs: EIA unreachable; using last-good')
 
         # FOMC / Fed monetary-policy announcements (live — official Fed press-release RSS)
