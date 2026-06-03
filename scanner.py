@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.12.0'
+SCAN_VERSION = '1.12.2'  # + live FOMC announcement fetch (Fed monetary press RSS) -> macros.us.fomc
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -262,6 +262,45 @@ def fetch_us_macros():
             if lg is not None:
                 out['us_oil_rigs'] = lg
                 log('  · Baker Hughes rig count unreachable; using last-good')
+
+        # FOMC / Fed monetary-policy announcements (live — official Fed press-release RSS)
+        try:
+            import feedparser
+            ffeed = feedparser.parse('https://www.federalreserve.gov/feeds/press_monetary.xml')
+            items = []
+            for e in ffeed.entries[:25]:
+                pub = None
+                if getattr(e, 'published_parsed', None):
+                    pub = dt.datetime(*e.published_parsed[:6]).date().isoformat()
+                items.append({'title': (getattr(e, 'title', '') or '').strip(),
+                              'link':  getattr(e, 'link', '') or '',
+                              'date':  pub})
+            fomc = None
+            for it in items:
+                t = it['title'].lower()
+                if 'fomc' in t or 'federal open market' in t or 'monetary policy' in t:
+                    fomc = it; break
+            if fomc is None and items:
+                fomc = items[0]
+            if fomc:
+                tl = fomc['title'].lower()
+                stance = ('QT' if any(w in tl for w in ('reduce', 'runoff', 'reducing', 'taper'))
+                          else 'QE' if any(w in tl for w in ('purchase', 'expand its', 'increase its holdings'))
+                          else None)
+                days = None
+                if fomc.get('date'):
+                    try:
+                        days = (dt.date.today() - dt.date.fromisoformat(fomc['date'])).days
+                    except Exception:
+                        days = None
+                out['fomc'] = {'title': fomc['title'], 'link': fomc['link'], 'date': fomc['date'],
+                               'days_ago': days, 'stance': stance, 'recent': items[:5]}
+                log(f'  \u2713 FOMC: {fomc.get("date")} \u2014 {fomc["title"][:60]}')
+        except Exception as e:
+            log(f'  \u00b7 FOMC RSS (last-good): {e}')
+            lg = safe_get(EXISTING, 'macros', 'us', 'fomc')
+            if lg is not None:
+                out['fomc'] = lg
 
         log(f'  Total US macros: '
             f'{len([k for k in out if not k.endswith(("_date","_source"))])}')
@@ -646,31 +685,64 @@ def fetch_etf_meta(etf):
         log(f'    · meta fetch failed for {etf}: {e}')
     return out
 
-def fetch_etf_holdings(etf):
-    """Best-effort free holdings via stockanalysis.com -> [{ticker, weight}]. Guarded to []."""
+_ETF_DIAG = {'done': False}
+def _parse_holdings(rows):
     out = []
-    try:
-        r = requests.get(f'https://stockanalysis.com/api/symbol/e/{etf}/holdings',
-                         headers={'User-Agent': UA, 'Accept':'application/json'}, timeout=20)
-        j = r.json()
-        data_node = j.get('data') if isinstance(j, dict) else None
-        rows = []
-        if isinstance(data_node, dict):
-            rows = data_node.get('list') or data_node.get('holdings') or []
-        elif isinstance(data_node, list):
-            rows = data_node
-        for row in rows:
-            sym = row.get('symbol') or row.get('s') or row.get('ticker')
-            wt  = row.get('weight')  or row.get('w') or row.get('percent') or row.get('assetPercent')
-            if sym and wt is not None:
-                try:
-                    out.append({'ticker': str(sym).upper().strip(),
-                                'weight': float(str(wt).replace('%','').strip())})
-                except Exception:
-                    pass
-    except Exception as e:
-        log(f'    · holdings fetch failed for {etf}: {e}')
+    for row in (rows or []):
+        if not isinstance(row, dict):
+            continue
+        sym = row.get('asset') or row.get('symbol') or row.get('s') or row.get('ticker')
+        wt  = (row.get('weightPercentage') if row.get('weightPercentage') is not None else
+               row.get('weight') if row.get('weight') is not None else
+               row.get('w') if row.get('w') is not None else
+               row.get('percent') if row.get('percent') is not None else row.get('assetPercent'))
+        if sym and wt is not None:
+            try:
+                out.append({'ticker': str(sym).upper().strip(), 'weight': float(str(wt).replace('%','').strip())})
+            except Exception:
+                pass
     return out
+
+def fetch_etf_holdings(etf):
+    """ETF holdings -> [{ticker, weight}]. Tries FMP (documented endpoints) then stockanalysis.
+    Logs a ONE-TIME diagnostic (status + body snippet + rows parsed) for the first ETF so a
+    failure is debuggable from the run log instead of silently returning []."""
+    diag = not _ETF_DIAG['done']
+    sources = []
+    if FMP_KEY:
+        sources += [
+            ('fmp-stable', f'https://financialmodelingprep.com/stable/etf/holdings?symbol={etf}&apikey={FMP_KEY}'),
+            ('fmp-v3',     f'https://financialmodelingprep.com/api/v3/etf-holder/{etf}?apikey={FMP_KEY}'),
+        ]
+    sources.append(('stockanalysis', f'https://stockanalysis.com/api/symbol/e/{etf}/holdings'))
+    result = []
+    for label, url in sources:
+        try:
+            r = requests.get(url, headers={'User-Agent': UA, 'Accept': 'application/json'}, timeout=20)
+            if diag:
+                log(f'    · [diag] {label} {etf}: HTTP {r.status_code} body[:180]={r.text[:180]!r}')
+            if r.status_code == 200:
+                j = r.json()
+                if isinstance(j, list):
+                    rows = j
+                elif isinstance(j, dict):
+                    dn = j.get('data')
+                    rows = (dn.get('list') or dn.get('holdings') if isinstance(dn, dict) else dn) \
+                           or j.get('holdings') or j.get('list') or []
+                else:
+                    rows = []
+                parsed = _parse_holdings(rows)
+                if diag:
+                    log(f'    · [diag] {label} {etf}: parsed {len(parsed)} holdings')
+                if parsed:
+                    result = parsed
+                    break
+        except Exception as e:
+            if diag:
+                log(f'    · [diag] {label} {etf}: EXC {e}')
+    if diag:
+        _ETF_DIAG['done'] = True
+    return result
 
 def build_etf_overlap(rank12_etfs, holdings_map, zacks_top_tickers, top_n=ETF_OVERLAP_TOP_N):
     """Aggregate holdings across Zacks #1/#2 ETFs. conviction = blend(weight, breadth) with a
