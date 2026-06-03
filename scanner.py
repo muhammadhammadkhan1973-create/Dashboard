@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.12.5'  # ETF gate re-runs on version change (so the expense-ratio fix actually executes) + stamps _scan_version
+SCAN_VERSION = '1.12.6'  # F4: FRED-primary REER (RBPKBIS) + Pak CPI YoY (PAKCPIALLMINMEI) before TE/last-good, one-time [diag]
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -450,6 +450,34 @@ def fetch_psx_macros():
                 log(f'  ✓ Pak CPI (PBS): {out["pak_cpi"]}%')
     except Exception as e:
         log(f'  · Pak CPI: {e}')
+
+    # F4: FRED is the reliable machine-readable source for REER + CPI (the scanner already uses
+    # FRED every run). BIS Real Effective Exchange Rate, Pakistan + OECD/IMF Pakistan CPI index.
+    # One-time [diag] so the live run confirms the series IDs; fully guarded → falls through to
+    # the TE attempt and last-good below on any failure, so it can never break the run.
+    try:
+        from fredapi import Fred
+        _fr = Fred(api_key=FRED_KEY)
+        def _fred_pk(sid):
+            try:
+                s = _fr.get_series(sid).dropna()
+                return s if (s is not None and len(s)) else None
+            except Exception as e:
+                log(f'    · [diag] FRED {sid}: {type(e).__name__} {str(e)[:90]}')
+                return None
+        if out.get('reer') is None:
+            s = _fred_pk('RBPKBIS')   # BIS broad real effective exchange rate, Pakistan (monthly)
+            if s is not None:
+                out['reer'] = round(float(s.iloc[-1]), 1)
+                log(f'  ✓ REER (FRED RBPKBIS): {out["reer"]}')
+        if out.get('pak_cpi') is None:
+            s = _fred_pk('PAKCPIALLMINMEI')   # CPI all items index, Pakistan (monthly)
+            if s is not None and len(s) > 12:
+                out['pak_cpi'] = round((float(s.iloc[-1]) / float(s.iloc[-13]) - 1) * 100, 1)
+                log(f'  ✓ Pak CPI YoY (FRED PAKCPIALLMINMEI): {out["pak_cpi"]}%')
+    except Exception as e:
+        log(f'  · FRED Pakistan macros (best-effort): {e}')
+
     if out.get('pak_cpi') is None:
         lg = safe_get(EXISTING, 'macros', 'psx', 'pak_cpi')
         if lg is not None:
