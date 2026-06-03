@@ -220,6 +220,8 @@
     <button class="tab" onclick="showPanel('explosive', this)">10. Explosive Stocks</button>
     <button class="tab metals-tab" onclick="showPanel('metals', this)">11. Gold &amp; Metals</button>
     <button class="tab" onclick="showPanel('etf', this)">12. ETF Overlap</button>
+    <button class="tab" onclick="showPanel('backtest', this)">13. Strategy Backtest</button>
+    <button class="tab" onclick="showPanel('profile', this)">14. Investor Profile</button>
   </div>
 
   <!-- PANELS 1-11: identical to v4.1 — placeholder divs maintain structure -->
@@ -271,7 +273,7 @@
 
   <!-- Panels 2-11 placeholders (full content from v4.1 preserved) -->
   <div id="us" class="panel"><h2 class="section-title">United States Macro Dashboard</h2><div id="us_regime_banner" class="alert-banner"></div><h3 class="subsection-title">Leading Indicators</h3><div class="grid grid-3" id="us_indicators"></div><h3 class="subsection-title">Energy Leading Indicators</h3><div id="us_energy_banner" class="reading-box"></div><div class="grid grid-3" id="us_energy_indicators"></div><h3 class="subsection-title">Yield Curve</h3><div id="yield_curve_box"></div><h3 class="subsection-title">Four Regimes Quadrant</h3><div id="us_quadrant"></div><h3 class="subsection-title">Composite Sector Recommendation</h3><div id="us_sector_rec"></div></div>
-  <div id="pak" class="panel"><h2 class="section-title">Pakistan / PSX Macro Dashboard</h2><div id="pak_regime_banner" class="alert-banner"></div><h3 class="subsection-title">Seven Factors Status Board</h3><div class="grid grid-3" id="pak_seven_factors"></div><h3 class="subsection-title">REER / NEER</h3><div id="reer_box"></div><h3 class="subsection-title">Twin Deficit</h3><div id="twin_deficit_box"></div><h3 class="subsection-title">PSX Sector Implications</h3><div id="pak_sector_rec"></div></div>
+  <div id="pak" class="panel"><h2 class="section-title">Pakistan / PSX Macro Dashboard</h2><div id="pak_regime_banner" class="alert-banner"></div><div id="pak_equity_backdrop"></div><h3 class="subsection-title">Seven Factors Status Board</h3><div class="grid grid-3" id="pak_seven_factors"></div><h3 class="subsection-title">REER / NEER</h3><div id="reer_box"></div><h3 class="subsection-title">Twin Deficit</h3><div id="twin_deficit_box"></div><h3 class="subsection-title">PSX Sector Implications</h3><div id="pak_sector_rec"></div></div>
   <div id="devalert" class="panel"><h2 class="section-title">PKR Devaluation Early-Warning System</h2><div id="devalert_main"></div>
     <h3 class="subsection-title">① Distance to Crisis — Historical 4-of-5 Pattern</h3><div id="dev_distance"></div>
     <h3 class="subsection-title">② Core Triggers (the cluster that fired before 2008/2013/2018/2022/2023)</h3><table id="dev_core"></table>
@@ -399,9 +401,30 @@
   <div id="etf_compare"></div>
 </div>
 
+  <div id="backtest" class="panel">
+    <h2 class="section-title">Strategy Backtest — IG+ Methodology vs KSE-100 (2010–2021)</h2>
+    <div id="bt_intro"></div>
+    <h3 class="subsection-title">CAGR by Strategy</h3>
+    <div id="bt_cagr"></div>
+    <h3 class="subsection-title">Equity Curve — PKR 1,000,000 base</h3>
+    <div id="bt_curve"></div>
+    <h3 class="subsection-title">The Layering (each rule adds to the one above)</h3>
+    <div id="bt_layers"></div>
+    <h3 class="subsection-title">Rate-Zone Allocation Engine (backtested 40.8% CAGR)</h3>
+    <div id="bt_alloc"></div>
+  </div>
+
+  <div id="profile" class="panel">
+    <h2 class="section-title">Investor Profile — Which Tabs Serve Your Mode</h2>
+    <div id="prof_intro"></div>
+    <h3 class="subsection-title">Select your profile</h3>
+    <div id="prof_buttons"></div>
+    <div id="prof_detail" style="margin-top:14px;"></div>
+  </div>
+
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.0 (12 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals)
+  Muhammad Hammad Khan | Active Macro Dashboard v5.1 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals)
 </div>
 
 <script>
@@ -526,6 +549,29 @@ function calcPAK(){
   html+=indicatorCard('KSE-100 Index',isNaN(kse)?'—':kse.toLocaleString(),'Live close','neutral','Updated from live scan when data.json loads; editable manually.');
   html+=indicatorCard('Remittances','$'+(isNaN(rem)?'—':rem)+'bn/mo',rem>=3?'Strong inflow':rem>=2.5?'Adequate':'Weak',rem>=3?'pos':rem>=2.5?'neutral':'warn','Monthly worker remittances — key FX support for PKR.');
   document.getElementById('pak_seven_factors').innerHTML=html;
+  // ── KSE Macro Backdrop (equity-impact score of the 7 factors; +1 bullish / -1 bearish for the market) ──
+  const eb=[
+    {n:'Oil (Arab Light)', v:'$'+oil, s:oil>90?-1:oil>70?0:1, why:oil>90?'import bill/inflation drag':oil<70?'import relief':'mid-range'},
+    {n:'SBP Rate',         v:sbp+'%', s:sbp>13?-1:sbp>=9?0:1, why:sbp>13?'tight money, high discount rate':sbp<9?'easing supports multiples':'restrictive but stable'},
+    {n:'Currency (REER)',  v:reer,    s:reer>108?-1:reer>=95?0:1, why:reer>108?'PKR overvalued, export headwind':reer<95?'undervalued, export tailwind':'near fair value'},
+    {n:'Current Account',  v:'$'+ca+'M', s:ca>200?1:ca>-800?0:-1, why:ca>200?'surplus, FX inflows':ca<-800?'large deficit, FX pressure':'manageable'},
+    {n:'Fiscal Deficit',   v:fis+'%', s:fis>7?-1:fis>=5?0:1, why:fis>7?'fiscal stress':fis<5?'consolidation':'on-target'},
+    {n:'Inflation (CPI)',  v:cpi+'%', s:cpi>10?-1:cpi>6?0:1, why:cpi>10?'margin/rate-hike pressure':cpi<6?'rate-cut window':'above target'},
+    {n:'FX Reserves',      v:'$'+res+'bn', s:res>16?1:res>=8?0:-1, why:res<8?'thin cover, PKR risk':res>16?'strong buffer':'adequate'}
+  ];
+  const ebTotal=eb.reduce((a,f)=>a+f.s,0);
+  const ebVerdict=ebTotal>=3?{t:'BULLISH backdrop',c:'pos'}:ebTotal<=-3?{t:'BEARISH backdrop',c:'neg'}:{t:'NEUTRAL / MIXED',c:'warn'};
+  const ebColor=c=>c==='pos'?'#10B981':c==='neg'?'#EF4444':'#9CA3AF';
+  let ebHtml='<div style="border:1px solid #E5E7EB;border-radius:8px;padding:12px;margin:10px 0;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+    +'<b style="color:var(--navy);">KSE-100 Macro Backdrop</b>'
+    +'<span style="font-weight:700;padding:3px 12px;border-radius:6px;color:#fff;background:'+ebColor(ebVerdict.c)+';">'+ebVerdict.t+' ('+(ebTotal>=0?'+':'')+ebTotal+' / 7)</span></div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:4px;">'
+    +eb.map(f=>{const col=f.s>0?'#D1FAE5':f.s<0?'#FEE2E2':'#F3F4F6';const fg=f.s>0?'#065F46':f.s<0?'#991B1B':'#6B7280';const sign=f.s>0?'+1':f.s<0?'-1':'0';
+      return '<span title="'+f.why+'" style="flex:1 1 130px;min-width:120px;background:'+col+';color:'+fg+';border-radius:6px;padding:5px 8px;font-size:11px;">'
+        +'<b>'+f.n+'</b> <span style="float:right;font-weight:700;">'+sign+'</span><br><span style="opacity:.8;">'+f.v+' · '+f.why+'</span></span>';}).join('')
+    +'</div><div style="font-size:10.5px;color:var(--grey-d);margin-top:8px;">Equity-impact read (distinct from the gold scorecard in the Metals tab, which scores the same factors for local gold demand). Each factor +1 bullish / −1 bearish for the KSE-100; uses live macros when available, else manual inputs above.</div></div>';
+  document.getElementById('pak_equity_backdrop').innerHTML=ebHtml;
   const pak_growth=3.7;
   let actualName=cpi>12&&pak_growth<3?'STAGFLATION':cpi>10?'REFLATION':cpi>6?'GOLDILOCKS (mild)':'DISINFLATION';
   let regClass=actualName.includes('STAGFLATION')?'red':actualName.includes('REFLATION')?'yellow':actualName.includes('GOLDILOCKS')?'green':'orange';
@@ -1903,6 +1949,8 @@ function applyLive(){
   calcExplosive();
   calcMetals();
   calcETF();
+  calcBacktest();
+  renderProfiles();
 }
 async function loadLiveData(){
   setLiveStatus('loading');
@@ -1971,6 +2019,76 @@ function calcETF(){
   }
 }
 
+// ===================== STRATEGY BACKTEST (Sarmaaya 2010–2021, real deck data) =====================
+const BT_YEARS=[2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021];
+const BT_SERIES={
+  'KSE-100':{cagr:15.46,color:'#9CA3AF',curve:[1000000,1284189,1418070,2159754,3048357,3535113,3889938,4776489,4306982,3487064,3534086,4862012]},
+  'Strategy 4 (winner)':{cagr:44.54,color:'#10B981',curve:[1000000,1351260,2155489,4281654,7738188,12771915,15423091,21136519,19508795,18764881,23179086,57543933]},
+  'Strategy 5':{cagr:42.71,color:'#3B82F6',curve:[1000000,1351260,2155489,4123297,7355449,11677150,13460410,18953514,16946917,16300693,20135229,49987313]}
+};
+const BT_TABLE=[
+  {n:'KSE-100 (benchmark)',rule:'Buy & hold the index',cagr:15.46,final:4862012},
+  {n:'Strategy 1',rule:'Top 10% by Scoring Model, equal-weight, yearly rebalance',cagr:27.13,final:14015939},
+  {n:'Strategy 2',rule:'+ Red-Zone sector tilt (Banks, Oil, Fertilizer, Utility, Chemicals)',cagr:29.24,final:16805777},
+  {n:'Strategy 3',rule:'+ Lowest-Price / high-beta 5-stock sleeve, re-picked quarterly',cagr:38.98,final:37367064},
+  {n:'Strategy 4',rule:'+ Scoring Model × Intrinsic-Value (FCF) combination',cagr:44.54,final:57543933,win:true},
+  {n:'Strategy 5',rule:'+ Scoring Model × Intrinsic-Value (Cash) combination',cagr:42.71,final:49987313}
+];
+const BT_ALLOC=[{zone:'Dark Green',hi:'0 / 100 / 0',lo:'15 / 70 / 15'},{zone:'Light Green',hi:'10 / 80 / 10',lo:'25 / 50 / 25'},{zone:'Yellow',hi:'20 / 60 / 20',lo:'30 / 40 / 30'},{zone:'Red',hi:'40 / 20 / 40',lo:'50 / 0 / 50'}];
+function calcBacktest(){
+  if(!document.getElementById('bt_cagr'))return;
+  document.getElementById('bt_intro').innerHTML='<div style="background:#F0FDF4;border-left:3px solid #10B981;border-radius:4px;padding:10px 14px;font-size:12.5px;color:var(--grey-d);line-height:1.7;">Your IG+ methodology backtested vs the KSE-100, 2010–2021 (PKR 1,000,000 base). The point is <b>layering</b>: each rule stacks on the one above, compounding from <b>27.1%</b> (scoring alone) to <b>44.5%</b> CAGR (winner) vs the index\'s <b>15.5%</b>. Source: Sarmaaya Strategies deck (yearly picks listed there — reproducible).</div>';
+  const maxC=Math.max(...BT_TABLE.map(s=>s.cagr));
+  let c='<table><thead><tr><th>Strategy</th><th>Rule added</th><th style="text-align:right;">2021 value</th><th style="text-align:right;">CAGR</th><th>vs peak</th></tr></thead><tbody>';
+  BT_TABLE.forEach(s=>{const w=(s.cagr/maxC*100).toFixed(0);const col=s.win?'#10B981':s.n.startsWith('KSE')?'#9CA3AF':'#3B82F6';
+    c+='<tr'+(s.win?' style="background:#F0FDF4;"':'')+'><td><b>'+s.n+'</b>'+(s.win?' 🏆':'')+'</td><td style="font-size:11px;">'+s.rule+'</td><td style="text-align:right;">'+s.final.toLocaleString()+'</td><td style="text-align:right;font-weight:700;">'+s.cagr.toFixed(2)+'%</td><td><div style="background:#F3F4F6;border-radius:3px;height:13px;min-width:70px;"><div style="background:'+col+';height:13px;border-radius:3px;width:'+w+'%;"></div></div></td></tr>';});
+  document.getElementById('bt_cagr').innerHTML=c+'</tbody></table>';
+  const W=720,H=240,pad=46,all=[];Object.values(BT_SERIES).forEach(s=>all.push(...s.curve));
+  const maxV=Math.max(...all),minV=Math.min(...all),x=i=>pad+(i/(BT_YEARS.length-1))*(W-pad-10),y=v=>H-30-((v-minV)/(maxV-minV))*(H-40);
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;">';
+  BT_YEARS.forEach((yr,i)=>{if(i%2===0||i===BT_YEARS.length-1)svg+='<text x="'+x(i)+'" y="'+(H-12)+'" font-size="9" fill="#9CA3AF" text-anchor="middle">'+yr+'</text>';});
+  svg+='<text x="4" y="14" font-size="9" fill="#9CA3AF">PKR '+(maxV/1e6).toFixed(0)+'M</text>';
+  Object.values(BT_SERIES).forEach(s=>{let d='M';s.curve.forEach((v,i)=>{d+=(i?'L':'')+x(i).toFixed(1)+' '+y(v).toFixed(1)+' ';});svg+='<path d="'+d+'" fill="none" stroke="'+s.color+'" stroke-width="2.5"/><circle cx="'+x(s.curve.length-1)+'" cy="'+y(s.curve[s.curve.length-1])+'" r="3" fill="'+s.color+'"/>';});
+  svg+='</svg><div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;margin-top:4px;">';
+  Object.entries(BT_SERIES).forEach(([n,s])=>{svg+='<span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:14px;height:3px;background:'+s.color+';display:inline-block;"></span>'+n+' — '+s.cagr+'% CAGR</span>';});
+  document.getElementById('bt_curve').innerHTML=svg+'</div>';
+  let L='<ol style="margin:0;padding-left:20px;font-size:12.5px;line-height:1.9;">';
+  BT_TABLE.filter(s=>!s.n.startsWith('KSE')).forEach(s=>{L+='<li><b>'+s.n+'</b> ('+s.cagr.toFixed(2)+'%) — '+s.rule+'</li>';});
+  document.getElementById('bt_layers').innerHTML=L+'</ol>';
+  const sbp=val('sbp_rate'),curZone=sbp>=11?'Red':sbp>=9?'Yellow':sbp>=7?'Light Green':'Dark Green';
+  let a='<p style="font-size:11.5px;color:var(--grey-d);margin:0 0 8px;">Backtested Bonds / Stocks / Gold splits keyed to the SBP rate-zone (scoring-model + allocation reached 40.8% CAGR). SBP <b>'+sbp+'%</b> → <b>'+curZone+'</b> zone.</p><table><thead><tr><th>Rate Zone</th><th>HIGH risk (B/S/G)</th><th>LOW risk (B/S/G)</th></tr></thead><tbody>';
+  BT_ALLOC.forEach(z=>{a+='<tr'+(z.zone===curZone?' style="background:#FEF3C7;font-weight:600;"':'')+'><td>'+z.zone+(z.zone===curZone?' ← now':'')+'</td><td>'+z.hi+'</td><td>'+z.lo+'</td></tr>';});
+  document.getElementById('bt_alloc').innerHTML=a+'</tbody></table>';
+}
+
+// ===================== INVESTOR PROFILE SELECTOR (Checklist deck, 7 profiles) =====================
+const PROFILES=[
+  {id:1,name:'Pension / 20-yr Passive',you:false,desc:'Capital preservation, minimal turnover, long horizon.',tabs:[['zone','Allocation Zone'],['devalert','PKR Devaluation'],['metals','Gold & Metals']]},
+  {id:2,name:'Passive Trader 1 — Funds + Rate Cycle',you:false,desc:'Holds mutual funds, rotates with the SBP rate cycle.',tabs:[['zone','Allocation Zone'],['sectors','Sector Implications'],['pak','Pakistan Macro']]},
+  {id:3,name:'Passive Trader 2 — Buy & Hold + Smart Money',you:false,desc:'Buy-and-hold, follows institutional/smart-money positioning.',tabs:[['etf','ETF Overlap'],['mbus','US Multibagger'],['mbpsx','PSX Multibagger']]},
+  {id:4,name:'Active Trader 1 — Rate-Cycle Rotation',you:true,desc:'Rotates sectors on the rate cycle; reads monthly fund reports + macro.',tabs:[['sectors','Sector Implications'],['zone','Allocation Zone'],['pak','Pakistan Macro'],['us','US Macro'],['backtest','Strategy Backtest']]},
+  {id:5,name:'Active Trader 2 — Fundamentals',you:true,desc:'Stock fundamentals + business analysis; quality/value picks.',tabs:[['mbpsx','PSX Multibagger'],['mbus','US Multibagger'],['explosive','Explosive Stocks'],['zone','Allocation Zone'],['tce','TCE Convergence']]},
+  {id:6,name:'Swing Trader',you:false,desc:'Fundamentals + technicals; holds days to weeks.',tabs:[['tce','TCE Convergence'],['explosive','Explosive Stocks'],['metals','Gold & Metals']]},
+  {id:7,name:'Day Trader',you:false,desc:'Forex / metals / stocks intraday on news + technicals.',tabs:[['metals','Gold & Metals'],['tce','TCE Convergence'],['us','US Macro (FOMC/QE-QT)']]}
+];
+let _curProfile=4;
+function goTab(id){const bs=document.querySelectorAll('.tab');for(const b of bs){const oc=b.getAttribute('onclick');if(oc&&oc.indexOf("showPanel('"+id+"'")>=0){showPanel(id,b);return;}}}
+function selectProfile(n){
+  _curProfile=n;const p=PROFILES.find(x=>x.id===n);if(!p)return;
+  document.querySelectorAll('#prof_buttons .tab').forEach(b=>{const on=(+b.dataset.pid===n);b.style.background=on?'var(--navy)':'';b.style.color=on?'#fff':'';});
+  let d='<div style="border:1px solid #E5E7EB;border-radius:8px;padding:14px;"><div style="font-weight:700;color:var(--navy);font-size:15px;margin-bottom:4px;">'+p.name+(p.you?' <span style="background:#10B981;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;">YOUR PROFILE</span>':'')+'</div><div style="font-size:12.5px;color:var(--grey-d);margin-bottom:10px;">'+p.desc+'</div><div style="font-size:11px;color:var(--grey-d);margin-bottom:6px;font-weight:600;">Tabs that serve this mode — tap to jump:</div><div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  p.tabs.forEach(t=>{d+='<span onclick="goTab(\''+t[0]+'\')" style="cursor:pointer;background:#EEF2FF;color:var(--navy);border:1px solid #C7D2FE;border-radius:14px;padding:5px 12px;font-size:12px;">'+t[1]+' →</span>';});
+  document.getElementById('prof_detail').innerHTML=d+'</div></div>';
+}
+function renderProfiles(){
+  if(!document.getElementById('prof_buttons'))return;
+  document.getElementById('prof_intro').innerHTML='<div style="background:#EEF2FF;border-left:3px solid var(--navy);border-radius:4px;padding:10px 14px;font-size:12.5px;color:var(--grey-d);line-height:1.7;">The Sarmaaya framework maps to 7 investor profiles. You operate as <b>Profile 4–5</b> (active: rate-cycle rotation + fundamentals). Pick a profile to see which tabs serve that mode.</div>';
+  let b='<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  PROFILES.forEach(p=>{b+='<button class="tab" data-pid="'+p.id+'" onclick="selectProfile('+p.id+')"'+(p.you?' style="border:1px solid #10B981;"':'')+'>'+p.id+'. '+p.name.split(' — ')[0]+(p.you?' ★':'')+'</button>';});
+  document.getElementById('prof_buttons').innerHTML=b+'</div>';
+  selectProfile(_curProfile);
+}
+
 function recalc(){
   calcUS();
   calcPAK();
@@ -1982,6 +2100,8 @@ function recalc(){
   calcExplosive();
   calcMetals();
   calcETF();
+  calcBacktest();
+  renderProfiles();
 }
 window.addEventListener('DOMContentLoaded',()=>{
   recalc();
