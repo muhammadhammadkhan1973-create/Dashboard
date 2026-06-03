@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.12.2'  # + live FOMC announcement fetch (Fed monetary press RSS) -> macros.us.fomc
+SCAN_VERSION = '1.12.3'  # ETF holdings parser reads stockanalysis 's'+'as' keys, strips $; stockanalysis primary (FMP holdings is premium)
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -695,20 +695,25 @@ def _parse_holdings(rows):
         wt  = (row.get('weightPercentage') if row.get('weightPercentage') is not None else
                row.get('weight') if row.get('weight') is not None else
                row.get('w') if row.get('w') is not None else
+               row.get('as') if row.get('as') is not None else
+               row.get('assetsPercent') if row.get('assetsPercent') is not None else
                row.get('percent') if row.get('percent') is not None else row.get('assetPercent'))
         if sym and wt is not None:
             try:
-                out.append({'ticker': str(sym).upper().strip(), 'weight': float(str(wt).replace('%','').strip())})
+                tk = str(sym).upper().strip().lstrip('$').strip()
+                if tk:
+                    out.append({'ticker': tk, 'weight': float(str(wt).replace('%','').replace(',','').strip())})
             except Exception:
                 pass
     return out
 
 def fetch_etf_holdings(etf):
-    """ETF holdings -> [{ticker, weight}]. Tries FMP (documented endpoints) then stockanalysis.
+    """ETF holdings -> [{ticker, weight}]. stockanalysis.com is the working free source (FMP
+    holdings is premium-402 / v3 legacy-403 on the free key, so it's fallback-only).
     Logs a ONE-TIME diagnostic (status + body snippet + rows parsed) for the first ETF so a
     failure is debuggable from the run log instead of silently returning []."""
     diag = not _ETF_DIAG['done']
-    sources = []
+    sources = [('stockanalysis', f'https://stockanalysis.com/api/symbol/e/{etf}/holdings')]
     if FMP_KEY:
         sources += [
             ('fmp-stable', f'https://financialmodelingprep.com/stable/etf/holdings?symbol={etf}&apikey={FMP_KEY}'),
