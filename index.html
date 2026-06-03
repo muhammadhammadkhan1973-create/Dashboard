@@ -450,6 +450,20 @@ function calcUS(){
   html+=indicatorCard('US 10Y-2Y Spread',(spread>0?'+':'')+spread.toFixed(0)+' bps',spread>30?'NORMAL curve':spread>-30?'FLAT curve':'INVERTED',scls,spread>30?'Expansion ahead.':spread<-30?'Recession signal.':'Transition zone.');
   html+=indicatorCard('Core PCE Inflation',pce+'%',pce>3?'HOT':pce>2.3?'Above target':'AT TARGET',pce>3?'neg':pce>2.3?'warn':'pos',pce>3?'Above 2% Fed target; hiking pressure.':'Near target.');
   html+=indicatorCard('DXY Dollar Index',dxy,dxy>105?'USD STRONG':dxy>100?'USD neutral-strong':dxy>=98?'USD neutral':'USD WEAK',dxy>105?'neg':dxy>100?'warn':'pos',dxy>105?'Bearish for EM (PSX)':dxy<98?'EM flows resume; bullish KSE-100':'Balanced EM environment.');
+  // QE/QT — Fed balance-sheet trend + latest live FOMC announcement
+  const usLive=(LIVE&&LIVE.macros&&LIVE.macros.us)?LIVE.macros.us:{};
+  const mLive =(LIVE&&LIVE.macros&&LIVE.macros.metals)?LIVE.macros.metals:{};
+  const walclT=(mLive.walcl_change!=null)?mLive.walcl_change:null;
+  const bsDir =walclT==null?'\u2014':(walclT>0.5?'Expanding (QE)':walclT<-0.5?'Shrinking (QT)':'Flat / neutral');
+  const bsCls =walclT==null?'neutral':(walclT>0.5?'pos':walclT<-0.5?'neg':'neutral');
+  const fomc  =usLive.fomc||null;
+  let qeNote='Fed balance sheet '+(mLive.walcl!=null?('$'+mLive.walcl+'T '):'')+(walclT!=null?('('+(walclT>0?'+':'')+walclT+'% 4-wk)'):'')+'. QE = easier liquidity / risk-on; QT = tightening / risk-off.';
+  if(fomc&&fomc.title){
+    const when=fomc.date?(fomc.date+(fomc.days_ago!=null?(' \u00b7 '+fomc.days_ago+'d ago'):'')):'';
+    qeNote='<b>Latest FOMC:</b> '+when+' \u2014 '+(fomc.link?('<a href="'+fomc.link+'" target="_blank" rel="noopener">'+fomc.title+'</a>'):fomc.title)+'<br>'+qeNote;
+  }
+  const qeStatus=fomc&&fomc.stance?fomc.stance:(walclT==null?'NO DATA':(walclT>0.5?'QE':walclT<-0.5?'QT':'NEUTRAL'));
+  html+=indicatorCard('Fed Policy \u2014 QE/QT',bsDir,qeStatus,bsCls,qeNote);
   document.getElementById('us_indicators').innerHTML=html;
   let eHtml='';
   eHtml+=indicatorCard('WTI Crude','$'+wti+'/bbl',wti>=90?'HIGH — net positive':wti>=65?'MID — balanced':'LOW — drilling stress',wti>=90?'pos':wti>=65?'neutral':'warn',wti>=90?'Elevated WTI lifts shale margins. Bullish Energy (XLE).':'Mid-band manageable.');
@@ -1948,7 +1962,7 @@ function calcETF(){
       cp.innerHTML='<div class="reading-box"><b>Source ETFs ('+src.length+'):</b> '+src.join(', ')+'</div>';
     } else {
       var pct=function(v){return (v==null||v==='')?'\u2014':(v+'%');};
-      var st='<table><thead><tr><th>#</th><th>ETF</th><th>Name</th><th>YTD</th><th>1Y</th><th>3Y</th><th>Expense</th></tr></thead><tbody>';
+      var st='<table><thead><tr><th>#</th><th>ETF</th><th>Name</th><th>YTD</th><th>1Y</th><th>3Y</th><th>Expense Ratio</th></tr></thead><tbody>';
       src.forEach(function(e,i){
         st+='<tr><td>'+(i+1)+'</td><td><b>'+e.ticker+'</b></td><td style="font-size:12px;">'+(e.name||'')+'</td><td style="text-align:right;">'+pct(e.ytd)+'</td><td style="text-align:right;font-weight:600;">'+pct(e.y1)+'</td><td style="text-align:right;">'+pct(e.y3)+'</td><td style="text-align:right;">'+(e.expense==null?'\u2014':e.expense+'%')+'</td></tr>';
       });
