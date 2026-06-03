@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.13.0'  # wire TCE v2: build_tce_v2 writes data.json.tce_v2 (live crude+Pink Sheet, per-name on runner)
+SCAN_VERSION = '1.14.0'  # augmented TCE: old streams + momentum/margin/capital + EPS+revenue revision direction + RS guardrail; reverted holdings scorer
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -82,7 +82,7 @@ DEFAULT_DATA = {
     'universe_sizes': {'psx_total': 561, 'us_total': 5800},
     'psx_funnel': [], 'us_funnel': [],
     'psx_candidates': [], 'us_candidates': [],
-    'tce_psx': [], 'tce_us': [], 'tce_v2': [],
+    'tce_psx': [], 'tce_us': [],
     'explosive_psx': [], 'explosive_us': [],
     'rate_path': [],
 }
@@ -1413,109 +1413,190 @@ def screen_psx_universe():
 # =============================================================
 # 5. TCE
 # =============================================================
-BINARY_STREAMS = ('s1_news','s2_sponsor','s3_insider','s4_revisions','s5_volume')
+# --- Augmented TCE: old attention streams + fundamentals + forward revisions + RS guardrail ---
+ATTENTION   = ('s1_news', 's2_sponsor', 's3_insider', 's5_volume')
+FUNDAMENTAL = ('s6_momentum', 's7_margin', 's8_capital')
+REVISION    = ('s9_eps_rev', 's10_rev_rev')
+CONVICTION  = FUNDAMENTAL + REVISION            # streams that must converge for HIGH (the discriminators)
+COUNTED     = ATTENTION + FUNDAMENTAL + REVISION
+BINARY_STREAMS = COUNTED                        # back-compat alias
 
 
-def compute_tce_streams(ticker, market='us'):
-    streams = {k: 0 for k in BINARY_STREAMS}
+def derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, prev_rev_est):
+    """Yahoo-derived stream flags from already-fetched primitives. Any input may be None; a stream
+    that can't be computed simply stays 0 (never errors, never vetoes). Pure + unit-tested."""
+    s = {}
+    if closes and len(closes) >= 64 and closes[-64]:                         # s6 momentum (3mo)
+        mom = (closes[-1] - closes[-64]) / closes[-64] * 100
+        s['s6_momentum_pct'] = round(mom, 1)
+        s['s6_momentum'] = 1 if mom >= 15 else 0
+    if closes and len(closes) >= 2 and closes[0]:                            # RS guardrail (6mo vs SPY)
+        name_6mo = (closes[-1] - closes[0]) / closes[0] * 100
+        s['rs_vs_spy'] = round(name_6mo - spy_6mo_ret, 1) if spy_6mo_ret is not None else None
+        s['rs_ok'] = (spy_6mo_ret is None) or (name_6mo >= spy_6mo_ret)
+    else:
+        s['rs_ok'] = True
+    eg = info.get('earningsGrowth') if info else None                        # s7 margin inflection
+    rg = info.get('revenueGrowth') if info else None
+    if eg is not None and rg is not None:
+        s['s7_margin_spread_pct'] = round((eg - rg) * 100, 1)
+        s['s7_margin'] = 1 if (eg > rg and eg > 0) else 0
+    sp = info.get('shortPercentOfFloat') if info else None                   # s8 external capital
+    if sp is not None:
+        s['s8_capital_short_pct'] = round(sp * 100, 1)
+        s['s8_capital'] = 1 if sp >= 0.08 else 0
+    if eps_up30 is not None and eps_down30 is not None:                       # s9 EPS revision direction
+        s['s9_eps_rev_net'] = eps_up30 - eps_down30
+        s['s9_eps_rev'] = 1 if (eps_up30 > eps_down30 and eps_up30 > 0) else 0
+    if rev_est is not None:                                                  # s10 revenue revision (snapshot)
+        s['rev_est'] = rev_est
+        if prev_rev_est:
+            s['s10_rev_rev_pct'] = round((rev_est - prev_rev_est) / prev_rev_est * 100, 2)
+            s['s10_rev_rev'] = 1 if rev_est > prev_rev_est else 0
+    return s
 
+
+def tce_tier(streams):
+    """Conviction (fundamentals+revisions) can carry the tier alone, so a name converging BEFORE
+    news/volume arrive — the 3-quarters-early setup — is still caught. Thresholds explicit/tunable;
+    the precision backtest is what calibrates them."""
+    total = sum(int(streams.get(k, 0)) for k in COUNTED)
+    conv  = sum(int(streams.get(k, 0)) for k in CONVICTION)
+    rs_ok = bool(streams.get('rs_ok', True))
+    strong = (conv >= 4) or (total >= 6 and conv >= 3)
+    if strong and rs_ok:
+        return 'HIGH', total, conv
+    if (conv >= 3) or (total >= 5 and conv >= 1) or (strong and not rs_ok):
+        return 'WATCH', total, conv
+    return 'IGNORE', total, conv
+
+
+def _spy_6mo_return():
+    try:
+        import yfinance as yf
+        h = yf.Ticker('SPY').history(period='6mo')
+        if len(h) >= 2:
+            c = h['Close']
+            return round((c.iloc[-1] - c.iloc[0]) / c.iloc[0] * 100, 1)
+    except Exception:
+        pass
+    return None
+
+
+def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None):
+    streams = {k: 0 for k in COUNTED}
+
+    # s1_news / s2_sponsor — Google News RSS recent count (last 14 days)
     try:
         import feedparser
-        query = f'{ticker}+stock+OR+earnings'
-        url = (f'https://news.google.com/rss/search?q={query}'
+        url = (f'https://news.google.com/rss/search?q={ticker}+stock+OR+earnings'
                f'&hl=en-US&gl=US&ceid=US:en')
         feed = feedparser.parse(url)
-        recent_count = 0
         cutoff = dt.datetime.utcnow() - dt.timedelta(days=14)
+        recent = 0
         for entry in feed.entries[:30]:
             try:
-                if hasattr(entry, 'published_parsed') and entry.published_parsed:
-                    if dt.datetime(*entry.published_parsed[:6]) > cutoff:
-                        recent_count += 1
+                if getattr(entry, 'published_parsed', None) and dt.datetime(*entry.published_parsed[:6]) > cutoff:
+                    recent += 1
             except Exception:
                 continue
-        streams['s1_news_count'] = recent_count
-        if recent_count >= 3:
+        streams['s1_news_count'] = recent
+        if recent >= 3:
             streams['s1_news'] = 1
+        if recent >= 8:
+            streams['s2_sponsor'] = 1
     except Exception:
         pass
 
+    # ONE yfinance fetch -> volume(s5) + momentum/RS(s6) + margin(s7) + capital(s8) + revisions(s9/s10)
     try:
         import yfinance as yf
         sym = f'{ticker}.KA' if market == 'psx' else ticker
         t = yf.Ticker(sym)
-        h = t.history(period='3mo')
-        if len(h) >= 30:
-            vol_recent   = h['Volume'].iloc[-20:].mean()
-            vol_baseline = h['Volume'].iloc[:30].mean()
-            if vol_baseline > 0:
-                ratio = vol_recent / vol_baseline
+        h = t.history(period='6mo')
+        try:
+            info = t.info or {}
+        except Exception:
+            info = {}
+        closes = [float(x) for x in h['Close'].tolist()] if len(h) else []
+
+        if len(h) >= 60:                                            # s5_volume
+            vr = h['Volume'].iloc[-20:].mean(); vb = h['Volume'].iloc[:40].mean()
+            if vb > 0:
+                ratio = vr / vb
                 streams['s5_volume_ratio'] = round(ratio, 2)
                 if ratio > 1.3:
                     streams['s5_volume'] = 1
-        if market == 'us':
-            info = t.info
-            if info:
-                fwd = info.get('forwardEps')
-                tra = info.get('trailingEps')
-                if fwd and tra and tra > 0:
-                    growth = (fwd - tra) / abs(tra)
-                    streams['s4_revisions_pct'] = round(growth * 100, 1)
-                    if growth > 0.05:
-                        streams['s4_revisions'] = 1
-    except Exception:
-        pass
 
+        eps_up30 = eps_down30 = None                                # s9 forward EPS revision breadth
+        try:
+            er = t.get_eps_revisions() if hasattr(t, 'get_eps_revisions') else getattr(t, 'eps_revisions', None)
+            if er is not None and hasattr(er, 'columns'):
+                cols = {str(c).lower(): c for c in er.columns}
+                up_c = next((cols[k] for k in cols if 'up' in k and '30' in k), None)
+                dn_c = next((cols[k] for k in cols if 'down' in k and '30' in k), None)
+                if up_c is not None and dn_c is not None:
+                    eps_up30 = int(er[up_c].fillna(0).iloc[0]); eps_down30 = int(er[dn_c].fillna(0).iloc[0])
+        except Exception:
+            pass
+
+        rev_est = None                                              # s10 consensus revenue estimate (snapshot)
+        try:
+            re_df = t.get_revenue_estimate() if hasattr(t, 'get_revenue_estimate') else getattr(t, 'revenue_estimate', None)
+            if re_df is not None and hasattr(re_df, 'columns'):
+                avg_c = next((c for c in re_df.columns if str(c).lower() in ('avg', 'average')), None)
+                if avg_c is not None:
+                    rev_est = float(re_df[avg_c].iloc[0])
+        except Exception:
+            pass
+
+        streams.update(derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, prev_rev_est))
+    except Exception:
+        streams.setdefault('rs_ok', True)
+
+    # s3_insider — SEC Form 4 count (US only)
     if market == 'us':
         try:
             today = dt.date.today()
             start_dt = (today - dt.timedelta(days=90)).isoformat()
             url = (f'https://efts.sec.gov/LATEST/search-index?q=%22{ticker}%22'
-                   f'&forms=4&dateRange=custom&startdt={start_dt}'
-                   f'&enddt={today.isoformat()}')
-            r = requests.get(url, headers={
-                'User-Agent': 'Dashboard Scanner dashboard@example.com',
-                'Accept': 'application/json'}, timeout=10)
+                   f'&forms=4&dateRange=custom&startdt={start_dt}&enddt={today.isoformat()}')
+            r = requests.get(url, headers={'User-Agent': 'Dashboard Scanner dashboard@example.com',
+                                           'Accept': 'application/json'}, timeout=10)
             if r.status_code == 200:
-                data = r.json()
-                hits = safe_get(data, 'hits', 'total', 'value', default=0)
+                hits = safe_get(r.json(), 'hits', 'total', 'value', default=0)
                 streams['s3_insider_count'] = hits
                 if hits >= 2:
                     streams['s3_insider'] = 1
         except Exception:
             pass
 
-    if streams.get('s1_news_count', 0) >= 8:
-        streams['s2_sponsor'] = 1
-
-    streams['total'] = sum(streams[k] for k in BINARY_STREAMS)
+    streams.setdefault('rs_ok', True)
+    streams['total'] = sum(streams.get(k, 0) for k in COUNTED)
     return streams
 
 
-def run_tce(candidates, market='us', max_count=20):
+def run_tce(candidates, market='us', max_count=20, spy_6mo_ret=None, prev_rev=None):
     log(f'=== TCE on {market.upper()} ({len(candidates)} candidates) ===')
+    prev_rev = prev_rev or {}
     tce_results = []
     for c in candidates[:max_count]:
         ticker = c['ticker']
         try:
-            streams = compute_tce_streams(ticker, market)
-            score = streams['total']
-            tier = 'HIGH' if score >= 4 else ('WATCH' if score >= 3 else 'IGNORE')
+            streams = compute_tce_streams(ticker, market, spy_6mo_ret=spy_6mo_ret,
+                                          prev_rev_est=prev_rev.get(ticker))
+            tier_label, total, conv = tce_tier(streams)
             tce_results.append({
-                'ticker': ticker,
-                'name':   c.get('name', ticker),
-                'sector': c.get('sector', ''),
-                'tce_score': score,
-                'tier':   tier,
-                'streams': streams,
+                'ticker': ticker, 'name': c.get('name', ticker), 'sector': c.get('sector', ''),
+                'tce_score': total, 'conviction': conv, 'tier': tier_label, 'streams': streams,
             })
-            fired = [k for k in BINARY_STREAMS if streams.get(k) == 1]
-            log(f'  {ticker}: score={score} tier={tier} streams={fired}')
+            fired = [k for k in COUNTED if streams.get(k) == 1]
+            log(f'  {ticker}: {tier_label} total={total} conv={conv} streams={fired}')
             time.sleep(YF_DELAY)
         except Exception as e:
             log(f'  · TCE {ticker}: {e}')
 
-    tce_results.sort(key=lambda r: r['tce_score'], reverse=True)
+    tce_results.sort(key=lambda r: (r['tce_score'], r.get('conviction', 0)), reverse=True)
     high  = sum(1 for r in tce_results if r['tier'] == 'HIGH')
     watch = sum(1 for r in tce_results if r['tier'] == 'WATCH')
     log(f'  TCE: {high} HIGH, {watch} WATCH out of {len(tce_results)} scanned')
@@ -2781,16 +2862,22 @@ def main():
         data['psx_funnel']    = EXISTING.get('psx_funnel', [])
         data['psx_candidates'] = EXISTING.get('psx_candidates', [])
 
+    _spy6 = _spy_6mo_return()
+    _prev_us = {r['ticker']: r['streams'].get('rev_est') for r in EXISTING.get('tce_us', [])
+                if isinstance(r.get('streams'), dict)}
     try:
         data['tce_us'] = run_tce(data['us_candidates'], market='us',
-                                  max_count=US_CANDIDATE_POOL)
+                                  max_count=US_CANDIDATE_POOL, spy_6mo_ret=_spy6, prev_rev=_prev_us)
     except Exception as e:
         log(f'US TCE crashed: {e}')
         data['meta']['errors'].append(f'us_tce: {e}')
         data['tce_us'] = EXISTING.get('tce_us', [])
 
     try:
-        data['tce_psx'] = run_tce(data['psx_candidates'], market='psx', max_count=10)
+        _prev_psx = {r['ticker']: r['streams'].get('rev_est') for r in EXISTING.get('tce_psx', [])
+                     if isinstance(r.get('streams'), dict)}
+        data['tce_psx'] = run_tce(data['psx_candidates'], market='psx', max_count=10,
+                                  spy_6mo_ret=_spy6, prev_rev=_prev_psx)
     except Exception as e:
         log(f'PSX TCE crashed: {e}')
         data['meta']['errors'].append(f'psx_tce: {e}')
@@ -2898,17 +2985,6 @@ def main():
         data['etf_overlap'] = EXISTING.get('etf_overlap', {})
 
     data['meta']['warnings'] = list(WARNINGS)
-
-    # TCE v2 (6-stream) — standalone module; guarded so a failure here never affects the core scan.
-    try:
-        from tce_v2_scan import build_tce_v2
-        data['tce_v2'] = build_tce_v2(data)
-        _hi = sum(1 for r in data['tce_v2'] if r['tier'] == 'HIGH')
-        _wa = sum(1 for r in data['tce_v2'] if str(r['tier']).startswith('WATCH'))
-        log(f'  ✓ TCE v2: {len(data["tce_v2"])} holdings scored ({_hi} HIGH, {_wa} WATCH)')
-    except Exception as e:
-        log(f'  · TCE v2 skipped ({e}); carrying last-good')
-        data['tce_v2'] = EXISTING.get('tce_v2', [])
 
     try:
         with open(OUTPUT_PATH, 'w') as f:
