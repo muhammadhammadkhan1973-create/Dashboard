@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.12.9'  # CPI parser hardened (both date orders, commas, ws-collapse) + raw-HTML [diag] to pin TheGlobalEconomy structure
+SCAN_VERSION = '1.12.10'  # CPI parser: decode &nbsp; entity between year/month (TheGlobalEconomy) — pinned via raw-HTML diag
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -452,6 +452,7 @@ def fetch_psx_macros():
                 if diag: log(f'    · [diag] TGE {slug}: HTTP {rr.status_code}')
                 return None
             txt = re.sub(r'<[^>]+>', ' ', rr.text)
+            txt = txt.replace('&nbsp;', ' ').replace('&nbsp', ' ')  # entity survives tag-strip; year/month joined by it
             txt = re.sub(r'\s+', ' ', txt)            # collapse newlines/tabs so the row is contiguous
             i = txt.find('Recent values')
             seg = txt[i:i + 500] if i >= 0 else txt
