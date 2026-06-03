@@ -212,15 +212,14 @@
     <button class="tab" onclick="showPanel('us', this)">2. US Dashboard</button>
     <button class="tab" onclick="showPanel('pak', this)">3. Pakistan Dashboard</button>
     <button class="tab" onclick="showPanel('devalert', this)">4. PKR Devaluation Alert</button>
-    <button class="tab" onclick="showPanel('history', this)">5. Historical PKR Crashes</button>
-    <button class="tab" onclick="showPanel('sectors', this)">6. Sector Implications</button>
-    <button class="tab" onclick="showPanel('zone', this)">7. Allocation Zone (IM3)</button>
-    <button class="tab" onclick="showPanel('mbpsx', this)">8. PSX Multibagger</button>
-    <button class="tab" onclick="showPanel('mbus', this)">9. US Multibagger</button>
-    <button class="tab" onclick="showPanel('tce', this)">10. TCE Convergence</button>
-    <button class="tab" onclick="showPanel('explosive', this)">11. Explosive Stocks</button>
-    <button class="tab metals-tab" onclick="showPanel('metals', this)">12. Gold &amp; Metals</button>
-    <button class="tab" onclick="showPanel('etf', this)">13. ETF Overlap</button>
+    <button class="tab" onclick="showPanel('sectors', this)">5. Sector Implications</button>
+    <button class="tab" onclick="showPanel('zone', this)">6. Allocation Zone (IM3)</button>
+    <button class="tab" onclick="showPanel('mbpsx', this)">7. PSX Multibagger</button>
+    <button class="tab" onclick="showPanel('mbus', this)">8. US Multibagger</button>
+    <button class="tab" onclick="showPanel('tce', this)">9. TCE Convergence</button>
+    <button class="tab" onclick="showPanel('explosive', this)">10. Explosive Stocks</button>
+    <button class="tab metals-tab" onclick="showPanel('metals', this)">11. Gold &amp; Metals</button>
+    <button class="tab" onclick="showPanel('etf', this)">12. ETF Overlap</button>
   </div>
 
   <!-- PANELS 1-11: identical to v4.1 — placeholder divs maintain structure -->
@@ -279,8 +278,15 @@
     <h3 class="subsection-title">③ Accelerants &amp; EWS Ratios (academic crisis predictors)</h3><table id="dev_accel"></table>
     <h3 class="subsection-title">④ Composite Risk Scoring</h3><table id="dev_components"></table>
     <h3 class="subsection-title">⑤ KSE-100 6-Indicator Macro Panel (IM3 inverse-relationship read)</h3><div id="dev_kse6"></div>
-    <div class="reading-box" style="font-size:12px;"><strong>How to read:</strong> The 5 <b>core triggers</b> are the cluster present before every past PKR crash — when 4 of 5 fire together, devaluation historically followed within 6 months. <b>Accelerants</b> (fiscal, import bill, short-term-debt/reserves, export growth, real rate) are the academically-validated predictors that deepen risk. The <b>KSE 6-panel</b> reads the market's macro backdrop: rising oil + USD/PKR + inflation + rates + widening CAD = bearish for KSE; the reverse = bullish.</div></div>
-  <div id="history" class="panel"><h2 class="section-title">Historical PKR Devaluation Episodes</h2><div style="overflow-x:auto;"><table class="historical-table"><thead><tr><th>Factor</th><th>2008</th><th>2013</th><th>2017-18</th><th>2022</th><th>2023</th><th>Common Pattern</th></tr></thead><tbody id="history_tbody"></tbody></table></div></div>
+    <div class="reading-box" style="font-size:12px;"><strong>How to read:</strong> The 5 <b>core triggers</b> are the cluster present before every past PKR crash — when 4 of 5 fire together, devaluation historically followed within 6 months. <b>Accelerants</b> (fiscal, import bill, short-term-debt/reserves, export growth, real rate) are the academically-validated predictors that deepen risk. The <b>KSE 6-panel</b> reads the market's macro backdrop: rising oil + USD/PKR + inflation + rates + widening CAD = bearish for KSE; the reverse = bullish.</div>
+    <details style="margin-top:14px;border:1px solid #E5E7EB;border-radius:8px;">
+      <summary style="cursor:pointer;padding:10px 14px;font-weight:600;color:var(--navy);background:#FAFAFA;border-radius:8px;">Historical PKR Devaluation Episodes (2008&ndash;2023) &mdash; reference cluster</summary>
+      <div style="padding:12px;overflow-x:auto;">
+        <p style="font-size:12px;color:var(--grey-d);margin:0 0 8px;">The five past crashes the early-warning system above is calibrated against. Each followed the same 4-of-5 trigger pattern; the <b>Common Pattern</b> column is what the live triggers watch for.</p>
+        <table class="historical-table"><thead><tr><th>Factor</th><th>2008</th><th>2013</th><th>2017-18</th><th>2022</th><th>2023</th><th>Common Pattern</th></tr></thead><tbody id="history_tbody"></tbody></table>
+      </div>
+    </details>
+  </div>
   <div id="sectors" class="panel"><h2 class="section-title">Sector &amp; Stock Implications</h2><h3 class="subsection-title">US Sectors</h3><div id="us_sectors"></div><h3 class="subsection-title">PSX Sectors</h3><div id="psx_sectors"></div><h3 class="subsection-title">Top Picks</h3><div id="top_picks"></div></div>
   <div id="zone" class="panel"><h2 class="section-title">IM3 Allocation Zone</h2><div id="zone_banner" class="alert-banner red"><h3>CURRENT ZONE: RED — 20% Stocks / 60% Bonds / 20% Cash</h3><p><b>SBP Rate:</b> 11.50% | <b>Mean:</b> 11.01% | <b>Direction:</b> Increasing</p></div><h3 class="subsection-title">Zone Quadrant</h3><div id="zone_quadrant_box"></div><h3 class="subsection-title">SBP Rate Path</h3><div id="zone_rate_path"></div><h3 class="subsection-title">KSE-100 Monthly</h3><div id="zone_kse_table"></div><h3 class="subsection-title">Asset Allocation by Zone</h3><div id="zone_alloc_table"></div></div>
   <div id="mbpsx" class="panel"><h2 class="section-title">PSX Multibagger Hunter</h2><div id="psx_mb_funnel"></div><div id="psx_mb_sector_table"></div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="psx_mb_rev" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="psx_mb_eps" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="psx_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROCE 5-yr avg (%)</label><input type="number" id="psx_mb_roce" value="24" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="psx_mb_de" value="0.3" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="psx_mb_ocf" value="1.1" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Sponsor %</label><input type="number" id="psx_mb_sponsor" value="45" step="1" oninput="recalc()"></div><div class="input-group"><label>Market Cap (PKR bn)</label><input type="number" id="psx_mb_mcap" value="8" step="0.5" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="psx_mb_ig" value="72" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="psx_mb_pe" value="6" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="psx_mb_wacc" value="20" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="psx_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3" selected>5-10x</option><option value="4">10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="psx_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3" selected>Cost/Switching</option><option value="4">Brand/Network</option><option value="5">Regulatory</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="psx_mb_reinv" onchange="recalc()"><option value="1">Returning all cash</option><option value="2">Limited</option><option value="3" selected>Moderate</option><option value="4">Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner-Operator</label><select id="psx_mb_owner" onchange="recalc()"><option value="1">Diluted</option><option value="2">Holding</option><option value="3" selected>Stable &gt;5yr</option><option value="4">Founder 10yr+</option><option value="5">Founder + rising</option></select></div></div><div id="psx_mb_score_box"></div><div id="psx_mb_decision_matrix"></div><div id="psx_mb_compound_box"></div><div id="psx_mb_tiers_table"></div><div id="psx_mb_live_candidates"></div><div id="psx_mb_history_table"></div><div id="psx_mb_comparison_table"></div></div>
@@ -1483,6 +1489,32 @@ function renderTceTable(elId, rows, market) {
     return;
   }
   const STREAM_LABELS={s1_news:'News',s2_sponsor:'Sponsor',s3_insider:'Insider',s4_revisions:'Revisions',s5_volume:'Volume'};
+  const SDEF=[
+    {bk:'s1_news',     lbl:'News',    us:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Google News articles, last 14d (fires \u22653)'},
+    {bk:'s2_sponsor',  lbl:'Sponsor', us:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Heavy coverage \u2014 same news count (fires \u22658)'},
+    {bk:'s3_insider',  lbl:'Insider', us:true,  val:s=>(s.s3_insider_count!=null?s.s3_insider_count:'\u00b7'), tip:'SEC Form 4 filings, last 90d (fires \u22652, US only)'},
+    {bk:'s4_revisions',lbl:'Rev',     us:true,  val:s=>(s.s4_revisions_pct!=null?((s.s4_revisions_pct>0?'+':'')+s.s4_revisions_pct+'%'):'\u00b7'), tip:'Fwd vs trailing EPS (fires >+5%, US only)'},
+    {bk:'s5_volume',   lbl:'Vol',     us:false, val:s=>(s.s5_volume_ratio!=null?(s.s5_volume_ratio+'\u00d7'):'\u00b7'), tip:'20d vs 30d volume (fires >1.3\u00d7)'}
+  ];
+  function streamCellsHTML(streams, mkt){
+    if(!streams||typeof streams!=='object'||Array.isArray(streams)){
+      const arr=Array.isArray(streams)?streams:[];
+      return arr.map(k=>STREAM_LABELS[k]||k).join(' \u00b7 ')||'\u2014';
+    }
+    const isPsx=mkt==='psx';
+    return '<div style="display:flex;flex-wrap:wrap;gap:3px;">'+SDEF.map(d=>{
+      const na=isPsx&&d.us;
+      const fired=!na&&streams[d.bk]===1;
+      const val=na?'\u2014':d.val(streams);
+      const bg=fired?'#D1FAE5':(na?'#FAFAFA':'#F3F4F6');
+      const fg=fired?'#065F46':(na?'#CBD5E1':'#9CA3AF');
+      const bd=fired?'#6EE7B7':'#E5E7EB';
+      const tip=na?(d.lbl+': US-only stream, n/a for PSX'):(d.tip+(fired?' \u2014 FIRED':' \u2014 not fired'));
+      return '<span title="'+tip+'" style="display:inline-flex;flex-direction:column;align-items:center;min-width:40px;padding:2px 4px;border-radius:5px;background:'+bg+';color:'+fg+';border:1px solid '+bd+';">'
+        +'<span style="font-size:8.5px;font-weight:600;letter-spacing:.2px;">'+d.lbl+'</span>'
+        +'<span style="font-size:10px;font-weight:700;">'+val+'</span></span>';
+    }).join('')+'</div>';
+  }
   const high=rows.filter(r=>(r.tier||'').toUpperCase()==='HIGH');
   const watch=rows.filter(r=>(r.tier||'').toUpperCase()==='WATCH');
   const ignore=rows.filter(r=>(r.tier||'').toUpperCase()==='IGNORE');
@@ -1496,7 +1528,7 @@ function renderTceTable(elId, rows, market) {
 
   const showIM3T = (market==='us');
   html+=`<table style="font-size:12px;"><thead><tr>
-    <th>Ticker</th><th>Name</th><th>Score</th><th>Streams Firing</th><th>Tier</th>
+    <th>Ticker</th><th>Name</th><th>Score</th><th style="min-width:230px;">Streams &mdash; fired &amp; live value</th><th>Tier</th>
     ${showIM3T?`<th style="background:#312E81;min-width:130px;line-height:1.4;">
       IM3 Quality
       <div style="font-size:9px;font-weight:400;margin-top:3px;">
@@ -1513,18 +1545,12 @@ function renderTceTable(elId, rows, market) {
     const tier=(r.tier||'').toUpperCase();
     const cls=tier==='HIGH'?'pos':tier==='WATCH'?'warn':'';
     const tk=r.ticker||'';
-    let firedNames=[];
-    if(r.streams&&typeof r.streams==='object'&&!Array.isArray(r.streams)){
-      firedNames=['s1_news','s2_sponsor','s3_insider','s4_revisions','s5_volume'].filter(k=>r.streams[k]===1).map(k=>STREAM_LABELS[k]);
-    } else if(Array.isArray(r.streams)){
-      firedNames=r.streams.map(k=>STREAM_LABELS[k]||k);
-    }
 
     html+=`<tr class="${cls}">
       <td><b>${tk||'—'}</b></td>
       <td>${r.name||'—'}</td>
       <td style="text-align:center;font-weight:700;">${(r.tce_score!=null?r.tce_score:(r.streams&&r.streams.total!=null?r.streams.total:(r.score!=null?r.score:'—')))}</td>
-      <td style="font-size:11px;">${firedNames.join(' · ')||'—'}</td>
+      <td>${streamCellsHTML(r.streams, market)}</td>
       <td><b style="color:${tier==='HIGH'?'var(--green)':tier==='WATCH'?'var(--orange)':'var(--grey-d)'};">${r.tier||'—'}</b></td>
       ${showIM3T?`<td data-im3-cell="${tk}"
           data-im3-ticker="${tk}"
@@ -1893,19 +1919,28 @@ function calcETF(){
   const intro=document.getElementById('etf_intro');
   if(intro) intro.innerHTML='<div class="reading-box">Takes your <b>top 30 best-performing Zacks Rank #1 US-equity ETFs</b> (by 1-yr return), pulls their holdings, and aggregates by stock to surface the names these funds <b>collectively concentrate in</b>. <b>Alloc %</b> is the mirror-able weight across the consensus names; conviction blends position weight + how many of the 30 ETFs hold it, boosted when the stock is itself Zacks #1/#2. Holdings refresh weekly.</div>';
   const bn=document.getElementById('etf_banner'), tb=document.getElementById('etf_table'), cp=document.getElementById('etf_compare');
-  if(!E || !E.stocks || !E.stocks.length){
-    if(bn) bn.innerHTML='<div class="alert-banner orange"><h3>Awaiting first weekly ETF-holdings scan</h3><p>The overlap runs weekly. It populates after the next scan fetches the 30 ETFs\u2019 holdings on GitHub Actions.</p></div>';
+  if(!E){
+    if(bn) bn.innerHTML='<div class="alert-banner orange"><h3>Awaiting first weekly ETF-holdings scan</h3><p>Populates after the next scan fetches the 30 ETFs\u2019 holdings on GitHub Actions.</p></div>';
     if(tb) tb.innerHTML=''; if(cp) cp.innerHTML=''; return;
   }
   const asof=E._scraped_utc?new Date(E._scraped_utc).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'\u2014';
-  const got=(E.etfs_with_holdings!=null)?E.etfs_with_holdings:(E.etfs_scanned||30);
-  if(bn) bn.innerHTML='<div class="alert-banner green"><h3>'+(E.etfs_scanned||30)+' top Zacks #1 US-equity ETFs \u2192 top '+E.stocks.length+' consensus stocks</h3><p>'+got+' of '+(E.etfs_scanned||30)+' ETFs returned holdings. As of '+asof+'. Alloc % = where these funds collectively put their money, normalized across the names shown.</p></div>';
-  let t='<table><thead><tr><th>#</th><th>Stock</th><th>ETFs holding</th><th>Alloc %</th><th>Agg weight</th><th>Zacks #1/2</th><th>Conviction</th><th>Found in</th></tr></thead><tbody>';
-  E.stocks.forEach(function(r,i){
-    var z=r.zacks_confirmed?'<span style="color:#15803d;font-weight:700;">\u2713</span>':'<span style="color:#9ca3af;">\u2014</span>';
-    t+='<tr><td>'+(i+1)+'</td><td><b>'+r.ticker+'</b></td><td style="text-align:center;">'+r.etf_count+'</td><td style="text-align:right;font-weight:700;">'+(r.alloc_pct!=null?r.alloc_pct+'%':'\u2014')+'</td><td style="text-align:right;">'+r.agg_weight+'%</td><td style="text-align:center;">'+z+'</td><td style="text-align:right;">'+r.conviction+'</td><td style="font-size:11px;color:var(--grey-d);">'+((r.in_etfs||[]).join(', '))+'</td></tr>';
-  });
-  if(tb) tb.innerHTML=t+'</tbody></table>';
+  const got=(E.etfs_with_holdings!=null)?E.etfs_with_holdings:0;
+  const hasStocks=E.stocks&&E.stocks.length;
+  if(bn){
+    bn.innerHTML = hasStocks
+      ? '<div class="alert-banner green"><h3>'+(E.etfs_scanned||30)+' top Zacks #1 US-equity ETFs \u2192 top '+E.stocks.length+' consensus stocks</h3><p>'+got+' of '+(E.etfs_scanned||30)+' ETFs returned holdings. As of '+asof+'. Alloc % = where these funds collectively put their money, normalized across the names shown.</p></div>'
+      : '<div class="alert-banner orange"><h3>Holdings not returned this run ('+got+' of '+(E.etfs_scanned||30)+')</h3><p>The source ETFs and their returns are shown below, but the consensus-stock overlap needs holdings data. Check the <b>[diag]</b> lines in the scan log to see what the holdings source returned, then we adjust the fetch.</p></div>';
+  }
+  if(tb){
+    if(hasStocks){
+      let t='<table><thead><tr><th>#</th><th>Stock</th><th>ETFs holding</th><th>Alloc %</th><th>Agg weight</th><th>Zacks #1/2</th><th>Conviction</th><th>Found in</th></tr></thead><tbody>';
+      E.stocks.forEach(function(r,i){
+        var z=r.zacks_confirmed?'<span style="color:#15803d;font-weight:700;">\u2713</span>':'<span style="color:#9ca3af;">\u2014</span>';
+        t+='<tr><td>'+(i+1)+'</td><td><b>'+r.ticker+'</b></td><td style="text-align:center;">'+r.etf_count+'</td><td style="text-align:right;font-weight:700;">'+(r.alloc_pct!=null?r.alloc_pct+'%':'\u2014')+'</td><td style="text-align:right;">'+r.agg_weight+'%</td><td style="text-align:center;">'+z+'</td><td style="text-align:right;">'+r.conviction+'</td><td style="font-size:11px;color:var(--grey-d);">'+((r.in_etfs||[]).join(', '))+'</td></tr>';
+      });
+      tb.innerHTML=t+'</tbody></table>';
+    } else { tb.innerHTML='<div class="reading-box" style="color:var(--grey-d);">Consensus stocks will appear here once holdings are fetched.</div>'; }
+  }
   var src=(E.source_etfs||[]);
   if(cp){
     if(!src.length){ cp.innerHTML=''; }
