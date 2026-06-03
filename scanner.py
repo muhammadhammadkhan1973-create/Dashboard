@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.12.3'  # ETF holdings parser reads stockanalysis 's'+'as' keys, strips $; stockanalysis primary (FMP holdings is premium)
+SCAN_VERSION = '1.12.4'  # fix ETF expense-ratio units: netExpenseRatio is already %, annualReportExpenseRatio is a fraction (was always *100 -> showed 60% for 0.60%)
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -676,9 +676,13 @@ def fetch_etf_meta(etf):
             pass
         try:
             info = t.info or {}
-            ex = info.get('netExpenseRatio') or info.get('annualReportExpenseRatio')
+            ne = info.get('netExpenseRatio')           # Yahoo: already in PERCENT (0.60 = 0.60%)
+            ar = info.get('annualReportExpenseRatio')  # Yahoo: a FRACTION (0.006 = 0.60%)
+            ex = float(ne) if ne is not None else (float(ar) * 100 if ar is not None else None)
             if ex is not None:
-                ex = float(ex); out['expense'] = round(ex * 100 if ex < 1 else ex, 2)
+                if ex > 5:        # no ETF charges >5%; guard against any unit surprise
+                    ex /= 100
+                out['expense'] = round(ex, 2)
         except Exception:
             pass
     except Exception as e:
