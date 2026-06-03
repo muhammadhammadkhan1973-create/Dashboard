@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.12.4'  # fix ETF expense-ratio units: netExpenseRatio is already %, annualReportExpenseRatio is a fraction (was always *100 -> showed 60% for 0.60%)
+SCAN_VERSION = '1.12.5'  # ETF gate re-runs on version change (so the expense-ratio fix actually executes) + stamps _scan_version
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -2799,7 +2799,9 @@ def main():
     if _es:
         try:
             _etf_age = (dt.datetime.utcnow() - dt.datetime.fromisoformat(str(_es).replace('Z',''))).days
-            _etf_fresh = _etf_age < 7
+            # fresh only if young AND produced by the current scanner version — so any ETF-code
+            # fix (new version) forces a one-time re-run instead of carrying forward stale output
+            _etf_fresh = _etf_age < 7 and _prev_etf.get('_scan_version') == SCAN_VERSION
         except Exception:
             _etf_fresh = False
     try:
@@ -2821,6 +2823,7 @@ def main():
             _got = sum(1 for v in _hmap.values() if v)
             data['etf_overlap'] = {
                 '_scraped_utc': dt.datetime.utcnow().isoformat() + 'Z',
+                '_scan_version': SCAN_VERSION,
                 'etfs_scanned': len(TOP_ETFS),
                 'etfs_with_holdings': _got,
                 'source_etfs': _src,
