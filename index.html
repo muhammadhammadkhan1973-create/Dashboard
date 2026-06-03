@@ -222,7 +222,6 @@
     <button class="tab" onclick="showPanel('etf', this)">12. ETF Overlap</button>
     <button class="tab" onclick="showPanel('backtest', this)">13. Strategy Backtest</button>
     <button class="tab" onclick="showPanel('profile', this)">14. Investor Profile</button>
-    <button class="tab" onclick="showPanel('tcev2', this)">15. TCE v2 (6-Stream)</button>
   </div>
 
   <!-- PANELS 1-11: identical to v4.1 — placeholder divs maintain structure -->
@@ -294,7 +293,7 @@
   <div id="zone" class="panel"><h2 class="section-title">IM3 Allocation Zone</h2><div id="zone_banner" class="alert-banner red"><h3>CURRENT ZONE: RED — 20% Stocks / 60% Bonds / 20% Cash</h3><p><b>SBP Rate:</b> 11.50% | <b>Mean:</b> 11.01% | <b>Direction:</b> Increasing</p></div><h3 class="subsection-title">Zone Quadrant</h3><div id="zone_quadrant_box"></div><h3 class="subsection-title">SBP Rate Path</h3><div id="zone_rate_path"></div><h3 class="subsection-title">KSE-100 Monthly</h3><div id="zone_kse_table"></div><h3 class="subsection-title">Asset Allocation by Zone</h3><div id="zone_alloc_table"></div></div>
   <div id="mbpsx" class="panel"><h2 class="section-title">PSX Multibagger Hunter</h2><div id="psx_mb_funnel"></div><div id="psx_mb_sector_table"></div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="psx_mb_rev" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="psx_mb_eps" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="psx_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROCE 5-yr avg (%)</label><input type="number" id="psx_mb_roce" value="24" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="psx_mb_de" value="0.3" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="psx_mb_ocf" value="1.1" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Sponsor %</label><input type="number" id="psx_mb_sponsor" value="45" step="1" oninput="recalc()"></div><div class="input-group"><label>Market Cap (PKR bn)</label><input type="number" id="psx_mb_mcap" value="8" step="0.5" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="psx_mb_ig" value="72" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="psx_mb_pe" value="6" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="psx_mb_wacc" value="20" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="psx_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3" selected>5-10x</option><option value="4">10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="psx_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3" selected>Cost/Switching</option><option value="4">Brand/Network</option><option value="5">Regulatory</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="psx_mb_reinv" onchange="recalc()"><option value="1">Returning all cash</option><option value="2">Limited</option><option value="3" selected>Moderate</option><option value="4">Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner-Operator</label><select id="psx_mb_owner" onchange="recalc()"><option value="1">Diluted</option><option value="2">Holding</option><option value="3" selected>Stable &gt;5yr</option><option value="4">Founder 10yr+</option><option value="5">Founder + rising</option></select></div></div><div id="psx_mb_score_box"></div><div id="psx_mb_decision_matrix"></div><div id="psx_mb_compound_box"></div><div id="psx_mb_tiers_table"></div><div id="psx_mb_live_candidates"></div><div id="psx_mb_history_table"></div><div id="psx_mb_comparison_table"></div></div>
   <div id="mbus" class="panel"><h2 class="section-title">US Multibagger Hunter</h2><div id="us_mb_funnel"></div><div id="us_mb_sector_table"></div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="us_mb_rev" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="us_mb_eps" value="30" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="us_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROIC 5-yr avg (%)</label><input type="number" id="us_mb_roic" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="us_mb_de" value="0.2" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="us_mb_ocf" value="1.15" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Insider %</label><input type="number" id="us_mb_insider" value="15" step="0.5" oninput="recalc()"></div><div class="input-group"><label>Market Cap (USD M)</label><input type="number" id="us_mb_mcap" value="500" step="50" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="us_mb_ig" value="75" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="us_mb_pe" value="35" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="us_mb_wacc" value="10" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="us_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3">5-10x</option><option value="4" selected>10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="us_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3">Cost/Switching</option><option value="4" selected>Brand/Network</option><option value="5">Regulatory/Platform</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="us_mb_reinv" onchange="recalc()"><option value="1">Returning cash</option><option value="2">Limited</option><option value="3">Moderate</option><option value="4" selected>Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner Alignment</label><select id="us_mb_owner" onchange="recalc()"><option value="1">Founder gone</option><option value="2">Stable CEO</option><option value="3">Founder active</option><option value="4" selected>Founder 10yr+</option><option value="5">Founder + rising</option></select></div><div class="input-group"><label>Zacks Rank</label><select id="us_mb_zacks" onchange="recalc()"><option value="1">1 — Strong Buy</option><option value="2" selected>2 — Buy</option><option value="3">3 — Hold</option><option value="4">4 — Sell</option><option value="5">5 — Strong Sell</option></select></div></div><div id="us_mb_score_box"></div><div id="us_mb_decision_matrix"></div><div id="us_mb_compound_box"></div><div id="us_mb_tiers_table"></div><div id="us_mb_live_candidates"></div><div id="us_mb_history_table"></div></div>
-  <div id="tce" class="panel"><h2 class="panel-title">Trend Convergence Engine (TCE) — Live Scan</h2><div class="card" id="tceMacroBanner" style="border-left:4px solid var(--blue);"><p style="margin:0; font-size:13px; color:var(--grey-d);"><strong>5-stream convergence model.</strong> News density, Sponsor mentions, Insider buying (US), Earnings revisions, Volume surge. HIGH = 4+ streams; WATCH = 3.</p></div><div class="card"><h3>US TCE Results</h3><div id="tce_us_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>PSX TCE Results</h3><div id="tce_psx_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div></div>
+  <div id="tce" class="panel"><h2 class="panel-title">Trend Convergence Engine (TCE) — Live Scan</h2><div class="card" id="tceMacroBanner" style="border-left:4px solid var(--blue);"><p style="margin:0; font-size:13px; color:var(--grey-d);"><strong>9-stream convergence model.</strong> Attention (news · sponsor · insider · volume) + <b>conviction</b> (momentum · margin inflection · short-interest capital · EPS-revision · revenue-revision), with an <b>RS guardrail</b> vs SPY. HIGH needs real conviction (≥4 conviction, or ≥6 total with ≥3 conviction) AND the guardrail to hold — pure news/volume can no longer reach HIGH. WATCH = ≥3 conviction or ≥5 total.</p></div><div class="card"><h3>US TCE Results</h3><div id="tce_us_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>PSX TCE Results</h3><div id="tce_psx_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div></div>
   <div id="explosive" class="panel">
     <h2 class="section-title">Explosive Stocks (US + PSX) — Live Scanner Feed</h2>
     <h3 class="subsection-title">US Explosive — gated to Tab 2 Regime</h3>
@@ -423,45 +422,9 @@
     <div id="prof_detail" style="margin-top:14px;"></div>
   </div>
 
-  <div id="tcev2" class="panel">
-    <h2 class="section-title">Trend Convergence Engine v2 — Universal 6-Stream (Preview)</h2>
-    <div class="card" id="tcev2_banner" style="border-left:4px solid var(--accent);">
-      <p style="margin:0 0 4px;font-size:13px;"><b>Universal 6-stream convergence engine</b> — sell-price momentum · supply/backlog · estimate revisions · margin inflection · external capital (short interest = amplifier, not a gate) · relative-strength <i>guardrail</i>. <b>4-of-6 = HIGH, 3-of-6 = WATCH</b>; a HIGH requires the RS guardrail to hold. Two-layer design: sector adapters (E&amp;P · fertilizer · bank) feed the universal scorer.</p>
-      <p style="margin:0;font-size:12px;color:var(--grey-d);">Runs in parallel to the live 5-stream tab — production untouched. <span id="tcev2_status"></span></p>
-    </div>
-
-    <div class="card">
-      <h3 style="margin:0 0 8px;">How the convergence verdict is built</h3>
-      <p style="margin:0 0 12px;font-size:12.5px;color:var(--grey-d);">The engine hunts for <b>independent signals lining up at the same moment</b>. No single feed decides anything — conviction comes from <b>how many agree</b>. Each stream asks a different question about the same company; when enough answer &ldquo;yes,&rdquo; the move is usually still early rather than already priced in. This is why it can surface narrative-driven names (AI capex, commodity up-cycles) that a quality-gate screen would reject.</p>
-      <table style="width:100%;border-collapse:collapse;font-size:12px;">
-        <tr style="text-align:left;color:var(--grey-d);border-bottom:2px solid var(--grey-l);"><th style="padding:5px 4px;">Stream</th><th>What it asks</th><th>Why it leads price</th><th>Feed (by sector)</th></tr>
-        <tr style="border-bottom:1px solid var(--grey-l);"><td style="padding:6px 4px;font-weight:700;">s1 Sell-price momentum</td><td>Is the price of what it sells rising 2+ months?</td><td>Revenue tailwind before it shows in reported earnings</td><td>crude (E&amp;P) · urea/DAP (fert) · NIM (bank)</td></tr>
-        <tr style="border-bottom:1px solid var(--grey-l);"><td style="padding:6px 4px;font-weight:700;">s2 Supply / backlog</td><td>Is supply tightening or the order book growing?</td><td>Points to future pricing power and volume</td><td>falling rigs · gas curtailment · deposit+loan growth</td></tr>
-        <tr style="border-bottom:1px solid var(--grey-l);"><td style="padding:6px 4px;font-weight:700;">s3 Estimate revisions</td><td>Are analysts raising EPS / price targets?</td><td>Street confirmation — a <i>downstream</i> check, not the trigger</td><td>broker notes (AKD/Topline/AHL) · sell-side</td></tr>
-        <tr style="border-bottom:1px solid var(--grey-l);"><td style="padding:6px 4px;font-weight:700;">s4 Margin inflection</td><td>Is operating/gross margin turning up YoY?</td><td>Proves the gain reaches the bottom line, not just revenue</td><td>net margin · primary spread · NIM delta</td></tr>
-        <tr style="border-bottom:1px solid var(--grey-l);"><td style="padding:6px 4px;font-weight:700;">s5 External capital</td><td>Is capital being committed (capex/buyback/insider)?</td><td>Smart money backing it; short interest <i>amplifies</i> (squeeze fuel) but never gates</td><td>filings / announcements</td></tr>
-        <tr><td style="padding:6px 4px;font-weight:700;">s6 RS guardrail</td><td>Is the stock outperforming its sector?</td><td>The market is already voting; blocks value-trap false HIGHs</td><td>stock 13-wk vs sector ETF / KSE-100</td></tr>
-      </table>
-
-      <h4 style="margin:14px 0 6px;">Reaching the conclusion</h4>
-      <div style="font-size:12.5px;line-height:1.7;">
-        <span style="display:inline-block;width:120px;font-weight:800;color:var(--green);">HIGH</span> ≥ 4 of 6 streams fire <b>and</b> the RS guardrail (s6) holds<br>
-        <span style="display:inline-block;width:120px;font-weight:800;color:var(--gold);">WATCH</span> exactly 3 of 6 fire<br>
-        <span style="display:inline-block;width:120px;font-weight:800;color:var(--grey-d);">IGNORE</span> fewer than 3 fire<br>
-        <span style="display:inline-block;width:120px;font-weight:700;color:var(--red);">Guardrail veto</span> 4–6 fire but the stock lags its sector → <b>capped to WATCH</b> (not HIGH)<br>
-        <span style="display:inline-block;width:120px;font-weight:700;color:var(--gold);">WATCH+</span> a clean 3/6 with heavy short interest → flagged for attention, <b>not</b> promoted to HIGH
-      </div>
-
-      <h4 style="margin:14px 0 6px;">Reading each card</h4>
-      <p style="margin:0;font-size:12px;color:var(--grey-d);"><span style="color:var(--green);font-weight:800;">●</span> stream fired · <span style="color:#cbd5e1;">○</span> did not fire. Each row shows the live reading, its source, and a <b>data-freshness</b> chip: <span style="font-size:10px;font-weight:700;color:#fff;background:var(--green);padding:1px 6px;border-radius:8px;">LIVE</span> fetched this run · <span style="font-size:10px;font-weight:700;color:#fff;background:var(--blue);padding:1px 6px;border-radius:8px;">FILE</span> from a project file (real, file-vintage) · <span style="font-size:10px;font-weight:700;color:#fff;background:var(--gold);padding:1px 6px;border-radius:8px;">MANUAL</span> you maintain · <span style="font-size:10px;font-weight:700;color:#fff;background:var(--grey-d);padding:1px 6px;border-radius:8px;">PENDING</span> needs the broker/news layer · <span style="font-size:10px;font-weight:700;color:#fff;background:var(--accent);padding:1px 6px;border-radius:8px;">LIVE-on-run</span> fetches on your GitHub run. A verdict is only as strong as its greenest feeds — the chips tell you how much to trust it.</p>
-    </div>
-
-    <div id="tcev2_body"></div>
-  </div>
-
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.2 (15 tabs: IM3 framework + Multibagger Hunter + TCE + TCE v2 + Explosive scanner + Gold &amp; Metals)
+  Muhammad Hammad Khan | Active Macro Dashboard v5.3 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals)
 </div>
 
 <script>
@@ -1582,35 +1545,47 @@ function renderExplosiveTable(elId, rows, market) {
 function renderTceTable(elId, rows, market) {
   const el=document.getElementById(elId); if(!el)return;
   if(!rows||rows.length===0){
-    el.innerHTML=`<p style="color:var(--grey-d);">${market==='psx'?'PSX TCE: sparser signals normal (3 of 5 streams).':'No US TCE in latest scan.'}</p>`;
+    el.innerHTML=`<p style="color:var(--grey-d);">${market==='psx'?'PSX TCE: sparser signals normal (revisions/short-interest thin on PSX).':'No US TCE in latest scan.'}</p>`;
     return;
   }
-  const STREAM_LABELS={s1_news:'News',s2_sponsor:'Sponsor',s3_insider:'Insider',s4_revisions:'Revisions',s5_volume:'Volume'};
+  const STREAM_LABELS={s1_news:'News',s2_sponsor:'Sponsor',s3_insider:'Insider',s5_volume:'Volume',s6_momentum:'Mom',s7_margin:'Margin',s8_capital:'Capital',s9_eps_rev:'EPS-rev',s10_rev_rev:'Rev-rev'};
   const SDEF=[
-    {bk:'s1_news',     lbl:'News',    us:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Google News articles, last 14d (fires \u22653)'},
-    {bk:'s2_sponsor',  lbl:'Sponsor', us:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Heavy coverage \u2014 same news count (fires \u22658)'},
-    {bk:'s3_insider',  lbl:'Insider', us:true,  val:s=>(s.s3_insider_count!=null?s.s3_insider_count:'\u00b7'), tip:'SEC Form 4 filings, last 90d (fires \u22652, US only)'},
-    {bk:'s4_revisions',lbl:'Rev',     us:true,  val:s=>(s.s4_revisions_pct!=null?((s.s4_revisions_pct>0?'+':'')+s.s4_revisions_pct+'%'):'\u00b7'), tip:'Fwd vs trailing EPS (fires >+5%, US only)'},
-    {bk:'s5_volume',   lbl:'Vol',     us:false, val:s=>(s.s5_volume_ratio!=null?(s.s5_volume_ratio+'\u00d7'):'\u00b7'), tip:'20d vs 30d volume (fires >1.3\u00d7)'}
+    {bk:'s1_news',     lbl:'News',    us:false, cv:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Google News articles, last 14d (fires ≥3)'},
+    {bk:'s2_sponsor',  lbl:'Sponsor', us:false, cv:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Heavy coverage — same news count (fires ≥8)'},
+    {bk:'s3_insider',  lbl:'Insider', us:true,  cv:false, val:s=>(s.s3_insider_count!=null?s.s3_insider_count:'·'), tip:'SEC Form 4 filings, last 90d (fires ≥2, US only)'},
+    {bk:'s5_volume',   lbl:'Vol',     us:false, cv:false, val:s=>(s.s5_volume_ratio!=null?(s.s5_volume_ratio+'×'):'·'), tip:'20d vs 40d volume (fires >1.3×)'},
+    {bk:'s6_momentum', lbl:'Mom',     us:false, cv:true,  val:s=>(s.s6_momentum_pct!=null?((s.s6_momentum_pct>0?'+':'')+s.s6_momentum_pct+'%'):'·'), tip:'3-month price momentum (fires ≥+15%) — CONVICTION'},
+    {bk:'s7_margin',   lbl:'Margin',  us:false, cv:true,  val:s=>(s.s7_margin_spread_pct!=null?((s.s7_margin_spread_pct>0?'+':'')+s.s7_margin_spread_pct+'pt'):'·'), tip:'Earnings outgrowing revenue = margin inflection — CONVICTION'},
+    {bk:'s8_capital',  lbl:'Capital', us:false, cv:true,  val:s=>(s.s8_capital_short_pct!=null?(s.s8_capital_short_pct+'%'):'·'), tip:'Short interest % of float (fires ≥8%) — squeeze fuel / CONVICTION'},
+    {bk:'s9_eps_rev',  lbl:'EPS-rev', us:false, cv:true,  val:s=>(s.s9_eps_rev_net!=null?((s.s9_eps_rev_net>0?'+':'')+s.s9_eps_rev_net):'·'), tip:'EPS estimate raises minus cuts, 30d (fires net>0) — CONVICTION'},
+    {bk:'s10_rev_rev', lbl:'Rev-rev', us:false, cv:true,  val:s=>(s.s10_rev_rev_pct!=null?((s.s10_rev_rev_pct>0?'+':'')+s.s10_rev_rev_pct+'%'):'·'), tip:'Revenue estimate revision vs last run — builds over runs — CONVICTION'}
   ];
   function streamCellsHTML(streams, mkt){
     if(!streams||typeof streams!=='object'||Array.isArray(streams)){
       const arr=Array.isArray(streams)?streams:[];
-      return arr.map(k=>STREAM_LABELS[k]||k).join(' \u00b7 ')||'\u2014';
+      return arr.map(k=>STREAM_LABELS[k]||k).join(' · ')||'—';
     }
     const isPsx=mkt==='psx';
-    return '<div style="display:flex;flex-wrap:wrap;gap:3px;">'+SDEF.map(d=>{
+    let chips=SDEF.map(d=>{
       const na=isPsx&&d.us;
       const fired=!na&&streams[d.bk]===1;
-      const val=na?'\u2014':d.val(streams);
+      const val=na?'—':d.val(streams);
       const bg=fired?'#D1FAE5':(na?'#FAFAFA':'#F3F4F6');
       const fg=fired?'#065F46':(na?'#CBD5E1':'#9CA3AF');
-      const bd=fired?'#6EE7B7':'#E5E7EB';
-      const tip=na?(d.lbl+': US-only stream, n/a for PSX'):(d.tip+(fired?' \u2014 FIRED':' \u2014 not fired'));
-      return '<span title="'+tip+'" style="display:inline-flex;flex-direction:column;align-items:center;min-width:40px;padding:2px 4px;border-radius:5px;background:'+bg+';color:'+fg+';border:1px solid '+bd+';">'
+      const bd=fired?'#6EE7B7':(d.cv?'#C7D2FE':'#E5E7EB');
+      const tip=na?(d.lbl+': US-only stream, n/a for PSX'):(d.tip+(fired?' — FIRED':' — not fired'));
+      return '<span title="'+tip+'" style="display:inline-flex;flex-direction:column;align-items:center;min-width:40px;padding:2px 4px;border-radius:5px;background:'+bg+';color:'+fg+';border:1px solid '+bd+(d.cv?';border-bottom:2px solid #6366F1':'')+';">'
         +'<span style="font-size:8.5px;font-weight:600;letter-spacing:.2px;">'+d.lbl+'</span>'
         +'<span style="font-size:10px;font-weight:700;">'+val+'</span></span>';
-    }).join('')+'</div>';
+    }).join('');
+    const rsok=streams.rs_ok!==false;
+    const rsv=(streams.rs_vs_spy!=null)?((streams.rs_vs_spy>0?'+':'')+streams.rs_vs_spy+'pt'):'·';
+    const gbg=rsok?'#EEF2FF':'#FEE2E2', gfg=rsok?'#3730A3':'#991B1B', gbd=rsok?'#A5B4FC':'#FCA5A5';
+    const gtip='RS guardrail vs SPY (6mo): '+(rsok?'holds — HIGH allowed':'LAGS — caps a 4+ name to WATCH')+'. Not counted in the score.';
+    chips+='<span title="'+gtip+'" style="display:inline-flex;flex-direction:column;align-items:center;min-width:44px;padding:2px 4px;border-radius:5px;background:'+gbg+';color:'+gfg+';border:1px dashed '+gbd+';margin-left:4px;">'
+      +'<span style="font-size:8.5px;font-weight:700;letter-spacing:.2px;">GUARD</span>'
+      +'<span style="font-size:10px;font-weight:700;">'+(rsok?rsv:'veto')+'</span></span>';
+    return '<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">'+chips+'</div>';
   }
   const high=rows.filter(r=>(r.tier||'').toUpperCase()==='HIGH');
   const watch=rows.filter(r=>(r.tier||'').toUpperCase()==='WATCH');
@@ -1625,7 +1600,7 @@ function renderTceTable(elId, rows, market) {
 
   const showIM3T = (market==='us');
   html+=`<table style="font-size:12px;"><thead><tr>
-    <th>Ticker</th><th>Name</th><th>Score</th><th style="min-width:230px;">Streams &mdash; fired &amp; live value</th><th>Tier</th>
+    <th>Ticker</th><th>Name</th><th title="streams fired, of 9">Score</th><th title="conviction streams fired, of 5: momentum, margin, capital, EPS-rev, rev-rev — these drive HIGH">Conv</th><th style="min-width:300px;">Streams &mdash; fired &amp; live value (indigo underline = conviction; dashed = RS guardrail)</th><th>Tier</th>
     ${showIM3T?`<th style="background:#312E81;min-width:130px;line-height:1.4;">
       IM3 Quality
       <div style="font-size:9px;font-weight:400;margin-top:3px;">
@@ -1647,6 +1622,7 @@ function renderTceTable(elId, rows, market) {
       <td><b>${tk||'—'}</b></td>
       <td>${r.name||'—'}</td>
       <td style="text-align:center;font-weight:700;">${(r.tce_score!=null?r.tce_score:(r.streams&&r.streams.total!=null?r.streams.total:(r.score!=null?r.score:'—')))}</td>
+      <td style="text-align:center;font-weight:700;color:#4338CA;">${(r.conviction!=null?r.conviction:'\u2014')}</td>
       <td>${streamCellsHTML(r.streams, market)}</td>
       <td><b style="color:${tier==='HIGH'?'var(--green)':tier==='WATCH'?'var(--orange)':'var(--grey-d)'};">${r.tier||'—'}</b></td>
       ${showIM3T?`<td data-im3-cell="${tk}"
@@ -1946,30 +1922,6 @@ function calcMetals(){
 // LIVE DATA LOADER
 // =========================================================
 /* __IM3_API_KEY_PLACEHOLDER__ */
-const TCE_V2_SAMPLE=[{ticker:'FFC',sector:'fertilizer',tier:'IGNORE',score:1,guardrail_ok:false,streams:[
- {k:'s1 sell-price',fired:false,value:'urea \u22124.1%/mo, DAP \u221211.4%/mo (blend \u22127.7%)',src:'World Bank Pink Sheet (CMO), thru 2025M12',fresh:'FILE'},
- {k:'s2 supply',fired:false,value:'no curtailment',src:'SNGPL/SSGC notices',fresh:'MANUAL'},
- {k:'s3 revisions',fired:false,value:'pending broker layer',src:'AKD / Topline / AHL',fresh:'PENDING'},
- {k:'s4 margin',fired:false,value:'primary spread 109\u219292 (compressing)',src:'urea: Pink Sheet \u00b7 gas: SNGPL tariff',fresh:'FILE+MANUAL'},
- {k:'s5 capital',fired:true,value:'dividend maintained',src:'PSX filings / payout',fresh:'MANUAL'},
- {k:'s6 RS guardrail',fired:false,value:'fetches on run',src:'FFC.KA 13wk vs KSE-100 (PSX-EOD)',fresh:'LIVE-on-run'}
-]}];
-function renderTceV2(){
-  const live=!!(LIVE&&Array.isArray(LIVE.tce_v2)&&LIVE.tce_v2.length);
-  const data=live?LIVE.tce_v2:TCE_V2_SAMPLE;
-  const tcol=t=>t==='HIGH'?'var(--green)':(t&&t.indexOf('WATCH')===0)?'var(--gold)':'var(--grey-d)';
-  const chip=f=>{const m={'LIVE':'var(--green)','FILE':'var(--blue)','FILE+MANUAL':'var(--navy)','MANUAL':'var(--gold)','PENDING':'var(--grey-d)','LIVE-on-run':'var(--accent)'};return '<span style="font-size:10px;font-weight:700;color:#fff;background:'+(m[f]||'var(--grey-d)')+';padding:1px 6px;border-radius:8px;">'+f+'</span>';};
-  let html='';
-  data.forEach(r=>{
-    html+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><h3 style="margin:0;">'+r.ticker+' <span style="font-weight:500;color:var(--grey-d);">\u00b7 '+r.sector+'</span></h3><span style="font-weight:800;color:#fff;background:'+tcol(r.tier)+';padding:3px 12px;border-radius:6px;">'+r.tier+' \u00b7 '+r.score+'/6</span></div>';
-    html+='<p style="margin:6px 0 10px;font-size:12px;color:var(--grey-d);">RS guardrail: <b style="color:'+(r.guardrail_ok?'var(--green)':'var(--red)')+';">'+(r.guardrail_ok?'holds':'fails \u2192 caps to WATCH')+'</b></p>';
-    html+='<table style="width:100%;border-collapse:collapse;font-size:12px;"><tr style="text-align:left;color:var(--grey-d);"><th style="padding:2px 4px;">Stream</th><th></th><th>Reading</th><th>Source</th><th>Data</th></tr>';
-    (r.streams||[]).forEach(s=>{html+='<tr style="border-top:1px solid var(--grey-l);"><td style="padding:5px 4px;font-weight:600;">'+s.k+'</td><td style="text-align:center;">'+(s.fired?'<span style="color:var(--green);font-weight:800;">\u25cf</span>':'<span style="color:#cbd5e1;">\u25cb</span>')+'</td><td>'+s.value+'</td><td style="color:var(--grey-d);">'+s.src+'</td><td>'+chip(s.fresh)+'</td></tr>';});
-    html+='</table></div>';
-  });
-  const el=document.getElementById('tcev2_body');if(el)el.innerHTML=html;
-  const st=document.getElementById('tcev2_status');if(st)st.textContent=live?'Live from scanner (data.json.tce_v2).':'Preview \u2014 standalone engine read (scanner not yet writing tce_v2). FFC s1/s4 are real Pink Sheet values.';
-}
 let LIVE = null;
 function setLiveStatus(state,scan,ver){
   const dot=document.getElementById('liveDot'),txt=document.getElementById('liveText');
@@ -2012,7 +1964,6 @@ function applyLive(){
   calcETF();
   calcBacktest();
   renderProfiles();
-  renderTceV2();
 }
 async function loadLiveData(){
   setLiveStatus('loading');
@@ -2164,7 +2115,6 @@ function recalc(){
   calcETF();
   calcBacktest();
   renderProfiles();
-  renderTceV2();
 }
 window.addEventListener('DOMContentLoaded',()=>{
   recalc();
