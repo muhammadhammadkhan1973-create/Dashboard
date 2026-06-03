@@ -1964,7 +1964,7 @@ function calcETF(){
       var pct=function(v){return (v==null||v==='')?'\u2014':(v+'%');};
       var st='<table><thead><tr><th>#</th><th>ETF</th><th>Name</th><th>YTD</th><th>1Y</th><th>3Y</th><th>Expense Ratio</th></tr></thead><tbody>';
       src.forEach(function(e,i){
-        st+='<tr><td>'+(i+1)+'</td><td><b>'+e.ticker+'</b></td><td style="font-size:12px;">'+(e.name||'')+'</td><td style="text-align:right;">'+pct(e.ytd)+'</td><td style="text-align:right;font-weight:600;">'+pct(e.y1)+'</td><td style="text-align:right;">'+pct(e.y3)+'</td><td style="text-align:right;">'+(e.expense==null?'\u2014':e.expense+'%')+'</td></tr>';
+        st+='<tr><td>'+(i+1)+'</td><td><b>'+e.ticker+'</b></td><td style="font-size:12px;">'+(e.name||'')+'</td><td style="text-align:right;">'+pct(e.ytd)+'</td><td style="text-align:right;font-weight:600;">'+pct(e.y1)+'</td><td style="text-align:right;">'+pct(e.y3)+'</td><td style="text-align:right;">'+(e.expense==null?'\u2014':(typeof e.expense==='number'?e.expense.toFixed(2):e.expense)+'%')+'</td></tr>';
       });
       cp.innerHTML=st+'</tbody></table>';
     }
