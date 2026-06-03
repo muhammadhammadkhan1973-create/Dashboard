@@ -1,9 +1,11 @@
 {
   "meta": {
-    "scan_version": "1.12.9",
-    "last_scan_utc": "2026-06-03T13:23:44.452713Z",
+    "scan_version": "1.12.10",
+    "last_scan_utc": "2026-06-03T14:49:25.594044Z",
     "errors": [],
-    "warnings": []
+    "warnings": [
+      "COT futures (Crude) failed: HTTPSConnectionPool(host='publicreporting.cftc.gov', port=443): Read timed out. (read timeout=20)"
+    ]
   },
   "macros": {
     "us": {
@@ -27,17 +29,17 @@
       "gdp_growth_date": "2026-01-01",
       "industrial_prod": 102.5,
       "industrial_prod_date": "2026-04-01",
-      "hy_spread": 2.72,
-      "hy_spread_date": "2026-06-01",
+      "hy_spread": 2.71,
+      "hy_spread_date": "2026-06-02",
       "permits": 1423.0,
       "permits_date": "2026-04-01",
-      "wti": 95.09,
+      "wti": 95.18,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-03",
-      "brent": 97.37,
+      "brent": 97.43,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-03",
-      "brent_wti_spread": 2.28,
+      "brent_wti_spread": 2.25,
       "fomc": {
         "title": "Minutes of the Federal Open Market Committee, April 28-29, 2026",
         "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260520a.htm",
@@ -76,27 +78,27 @@
     "psx": {
       "sbp_rate": 11.5,
       "sbp_rate_source": "tradingeconomics.com",
-      "usd_pkr": 278.3,
+      "usd_pkr": 278.18,
       "sbp_reserves": 21.27,
       "kse100": 170462.9,
       "kse100_source": "psx-dps:int",
       "kse100_date": "2026-06-03",
-      "pak_cpi": 11.7,
+      "pak_cpi": 7.3,
       "pak_ca": 1369.0,
       "pak_fiscal": 5.4
     },
     "metals": {
-      "gold_px": 4493.0,
+      "gold_px": 4480.0,
       "gold_px_date": "2026-06-03",
-      "silver_px": 74.72,
+      "silver_px": 74.0,
       "silver_px_date": "2026-06-03",
-      "platinum_px": 1920.1,
+      "platinum_px": 1897.1,
       "platinum_px_date": "2026-06-03",
-      "palladium_px": 1368.5,
+      "palladium_px": 1351.0,
       "palladium_px_date": "2026-06-03",
-      "dxy": 99.44,
+      "dxy": 99.47,
       "dxy_date": "2026-06-03",
-      "gs_ratio": 60.1,
+      "gs_ratio": 60.5,
       "cot_date": "05/26/26",
       "cot_gold_net": 154260,
       "cot_gold_oi": 353489,
@@ -323,16 +325,16 @@
       "name": "Nuvation Bio Inc.",
       "sector": "Healthcare",
       "industry": "Biotechnology",
-      "market_cap": 1706189696,
-      "market_cap_m": 1706.0,
-      "price": 4.9,
+      "market_cap": 1631326336,
+      "market_cap_m": 1631.0,
+      "price": 4.685,
       "rev_growth": 2598.7,
       "eps_growth": -502.9,
       "growth_source": "yf_stmt",
       "roe": -39.5,
       "debt_equity": 0.68,
       "pe": null,
-      "forward_pe": -81.66667,
+      "forward_pe": -78.083336,
       "insider_pct": 18.6,
       "ocf_ni": null,
       "status": "HIGH-CONVICTION"
@@ -342,16 +344,16 @@
       "name": "Prothena Corporation plc",
       "sector": "Healthcare",
       "industry": "Biotechnology",
-      "market_cap": 481126208,
-      "market_cap_m": 481.0,
-      "price": 9.19,
+      "market_cap": 463326144,
+      "market_cap_m": 463.0,
+      "price": 8.85,
       "rev_growth": 1706.4,
       "eps_growth": -99.6,
       "growth_source": "yf_stmt",
       "roe": -40.3,
       "debt_equity": 0.02,
       "pe": null,
-      "forward_pe": -7.0152674,
+      "forward_pe": -6.755726,
       "insider_pct": 20.2,
       "ocf_ni": null,
       "status": "HIGH-CONVICTION"
@@ -361,16 +363,16 @@
       "name": "Precigen, Inc.",
       "sector": "Healthcare",
       "industry": "Biotechnology",
-      "market_cap": 1376132352,
-      "market_cap_m": 1376.0,
-      "price": 3.86,
+      "market_cap": 1345828992,
+      "market_cap_m": 1346.0,
+      "price": 3.775,
       "rev_growth": 1633.9,
       "eps_growth": -191.5,
       "growth_source": "yf_stmt",
       "roe": -1145.4,
       "debt_equity": 4.86,
       "pe": null,
-      "forward_pe": -17.545454,
+      "forward_pe": -17.159092,
       "insider_pct": 13.7,
       "ocf_ni": null,
       "status": "HIGH-CONVICTION"
@@ -380,16 +382,16 @@
       "name": "SharpLink, Inc.",
       "sector": "Financial Services",
       "industry": "Capital Markets",
-      "market_cap": 1145798272,
-      "market_cap_m": 1146.0,
-      "price": 5.81,
+      "market_cap": 1118188672,
+      "market_cap_m": 1118.0,
+      "price": 5.67,
       "rev_growth": 1525.1,
       "eps_growth": -126.7,
       "growth_source": "yf_stmt",
       "roe": -163.1,
       "debt_equity": 0.0,
       "pe": null,
-      "forward_pe": 2.9195979,
+      "forward_pe": 2.8492463,
       "insider_pct": 7.1,
       "ocf_ni": null,
       "status": "STRONG"
@@ -399,16 +401,16 @@
       "name": "Serve Robotics Inc.",
       "sector": "Industrials",
       "industry": "Specialty Industrial Machinery",
-      "market_cap": 771768384,
-      "market_cap_m": 772.0,
-      "price": 9.07,
+      "market_cap": 719029504,
+      "market_cap_m": 719.0,
+      "price": 8.4502,
       "rev_growth": 578.2,
       "eps_growth": -59.3,
       "growth_source": "yf_stmt",
       "roe": -52.0,
       "debt_equity": 0.02,
       "pe": null,
-      "forward_pe": -5.038889,
+      "forward_pe": -4.6945558,
       "insider_pct": 8.7,
       "ocf_ni": null,
       "status": "STRONG"
@@ -418,16 +420,16 @@
       "name": "Innventure, Inc.",
       "sector": "Financial Services",
       "industry": "Asset Management",
-      "market_cap": 575706560,
-      "market_cap_m": 576.0,
-      "price": 6.85,
+      "market_cap": 577832896,
+      "market_cap_m": 578.0,
+      "price": 6.8753,
       "rev_growth": 544.2,
       "eps_growth": -198.6,
       "growth_source": "yf_stmt",
       "roe": -47.4,
       "debt_equity": 0.05,
       "pe": null,
-      "forward_pe": -114.166664,
+      "forward_pe": -114.58833,
       "insider_pct": 31.8,
       "ocf_ni": null,
       "status": "STRONG"
@@ -437,16 +439,16 @@
       "name": "Hyliion Holdings Corp.",
       "sector": "Consumer Cyclical",
       "industry": "Auto Parts",
-      "market_cap": 1210841856,
-      "market_cap_m": 1211.0,
-      "price": 6.79,
+      "market_cap": 1190334336,
+      "market_cap_m": 1190.0,
+      "price": 6.675,
       "rev_growth": 479.1,
       "eps_growth": -10.0,
       "growth_source": "yf_stmt",
       "roe": -25.2,
       "debt_equity": 0.02,
       "pe": null,
-      "forward_pe": -25.148148,
+      "forward_pe": -24.722221,
       "insider_pct": 29.5,
       "ocf_ni": null,
       "status": "STRONG"
@@ -456,9 +458,9 @@
       "name": "Datavault AI Inc.",
       "sector": "Technology",
       "industry": "Software - Infrastructure",
-      "market_cap": 433769952,
-      "market_cap_m": 434.0,
-      "price": 0.507,
+      "market_cap": 418797568,
+      "market_cap_m": 419.0,
+      "price": 0.4895,
       "rev_growth": 443.1,
       "eps_growth": 96.8,
       "growth_source": "yf_stmt",
@@ -475,16 +477,16 @@
       "name": "Gloo Holdings, Inc.",
       "sector": "Technology",
       "industry": "Software - Application",
-      "market_cap": 451592128,
-      "market_cap_m": 452.0,
-      "price": 5.48,
+      "market_cap": 428518048,
+      "market_cap_m": 429.0,
+      "price": 5.2,
       "rev_growth": 417.7,
       "eps_growth": -77.4,
       "growth_source": "yf_stmt",
       "roe": -185.0,
       "debt_equity": 0.28,
       "pe": null,
-      "forward_pe": 60.888885,
+      "forward_pe": 57.777775,
       "insider_pct": 82.5,
       "ocf_ni": null,
       "status": "WATCH"
@@ -494,16 +496,16 @@
       "name": "Avidia Bancorp, Inc.",
       "sector": "Financial Services",
       "industry": "Banks - Regional",
-      "market_cap": 357668448,
-      "market_cap_m": 358.0,
-      "price": 19.26,
+      "market_cap": 349868832,
+      "market_cap_m": 350.0,
+      "price": 18.84,
       "rev_growth": 410.7,
       "eps_growth": -131.5,
       "growth_source": "yf_stmt",
       "roe": 5.0,
       "debt_equity": 0.0,
-      "pe": 25.012987,
-      "forward_pe": 13.6595745,
+      "pe": 24.467533,
+      "forward_pe": 13.361703,
       "insider_pct": 11.2,
       "ocf_ni": null,
       "status": "WATCH"
@@ -513,16 +515,16 @@
       "name": "Forward Industries, Inc.",
       "sector": "Consumer Cyclical",
       "industry": "Footwear & Accessories",
-      "market_cap": 335311808,
-      "market_cap_m": 335.0,
-      "price": 4.49,
+      "market_cap": 328217248,
+      "market_cap_m": 328.0,
+      "price": 4.395,
       "rev_growth": 315.0,
       "eps_growth": -1289.3,
       "growth_source": "yf_stmt",
       "roe": -373.0,
       "debt_equity": 0.1,
       "pe": null,
-      "forward_pe": -11225.0,
+      "forward_pe": -10987.5,
       "insider_pct": 30.4,
       "ocf_ni": null,
       "status": "WATCH"
@@ -532,16 +534,16 @@
       "name": "Unusual Machines, Inc.",
       "sector": "Technology",
       "industry": "Computer Hardware",
-      "market_cap": 1597272832,
-      "market_cap_m": 1597.0,
-      "price": 33.42,
+      "market_cap": 1441942656,
+      "market_cap_m": 1442.0,
+      "price": 30.17,
       "rev_growth": 296.4,
       "eps_growth": -1127.2,
       "growth_source": "yf_stmt",
       "roe": -3.2,
       "debt_equity": 0.01,
       "pe": null,
-      "forward_pe": -167.09999,
+      "forward_pe": -150.84999,
       "insider_pct": 6.6,
       "ocf_ni": null,
       "status": "WATCH"
@@ -551,15 +553,15 @@
       "name": "Resolute Holdings Management",
       "sector": "Industrials",
       "industry": "Specialty Business Services",
-      "market_cap": 936889344,
-      "market_cap_m": 937.0,
-      "price": 113.46,
+      "market_cap": 938705984,
+      "market_cap_m": 939.0,
+      "price": 113.68,
       "rev_growth": 292.5,
       "eps_growth": -150.9,
       "growth_source": "yf_stmt",
       "roe": 1.2,
       "debt_equity": 0.71,
-      "pe": 16.467344,
+      "pe": 16.499275,
       "forward_pe": null,
       "insider_pct": 52.6,
       "ocf_ni": null,
@@ -570,16 +572,16 @@
       "name": "ASP Isotopes Inc.",
       "sector": "Basic Materials",
       "industry": "Chemicals",
-      "market_cap": 1048775744,
-      "market_cap_m": 1049.0,
-      "price": 8.33,
+      "market_cap": 1000680576,
+      "market_cap_m": 1001.0,
+      "price": 7.945,
       "rev_growth": 279.3,
       "eps_growth": -234.9,
       "growth_source": "yf_stmt",
       "roe": -103.3,
       "debt_equity": 0.88,
       "pe": null,
-      "forward_pe": -7.958574,
+      "forward_pe": -7.5936065,
       "insider_pct": 13.0,
       "ocf_ni": null,
       "status": "WATCH"
@@ -589,16 +591,16 @@
       "name": "OmniAb, Inc.",
       "sector": "Healthcare",
       "industry": "Biotechnology",
-      "market_cap": 379828128,
-      "market_cap_m": 380.0,
-      "price": 2.62,
+      "market_cap": 363156320,
+      "market_cap_m": 363.0,
+      "price": 2.505,
       "rev_growth": 247.3,
       "eps_growth": 6.6,
       "growth_source": "yf_stmt",
       "roe": -20.2,
       "debt_equity": 0.07,
       "pe": null,
-      "forward_pe": -8.124031,
+      "forward_pe": -7.767442,
       "insider_pct": 15.2,
       "ocf_ni": null,
       "status": "WATCH"
@@ -617,26 +619,9 @@
         "s3_insider": 0,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 10,
+        "s1_news_count": 9,
         "s5_volume_ratio": 1.76,
         "total": 3
-      }
-    },
-    {
-      "ticker": "NCPL",
-      "name": "Nishat Chunian Power",
-      "sector": "Utilities",
-      "tce_score": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 0,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 8,
-        "s5_volume_ratio": 0.43,
-        "total": 2
       }
     },
     {
@@ -670,6 +655,23 @@
         "s5_volume": 1,
         "s1_news_count": 0,
         "s5_volume_ratio": 1.34,
+        "total": 1
+      }
+    },
+    {
+      "ticker": "NCPL",
+      "name": "Nishat Chunian Power",
+      "sector": "Utilities",
+      "tce_score": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s4_revisions": 0,
+        "s5_volume": 0,
+        "s1_news_count": 7,
+        "s5_volume_ratio": 0.43,
         "total": 1
       }
     },
@@ -778,6 +780,286 @@
   ],
   "tce_us": [
     {
+      "ticker": "SERV",
+      "name": "Serve Robotics Inc.",
+      "sector": "Industrials",
+      "tce_score": 4,
+      "tier": "HIGH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 1,
+        "s4_revisions": 0,
+        "s5_volume": 1,
+        "s1_news_count": 12,
+        "s5_volume_ratio": 1.32,
+        "s3_insider_count": 19,
+        "total": 4
+      },
+      "im3": {
+        "ticker": "SERV",
+        "name": "Serve Robotics Inc.",
+        "sector": "Industrials",
+        "is_bank": false,
+        "price": 8.495,
+        "score": 84,
+        "pct": 51.9,
+        "grade": "C",
+        "metrics": [
+          {
+            "key": "rev_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "op_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "np_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "op_margin",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "np_margin",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "tax_rate",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "int_coverage",
+            "verdict": "BAD",
+            "pts": 0,
+            "max": 2
+          },
+          {
+            "key": "de_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "total_debt",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "current_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "cfo_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "net_cash",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "ccfo_cpat",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "nfa_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "roe",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "eps_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "pe_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "peg_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "earn_yield",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "pb_ratio",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "graham_val",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "ps_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "div_yield",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "ev_ebitda",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "mos",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "val_shareholders",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "inv_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "dro",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "fat",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "ccc",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "fcf_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "croic",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "fcf_sale",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "fcf_cfo",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "cash_debt",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "cash_share",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "altman_z",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "beneish_m",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "piotroski_f",
+            "verdict": "BAD",
+            "pts": 2,
+            "max": 10
+          },
+          {
+            "key": "roic_wacc",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          }
+        ],
+        "piotroski": 2,
+        "altman_z": 106.76,
+        "beneish_m": 8.56,
+        "iv": {
+          "dcf_eps": -1795.61,
+          "graham": null,
+          "peter_lynch": null,
+          "composite": null,
+          "mos_pct": null
+        }
+      }
+    },
+    {
       "ticker": "HYLN",
       "name": "Hyliion Holdings Corp.",
       "sector": "Consumer Cyclical",
@@ -789,8 +1071,8 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 10,
-        "s5_volume_ratio": 6.18,
+        "s1_news_count": 9,
+        "s5_volume_ratio": 6.25,
         "s3_insider_count": 8,
         "total": 4
       },
@@ -799,9 +1081,9 @@
         "name": "Hyliion Holdings Corp.",
         "sector": "Consumer Cyclical",
         "is_bank": false,
-        "price": 6.45,
-        "score": 95,
-        "pct": 58.6,
+        "price": 6.66,
+        "score": 93,
+        "pct": 57.4,
         "grade": "C",
         "metrics": [
           {
@@ -1016,8 +1298,8 @@
           },
           {
             "key": "cash_share",
-            "verdict": "GOOD",
-            "pts": 5,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
@@ -1069,8 +1351,8 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 1,
-        "s1_news_count": 23,
-        "s5_volume_ratio": 1.58,
+        "s1_news_count": 24,
+        "s5_volume_ratio": 1.61,
         "s3_insider_count": 14,
         "total": 4
       },
@@ -1079,7 +1361,7 @@
         "name": "Unusual Machines, Inc.",
         "sector": "Technology",
         "is_bank": false,
-        "price": 31.05,
+        "price": 30.305,
         "score": 89,
         "pct": 54.9,
         "grade": "C",
@@ -1350,7 +1632,7 @@
         "s4_revisions": 0,
         "s5_volume": 1,
         "s1_news_count": 8,
-        "s5_volume_ratio": 2.77,
+        "s5_volume_ratio": 2.78,
         "s3_insider_count": 5,
         "total": 4
       }
@@ -1374,24 +1656,6 @@
       }
     },
     {
-      "ticker": "SERV",
-      "name": "Serve Robotics Inc.",
-      "sector": "Industrials",
-      "tce_score": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 1,
-        "s4_revisions": 0,
-        "s5_volume": 0,
-        "s1_news_count": 12,
-        "s5_volume_ratio": 1.29,
-        "s3_insider_count": 19,
-        "total": 3
-      }
-    },
-    {
       "ticker": "INV",
       "name": "Innventure, Inc.",
       "sector": "Financial Services",
@@ -1404,7 +1668,7 @@
         "s4_revisions": 0,
         "s5_volume": 1,
         "s1_news_count": 3,
-        "s5_volume_ratio": 1.99,
+        "s5_volume_ratio": 2.02,
         "s3_insider_count": 47,
         "total": 3
       }
@@ -1422,7 +1686,7 @@
         "s4_revisions": 0,
         "s5_volume": 0,
         "s1_news_count": 9,
-        "s5_volume_ratio": 1.27,
+        "s5_volume_ratio": 1.29,
         "s3_insider_count": 15,
         "total": 3
       }
@@ -1440,7 +1704,7 @@
         "s4_revisions": 1,
         "s5_volume": 0,
         "s1_news_count": 3,
-        "s5_volume_ratio": 0.64,
+        "s5_volume_ratio": 0.63,
         "s4_revisions_pct": 83.1,
         "s3_insider_count": 18,
         "total": 3
@@ -1458,8 +1722,8 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 8,
-        "s5_volume_ratio": 1.15,
+        "s1_news_count": 10,
+        "s5_volume_ratio": 1.16,
         "s3_insider_count": 5,
         "total": 3
       }
@@ -1513,7 +1777,7 @@
         "s4_revisions": 0,
         "s5_volume": 0,
         "s1_news_count": 5,
-        "s5_volume_ratio": 1.02,
+        "s5_volume_ratio": 1.03,
         "s3_insider_count": 5,
         "total": 2
       }
@@ -1531,7 +1795,7 @@
         "s4_revisions": 0,
         "s5_volume": 0,
         "s1_news_count": 6,
-        "s5_volume_ratio": 1.19,
+        "s5_volume_ratio": 1.21,
         "s3_insider_count": 10,
         "total": 2
       }
@@ -1548,8 +1812,8 @@
         "s3_insider": 1,
         "s4_revisions": 0,
         "s5_volume": 0,
-        "s1_news_count": 1,
-        "s5_volume_ratio": 0.71,
+        "s1_news_count": 2,
+        "s5_volume_ratio": 0.72,
         "s3_insider_count": 5,
         "total": 1
       }
@@ -1567,7 +1831,7 @@
         "s4_revisions": 0,
         "s5_volume": 0,
         "s1_news_count": 2,
-        "s5_volume_ratio": 0.76,
+        "s5_volume_ratio": 0.77,
         "s3_insider_count": 5,
         "total": 1
       }
@@ -1920,7 +2184,7 @@
         "name": "Aveanna Healthcare Holdings Inc.",
         "sector": "Healthcare",
         "is_bank": false,
-        "price": 6.835,
+        "price": 6.82,
         "score": 99,
         "pct": 61.1,
         "grade": "B",
@@ -2386,7 +2650,7 @@
         "name": "Park Aerospace Corp.",
         "sector": "Industrials",
         "is_bank": false,
-        "price": 32.8725,
+        "price": 33.14,
         "score": 115,
         "pct": 71.0,
         "grade": "B",
@@ -2640,7 +2904,7 @@
           "graham": 8.86,
           "peter_lynch": 0.11,
           "composite": 170.77,
-          "mos_pct": 80.8
+          "mos_pct": 80.6
         }
       }
     },
@@ -4365,9 +4629,9 @@
         "name": "Hyliion Holdings Corp.",
         "sector": "Consumer Cyclical",
         "is_bank": false,
-        "price": 6.45,
-        "score": 95,
-        "pct": 58.6,
+        "price": 6.66,
+        "score": 93,
+        "pct": 57.4,
         "grade": "C",
         "metrics": [
           {
@@ -4582,8 +4846,8 @@
           },
           {
             "key": "cash_share",
-            "verdict": "GOOD",
-            "pts": 5,
+            "verdict": "WATCH",
+            "pts": 3,
             "max": 5
           },
           {
@@ -5556,7 +5820,269 @@
       "cash_guardrails": "na_confirm_im3",
       "growth_source": "yf_stmt_im3",
       "fidelity": "im3_screen",
-      "is_financial": false
+      "is_financial": false,
+      "im3": {
+        "ticker": "SERV",
+        "name": "Serve Robotics Inc.",
+        "sector": "Industrials",
+        "is_bank": false,
+        "price": 8.495,
+        "score": 84,
+        "pct": 51.9,
+        "grade": "C",
+        "metrics": [
+          {
+            "key": "rev_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "op_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "np_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "op_margin",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "np_margin",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "tax_rate",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "int_coverage",
+            "verdict": "BAD",
+            "pts": 0,
+            "max": 2
+          },
+          {
+            "key": "de_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "total_debt",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "current_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "cfo_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "net_cash",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "ccfo_cpat",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "nfa_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "roe",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "eps_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "pe_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "peg_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "earn_yield",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "pb_ratio",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "graham_val",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "ps_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "div_yield",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "ev_ebitda",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "mos",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "val_shareholders",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "inv_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "dro",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "fat",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "ccc",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "fcf_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "croic",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "fcf_sale",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "fcf_cfo",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "cash_debt",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "cash_share",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "altman_z",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "beneish_m",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "piotroski_f",
+            "verdict": "BAD",
+            "pts": 2,
+            "max": 10
+          },
+          {
+            "key": "roic_wacc",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          }
+        ],
+        "piotroski": 2,
+        "altman_z": 106.76,
+        "beneish_m": 8.56,
+        "iv": {
+          "dcf_eps": -1795.61,
+          "graham": null,
+          "peter_lynch": null,
+          "composite": null,
+          "mos_pct": null
+        }
+      }
     },
     {
       "ticker": "FWDI",
@@ -5596,7 +6122,7 @@
         "name": "Unusual Machines, Inc.",
         "sector": "Technology",
         "is_bank": false,
-        "price": 31.05,
+        "price": 30.305,
         "score": 89,
         "pct": 54.9,
         "grade": "C",
@@ -6022,13 +6548,6 @@
       "net": 367,
       "signal": "BULLISH",
       "date": "2026-05-26T00:00:00.000"
-    },
-    "Crude": {
-      "long": 200581,
-      "short": 120657,
-      "net": 79924,
-      "signal": "BULLISH",
-      "date": "2026-05-26T00:00:00.000"
     }
   },
   "zacks_sectors": {
@@ -6200,8 +6719,8 @@
     "_scraped_utc": "2026-06-02T19:46:41.194806Z"
   },
   "etf_overlap": {
-    "_scraped_utc": "2026-06-03T13:35:48.087591Z",
-    "_scan_version": "1.12.9",
+    "_scraped_utc": "2026-06-03T15:01:34.234174Z",
+    "_scan_version": "1.12.10",
     "etfs_scanned": 30,
     "etfs_with_holdings": 30,
     "source_etfs": [
@@ -6210,7 +6729,7 @@
         "name": "First Trust NASDAQ Semiconductor ETF",
         "ytd": 100.1,
         "y1": 215.4,
-        "y3": 329.8,
+        "y3": 329.5,
         "expense": 0.6
       },
       {
@@ -6218,7 +6737,7 @@
         "name": "Invesco Semiconductors ETF",
         "ytd": 94.8,
         "y1": 201.9,
-        "y3": 295.1,
+        "y3": 294.9,
         "expense": 0.56
       },
       {
@@ -6226,7 +6745,7 @@
         "name": "iShares Semiconductor ETF",
         "ytd": 90.0,
         "y1": 179.9,
-        "y3": 294.8,
+        "y3": 294.6,
         "expense": 0.34
       },
       {
@@ -6234,7 +6753,7 @@
         "name": "Invesco PHLX Semiconductor ETF",
         "ytd": 83.1,
         "y1": 173.0,
-        "y3": 311.0,
+        "y3": 310.9,
         "expense": 0.19
       },
       {
@@ -6250,7 +6769,7 @@
         "name": "Invesco AI and Next Gen Software ETF",
         "ytd": 71.3,
         "y1": 127.9,
-        "y3": 192.2,
+        "y3": 191.5,
         "expense": 0.56
       },
       {
@@ -6258,7 +6777,7 @@
         "name": "Invesco S&P SmallCap Info Technology ETF",
         "ytd": 50.8,
         "y1": 100.8,
-        "y3": 93.0,
+        "y3": 93.4,
         "expense": 0.29
       },
       {
@@ -6266,7 +6785,7 @@
         "name": "Invesco Next Gen Connectivity ETF",
         "ytd": 60.8,
         "y1": 99.2,
-        "y3": 198.5,
+        "y3": 197.1,
         "expense": 0.4
       },
       {
@@ -6274,7 +6793,7 @@
         "name": "iShares MSCI USA Value Factor ETF",
         "ytd": 47.8,
         "y1": 91.0,
-        "y3": 142.9,
+        "y3": 143.7,
         "expense": 0.15
       },
       {
@@ -6290,7 +6809,7 @@
         "name": "SPDR NYSE Technology ETF",
         "ytd": 35.8,
         "y1": 74.9,
-        "y3": 195.3,
+        "y3": 194.3,
         "expense": 0.35
       },
       {
@@ -6298,7 +6817,7 @@
         "name": "Technology Select Sector SPDR ETF",
         "ytd": 36.1,
         "y1": 70.2,
-        "y3": 142.9,
+        "y3": 141.9,
         "expense": 0.08
       },
       {
@@ -6306,7 +6825,7 @@
         "name": "First Trust NASDAQ-100 Technology ETF",
         "ytd": 42.7,
         "y1": 70.0,
-        "y3": 135.6,
+        "y3": 135.2,
         "expense": 0.55
       },
       {
@@ -6314,7 +6833,7 @@
         "name": "iShares U.S. Digital Infrastructure & RE ETF",
         "ytd": 53.3,
         "y1": 66.0,
-        "y3": 101.1,
+        "y3": 102.0,
         "expense": 0.39
       },
       {
@@ -6322,7 +6841,7 @@
         "name": "iShares Expanded Tech Sector ETF",
         "ytd": 31.0,
         "y1": 65.0,
-        "y3": 172.2,
+        "y3": 171.4,
         "expense": 0.39
       },
       {
@@ -6330,7 +6849,7 @@
         "name": "Fidelity MSCI Info Technology Index ETF",
         "ytd": 32.1,
         "y1": 65.0,
-        "y3": 144.4,
+        "y3": 142.5,
         "expense": 0.08
       },
       {
@@ -6338,7 +6857,7 @@
         "name": "Vanguard Information Technology ETF",
         "ytd": 31.9,
         "y1": 64.4,
-        "y3": 141.6,
+        "y3": 140.0,
         "expense": 0.09
       },
       {
@@ -6346,7 +6865,7 @@
         "name": "iShares U.S. Technology ETF",
         "ytd": 29.2,
         "y1": 63.2,
-        "y3": 150.5,
+        "y3": 149.0,
         "expense": 0.38
       },
       {
@@ -6354,7 +6873,7 @@
         "name": "Invesco Large Cap Growth ETF",
         "ytd": 27.8,
         "y1": 47.1,
-        "y3": 142.9,
+        "y3": 144.2,
         "expense": 0.55
       },
       {
@@ -6362,7 +6881,7 @@
         "name": "Vanguard Energy ETF",
         "ytd": 29.3,
         "y1": 45.1,
-        "y3": 64.3,
+        "y3": 66.1,
         "expense": 0.09
       },
       {
@@ -6370,7 +6889,7 @@
         "name": "Energy Select Sector SPDR ETF",
         "ytd": 29.0,
         "y1": 44.2,
-        "y3": 61.9,
+        "y3": 63.7,
         "expense": 0.08
       },
       {
@@ -6394,7 +6913,7 @@
         "name": "Vanguard Russell 2000 ETF",
         "ytd": 17.6,
         "y1": 42.2,
-        "y3": 68.1,
+        "y3": 67.9,
         "expense": 0.06
       },
       {
@@ -6402,7 +6921,7 @@
         "name": "Invesco S&P 500 Pure Growth ETF",
         "ytd": 30.0,
         "y1": 41.8,
-        "y3": 111.5,
+        "y3": 112.9,
         "expense": 0.35
       },
       {
@@ -6410,7 +6929,7 @@
         "name": "Inspire 100 ETF",
         "ytd": 20.9,
         "y1": 38.5,
-        "y3": 82.9,
+        "y3": 84.4,
         "expense": 0.35
       },
       {
@@ -6426,7 +6945,7 @@
         "name": "Vanguard Small-Cap ETF",
         "ytd": 14.0,
         "y1": 30.0,
-        "y3": 62.3,
+        "y3": 62.4,
         "expense": 0.03
       },
       {
@@ -6434,7 +6953,7 @@
         "name": "Vanguard Russell 1000 Value ETF",
         "ytd": 13.3,
         "y1": 27.9,
-        "y3": 67.4,
+        "y3": 67.6,
         "expense": 0.06
       },
       {
@@ -6442,7 +6961,7 @@
         "name": "iShares Russell 1000 Value ETF",
         "ytd": 13.3,
         "y1": 27.8,
-        "y3": 66.7,
+        "y3": 67.0,
         "expense": 0.18
       }
     ],
@@ -6887,6 +7406,7 @@
     "HYLN",
     "OABI",
     "PKE",
+    "SERV",
     "UMAC"
   ]
 }
