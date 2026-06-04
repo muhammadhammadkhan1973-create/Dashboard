@@ -55,14 +55,15 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.15.0'  # TCE tuning: s6 momentum 15->22, HIGH requires conviction>=4; + forward-validation prediction ledger (data.tce_predictions)
+SCAN_VERSION = '1.16.0'  # US TCE pool widened: small-cap survivors + ETF-consensus large-caps (prior-run overlap); + src provenance
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
 US_SMALL_CAP_MAX  = 2_000_000_000
 US_REV_GROWTH_MIN = 0.15
 
-US_CANDIDATE_POOL = 15    # top survivors fed to TCE (slow, network-heavy)
+US_CANDIDATE_POOL = 15    # top small-cap survivors fed to TCE (slow, network-heavy)
+ETF_TCE_N         = 20    # ETF-consensus large-caps added to the US TCE pool (so quality large-caps are visible)
 US_SCAN_WORKERS   = 2     # parallel Yahoo screen workers. 8 hard-throttled, 4 still capped survivors + poisoned the EPS session. 2 = balanced. Set to 1 for guaranteed-complete sequential (~18min).
 US_EXPLOSIVE_POOL = 200   # survivors fed to explosive screen (fast, no network)
 
@@ -1656,6 +1657,7 @@ def run_tce(candidates, market='us', max_count=20, spy_6mo_ret=None, prev_rev=No
             tier_label, total, conv = tce_tier(streams)
             tce_results.append({
                 'ticker': ticker, 'name': c.get('name', ticker), 'sector': c.get('sector', ''),
+                'src': c.get('src', 'screen'),
                 'tce_score': total, 'conviction': conv, 'tier': tier_label, 'streams': streams,
             })
             fired = [k for k in COUNTED if streams.get(k) == 1]
@@ -1669,6 +1671,25 @@ def run_tce(candidates, market='us', max_count=20, spy_6mo_ret=None, prev_rev=No
     watch = sum(1 for r in tce_results if r['tier'] == 'WATCH')
     log(f'  TCE: {high} HIGH, {watch} WATCH out of {len(tce_results)} scanned')
     return tce_results
+
+
+def merge_tce_pool(small_caps, etf_stocks, cap_small=US_CANDIDATE_POOL, cap_etf=ETF_TCE_N):
+    """Build the US TCE pool: small-cap screen survivors PLUS the ETF-consensus large-caps (so quality
+    names like MU/INTC are visible to the engine). Dedup by ticker (screen survivor wins). The ETF
+    names are sourced from the prior run's overlap, which is fine because Zacks ETF ranks update
+    quarterly, not daily. Pure + unit-tested."""
+    seen, out = set(), []
+    for c in (small_caps or [])[:cap_small]:
+        tk = c.get('ticker')
+        if tk and tk not in seen:
+            seen.add(tk); d = dict(c); d.setdefault('src', 'screen'); out.append(d)
+    for s in (etf_stocks or [])[:cap_etf]:
+        tk = s.get('ticker')
+        if tk and tk not in seen:
+            seen.add(tk)
+            out.append({'ticker': tk, 'name': tk, 'sector': '', 'src': 'etf',
+                        'etf_conviction': s.get('conviction')})
+    return out
 
 
 # =============================================================
@@ -2933,9 +2954,13 @@ def main():
     _spy6 = _spy_6mo_return()
     _prev_us = {r['ticker']: r['streams'].get('rev_est') for r in EXISTING.get('tce_us', [])
                 if isinstance(r.get('streams'), dict)}
+    _etf_stocks = (EXISTING.get('etf_overlap', {}) or {}).get('stocks', [])
+    _us_pool = merge_tce_pool(data['us_candidates'], _etf_stocks)
+    _n_etf = sum(1 for c in _us_pool if c.get('src') == 'etf')
+    log(f'  US TCE pool: {len(_us_pool) - _n_etf} screen + {_n_etf} ETF-consensus = {len(_us_pool)}')
     try:
-        data['tce_us'] = run_tce(data['us_candidates'], market='us',
-                                  max_count=US_CANDIDATE_POOL, spy_6mo_ret=_spy6, prev_rev=_prev_us)
+        data['tce_us'] = run_tce(_us_pool, market='us',
+                                  max_count=len(_us_pool), spy_6mo_ret=_spy6, prev_rev=_prev_us)
     except Exception as e:
         log(f'US TCE crashed: {e}')
         data['meta']['errors'].append(f'us_tce: {e}')
