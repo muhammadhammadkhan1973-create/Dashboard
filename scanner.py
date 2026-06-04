@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.16.0'  # US TCE pool widened: small-cap survivors + ETF-consensus large-caps (prior-run overlap); + src provenance
+SCAN_VERSION = '1.17.0'  # F5: live PSX universe via TradingView Pakistan scanner (fallback to curated list); F2: oil FRED fallback now uses retry wrapper
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -226,7 +226,7 @@ def fetch_us_macros():
                 out[f'{key}_date']   = oil.get(f'{key}_date')
             else:
                 try:
-                    s = fred.get_series(fred_id).dropna()
+                    s = _fred_series(fred_id)   # F2: same retry/backoff as the main series loop
                     if len(s) > 0:
                         out[key] = round(float(s.iloc[-1]), 2)
                         out[f'{key}_source'] = f'fred:{fred_id} (may lag)'
@@ -1306,20 +1306,87 @@ def fetch_psx_universe():
     except Exception as e:
         log(f'  · PSX endpoint test: {e}')
 
-    # Fundamentals: (ticker, name, sector, rev_growth_pct, eps_growth_pct)
-    # Source: PSX annual reports FY2024 vs FY2023. Update quarterly.
-    return [
-        ('MUGHAL', 'Mughal Iron & Steel',         'Steel',     18.2,  32.5),
-        ('ECOP',   'EcoPack Limited',             'Packaging', 22.1,  28.3),
-        ('PIBTL',  'Pakistan Intl Bulk Terminal', 'Transport', 15.8,  12.1),
-        ('GHGL',   'Ghani Glass',                 'Glass',     19.4,  22.7),
-        ('PABC',   'Pak Alum Beverage Cans',      'Packaging', 24.6,  31.2),
-        ('ACPL',   'Attock Cement',               'Cement',    11.2,   8.4),
-        ('SAZEW',  'Sazgar Engineering',          'Auto',      35.8,  48.2),
-        ('NCPL',   'Nishat Chunian Power',        'Utilities',  9.1,  14.3),
-        ('SYM',    'Symmetry Group',              'IT',        42.3,  55.1),
-        ('IML',    'Ismail Industries',           'Food',      16.7,  21.4),
-    ]
+    # F5: real candidate universe from the TradingView Pakistan scanner (the one reliable free PSX
+    # path; same source the Apps Script bot uses). Falls back to the curated list on any failure so
+    # PSX TCE never goes empty.
+    try:
+        live = fetch_psx_universe_live()
+        if len(live) >= 8:
+            log(f'  ✓ PSX universe: {len(live)} candidates from TradingView Pakistan scanner')
+            return live
+        log(f'  · TV scan returned {len(live)} (<8) — using fallback watchlist')
+    except Exception as e:
+        log(f'  · TV scan failed ({e}) — using fallback watchlist')
+    return _PSX_FALLBACK
+
+
+# Curated fallback only (used if the live scan fails). (ticker, name, sector, rev_growth, eps_growth)
+_PSX_FALLBACK = [
+    ('MUGHAL', 'Mughal Iron & Steel',         'Steel',     18.2,  32.5),
+    ('ECOP',   'EcoPack Limited',             'Packaging', 22.1,  28.3),
+    ('PIBTL',  'Pakistan Intl Bulk Terminal', 'Transport', 15.8,  12.1),
+    ('GHGL',   'Ghani Glass',                 'Glass',     19.4,  22.7),
+    ('PABC',   'Pak Alum Beverage Cans',      'Packaging', 24.6,  31.2),
+    ('ACPL',   'Attock Cement',               'Cement',    11.2,   8.4),
+    ('SAZEW',  'Sazgar Engineering',          'Auto',      35.8,  48.2),
+    ('NCPL',   'Nishat Chunian Power',        'Utilities',  9.1,  14.3),
+    ('SYM',    'Symmetry Group',              'IT',        42.3,  55.1),
+    ('IML',    'Ismail Industries',           'Food',      16.7,  21.4),
+]
+
+# --- F5 live universe via TradingView Pakistan scanner (pure parse/derive + thin network wrapper) ---
+PSX_SCAN_COLS = ['name', 'close', 'volume', 'market_cap_basic', 'Perf.3M', 'sector']
+PSX_MCAP_MIN  = 3e9     # exclude micro-caps (PKR)
+PSX_MCAP_MAX  = 60e9    # exclude KSE-30 mega-caps; keep the small/mid "sweet spot"
+PSX_TOP_N     = 25
+
+
+def parse_tv_scan(payload, columns):
+    """TradingView scanner JSON -> list of row dicts keyed by column. Symbol 'PSX:OGDC' -> 'OGDC'.
+    Pure + unit-tested."""
+    rows = []
+    for item in ((payload or {}).get('data') or []):
+        sym = item.get('s', '') if isinstance(item, dict) else ''
+        ticker = sym.split(':')[-1] if ':' in sym else sym
+        d = item.get('d') or [] if isinstance(item, dict) else []
+        if not ticker or len(d) < len(columns):
+            continue
+        rec = {'ticker': ticker}
+        for i, c in enumerate(columns):
+            rec[c] = d[i]
+        rows.append(rec)
+    return rows
+
+
+def derive_psx_candidates(rows, mcap_min=PSX_MCAP_MIN, mcap_max=PSX_MCAP_MAX, top_n=PSX_TOP_N):
+    """Filter to the sweet-spot market-cap band with real liquidity, rank by traded value scaled by
+    positive 3-month momentum, return top_n as (ticker, name, sector). Pure + unit-tested."""
+    scored = []
+    for r in rows:
+        try:
+            mc = float(r.get('market_cap_basic')); px = float(r.get('close')); vol = float(r.get('volume'))
+        except (TypeError, ValueError):
+            continue
+        if not (mcap_min <= mc <= mcap_max) or px <= 0 or vol <= 0:
+            continue
+        try:
+            chg3m = float(r.get('Perf.3M') or 0)
+        except (TypeError, ValueError):
+            chg3m = 0.0
+        score = (px * vol) * (1 + max(chg3m, 0) / 100.0)
+        scored.append((score, r))
+    scored.sort(key=lambda x: -x[0])
+    return [(r['ticker'], r.get('name') or r['ticker'], r.get('sector') or '') for _, r in scored[:top_n]]
+
+
+def fetch_psx_universe_live(top_n=PSX_TOP_N):
+    body = {'columns': PSX_SCAN_COLS, 'range': [0, 500],
+            'sort': {'sortBy': 'market_cap_basic', 'sortOrder': 'desc'}, 'markets': ['pakistan']}
+    r = requests.post('https://scanner.tradingview.com/pakistan/scan', json=body,
+                      headers={'User-Agent': UA, 'Accept': 'application/json'}, timeout=20)
+    if r.status_code != 200:
+        raise RuntimeError(f'TV scan HTTP {r.status_code}')
+    return derive_psx_candidates(parse_tv_scan(r.json(), PSX_SCAN_COLS), top_n=top_n)
 
 
 def screen_psx_stock(ticker_tuple):
