@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.17.0'  # F5: live PSX universe via TradingView Pakistan scanner (fallback to curated list); F2: oil FRED fallback now uses retry wrapper
+SCAN_VERSION = '1.18.0'  # F5 follow-ups: PSX scan adds TTM rev/eps growth (restores Explosive Signal A + feeds PSX TCE s7); PSX TCE scores full universe (cap raised)
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -1335,48 +1335,57 @@ _PSX_FALLBACK = [
 ]
 
 # --- F5 live universe via TradingView Pakistan scanner (pure parse/derive + thin network wrapper) ---
-PSX_SCAN_COLS = ['name', 'close', 'volume', 'market_cap_basic', 'Perf.3M', 'sector']
+PSX_SCAN_COLS = ['name', 'close', 'volume', 'market_cap_basic', 'Perf.3M', 'sector',
+                 'total_revenue_yoy_growth_ttm', 'earnings_per_share_diluted_yoy_growth_ttm']
 PSX_MCAP_MIN  = 3e9     # exclude micro-caps (PKR)
 PSX_MCAP_MAX  = 60e9    # exclude KSE-30 mega-caps; keep the small/mid "sweet spot"
 PSX_TOP_N     = 25
 
 
+def _f(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
 def parse_tv_scan(payload, columns):
     """TradingView scanner JSON -> list of row dicts keyed by column. Symbol 'PSX:OGDC' -> 'OGDC'.
-    Pure + unit-tested."""
+    Maps defensively: if the response has fewer values than requested columns (e.g. a column TV
+    couldn't compute), the missing ones become None rather than dropping the row. Pure + unit-tested."""
     rows = []
     for item in ((payload or {}).get('data') or []):
         sym = item.get('s', '') if isinstance(item, dict) else ''
         ticker = sym.split(':')[-1] if ':' in sym else sym
         d = item.get('d') or [] if isinstance(item, dict) else []
-        if not ticker or len(d) < len(columns):
+        if not ticker or len(d) < 4:        # need at least the core price/volume/mcap fields
             continue
         rec = {'ticker': ticker}
         for i, c in enumerate(columns):
-            rec[c] = d[i]
+            rec[c] = d[i] if i < len(d) else None
         rows.append(rec)
     return rows
 
 
 def derive_psx_candidates(rows, mcap_min=PSX_MCAP_MIN, mcap_max=PSX_MCAP_MAX, top_n=PSX_TOP_N):
     """Filter to the sweet-spot market-cap band with real liquidity, rank by traded value scaled by
-    positive 3-month momentum, return top_n as (ticker, name, sector). Pure + unit-tested."""
+    positive 3-month momentum, return top_n as (ticker, name, sector, rev_growth_pct, eps_growth_pct).
+    Growth is the TTM YoY % from the scanner (None if TV didn't supply it). Pure + unit-tested."""
     scored = []
     for r in rows:
-        try:
-            mc = float(r.get('market_cap_basic')); px = float(r.get('close')); vol = float(r.get('volume'))
-        except (TypeError, ValueError):
+        mc = _f(r.get('market_cap_basic')); px = _f(r.get('close')); vol = _f(r.get('volume'))
+        if mc is None or px is None or vol is None:
             continue
         if not (mcap_min <= mc <= mcap_max) or px <= 0 or vol <= 0:
             continue
-        try:
-            chg3m = float(r.get('Perf.3M') or 0)
-        except (TypeError, ValueError):
-            chg3m = 0.0
+        chg3m = _f(r.get('Perf.3M')) or 0.0
         score = (px * vol) * (1 + max(chg3m, 0) / 100.0)
         scored.append((score, r))
     scored.sort(key=lambda x: -x[0])
-    return [(r['ticker'], r.get('name') or r['ticker'], r.get('sector') or '') for _, r in scored[:top_n]]
+    return [(r['ticker'], r.get('name') or r['ticker'], r.get('sector') or '',
+             _f(r.get('total_revenue_yoy_growth_ttm')),
+             _f(r.get('earnings_per_share_diluted_yoy_growth_ttm')))
+            for _, r in scored[:top_n]]
 
 
 def fetch_psx_universe_live(top_n=PSX_TOP_N):
@@ -1498,9 +1507,12 @@ PRED_HORIZON_DAYS  = 90      # forward-validation maturation window
 PRED_WINNER_THRESH = 40.0    # forward return % that counts a logged pick a "winner"
 
 
-def derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, prev_rev_est):
+def derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, prev_rev_est,
+                   eps_growth_pct=None, rev_growth_pct=None):
     """Yahoo-derived stream flags from already-fetched primitives. Any input may be None; a stream
-    that can't be computed simply stays 0 (never errors, never vetoes). Pure + unit-tested."""
+    that can't be computed simply stays 0 (never errors, never vetoes). eps_growth_pct/rev_growth_pct
+    are an optional percent-units fallback for s7 when Yahoo .info lacks growth (PSX, where yfinance
+    has no fundamentals). Pure + unit-tested."""
     s = {}
     if closes:
         s['price'] = round(closes[-1], 4)                                    # entry price for forward-validation
@@ -1519,6 +1531,9 @@ def derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, pre
     if eg is not None and rg is not None:
         s['s7_margin_spread_pct'] = round((eg - rg) * 100, 1)
         s['s7_margin'] = 1 if (eg > rg and eg > 0) else 0
+    elif eps_growth_pct is not None and rev_growth_pct is not None:           # PSX fallback (percent units)
+        s['s7_margin_spread_pct'] = round(eps_growth_pct - rev_growth_pct, 1)
+        s['s7_margin'] = 1 if (eps_growth_pct > rev_growth_pct and eps_growth_pct > 0) else 0
     sp = info.get('shortPercentOfFloat') if info else None                   # s8 external capital
     if sp is not None:
         s['s8_capital_short_pct'] = round(sp * 100, 1)
@@ -1619,7 +1634,8 @@ def update_tce_predictions(prev, today_iso, rows,
     return {'predictions': preds, 'summary': summary, 'updated': today_iso}
 
 
-def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None):
+def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None,
+                        eps_growth_pct=None, rev_growth_pct=None):
     streams = {k: 0 for k in COUNTED}
 
     # s1_news / s2_sponsor — Google News RSS recent count (last 14 days)
@@ -1686,7 +1702,8 @@ def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None
         except Exception:
             pass
 
-        streams.update(derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, prev_rev_est))
+        streams.update(derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, prev_rev_est,
+                                       eps_growth_pct=eps_growth_pct, rev_growth_pct=rev_growth_pct))
     except Exception:
         streams.setdefault('rs_ok', True)
 
@@ -1719,8 +1736,12 @@ def run_tce(candidates, market='us', max_count=20, spy_6mo_ret=None, prev_rev=No
     for c in candidates[:max_count]:
         ticker = c['ticker']
         try:
+            # PSX has no yfinance fundamentals; feed the scanner's TTM growth so s7 can fire. US: None.
+            _eg = c.get('eps_growth') if market == 'psx' else None
+            _rg = c.get('rev_growth') if market == 'psx' else None
             streams = compute_tce_streams(ticker, market, spy_6mo_ret=spy_6mo_ret,
-                                          prev_rev_est=prev_rev.get(ticker))
+                                          prev_rev_est=prev_rev.get(ticker),
+                                          eps_growth_pct=_eg, rev_growth_pct=_rg)
             tier_label, total, conv = tce_tier(streams)
             tce_results.append({
                 'ticker': ticker, 'name': c.get('name', ticker), 'sector': c.get('sector', ''),
@@ -3036,7 +3057,8 @@ def main():
     try:
         _prev_psx = {r['ticker']: r['streams'].get('rev_est') for r in EXISTING.get('tce_psx', [])
                      if isinstance(r.get('streams'), dict)}
-        data['tce_psx'] = run_tce(data['psx_candidates'], market='psx', max_count=10,
+        data['tce_psx'] = run_tce(data['psx_candidates'], market='psx',
+                                  max_count=max(len(data['psx_candidates']), 10),
                                   spy_6mo_ret=_spy6, prev_rev=_prev_psx)
     except Exception as e:
         log(f'PSX TCE crashed: {e}')
