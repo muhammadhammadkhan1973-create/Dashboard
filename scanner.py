@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.14.0'  # augmented TCE: old streams + momentum/margin/capital + EPS+revenue revision direction + RS guardrail; reverted holdings scorer
+SCAN_VERSION = '1.15.0'  # TCE tuning: s6 momentum 15->22, HIGH requires conviction>=4; + forward-validation prediction ledger (data.tce_predictions)
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -83,6 +83,7 @@ DEFAULT_DATA = {
     'psx_funnel': [], 'us_funnel': [],
     'psx_candidates': [], 'us_candidates': [],
     'tce_psx': [], 'tce_us': [],
+    'tce_predictions': {},
     'explosive_psx': [], 'explosive_us': [],
     'rate_path': [],
 }
@@ -1421,15 +1422,24 @@ CONVICTION  = FUNDAMENTAL + REVISION            # streams that must converge for
 COUNTED     = ATTENTION + FUNDAMENTAL + REVISION
 BINARY_STREAMS = COUNTED                        # back-compat alias
 
+# Tuning (precision backtest, 2026-06-03): the price core is a real-but-modest trend-confirmer whose
+# edge sharpens with a tighter momentum bar (lift 1.36x@15% -> 1.46x@20% -> 2.0x@30%). s6 raised
+# 15 -> 22; and HIGH now requires conviction>=4 (the conv-3+attention path is dropped to WATCH).
+TCE_MOM_THRESH     = 22      # s6 momentum %, 3mo
+PRED_HORIZON_DAYS  = 90      # forward-validation maturation window
+PRED_WINNER_THRESH = 40.0    # forward return % that counts a logged pick a "winner"
+
 
 def derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, prev_rev_est):
     """Yahoo-derived stream flags from already-fetched primitives. Any input may be None; a stream
     that can't be computed simply stays 0 (never errors, never vetoes). Pure + unit-tested."""
     s = {}
+    if closes:
+        s['price'] = round(closes[-1], 4)                                    # entry price for forward-validation
     if closes and len(closes) >= 64 and closes[-64]:                         # s6 momentum (3mo)
         mom = (closes[-1] - closes[-64]) / closes[-64] * 100
         s['s6_momentum_pct'] = round(mom, 1)
-        s['s6_momentum'] = 1 if mom >= 15 else 0
+        s['s6_momentum'] = 1 if mom >= TCE_MOM_THRESH else 0
     if closes and len(closes) >= 2 and closes[0]:                            # RS guardrail (6mo vs SPY)
         name_6mo = (closes[-1] - closes[0]) / closes[0] * 100
         s['rs_vs_spy'] = round(name_6mo - spy_6mo_ret, 1) if spy_6mo_ret is not None else None
@@ -1457,13 +1467,14 @@ def derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, pre
 
 
 def tce_tier(streams):
-    """Conviction (fundamentals+revisions) can carry the tier alone, so a name converging BEFORE
-    news/volume arrive — the 3-quarters-early setup — is still caught. Thresholds explicit/tunable;
-    the precision backtest is what calibrates them."""
+    """Conviction (fundamentals+revisions) carries the tier. HIGH requires conviction>=4 (backtest:
+    the conv-3+attention path didn't earn its keep — it now tops out at WATCH). A name converging on
+    fundamentals BEFORE news/volume — the 3-quarters-early setup — still reaches HIGH on conviction
+    alone; pure attention can only ever reach WATCH. RS guardrail caps a market-laggard to WATCH."""
     total = sum(int(streams.get(k, 0)) for k in COUNTED)
     conv  = sum(int(streams.get(k, 0)) for k in CONVICTION)
     rs_ok = bool(streams.get('rs_ok', True))
-    strong = (conv >= 4) or (total >= 6 and conv >= 3)
+    strong = (conv >= 4)
     if strong and rs_ok:
         return 'HIGH', total, conv
     if (conv >= 3) or (total >= 5 and conv >= 1) or (strong and not rs_ok):
@@ -1481,6 +1492,63 @@ def _spy_6mo_return():
     except Exception:
         pass
     return None
+
+
+def _pred_days(d0, d1):
+    try:
+        return (dt.date.fromisoformat(d1) - dt.date.fromisoformat(d0)).days
+    except Exception:
+        return 0
+
+
+def update_tce_predictions(prev, today_iso, rows,
+                           horizon_days=PRED_HORIZON_DAYS, winner_thresh=PRED_WINNER_THRESH):
+    """Forward-validation ledger (the automated replacement for the impossible historical revision
+    backtest). Logs each run's HIGH/WATCH picks with entry price, then on every later run marks the
+    latest forward return and freezes it once the pick matures (>= horizon). Summarises per-tier
+    hit-rate / avg forward / avg peak over matured picks. Pure + unit-tested (no I/O, no clock —
+    `today_iso` and `rows` are passed in, so date math is deterministic).
+      prev: prior {'predictions':[...]} dict (or None)
+      rows: this run's picks as [{'ticker','tier','market','price'}] (price required)"""
+    prev = prev or {}
+    preds = [dict(p) for p in prev.get('predictions', [])]
+    price = {r['ticker']: r['price'] for r in rows if r.get('price')}
+    open_tickers = set()
+    for p in preds:                                            # update + freeze at maturity
+        d = _pred_days(p.get('date', ''), today_iso)
+        p['days_open'] = d
+        cur = price.get(p['ticker'])
+        if cur and p.get('entry') and not p.get('resolved'):
+            ret = round((cur - p['entry']) / p['entry'] * 100, 1)
+            p['last_price'] = round(cur, 4); p['last_date'] = today_iso
+            p['fwd_ret_pct'] = ret
+            p['peak_ret_pct'] = round(max(p.get('peak_ret_pct', ret), ret), 1)
+        if d >= horizon_days and not p.get('resolved'):
+            p['resolved'] = True
+        if d < horizon_days:
+            open_tickers.add(p['ticker'])
+    for r in rows:                                             # log new picks not already open
+        tk = r['ticker']; cur = price.get(tk)
+        if cur and tk not in open_tickers:
+            preds.append({'ticker': tk, 'tier': r.get('tier'), 'market': r.get('market', 'us'),
+                          'date': today_iso, 'entry': round(cur, 4), 'last_price': round(cur, 4),
+                          'last_date': today_iso, 'fwd_ret_pct': 0.0, 'peak_ret_pct': 0.0,
+                          'days_open': 0, 'resolved': False})
+            open_tickers.add(tk)
+    summary = {'horizon_days': horizon_days, 'winner_thresh': winner_thresh,
+               'total_logged': len(preds),
+               'open': sum(1 for p in preds if p.get('days_open', 0) < horizon_days)}
+    for tier in ('HIGH', 'WATCH'):
+        matured = [p for p in preds if p.get('tier') == tier and p.get('days_open', 0) >= horizon_days]
+        n = len(matured)
+        if n:
+            hits = sum(1 for p in matured if p.get('fwd_ret_pct', 0) >= winner_thresh)
+            summary[tier] = {'matured': n, 'hit_rate': round(hits / n, 3),
+                             'avg_fwd_pct': round(sum(p.get('fwd_ret_pct', 0) for p in matured) / n, 1),
+                             'avg_peak_pct': round(sum(p.get('peak_ret_pct', 0) for p in matured) / n, 1)}
+        else:
+            summary[tier] = {'matured': 0, 'hit_rate': None, 'avg_fwd_pct': None, 'avg_peak_pct': None}
+    return {'predictions': preds, 'summary': summary, 'updated': today_iso}
 
 
 def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None):
@@ -2882,6 +2950,24 @@ def main():
         log(f'PSX TCE crashed: {e}')
         data['meta']['errors'].append(f'psx_tce: {e}')
         data['tce_psx'] = EXISTING.get('tce_psx', [])
+
+    # Forward-validation: log this run's HIGH/WATCH picks + entry price; track forward returns over time.
+    try:
+        _today = dt.date.today().isoformat()
+        _rows = []
+        for _mkt, _key in (('us', 'tce_us'), ('psx', 'tce_psx')):
+            for r in data.get(_key, []):
+                pr = r.get('streams', {}).get('price') if isinstance(r.get('streams'), dict) else None
+                if r.get('tier') in ('HIGH', 'WATCH') and pr:
+                    _rows.append({'ticker': r['ticker'], 'tier': r['tier'], 'market': _mkt, 'price': pr})
+        data['tce_predictions'] = update_tce_predictions(EXISTING.get('tce_predictions'), _today, _rows)
+        _s = data['tce_predictions']['summary']
+        log(f"TCE predictions: {_s['total_logged']} logged, {_s['open']} open; "
+            f"HIGH matured={_s['HIGH']['matured']} hit_rate={_s['HIGH']['hit_rate']}; "
+            f"WATCH matured={_s['WATCH']['matured']} hit_rate={_s['WATCH']['hit_rate']}")
+    except Exception as e:
+        log(f'TCE prediction logger failed: {e}')
+        data['tce_predictions'] = EXISTING.get('tce_predictions', {})
 
     try:
         data['explosive_us'] = run_explosive(us_all_survivors, market='us')
