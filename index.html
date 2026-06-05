@@ -1998,7 +1998,9 @@ async function loadLiveData(){
   try{
     const resp=await fetch('./data.json?_='+Date.now());
     if(!resp.ok)throw new Error('HTTP '+resp.status);
-    LIVE=await resp.json();
+    const _txt=await resp.text();
+    // Older scans wrote NaN/Infinity (invalid JSON); sanitize value-position tokens to null so JSON.parse succeeds.
+    LIVE=JSON.parse(_txt.replace(/([:\[,]\s*)(-?Infinity|NaN)\b/g,'$1null'));
     const meta=LIVE.meta||{};
     const scan=meta.last_scan_utc
       ? (function(){try{return new Date(meta.last_scan_utc).toLocaleString('en-GB',{timeZone:'Asia/Dubai',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' GST';}catch(e){return meta.last_scan_utc;}})()
