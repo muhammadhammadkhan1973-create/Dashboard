@@ -56,8 +56,8 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.19.0'  # TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED; fixes recurring rate-limit -> stale-oil
-# v1.18.1  data.json spec-valid JSON (NaN/Infinity -> null); fixed dashboard "No scan data yet"
+SCAN_VERSION = '1.20.0'  # PSX-specific TCE tier (conv>=2 bar) + TV Perf.3M s6-momentum fallback (closes GAL-type yfinance gaps)
+# v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -1405,8 +1405,8 @@ def parse_tv_scan(payload, columns):
 
 def derive_psx_candidates(rows, mcap_min=PSX_MCAP_MIN, mcap_max=PSX_MCAP_MAX, top_n=PSX_TOP_N):
     """Filter to the sweet-spot market-cap band with real liquidity, rank by traded value scaled by
-    positive 3-month momentum, return top_n as (ticker, name, sector, rev_growth_pct, eps_growth_pct).
-    Growth is the TTM YoY % from the scanner (None if TV didn't supply it). Pure + unit-tested."""
+    positive 3-month momentum, return top_n as (ticker, name, sector, rev_growth_pct, eps_growth_pct,
+    perf_3m_pct). perf_3m is the 3-month performance % carried for the s6 momentum fallback."""
     scored = []
     for r in rows:
         mc = _f(r.get('market_cap_basic')); px = _f(r.get('close')); vol = _f(r.get('volume'))
@@ -1420,7 +1420,8 @@ def derive_psx_candidates(rows, mcap_min=PSX_MCAP_MIN, mcap_max=PSX_MCAP_MAX, to
     scored.sort(key=lambda x: -x[0])
     return [(r['ticker'], r.get('name') or r['ticker'], r.get('sector') or '',
              _f(r.get('total_revenue_yoy_growth_ttm')),
-             _f(r.get('earnings_per_share_diluted_yoy_growth_ttm')))
+             _f(r.get('earnings_per_share_diluted_yoy_growth_ttm')),
+             _f(r.get('Perf.3M')))
             for _, r in scored[:top_n]]
 
 
@@ -1435,13 +1436,14 @@ def fetch_psx_universe_live(top_n=PSX_TOP_N):
 
 
 def screen_psx_stock(ticker_tuple):
-    # Accepts (ticker, name, sector) or (ticker, name, sector, rev_growth, eps_growth)
+    # Accepts (ticker, name, sector) or (...rev_growth, eps_growth) or (...rev_growth, eps_growth, perf_3m)
     ticker, name, sector = ticker_tuple[0], ticker_tuple[1], ticker_tuple[2]
     rev_growth = ticker_tuple[3] if len(ticker_tuple) > 3 else None
     eps_growth = ticker_tuple[4] if len(ticker_tuple) > 4 else None
+    perf_3m    = ticker_tuple[5] if len(ticker_tuple) > 5 else None
     out = {'ticker': ticker, 'name': name, 'sector': sector,
            'price': None, 'avg_volume': None,
-           'rev_growth': rev_growth, 'eps_growth': eps_growth,
+           'rev_growth': rev_growth, 'eps_growth': eps_growth, 'perf_3m': perf_3m,
            'growth_source': 'psx_annual' if rev_growth is not None else None,
            'data_source': 'cached', 'status': 'STRONG'}
 
@@ -1544,11 +1546,12 @@ PRED_WINNER_THRESH = 40.0    # forward return % that counts a logged pick a "win
 
 
 def derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, prev_rev_est,
-                   eps_growth_pct=None, rev_growth_pct=None):
+                   eps_growth_pct=None, rev_growth_pct=None, perf_3m=None):
     """Yahoo-derived stream flags from already-fetched primitives. Any input may be None; a stream
     that can't be computed simply stays 0 (never errors, never vetoes). eps_growth_pct/rev_growth_pct
     are an optional percent-units fallback for s7 when Yahoo .info lacks growth (PSX, where yfinance
-    has no fundamentals). Pure + unit-tested."""
+    has no fundamentals). perf_3m is the TradingView 3-month performance %, used as the s6 momentum
+    fallback when there's no .KA price history (PSX names yfinance can't serve). Pure + unit-tested."""
     s = {}
     if closes:
         s['price'] = round(closes[-1], 4)                                    # entry price for forward-validation
@@ -1556,6 +1559,10 @@ def derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, pre
         mom = (closes[-1] - closes[-64]) / closes[-64] * 100
         s['s6_momentum_pct'] = round(mom, 1)
         s['s6_momentum'] = 1 if mom >= TCE_MOM_THRESH else 0
+    elif perf_3m is not None:                                                # s6 fallback: TV 3-month perf
+        s['s6_momentum_pct'] = round(perf_3m, 1)
+        s['s6_momentum'] = 1 if perf_3m >= TCE_MOM_THRESH else 0
+        s['s6_momentum_src'] = 'tv_perf3m'
     if closes and len(closes) >= 2 and closes[0]:                            # RS guardrail (6mo vs SPY)
         name_6mo = (closes[-1] - closes[0]) / closes[0] * 100
         s['rs_vs_spy'] = round(name_6mo - spy_6mo_ret, 1) if spy_6mo_ret is not None else None
@@ -1585,14 +1592,24 @@ def derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, pre
     return s
 
 
-def tce_tier(streams):
+def tce_tier(streams, market='us'):
     """Conviction (fundamentals+revisions) carries the tier. HIGH requires conviction>=4 (backtest:
     the conv-3+attention path didn't earn its keep — it now tops out at WATCH). A name converging on
     fundamentals BEFORE news/volume — the 3-quarters-early setup — still reaches HIGH on conviction
-    alone; pure attention can only ever reach WATCH. RS guardrail caps a market-laggard to WATCH."""
+    alone; pure attention can only ever reach WATCH. RS guardrail caps a market-laggard to WATCH.
+
+    PSX uses a market-specific bar: PSX can structurally fire only 5 of 9 streams (no Pakistani feed
+    for s3 insider, s8 short-interest, s9/s10 revisions), so conviction caps at ~2. The US bar is
+    therefore unreachable. PSX: HIGH = conv>=2 AND total>=5; WATCH = conv>=2 OR total>=4."""
     total = sum(int(streams.get(k, 0)) for k in COUNTED)
     conv  = sum(int(streams.get(k, 0)) for k in CONVICTION)
     rs_ok = bool(streams.get('rs_ok', True))
+    if market == 'psx':
+        if conv >= 2 and total >= 5:
+            return 'HIGH', total, conv
+        if conv >= 2 or total >= 4:
+            return 'WATCH', total, conv
+        return 'IGNORE', total, conv
     strong = (conv >= 4)
     if strong and rs_ok:
         return 'HIGH', total, conv
@@ -1671,7 +1688,7 @@ def update_tce_predictions(prev, today_iso, rows,
 
 
 def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None,
-                        eps_growth_pct=None, rev_growth_pct=None):
+                        eps_growth_pct=None, rev_growth_pct=None, perf_3m=None):
     streams = {k: 0 for k in COUNTED}
 
     # s1_news / s2_sponsor — Google News RSS recent count (last 14 days)
@@ -1739,7 +1756,8 @@ def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None
             pass
 
         streams.update(derive_streams(info, closes, eps_up30, eps_down30, rev_est, spy_6mo_ret, prev_rev_est,
-                                       eps_growth_pct=eps_growth_pct, rev_growth_pct=rev_growth_pct))
+                                       eps_growth_pct=eps_growth_pct, rev_growth_pct=rev_growth_pct,
+                                       perf_3m=perf_3m))
     except Exception:
         streams.setdefault('rs_ok', True)
 
@@ -1775,10 +1793,11 @@ def run_tce(candidates, market='us', max_count=20, spy_6mo_ret=None, prev_rev=No
             # PSX has no yfinance fundamentals; feed the scanner's TTM growth so s7 can fire. US: None.
             _eg = c.get('eps_growth') if market == 'psx' else None
             _rg = c.get('rev_growth') if market == 'psx' else None
+            _p3m = c.get('perf_3m') if market == 'psx' else None    # TV 3M perf -> s6 fallback when no .KA history
             streams = compute_tce_streams(ticker, market, spy_6mo_ret=spy_6mo_ret,
                                           prev_rev_est=prev_rev.get(ticker),
-                                          eps_growth_pct=_eg, rev_growth_pct=_rg)
-            tier_label, total, conv = tce_tier(streams)
+                                          eps_growth_pct=_eg, rev_growth_pct=_rg, perf_3m=_p3m)
+            tier_label, total, conv = tce_tier(streams, market)
             tce_results.append({
                 'ticker': ticker, 'name': c.get('name', ticker), 'sector': c.get('sector', ''),
                 'src': c.get('src', 'screen'),
