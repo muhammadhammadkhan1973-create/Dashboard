@@ -56,13 +56,16 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.21.0'  # US screening migration Phase 1: TradingView america pre-filter narrows the universe before Yahoo (financials pass straight to Yahoo, non-financials gated on fq rev-growth + ttm fallback); ~halves Yahoo calls, hard fallback to full Yahoo universe if TV unreachable
+SCAN_VERSION = '1.21.1'  # 1.21.1: (a) drop TV-leaked preferred-share tickers (ABR/PE, GNL/PD, ...) in the prefilter — they 502 on Yahoo and inflate the financials bucket; (b) demote micro-base revenue-growth artifacts (e.g. UROY 416,400%) so they can't grab HIGH-CONVICTION. 1.21.0: US screening migration Phase 1 (TV america pre-filter narrows the universe before Yahoo; financials pass straight to Yahoo, non-financials gated on fq rev-growth + ttm fallback; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
 US_SMALL_CAP_MAX  = 2_000_000_000
 US_REV_GROWTH_MIN = 0.15
+US_REV_GROWTH_SANE_MAX = 500.0  # %; rev-growth above this is a micro-base artifact (near-zero prior-year
+                                # revenue -> astronomical %). Such names are demoted in the candidate
+                                # ranking so they can't grab a HIGH-CONVICTION slot (they still pass the screen).
 
 US_CANDIDATE_POOL = 15    # top small-cap survivors fed to TCE (slow, network-heavy)
 ETF_TCE_N         = 20    # ETF-consensus large-caps added to the US TCE pool (so quality large-caps are visible)
@@ -1162,6 +1165,18 @@ _US_TV_COLS = ['name', 'market_cap_basic', 'exchange', 'sector',
                'total_revenue_yoy_growth_fq', 'total_revenue_yoy_growth_ttm']
 
 
+def is_common_us_ticker(tk):
+    """PURE. True only for plain common-share tickers. TradingView's america `type=stock`
+    feed leaks preferred-share series whose symbol carries a '/<class>' suffix (ABR/PE,
+    GNL/PD, TWO/PA, ...). Those 502 on Yahoo and inflate the financials bucket (one REIT =
+    many preferred series), so they're dropped before the universe is built. Conservative:
+    only '/' (and stray whitespace) is rejected — '.'/'-' class shares are left alone,
+    matching the existing Yahoo-universe guard. Unit-tested."""
+    if not tk or not isinstance(tk, str):
+        return False
+    return '/' not in tk and ' ' not in tk
+
+
 def classify_us_tv_row(rec, thr):
     """PURE. Decide whether a TradingView america row should be sent to the Yahoo screen.
     Returns 'financial' | 'growth' | 'ttm' | 'skip'. (The named large-cap set is unioned
@@ -1226,6 +1241,8 @@ def fetch_us_universe_tv():
                 if (rec.get('market_cap_basic') or 0) > US_SMALL_CAP_MAX:
                     stop = True   # ascending sort -> past the band ceiling, done
                     break
+                if not is_common_us_ticker(rec['ticker']):
+                    continue      # drop TV-leaked preferred-share series (ABR/PE, GNL/PD, ...) — they 502 on Yahoo
                 rows.append(rec)
             if stop or len(batch) < page:
                 break
@@ -1353,7 +1370,18 @@ def screen_us_universe():
     log(f'  US scan: {elapsed/60:.1f}min, {len(candidates)} candidates passed all gates')
 
     survived = len(candidates)
-    candidates.sort(key=lambda c: c.get('rev_growth', 0) or 0, reverse=True)
+    # Flag micro-base revenue-growth artifacts (near-zero prior-year revenue -> absurd %),
+    # then rank with those artifacts demoted to the bottom so they can't seize a HIGH-CONVICTION
+    # slot (UROY at 416,400% was doing exactly that). They still pass the screen and appear,
+    # just not mis-ranked at the top. Raw rev_growth is preserved for display.
+    for c in candidates:
+        rg = c.get('rev_growth')
+        c['rev_growth_artifact'] = (rg is not None and rg > US_REV_GROWTH_SANE_MAX)
+
+    def _rank_key(c):
+        rg = c.get('rev_growth', 0) or 0
+        return -1e9 if c.get('rev_growth_artifact') else rg   # artifacts sort dead last
+    candidates.sort(key=_rank_key, reverse=True)
 
     for i, c in enumerate(candidates):
         if i < 3:   c['status'] = 'HIGH-CONVICTION'
