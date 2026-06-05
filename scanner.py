@@ -38,6 +38,7 @@ v1.7.1 fixes: FMP enrichment moved to post-screen stage
 import os
 import sys
 import json
+import math
 import time
 import csv
 import traceback
@@ -55,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.18.0'  # F5 follow-ups: PSX scan adds TTM rev/eps growth (restores Explosive Signal A + feeds PSX TCE s7); PSX TCE scores full universe (cap raised)
+SCAN_VERSION = '1.18.1'  # data.json now spec-valid JSON (NaN/Infinity -> null); fixes dashboard "No scan data yet" (browser JSON.parse rejected NaN)
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -3186,9 +3187,20 @@ def main():
 
     data['meta']['warnings'] = list(WARNINGS)
 
+    def _json_safe(o):
+        # NaN / Infinity are NOT valid JSON; the browser's JSON.parse rejects them.
+        # Convert to None (null) recursively so data.json is spec-valid.
+        if isinstance(o, float):
+            return None if (math.isnan(o) or math.isinf(o)) else o
+        if isinstance(o, dict):
+            return {k: _json_safe(v) for k, v in o.items()}
+        if isinstance(o, (list, tuple)):
+            return [_json_safe(v) for v in o]
+        return o
+
     try:
         with open(OUTPUT_PATH, 'w') as f:
-            json.dump(data, f, indent=2, default=str)
+            json.dump(_json_safe(data), f, indent=2, default=str, allow_nan=False)
         log(f'data.json written ({OUTPUT_PATH.stat().st_size} bytes)')
     except Exception as e:
         log(f'Failed to write data.json: {e}')
