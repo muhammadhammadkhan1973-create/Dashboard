@@ -56,7 +56,8 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.18.1'  # data.json now spec-valid JSON (NaN/Infinity -> null); fixes dashboard "No scan data yet" (browser JSON.parse rejected NaN)
+SCAN_VERSION = '1.19.0'  # TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED; fixes recurring rate-limit -> stale-oil
+# v1.18.1  data.json spec-valid JSON (NaN/Infinity -> null); fixed dashboard "No scan data yet"
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -153,6 +154,37 @@ def fetch_live_oil():
     return out
 
 
+def fetch_tv_oil(keys):
+    """TradingView futures fallback for live oil — slots BETWEEN Yahoo and FRED.
+    Live-delayed continuous front-month: WTI=NYMEX:CL1!, Brent=ICEEUR:BRN1!.
+    Beats the stale FRED print when Yahoo rate-limits (proven reachable on runner)."""
+    tmap = {'wti': 'NYMEX:CL1!', 'brent': 'ICEEUR:BRN1!'}
+    want = {k: tmap[k] for k in keys if k in tmap}
+    out = {}
+    if not want:
+        return out
+    try:
+        payload = {'symbols': {'tickers': list(want.values())}, 'columns': ['close']}
+        r = requests.post('https://scanner.tradingview.com/futures/scan',
+                          json=payload, headers={'User-Agent': UA}, timeout=20)
+        if r.status_code == 200:
+            rows = {d['s']: d['d'][0] for d in r.json().get('data', [])}
+            for k, sym in want.items():
+                v = rows.get(sym)
+                try:
+                    v = float(v)
+                except (TypeError, ValueError):
+                    v = None
+                if v is not None and 10 < v < 400:
+                    out[k] = round(v, 2)
+                    out[f'{k}_source'] = f'tradingview:{sym.split(":")[-1]}'
+                    out[f'{k}_date'] = str(dt.date.today())
+                    log(f'  ✓ {k} (TV fallback {sym}) = {out[k]}')
+    except Exception as e:
+        log(f'  · oil TV fallback miss: {e}')
+    return out
+
+
 def fetch_us_macros():
     import re
     log('Fetching US macros from FRED...')
@@ -218,8 +250,11 @@ def fetch_us_macros():
                     out[key] = lg
                     log(f'  · {key}: kept last-good = {lg}')
 
-        # Live oil — Yahoo first, FRED fallback
+        # Live oil — Yahoo first, then TradingView futures, then FRED (last resort, may be stale)
         oil = fetch_live_oil()
+        _oil_missing = [k for k in ('wti', 'brent') if k not in oil]
+        if _oil_missing:
+            oil.update(fetch_tv_oil(_oil_missing))
         for key, fred_id in (('wti', 'DCOILWTICO'), ('brent', 'DCOILBRENTEU')):
             if key in oil:
                 out[key] = oil[key]
