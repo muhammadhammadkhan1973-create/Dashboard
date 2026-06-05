@@ -56,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.21.2'  # 1.21.2: preserve im3_explosive_tickers from last-good data.json so the workflow's IM3 change-detection can skip re-scoring on stable days (scanner used to wipe it, forcing IM3 every run). 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter narrows the universe before Yahoo; financials pass straight to Yahoo, non-financials gated on fq rev-growth + ttm fallback; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.21.3'  # 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -3367,12 +3367,30 @@ def main():
 
     data['meta']['warnings'] = list(WARNINGS)
 
-    # Carry the IM3 ticker list forward from the last good data.json. The scanner doesn't
-    # score IM3 (im3_score.py does, as a separate workflow step), but it must PRESERVE the
-    # prior im3_explosive_tickers so the workflow's change-detection step has a real previous
-    # list to compare against — otherwise it always reads [] here and re-scores every run.
+    # Carry IM3 forward from the last good data.json. The scanner doesn't SCORE IM3
+    # (im3_score.py does, as a separate workflow step), but it rebuilds explosive_us/tce_us
+    # from scratch each run with no 'im3' field — so it must re-attach two things or the
+    # dashboard's IM3 panel blanks out on any run where the IM3 step is skipped:
+    #   1. im3_explosive_tickers (the list) — so the workflow's change-detection has a real
+    #      previous list to compare against and can skip re-scoring on stable days.
+    #   2. the per-record 'im3' score dicts, keyed by ticker — so a skipped re-score keeps
+    #      the prior scores. When names DO change, the IM3 step re-runs and overwrites these.
     if 'im3_explosive_tickers' not in data:
         data['im3_explosive_tickers'] = EXISTING.get('im3_explosive_tickers', [])
+
+    _im3_prev = {}
+    for _key in ('explosive_us', 'tce_us'):
+        for _r in EXISTING.get(_key, []):
+            if isinstance(_r, dict) and _r.get('im3') is not None and _r.get('ticker'):
+                _im3_prev[_r['ticker']] = _r['im3']
+    if _im3_prev:
+        _carried = 0
+        for _key in ('explosive_us', 'tce_us'):
+            for _r in data.get(_key, []):
+                if isinstance(_r, dict) and _r.get('im3') is None and _r.get('ticker') in _im3_prev:
+                    _r['im3'] = _im3_prev[_r['ticker']]; _carried += 1
+        if _carried:
+            log(f'  Carried forward {_carried} last-good IM3 score(s) onto rebuilt records')
 
     def _json_safe(o):
         # NaN / Infinity are NOT valid JSON; the browser's JSON.parse rejects them.
