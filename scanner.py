@@ -56,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.21.1'  # 1.21.1: (a) drop TV-leaked preferred-share tickers (ABR/PE, GNL/PD, ...) in the prefilter — they 502 on Yahoo and inflate the financials bucket; (b) demote micro-base revenue-growth artifacts (e.g. UROY 416,400%) so they can't grab HIGH-CONVICTION. 1.21.0: US screening migration Phase 1 (TV america pre-filter narrows the universe before Yahoo; financials pass straight to Yahoo, non-financials gated on fq rev-growth + ttm fallback; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.21.2'  # 1.21.2: preserve im3_explosive_tickers from last-good data.json so the workflow's IM3 change-detection can skip re-scoring on stable days (scanner used to wipe it, forcing IM3 every run). 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter narrows the universe before Yahoo; financials pass straight to Yahoo, non-financials gated on fq rev-growth + ttm fallback; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -3366,6 +3366,13 @@ def main():
         data['etf_overlap'] = EXISTING.get('etf_overlap', {})
 
     data['meta']['warnings'] = list(WARNINGS)
+
+    # Carry the IM3 ticker list forward from the last good data.json. The scanner doesn't
+    # score IM3 (im3_score.py does, as a separate workflow step), but it must PRESERVE the
+    # prior im3_explosive_tickers so the workflow's change-detection step has a real previous
+    # list to compare against — otherwise it always reads [] here and re-scores every run.
+    if 'im3_explosive_tickers' not in data:
+        data['im3_explosive_tickers'] = EXISTING.get('im3_explosive_tickers', [])
 
     def _json_safe(o):
         # NaN / Infinity are NOT valid JSON; the browser's JSON.parse rejects them.
