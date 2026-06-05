@@ -56,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.20.0'  # PSX-specific TCE tier (conv>=2 bar) + TV Perf.3M s6-momentum fallback (closes GAL-type yfinance gaps)
+SCAN_VERSION = '1.21.0'  # US screening migration Phase 1: TradingView america pre-filter narrows the universe before Yahoo (financials pass straight to Yahoo, non-financials gated on fq rev-growth + ttm fallback); ~halves Yahoo calls, hard fallback to full Yahoo universe if TV unreachable
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -1157,6 +1157,104 @@ def fetch_us_universe():
             'AXON','ENPH','MELI','PLTR','VRT','AVGO']
 
 
+US_MAIN_EXCH = {'NASDAQ', 'NYSE', 'AMEX', 'NYSE ARCA', 'BATS', 'NYSE MKT', 'NYSEARCA'}
+_US_TV_COLS = ['name', 'market_cap_basic', 'exchange', 'sector',
+               'total_revenue_yoy_growth_fq', 'total_revenue_yoy_growth_ttm']
+
+
+def classify_us_tv_row(rec, thr):
+    """PURE. Decide whether a TradingView america row should be sent to the Yahoo screen.
+    Returns 'financial' | 'growth' | 'ttm' | 'skip'. (The named large-cap set is unioned
+    in by the caller; this only judges band names.)
+      - financial: TV cannot measure bank revenue growth -> pass straight to Yahoo (screened as today)
+      - growth:    non-financial, quarterly YoY rev-growth (fq) >= threshold (matches Yahoo MRQ)
+      - ttm:       non-financial, fq is NULL but TTM YoY >= threshold (fallback recovers NULL-fq names)
+      - skip:      OTC/foreign exch, out of band, or non-financial failing growth (Yahoo would reject too)
+    thr is the growth threshold in PERCENT (e.g. 15.0)."""
+    if (rec.get('exchange') or '') not in US_MAIN_EXCH:
+        return 'skip'
+    mc = rec.get('market_cap_basic') or 0
+    if not (US_SMALL_CAP_MIN <= mc <= US_SMALL_CAP_MAX):
+        return 'skip'
+    if 'Financ' in (rec.get('sector') or ''):
+        return 'financial'
+    fq = rec.get('total_revenue_yoy_growth_fq')
+    ttm = rec.get('total_revenue_yoy_growth_ttm')
+    if fq is not None and fq >= thr:
+        return 'growth'
+    if fq is None and ttm is not None and ttm >= thr:
+        return 'ttm'
+    return 'skip'
+
+
+def fetch_us_universe_tv():
+    """v1.21.0 Phase 1 — pre-filter the US universe on the free TradingView america scanner
+    so Yahoo only screens names that can plausibly survive. Validated 2026-06-05: the fq
+    field reproduces 96% of non-financial Yahoo survivors; financials cannot be screened on
+    TV revenue growth so they pass straight through to the Yahoo screen unchanged; the named
+    large-cap set is always included. HARD fallback to the full Yahoo universe if TV is
+    unreachable or returns nothing -> production can never break."""
+    thr = US_REV_GROWTH_MIN * 100
+
+    def _bare(s):
+        return s.split(':')[-1]
+
+    rows = []
+    try:
+        start, page, cap = 0, 500, 6000
+        while start < cap:
+            payload = {
+                "columns": _US_TV_COLS,
+                "filter": [
+                    {"left": "type", "operation": "equal", "right": "stock"},
+                    {"left": "market_cap_basic", "operation": "egreater", "right": US_SMALL_CAP_MIN},
+                ],
+                "sort": {"sortBy": "market_cap_basic", "sortOrder": "asc"},
+                "range": [start, start + page], "markets": ["america"],
+            }
+            r = requests.post("https://scanner.tradingview.com/america/scan",
+                              json=payload, headers={'User-Agent': UA}, timeout=40)
+            if r.status_code != 200:
+                warn(f'TV america prefilter HTTP {r.status_code}; falling back to Yahoo universe')
+                rows = []
+                break
+            batch = r.json().get('data', [])
+            stop = False
+            for d in batch:
+                rec = dict(zip(_US_TV_COLS, d['d']))
+                rec['ticker'] = _bare(d['s'])
+                if (rec.get('market_cap_basic') or 0) > US_SMALL_CAP_MAX:
+                    stop = True   # ascending sort -> past the band ceiling, done
+                    break
+                rows.append(rec)
+            if stop or len(batch) < page:
+                break
+            start += page
+    except Exception as e:
+        warn(f'TV america prefilter failed ({e}); falling back to Yahoo universe')
+        rows = []
+
+    if not rows:
+        warn('TV prefilter empty -> using full Yahoo universe (no change vs prior behaviour)')
+        return fetch_us_universe()
+
+    large = us_large_cap_set()
+    cands = set(large)   # named large-caps always reach the Yahoo screen (band bypass lives in screen_us_stock)
+    buckets = {'financial': 0, 'growth': 0, 'ttm': 0}
+    for rec in rows:
+        cls = classify_us_tv_row(rec, thr)
+        if cls == 'skip':
+            continue
+        cands.add(rec['ticker'])
+        buckets[cls] += 1
+    out = sorted(cands)
+    log(f'  TV prefilter: {len(rows)} band names scanned -> Yahoo screens {len(out)} '
+        f'(large-cap {len(large)} + financials {buckets["financial"]} + '
+        f'growth {buckets["growth"]} + ttm-fallback {buckets["ttm"]}); '
+        f'replaces a ~{len(rows) + len(large)}-name full-universe Yahoo screen')
+    return out
+
+
 def screen_us_stock(ticker, yf_module):
     """Screen one ticker via Yahoo info. Returns candidate dict or None."""
     try:
@@ -1211,7 +1309,7 @@ def screen_us_universe():
                 'candidates': EXISTING.get('us_candidates', []),
                 'all_survivors': EXISTING.get('us_candidates', [])}
 
-    tickers = fetch_us_universe()
+    tickers = fetch_us_universe_tv()
     total = len(tickers)
     candidates = []
 
