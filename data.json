@@ -1,14 +1,14 @@
 {
   "meta": {
     "scan_version": "1.24.0",
-    "last_scan_utc": "2026-06-06T11:57:11.594728Z",
+    "last_scan_utc": "2026-06-06T12:23:57.479902Z",
     "errors": [],
     "warnings": []
   },
   "macros": {
     "us": {
       "fed_rate": 3.75,
-      "fed_rate_date": "2026-06-05",
+      "fed_rate_date": "2026-06-06",
       "core_pce": 3.29,
       "core_pce_date": "2026-04-01",
       "cpi_yoy": 3.95,
@@ -828,6 +828,34 @@
   ],
   "tce_psx": [
     {
+      "ticker": "TRG",
+      "name": "TRG",
+      "sector": "Commercial Services",
+      "src": "screen",
+      "tce_score": 4,
+      "conviction": 2,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 1,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 5,
+        "s5_volume_ratio": 1.77,
+        "price": 71.61,
+        "s6_momentum_pct": 75.4,
+        "rs_vs_spy": -13.6,
+        "rs_ok": "False",
+        "s7_margin_spread_pct": 111.3,
+        "total": 4
+      }
+    },
+    {
       "ticker": "TPL",
       "name": "TPL",
       "sector": "Electronic Technology",
@@ -845,7 +873,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 13,
+        "s1_news_count": 15,
         "s5_volume_ratio": 0.75,
         "price": 12.2,
         "s6_momentum_pct": 89.4,
@@ -881,34 +909,6 @@
         "rs_ok": "False",
         "s7_margin_spread_pct": 17.4,
         "total": 4
-      }
-    },
-    {
-      "ticker": "TRG",
-      "name": "TRG",
-      "sector": "Commercial Services",
-      "src": "screen",
-      "tce_score": 3,
-      "conviction": 2,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 1,
-        "s6_momentum": 1,
-        "s7_margin": 1,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 2,
-        "s5_volume_ratio": 1.77,
-        "price": 71.61,
-        "s6_momentum_pct": 75.4,
-        "rs_vs_spy": -13.6,
-        "rs_ok": "False",
-        "s7_margin_spread_pct": 111.3,
-        "total": 3
       }
     },
     {
@@ -957,7 +957,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 14,
+        "s1_news_count": 15,
         "s5_volume_ratio": 1.09,
         "price": 11.56,
         "s6_momentum_pct": 36.0,
@@ -1290,7 +1290,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 1,
+        "s1_news_count": 0,
         "s5_volume_ratio": 0.25,
         "price": 364.66,
         "s6_momentum_pct": 26.5,
@@ -1539,7 +1539,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 12,
+        "s1_news_count": 17,
         "s5_volume_ratio": 0.92,
         "price": 1929.2,
         "s6_momentum_pct": 43.7,
@@ -1804,6 +1804,8 @@
             "max": 3
           }
         ],
+        "bank_coverage": null,
+        "bank_inputs": null,
         "piotroski": 7,
         "altman_z": 0.03,
         "beneish_m": 2.72,
@@ -1867,7 +1869,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 17,
+        "s1_news_count": 23,
         "s5_volume_ratio": 1.47,
         "price": 121.64,
         "s6_momentum_pct": 55.5,
@@ -1933,7 +1935,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 28,
+        "s1_news_count": 30,
         "s5_volume_ratio": 0.98,
         "price": 466.38,
         "s6_momentum_pct": 142.4,
@@ -1999,7 +2001,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 20,
+        "s1_news_count": 18,
         "s5_volume_ratio": 0.71,
         "price": 303.28,
         "s6_momentum_pct": 52.1,
@@ -2032,7 +2034,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 14,
+        "s1_news_count": 18,
         "s5_volume_ratio": 1.04,
         "price": 285.06,
         "s6_momentum_pct": 48.3,
@@ -2360,7 +2362,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 27,
+        "s1_news_count": 29,
         "s5_volume_ratio": 0.86,
         "price": 1559.3199,
         "s6_momentum_pct": 195.7,
@@ -2392,7 +2394,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 21,
+        "s1_news_count": 22,
         "s5_volume_ratio": 2.73,
         "price": 26.7,
         "s6_momentum_pct": 62.3,
@@ -2522,7 +2524,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 11,
+        "s1_news_count": 10,
         "s5_volume_ratio": 0.6,
         "price": 0.43,
         "s6_momentum_pct": -37.7,
@@ -2618,7 +2620,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 19,
+        "s1_news_count": 20,
         "s5_volume_ratio": 1.07,
         "price": 205.1,
         "s6_momentum_pct": 15.5,
@@ -2651,7 +2653,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 30,
+        "s1_news_count": 26,
         "s5_volume_ratio": 1.22,
         "price": 99.17,
         "s6_momentum_pct": 128.4,
@@ -2683,7 +2685,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 25,
+        "s1_news_count": 28,
         "s5_volume_ratio": 0.98,
         "price": 307.34,
         "s6_momentum_pct": 19.5,
@@ -2814,7 +2816,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 26,
+        "s1_news_count": 29,
         "s5_volume_ratio": 1.23,
         "price": 416.67,
         "s6_momentum_pct": 2.1,
@@ -2847,7 +2849,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 21,
+        "s1_news_count": 23,
         "s5_volume_ratio": 0.86,
         "price": 187.31,
         "s6_momentum_pct": -0.5,
@@ -3037,7 +3039,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 9,
+        "s1_news_count": 8,
         "s5_volume_ratio": 0.13,
         "price": 3.43,
         "s6_momentum_pct": -5.2,
@@ -3362,6 +3364,8 @@
             "max": 3
           }
         ],
+        "bank_coverage": null,
+        "bank_inputs": null,
         "piotroski": 4,
         "altman_z": 22.31,
         "beneish_m": 13053570481.74,
@@ -4664,6 +4668,8 @@
             "max": 3
           }
         ],
+        "bank_coverage": null,
+        "bank_inputs": null,
         "piotroski": 5,
         "altman_z": 77.9,
         "beneish_m": 8.0,
@@ -4960,6 +4966,8 @@
             "max": 3
           }
         ],
+        "bank_coverage": null,
+        "bank_inputs": null,
         "piotroski": 4,
         "altman_z": 22.31,
         "beneish_m": 13053570481.74,
@@ -5307,6 +5315,8 @@
             "max": 3
           }
         ],
+        "bank_coverage": null,
+        "bank_inputs": null,
         "piotroski": 5,
         "altman_z": -0.67,
         "beneish_m": 2.13,
@@ -5756,6 +5766,8 @@
             "max": 3
           }
         ],
+        "bank_coverage": null,
+        "bank_inputs": null,
         "piotroski": 7,
         "altman_z": 501.7,
         "beneish_m": 1.36,
@@ -6069,6 +6081,8 @@
             "max": 3
           }
         ],
+        "bank_coverage": null,
+        "bank_inputs": null,
         "piotroski": 5,
         "altman_z": 0.71,
         "beneish_m": 4.16,
@@ -9191,7 +9205,7 @@
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-06-06T12:06:56.051455Z",
+    "_fetched_utc": "2026-06-06T12:33:43.902655Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
