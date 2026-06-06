@@ -56,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.22.2'  # 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.23.0'  # 1.23.0: Wave D1 step 1 — INSTRUMENTATION ONLY (zero gating change). Added EPS-YoY-growth cols to the US TV scan and a [diag] line measuring the financial bucket's EPS-growth distribution, so a future bank-appropriate TV gate threshold is set from real data, not a guess. All ~387 financials still pass straight to Yahoo as before. (Version bump re-scrapes ETF overlap once.) 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -1171,7 +1171,12 @@ def fetch_us_universe():
 
 US_MAIN_EXCH = {'NASDAQ', 'NYSE', 'AMEX', 'NYSE ARCA', 'BATS', 'NYSE MKT', 'NYSEARCA'}
 _US_TV_COLS = ['name', 'market_cap_basic', 'exchange', 'sector',
-               'total_revenue_yoy_growth_fq', 'total_revenue_yoy_growth_ttm']
+               'total_revenue_yoy_growth_fq', 'total_revenue_yoy_growth_ttm',
+               # Wave D1 instrumentation: EPS-YoY-growth so the financial bucket
+               # (which bypasses the revenue gate) can be measured for a future
+               # bank-appropriate TV gate. Read for diagnostics only — gating unchanged.
+               'earnings_per_share_diluted_yoy_growth_fq',
+               'earnings_per_share_diluted_yoy_growth_ttm']
 
 
 def is_common_us_ticker(tk):
@@ -1209,6 +1214,28 @@ def classify_us_tv_row(rec, thr):
     if fq is None and ttm is not None and ttm >= thr:
         return 'ttm'
     return 'skip'
+
+
+def _fin_eps_diag(pairs):
+    """PURE. Wave D1 instrumentation. Given (eps_fq, eps_ttm) YoY-growth pairs for the TV
+    financial bucket, summarise the distribution so a future bank-appropriate gate threshold
+    can be chosen from real data instead of a blind guess. 'effective' growth = fq when
+    present else ttm. Returns a one-line diagnostic string. Changes NO gating. Unit-tested."""
+    n = len(pairs)
+    n_fq = sum(1 for fq, _ in pairs if fq is not None)
+    n_ttm = sum(1 for _, ttm in pairs if ttm is not None)
+    eff = [(fq if fq is not None else ttm) for fq, ttm in pairs
+           if (fq if fq is not None else ttm) is not None]
+    if not eff:
+        return (f'[diag] financials EPS-growth: {n} financials, 0 with TV EPS data '
+                f'(fq {n_fq}, ttm {n_ttm}) — TV exposes no EPS growth for this bucket')
+    s = sorted(eff)
+    mid = len(s) // 2
+    median = s[mid] if len(s) % 2 else (s[mid - 1] + s[mid]) / 2
+    p = {t: sum(1 for v in eff if v >= t) for t in (0, 5, 10, 15)}
+    return (f'[diag] financials EPS-growth: {n} financials, {len(eff)} with data '
+            f'(fq {n_fq}, ttm {n_ttm}); min {s[0]:.1f}% median {median:.1f}% max {s[-1]:.1f}%; '
+            f'pass >=0% {p[0]} | >=5% {p[5]} | >=10% {p[10]} | >=15% {p[15]}')
 
 
 def fetch_us_universe_tv():
@@ -1267,17 +1294,22 @@ def fetch_us_universe_tv():
     large = us_large_cap_set()
     cands = set(large)   # named large-caps always reach the Yahoo screen (band bypass lives in screen_us_stock)
     buckets = {'financial': 0, 'growth': 0, 'ttm': 0}
+    fin_eps_pairs = []   # D1: measure the financial bucket's EPS growth (no gating change)
     for rec in rows:
         cls = classify_us_tv_row(rec, thr)
         if cls == 'skip':
             continue
         cands.add(rec['ticker'])
         buckets[cls] += 1
+        if cls == 'financial':
+            fin_eps_pairs.append((rec.get('earnings_per_share_diluted_yoy_growth_fq'),
+                                  rec.get('earnings_per_share_diluted_yoy_growth_ttm')))
     out = sorted(cands)
     log(f'  TV prefilter: {len(rows)} band names scanned -> Yahoo screens {len(out)} '
         f'(large-cap {len(large)} + financials {buckets["financial"]} + '
         f'growth {buckets["growth"]} + ttm-fallback {buckets["ttm"]}); '
         f'replaces a ~{len(rows) + len(large)}-name full-universe Yahoo screen')
+    log('  ' + _fin_eps_diag(fin_eps_pairs))
     return out
 
 
