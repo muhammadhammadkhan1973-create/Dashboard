@@ -56,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.21.3'  # 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.22.0'  # 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -92,6 +92,7 @@ DEFAULT_DATA = {
     'tce_predictions': {},
     'explosive_psx': [], 'explosive_us': [],
     'rate_path': [],
+    'recession': {},
 }
 
 WARNINGS = []
@@ -375,79 +376,115 @@ def fetch_us_macros():
 # =============================================================
 # 2. PSX MACRO
 # =============================================================
-def fetch_kse100():
+def _kse_sane(v):
+    """Accept only index-magnitude numbers (rejects share prices and most volumes)."""
+    try:
+        v = float(v)
+        return v if KSE_MIN < v < KSE_MAX else None
+    except Exception:
+        return None
+
+
+def _kse_ts_to_date(ts):
+    try:
+        ts = float(ts)
+        if ts > 1e12:
+            ts /= 1000.0
+        return str(dt.datetime.utcfromtimestamp(ts).date())
+    except Exception:
+        return None
+
+
+def _kse_grab(text):
+    """Find the KSE-100 index value in an HTML page. Prefers a decimal number
+    (the index prints as 171651.48; share volumes are integers) to avoid
+    false-matching a volume figure that happens to sit in the index range."""
     import re
+    anchor = re.search(r'KSE\s*-?\s*100', text, re.I)
+    if not anchor:
+        return None
+    window = text[anchor.end(): anchor.end() + 400]
+    for pat in (r'[\d,]{5,}\.\d+', r'[\d,]{5,}'):   # decimal first, then integer fallback
+        for num in re.findall(pat, window):
+            v = _kse_sane(num.replace(',', ''))
+            if v is not None:
+                return round(v, 2)
+    return None
+
+
+def _kse_extract_ts(rows):
+    """Pull (value, date_str) from a dps.psx timeseries 'data' array. Pure."""
+    if not rows:
+        return None, None
+    last = rows[-1]
+    val = None
+    date_str = None
+    if isinstance(last, (list, tuple)):
+        if len(last) >= 1:
+            date_str = _kse_ts_to_date(last[0])
+        if len(last) >= 5:
+            val = _kse_sane(last[4])
+        if val is None and len(last) >= 2:
+            val = _kse_sane(last[1])
+    return (round(val, 2) if val is not None else None), date_str
+
+
+def fetch_kse100():
+    """KSE-100 index level. B1 fix (v1.22.0): the intraday timeseries (`int`) was
+    returning a frozen last-good tick (171651.48 unchanged across runs while USD/PKR
+    moved), so fresh HTML sources (market-watch, indices) are tried FIRST and the
+    stale `int` endpoint is demoted to the last numeric fallback. The chosen source
+    is logged so a stale read is visible on the run."""
     headers = {'User-Agent': UA}
     today = str(dt.date.today())
 
-    def sane(v):
+    # 1. dps.psx fresh HTML — market-watch header + indices page carry the live index level
+    for url, src in (('https://dps.psx.com.pk/market-watch', 'psx-dps:market-watch'),
+                     ('https://dps.psx.com.pk/indices', 'psx-dps:indices')):
         try:
-            v = float(v)
-            return v if KSE_MIN < v < KSE_MAX else None
-        except Exception:
-            return None
-
-    def ts_to_date(ts):
-        try:
-            ts = float(ts)
-            if ts > 1e12:
-                ts /= 1000.0
-            return str(dt.datetime.utcfromtimestamp(ts).date())
-        except Exception:
-            return None
-
-    def grab(text):
-        anchor = re.search(r'KSE\s*-?\s*100', text, re.I)
-        if not anchor:
-            return None
-        window = text[anchor.end(): anchor.end() + 400]
-        for num in re.findall(r'[\d,]{5,}(?:\.\d+)?', window):
-            v = sane(num.replace(',', ''))
-            if v is not None:
-                return round(v, 2)
-        return None
-
-    for path in ('eod', 'int'):
-        try:
-            url = f'https://dps.psx.com.pk/timeseries/{path}/KSE100'
-            r = requests.get(url, headers={**headers, 'Accept': 'application/json'},
-                             timeout=15)
+            r = requests.get(url, headers=headers, timeout=12)
             if r.status_code == 200:
-                j = r.json()
-                rows = j.get('data') if isinstance(j, dict) else j
-                if rows:
-                    last = rows[-1]
-                    val = None
-                    date_str = None
-                    if isinstance(last, (list, tuple)):
-                        if len(last) >= 1:
-                            date_str = ts_to_date(last[0])
-                        if len(last) >= 5:
-                            val = sane(last[4])
-                        if val is None and len(last) >= 2:
-                            val = sane(last[1])
-                    if val is not None:
-                        return round(val, 2), f'psx-dps:{path}', (date_str or today)
+                v = _kse_grab(r.text)
+                if v is not None:
+                    return v, src, today
         except Exception as e:
-            log(f'  · KSE-100 dps/{path} miss: {e}')
+            log(f'  · KSE-100 {src} miss: {e}')
 
+    # 2. eod timeseries — structured daily close (fresh after each session)
     try:
-        r = requests.get('https://dps.psx.com.pk/indices', headers=headers, timeout=15)
+        r = requests.get('https://dps.psx.com.pk/timeseries/eod/KSE100',
+                         headers={**headers, 'Accept': 'application/json'}, timeout=12)
         if r.status_code == 200:
-            val = grab(r.text)
-            if val is not None:
-                return val, 'psx-dps:indices', today
+            j = r.json()
+            rows = j.get('data') if isinstance(j, dict) else j
+            v, d = _kse_extract_ts(rows)
+            if v is not None:
+                return v, 'psx-dps:eod', (d or today)
     except Exception as e:
-        log(f'  · KSE-100 dps/indices miss: {e}')
+        log(f'  · KSE-100 dps/eod miss: {e}')
 
+    # 3. int timeseries — LAST resort; intraday can return a stale frozen tick when closed
+    try:
+        r = requests.get('https://dps.psx.com.pk/timeseries/int/KSE100',
+                         headers={**headers, 'Accept': 'application/json'}, timeout=12)
+        if r.status_code == 200:
+            j = r.json()
+            rows = j.get('data') if isinstance(j, dict) else j
+            v, d = _kse_extract_ts(rows)
+            if v is not None:
+                return v, 'psx-dps:int (intraday — verify fresh)', (d or today)
+    except Exception as e:
+        log(f'  · KSE-100 dps/int miss: {e}')
+
+    # 4. sarmaaya (usually robots-blocked; kept as a final attempt)
     for url in ('https://sarmaaya.pk/psx/market/KSE100',
                 'https://sarmaaya.pk/indexes/KSE100'):
         try:
-            r = requests.get(url, headers=headers, timeout=15)
+            r = requests.get(url, headers=headers, timeout=12)
             if r.status_code == 200:
-                val = grab(r.text)
-                if val is not None:
-                    return val, 'sarmaaya', today
+                v = _kse_grab(r.text)
+                if v is not None:
+                    return v, 'sarmaaya', today
         except Exception as e:
             log(f'  · KSE-100 sarmaaya miss: {e}')
 
@@ -635,7 +672,7 @@ def fetch_cot_futures():
     try:
         url = ('https://publicreporting.cftc.gov/resource/gpe5-46if.json'
                '?$order=report_date_as_yyyy_mm_dd DESC&$limit=100')
-        rows = requests.get(url, headers=headers, timeout=20).json()
+        rows = requests.get(url, headers=headers, timeout=(8, 12)).json()
         found = set()
         for rec in rows:
             name = str(rec.get('market_and_exchange_names', '')).upper()
@@ -658,7 +695,7 @@ def fetch_cot_futures():
     try:
         url = ('https://publicreporting.cftc.gov/resource/72hh-3qpy.json'
                '?$order=report_date_as_yyyy_mm_dd DESC&$limit=200')
-        rows = requests.get(url, headers=headers, timeout=20).json()
+        rows = requests.get(url, headers=headers, timeout=(8, 12)).json()
         for rec in rows:
             name = str(rec.get('market_and_exchange_names', '')).upper()
             if 'WTI-PHYSICAL' in name and 'NEW YORK' in name:
@@ -3163,6 +3200,136 @@ def fetch_rate_path():
 # =============================================================
 # MAIN
 # =============================================================
+RECESSION_SERIES = {
+    'sahm':           'SAHMREALTIME',
+    'recession_prob': 'RECPROUSM156N',
+    'yc_2y':          'T10Y2Y',
+    'yc_3m':          'T10Y3M',
+    'gdpnow':         'GDPNOW',
+    'claims':         'ICSA',
+}
+
+
+def _ff_us_events(events, limit=12):
+    """Filter the ForexFactory faireconomy weekly calendar to upcoming high/medium
+    impact US (USD) releases. Pure. No 'actual' field — FF omits it until release;
+    realized values come from FRED."""
+    out = []
+    if not isinstance(events, list):
+        return out
+    for e in events:
+        if not isinstance(e, dict):
+            continue
+        if str(e.get('country', '')).upper() != 'USD':
+            continue
+        if str(e.get('impact', '')).lower() not in ('high', 'medium'):
+            continue
+        out.append({'title': e.get('title'), 'date': e.get('date'),
+                    'impact': e.get('impact'), 'forecast': e.get('forecast'),
+                    'previous': e.get('previous')})
+    out.sort(key=lambda x: (0 if str(x.get('impact', '')).lower() == 'high' else 1,
+                            str(x.get('date') or '')))
+    return out[:limit]
+
+
+def _recession_assess(sig):
+    """Rule-based composite from the FRED signals. Pure + transparent.
+    Returns (risk_label, score_0_100, triggers)."""
+    triggers = []
+    score = 0
+
+    def _num(key):
+        v = (sig.get(key) or {}).get('value')
+        try:
+            return float(v)
+        except Exception:
+            return None
+
+    sahm = _num('sahm')
+    if sahm is not None and sahm >= 0.50:
+        triggers.append('Sahm rule triggered (>=0.50)'); score += 45
+    elif sahm is not None and sahm >= 0.30:
+        triggers.append('Sahm rising (>=0.30)'); score += 20
+
+    yc2 = _num('yc_2y'); yc3 = _num('yc_3m')
+    if (yc2 is not None and yc2 < 0) or (yc3 is not None and yc3 < 0):
+        triggers.append('Yield curve inverted'); score += 20
+
+    prob = _num('recession_prob')
+    if prob is not None:
+        if prob >= 50:
+            triggers.append('NBER-style probability high (%d%%)' % round(prob)); score += 25
+        elif prob >= 25:
+            triggers.append('Recession probability elevated (%d%%)' % round(prob)); score += 12
+
+    gdp = _num('gdpnow')
+    if gdp is not None and gdp < 0:
+        triggers.append('GDPNow negative (%.1f%%)' % gdp); score += 15
+
+    score = min(score, 100)
+    if score >= 60 or (sahm is not None and sahm >= 0.50):
+        risk = 'HIGH'
+    elif score >= 25:
+        risk = 'ELEVATED'
+    else:
+        risk = 'LOW'
+    return risk, score, triggers
+
+
+def fetch_recession():
+    """US recession watch (Wave C). FRED recession series + the ForexFactory weekly
+    economic calendar via the faireconomy export host (the FF main site is
+    Cloudflare-walled). Never raises; falls back to last-good per part."""
+    prev = EXISTING.get('recession', {}) or {}
+    out = {'signals': {}, 'calendar': prev.get('calendar', []),
+           'source': 'FRED + faireconomy',
+           '_fetched_utc': dt.datetime.utcnow().isoformat() + 'Z'}
+
+    if FRED_KEY:
+        try:
+            from fredapi import Fred
+            fred = Fred(api_key=FRED_KEY)
+            for key, sid in RECESSION_SERIES.items():
+                try:
+                    time.sleep(0.5)
+                    s = fred.get_series(sid).dropna()
+                    if len(s) > 0:
+                        out['signals'][key] = {'value': round(float(s.iloc[-1]), 2),
+                                               'date': str(s.index[-1].date())}
+                except Exception as e:
+                    warn(f'recession FRED {key} ({sid}) failed: {e}')
+                    lg = (prev.get('signals') or {}).get(key)
+                    if lg is not None:
+                        out['signals'][key] = lg
+        except Exception as e:
+            warn(f'recession FRED init failed: {e}')
+            out['signals'] = prev.get('signals', {})
+    else:
+        out['signals'] = prev.get('signals', {})
+
+    try:
+        r = requests.get('https://nfs.faireconomy.media/ff_calendar_thisweek.json',
+                         headers={'User-Agent': UA, 'Accept': 'application/json'}, timeout=12)
+        ctype = r.headers.get('Content-Type', '')
+        if r.status_code == 200 and 'json' in ctype.lower():
+            cal = _ff_us_events(r.json())
+            if cal:
+                out['calendar'] = cal
+                log(f'  ✓ Recession calendar: {len(cal)} high-impact US releases (faireconomy)')
+        else:
+            warn('FF calendar non-JSON (rate-limited?) — keeping last-good calendar')
+    except Exception as e:
+        warn(f'FF calendar failed: {e} — keeping last-good calendar')
+
+    risk, score, triggers = _recession_assess(out['signals'])
+    out['risk'] = risk
+    out['score'] = score
+    out['triggers'] = triggers
+    log(f'  ✓ Recession watch: {risk} (score {score}) — {len(out["signals"])} FRED signals, '
+        f'{len(out.get("calendar", []))} calendar events')
+    return out
+
+
 def main():
     log('=' * 60)
     log(f'Dashboard scanner v{SCAN_VERSION} starting')
@@ -3291,6 +3458,14 @@ def main():
         log(f'COT futures crashed: {e}')
         data['meta']['errors'].append(f'cot_futures: {e}')
         data['cot_futures'] = EXISTING.get('cot_futures', {})
+
+    # Wave C: US recession watch (FRED recession series + ForexFactory weekly calendar)
+    try:
+        data['recession'] = fetch_recession()
+    except Exception as e:
+        log(f'Recession watch crashed: {e}')
+        data['meta']['errors'].append(f'recession: {e}')
+        data['recession'] = EXISTING.get('recession', {})
 
     # v1.11: Zacks #1/#2 grouped by GICS sector (fixed S&P universe + this run's survivors)
     # Cadence gate: Zacks ranks update ~weekly, but the scrape costs ~17 min. Skip it if the
@@ -3434,6 +3609,9 @@ def main():
         f'{sum(1 for r in data["tce_us"] if r.get("tier") == "HIGH")}')
     log(f'  PSX TCE HIGH: '
         f'{sum(1 for r in data["tce_psx"] if r.get("tier") == "HIGH")}')
+    log(f'  Recession: {data.get("recession",{}).get("risk","—")} '
+        f'(score {data.get("recession",{}).get("score","—")}, '
+        f'{len(data.get("recession",{}).get("calendar",[]))} cal events)')
     log('=' * 60)
 
 
