@@ -482,16 +482,18 @@ def score_ticker(ticker):
         n_meas  = sum(1 for x in applicable if x['verdict'] != 'NA')
         pct     = round(total / max_s * 100, 1) if max_s else 0.0
         bank_coverage = round(n_meas / len(applicable), 2) if applicable else 0
+        max_out = max_s
     else:
         total = sum(x['pts'] for x in metrics)
         pct   = round(total/162*100, 1)
         bank_coverage = None
+        max_out = 162
     grade = 'A' if pct>=75 else 'B' if pct>=60 else 'C' if pct>=50 else 'FAIL'
 
     return {
         'ticker': ticker, 'name': info.get('longName') or info.get('shortName') or ticker,
         'sector': info.get('sector','—'), 'is_bank': is_bank, 'price': price,
-        'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics,
+        'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics, 'max': max_out,
         'bank_coverage': bank_coverage, 'bank_inputs': bank_inputs,
         'piotroski': pf, 'altman_z': round(az,2) if az else None,
         'beneish_m': round(bm,2) if bm else None,
