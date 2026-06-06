@@ -1,7 +1,7 @@
 {
   "meta": {
-    "scan_version": "1.23.0",
-    "last_scan_utc": "2026-06-06T10:53:57.776391Z",
+    "scan_version": "1.24.0",
+    "last_scan_utc": "2026-06-06T11:57:11.594728Z",
     "errors": [],
     "warnings": []
   },
@@ -173,22 +173,22 @@
     ],
     [
       "Active US universe (NASDAQ-sourced)",
-      5377,
+      5259,
       "After ETFs/funds removed"
     ],
     [
       "Small-cap zone ($300M-$2bn) PRE-FILTERED",
-      877,
+      759,
       "Market cap filter at source"
     ],
     [
       "+ Revenue Growth >15% YoY",
-      237,
+      222,
       "Yahoo revenueGrowth + insider gate"
     ],
     [
       "+ Insider Holding >5%",
-      237,
+      222,
       "Sponsor/insider commitment"
     ],
     [
@@ -828,34 +828,6 @@
   ],
   "tce_psx": [
     {
-      "ticker": "TRG",
-      "name": "TRG",
-      "sector": "Commercial Services",
-      "src": "screen",
-      "tce_score": 4,
-      "conviction": 2,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 1,
-        "s6_momentum": 1,
-        "s7_margin": 1,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 4,
-        "s5_volume_ratio": 1.77,
-        "price": 71.61,
-        "s6_momentum_pct": 75.4,
-        "rs_vs_spy": -13.6,
-        "rs_ok": "False",
-        "s7_margin_spread_pct": 111.3,
-        "total": 4
-      }
-    },
-    {
       "ticker": "TPL",
       "name": "TPL",
       "sector": "Electronic Technology",
@@ -901,7 +873,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 17,
+        "s1_news_count": 15,
         "s5_volume_ratio": 0.62,
         "price": 42.59,
         "s6_momentum_pct": 29.6,
@@ -909,6 +881,62 @@
         "rs_ok": "False",
         "s7_margin_spread_pct": 17.4,
         "total": 4
+      }
+    },
+    {
+      "ticker": "TRG",
+      "name": "TRG",
+      "sector": "Commercial Services",
+      "src": "screen",
+      "tce_score": 3,
+      "conviction": 2,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 1,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 2,
+        "s5_volume_ratio": 1.77,
+        "price": 71.61,
+        "s6_momentum_pct": 75.4,
+        "rs_vs_spy": -13.6,
+        "rs_ok": "False",
+        "s7_margin_spread_pct": 111.3,
+        "total": 3
+      }
+    },
+    {
+      "ticker": "HCAR",
+      "name": "HCAR",
+      "sector": "Consumer Durables",
+      "src": "screen",
+      "tce_score": 3,
+      "conviction": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 3,
+        "s5_volume_ratio": 3.92,
+        "price": 269.12,
+        "s6_momentum_pct": 75.7,
+        "rs_vs_spy": -12.2,
+        "rs_ok": "False",
+        "s7_margin_spread_pct": -37.3,
+        "total": 3
       }
     },
     {
@@ -929,7 +957,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 16,
+        "s1_news_count": 14,
         "s5_volume_ratio": 1.09,
         "price": 11.56,
         "s6_momentum_pct": 36.0,
@@ -1074,34 +1102,6 @@
         "rs_vs_spy": -50.2,
         "rs_ok": "False",
         "s7_margin_spread_pct": -146.7,
-        "total": 2
-      }
-    },
-    {
-      "ticker": "HCAR",
-      "name": "HCAR",
-      "sector": "Consumer Durables",
-      "src": "screen",
-      "tce_score": 2,
-      "conviction": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 1,
-        "s6_momentum": 1,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 2,
-        "s5_volume_ratio": 3.92,
-        "price": 269.12,
-        "s6_momentum_pct": 75.7,
-        "rs_vs_spy": -12.2,
-        "rs_ok": "False",
-        "s7_margin_spread_pct": -37.3,
         "total": 2
       }
     },
@@ -1443,11 +1443,11 @@
       "name": "GAL",
       "sector": "Producer Manufacturing",
       "src": "screen",
-      "tce_score": 1,
+      "tce_score": 0,
       "conviction": 0,
       "tier": "IGNORE",
       "streams": {
-        "s1_news": 1,
+        "s1_news": 0,
         "s2_sponsor": 0,
         "s3_insider": 0,
         "s5_volume": 0,
@@ -1456,12 +1456,12 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 4,
+        "s1_news_count": 2,
         "s6_momentum_pct": 15.0,
         "s6_momentum_src": "tv_perf3m",
         "rs_ok": true,
         "s7_margin_spread_pct": -26.4,
-        "total": 1
+        "total": 0
       }
     },
     {
@@ -1539,7 +1539,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 17,
+        "s1_news_count": 12,
         "s5_volume_ratio": 0.92,
         "price": 1929.2,
         "s6_momentum_pct": 43.7,
@@ -1867,7 +1867,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 20,
+        "s1_news_count": 17,
         "s5_volume_ratio": 1.47,
         "price": 121.64,
         "s6_momentum_pct": 55.5,
@@ -1966,7 +1966,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 14,
+        "s1_news_count": 18,
         "s5_volume_ratio": 1.14,
         "price": 453.01,
         "s6_momentum_pct": 39.7,
@@ -2032,7 +2032,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 18,
+        "s1_news_count": 14,
         "s5_volume_ratio": 1.04,
         "price": 285.06,
         "s6_momentum_pct": 48.3,
@@ -2360,7 +2360,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 29,
+        "s1_news_count": 27,
         "s5_volume_ratio": 0.86,
         "price": 1559.3199,
         "s6_momentum_pct": 195.7,
@@ -2683,7 +2683,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 26,
+        "s1_news_count": 25,
         "s5_volume_ratio": 0.98,
         "price": 307.34,
         "s6_momentum_pct": 19.5,
@@ -2716,7 +2716,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 27,
+        "s1_news_count": 28,
         "s5_volume_ratio": 1.02,
         "price": 593.0,
         "s6_momentum_pct": -8.0,
@@ -2814,7 +2814,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 29,
+        "s1_news_count": 26,
         "s5_volume_ratio": 1.23,
         "price": 416.67,
         "s6_momentum_pct": 2.1,
@@ -2847,7 +2847,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 20,
+        "s1_news_count": 21,
         "s5_volume_ratio": 0.86,
         "price": 187.31,
         "s6_momentum_pct": -0.5,
@@ -2880,7 +2880,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 21,
+        "s1_news_count": 20,
         "s5_volume_ratio": 0.87,
         "price": 149.92,
         "s6_momentum_pct": -0.2,
@@ -3037,7 +3037,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 8,
+        "s1_news_count": 9,
         "s5_volume_ratio": 0.13,
         "price": 3.43,
         "s6_momentum_pct": -5.2,
@@ -5041,6 +5041,285 @@
       "is_financial": true
     },
     {
+      "ticker": "AVAH",
+      "name": "Aveanna Healthcare Holdings Inc",
+      "sector": "Healthcare",
+      "rev_growth": 20.2,
+      "op_growth": 84.2,
+      "np_growth": 2159.1,
+      "eps_growth": 612.3,
+      "op_np_ratio": 25.64,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "EXPLOSIVE \u2014 both signals",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yf_stmt_im3",
+      "fidelity": "im3_screen",
+      "is_financial": false,
+      "im3": {
+        "ticker": "AVAH",
+        "name": "Aveanna Healthcare Holdings Inc.",
+        "sector": "Healthcare",
+        "is_bank": false,
+        "price": 6.68,
+        "score": 99,
+        "pct": 61.1,
+        "grade": "B",
+        "metrics": [
+          {
+            "key": "rev_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "op_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "np_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "op_margin",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "np_margin",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "tax_rate",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "int_coverage",
+            "verdict": "BAD",
+            "pts": 0,
+            "max": 2
+          },
+          {
+            "key": "de_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "total_debt",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "current_ratio",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "cfo_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "net_cash",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "ccfo_cpat",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "nfa_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "roe",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "eps_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "pe_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "peg_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "earn_yield",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "pb_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "graham_val",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "ps_ratio",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "div_yield",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "ev_ebitda",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "mos",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "val_shareholders",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "inv_turn",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "dro",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "fat",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "ccc",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 3
+          },
+          {
+            "key": "fcf_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "croic",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "fcf_sale",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "fcf_cfo",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "cash_debt",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "cash_share",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "altman_z",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "beneish_m",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "piotroski_f",
+            "verdict": "WATCH",
+            "pts": 6,
+            "max": 10
+          },
+          {
+            "key": "roic_wacc",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          }
+        ],
+        "piotroski": 5,
+        "altman_z": -0.67,
+        "beneish_m": 2.13,
+        "iv": {
+          "dcf_eps": 966.98,
+          "graham": 5.11,
+          "peter_lynch": null,
+          "composite": 486.05,
+          "mos_pct": 98.6
+        }
+      }
+    },
+    {
       "ticker": "SFST",
       "name": "Southern First Bancshares, Inc.",
       "sector": "Financial Services",
@@ -5185,6 +5464,23 @@
       "np_growth": null,
       "eps_growth": 50.5,
       "op_np_ratio": 2.89,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
+      "ticker": "BCML",
+      "name": "BayCom Corp",
+      "sector": "Financial Services",
+      "rev_growth": 15.8,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 47.0,
+      "op_np_ratio": 2.97,
       "signal_a": true,
       "signal_b": true,
       "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
@@ -5803,6 +6099,57 @@
       "is_financial": true
     },
     {
+      "ticker": "WTBA",
+      "name": "West Bancorporation",
+      "sector": "Financial Services",
+      "rev_growth": 16.6,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 32.6,
+      "op_np_ratio": 1.96,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
+      "ticker": "MS",
+      "name": "Morgan Stanley",
+      "sector": "Financial Services",
+      "rev_growth": 16.3,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 31.9,
+      "op_np_ratio": 1.96,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
+      "ticker": "JMSB",
+      "name": "John Marshall Bancorp, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 16.2,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 27.6,
+      "op_np_ratio": 1.7,
+      "signal_a": true,
+      "signal_b": true,
+      "verdict": "FINANCIAL \u2014 score via bank model (IM3 System B)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
       "ticker": "ABX",
       "name": "Abacus Global Management, Inc.",
       "sector": "Financial Services",
@@ -6330,23 +6677,6 @@
       "is_financial": false
     },
     {
-      "ticker": "PINE",
-      "name": "Alpine Income Property Trust, I",
-      "sector": "Real Estate",
-      "rev_growth": 15.9,
-      "op_growth": 50.7,
-      "np_growth": -228.6,
-      "eps_growth": -257.1,
-      "op_np_ratio": -4.51,
-      "signal_a": true,
-      "signal_b": false,
-      "verdict": "QUALITY-GROWTH (Signal A only)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yf_stmt_im3",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
       "ticker": "ATLC",
       "name": "Atlanticus Holdings Corporation",
       "sector": "Financial Services",
@@ -6670,6 +7000,23 @@
       "is_financial": true
     },
     {
+      "ticker": "UNTY",
+      "name": "Unity Bancorp, Inc.",
+      "sector": "Financial Services",
+      "rev_growth": 16.1,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 23.9,
+      "op_np_ratio": 1.48,
+      "signal_a": true,
+      "signal_b": false,
+      "verdict": "QUALITY-GROWTH (Signal A only)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
+    },
+    {
       "ticker": "CCB",
       "name": "Coastal Financial Corporation",
       "sector": "Financial Services",
@@ -6717,23 +7064,6 @@
       "verdict": "QUALITY-GROWTH (Signal A only)",
       "cash_guardrails": "na_confirm_im3",
       "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
-      "ticker": "BETR",
-      "name": "Better Home & Finance Holding C",
-      "sector": "Financial Services",
-      "rev_growth": 72.3,
-      "op_growth": 20.5,
-      "np_growth": 19.6,
-      "eps_growth": 20.9,
-      "op_np_ratio": null,
-      "signal_a": true,
-      "signal_b": null,
-      "verdict": "QUALITY-GROWTH (Signal A only)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yf_stmt_im3",
       "fidelity": "im3_screen",
       "is_financial": true
     },
@@ -6787,6 +7117,23 @@
       "growth_source": "yf_stmt_im3",
       "fidelity": "im3_screen",
       "is_financial": false
+    },
+    {
+      "ticker": "BSVN",
+      "name": "Bank7 Corp.",
+      "sector": "Financial Services",
+      "rev_growth": 15.8,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": 15.7,
+      "op_np_ratio": 0.99,
+      "signal_a": true,
+      "signal_b": false,
+      "verdict": "QUALITY-GROWTH (Signal A only)",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yahoo",
+      "fidelity": "im3_screen",
+      "is_financial": true
     },
     {
       "ticker": "PLBC",
@@ -6874,21 +7221,21 @@
       "is_financial": false
     },
     {
-      "ticker": "OPY",
-      "name": "Oppenheimer Holdings, Inc.",
-      "sector": "Financial Services",
-      "rev_growth": 14.4,
-      "op_growth": 39.2,
-      "np_growth": 107.4,
-      "eps_growth": 104.7,
-      "op_np_ratio": 2.74,
+      "ticker": "IE",
+      "name": "Ivanhoe Electric Inc.",
+      "sector": "Basic Materials",
+      "rev_growth": 11.8,
+      "op_growth": 37.3,
+      "np_growth": 17.7,
+      "eps_growth": 26.2,
+      "op_np_ratio": null,
       "signal_a": false,
-      "signal_b": true,
-      "verdict": "INFLECTION (Signal B only \u2014 verify quality)",
+      "signal_b": null,
+      "verdict": "INSUFFICIENT DATA",
       "cash_guardrails": "na_confirm_im3",
       "growth_source": "yf_stmt_im3",
       "fidelity": "im3_screen",
-      "is_financial": true
+      "is_financial": false
     },
     {
       "ticker": "NEXA",
@@ -6984,6 +7331,23 @@
       "np_growth": 53.6,
       "eps_growth": 30.4,
       "op_np_ratio": 3.21,
+      "signal_a": false,
+      "signal_b": false,
+      "verdict": "NOT EXPLOSIVE",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yf_stmt_im3",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "AMZN",
+      "name": "Amazon.com, Inc.",
+      "sector": "Consumer Cyclical",
+      "rev_growth": 12.4,
+      "op_growth": 16.6,
+      "np_growth": 31.1,
+      "eps_growth": 74.8,
+      "op_np_ratio": 1.87,
       "signal_a": false,
       "signal_b": false,
       "verdict": "NOT EXPLOSIVE",
@@ -7144,6 +7508,23 @@
       "growth_source": "yahoo",
       "fidelity": "im3_screen",
       "is_financial": true
+    },
+    {
+      "ticker": "HRMY",
+      "name": "Harmony Biosciences Holdings, I",
+      "sector": "Healthcare",
+      "rev_growth": 21.5,
+      "op_growth": 9.2,
+      "np_growth": 9.1,
+      "eps_growth": -29.5,
+      "op_np_ratio": 0.99,
+      "signal_a": false,
+      "signal_b": false,
+      "verdict": "NOT EXPLOSIVE",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yf_stmt_im3",
+      "fidelity": "im3_screen",
+      "is_financial": false
     },
     {
       "ticker": "ITRN",
@@ -7503,23 +7884,6 @@
       "is_financial": false
     },
     {
-      "ticker": "BFC",
-      "name": "Bank First Corporation",
-      "sector": "Financial Services",
-      "rev_growth": 49.1,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -2.2,
-      "op_np_ratio": -0.04,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
       "ticker": "MUX",
       "name": "McEwen Inc.",
       "sector": "Basic Materials",
@@ -7554,6 +7918,23 @@
       "is_financial": false
     },
     {
+      "ticker": "GLP",
+      "name": "Global Partners LP",
+      "sector": "Energy",
+      "rev_growth": 8.1,
+      "op_growth": -4.4,
+      "np_growth": -9.0,
+      "eps_growth": 413.9,
+      "op_np_ratio": 2.05,
+      "signal_a": false,
+      "signal_b": false,
+      "verdict": "NOT EXPLOSIVE",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yf_stmt_im3",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
       "ticker": "AIP",
       "name": "Arteris, Inc.",
       "sector": "Technology",
@@ -7571,23 +7952,6 @@
       "is_financial": false
     },
     {
-      "ticker": "EQBK",
-      "name": "Equity Bancshares, Inc.",
-      "sector": "Financial Services",
-      "rev_growth": 33.7,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -5.9,
-      "op_np_ratio": -0.18,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
       "ticker": "HYLN",
       "name": "Hyliion Holdings Corp.",
       "sector": "Consumer Cyclical",
@@ -7603,23 +7967,6 @@
       "growth_source": "yf_stmt_im3",
       "fidelity": "im3_screen",
       "is_financial": false
-    },
-    {
-      "ticker": "ONIT",
-      "name": "Onity Group Inc.",
-      "sector": "Financial Services",
-      "rev_growth": 12.4,
-      "op_growth": -6.3,
-      "np_growth": 459.0,
-      "eps_growth": -70.4,
-      "op_np_ratio": -72.86,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yf_stmt_im3",
-      "fidelity": "im3_screen",
-      "is_financial": true
     },
     {
       "ticker": "SOPH",
@@ -7688,23 +8035,6 @@
       "growth_source": "yf_stmt_im3",
       "fidelity": "im3_screen",
       "is_financial": false
-    },
-    {
-      "ticker": "VBNK",
-      "name": "VersaBank",
-      "sector": "Financial Services",
-      "rev_growth": 29.5,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -11.5,
-      "op_np_ratio": -0.39,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
     },
     {
       "ticker": "ASTH",
@@ -7962,23 +8292,6 @@
       "is_financial": false
     },
     {
-      "ticker": "NBHC",
-      "name": "National Bank Holdings Corporat",
-      "sector": "Financial Services",
-      "rev_growth": 33.7,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -27.1,
-      "op_np_ratio": -0.8,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
       "ticker": "GOLD",
       "name": "Gold.com, Inc.",
       "sector": "Financial Services",
@@ -8132,38 +8445,21 @@
       "is_financial": false
     },
     {
-      "ticker": "HBT",
-      "name": "HBT Financial, Inc.",
-      "sector": "Financial Services",
-      "rev_growth": 17.5,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -43.7,
-      "op_np_ratio": -2.5,
+      "ticker": "PBT",
+      "name": "Permian Basin Royalty Trust",
+      "sector": "Energy",
+      "rev_growth": -40.5,
+      "op_growth": -43.7,
+      "np_growth": -43.7,
+      "eps_growth": 16.6,
+      "op_np_ratio": 1.0,
       "signal_a": false,
       "signal_b": false,
       "verdict": "NOT EXPLOSIVE",
       "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
+      "growth_source": "yf_stmt_im3",
       "fidelity": "im3_screen",
-      "is_financial": true
-    },
-    {
-      "ticker": "NWFL",
-      "name": "Norwood Financial Corp.",
-      "sector": "Financial Services",
-      "rev_growth": 33.4,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -44.7,
-      "op_np_ratio": -1.34,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
+      "is_financial": false
     },
     {
       "ticker": "RNGR",
@@ -8215,23 +8511,6 @@
       "growth_source": "yf_stmt_im3",
       "fidelity": "im3_screen",
       "is_financial": false
-    },
-    {
-      "ticker": "MPB",
-      "name": "Mid Penn Bancorp",
-      "sector": "Financial Services",
-      "rev_growth": 33.3,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -49.3,
-      "op_np_ratio": -1.48,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
     },
     {
       "ticker": "SNDA",
@@ -8300,23 +8579,6 @@
       "growth_source": "yf_stmt_im3",
       "fidelity": "im3_screen",
       "is_financial": false
-    },
-    {
-      "ticker": "AII",
-      "name": "American Integrity Insurance Gr",
-      "sector": "Financial Services",
-      "rev_growth": 26.5,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": -63.4,
-      "op_np_ratio": -2.39,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yahoo",
-      "fidelity": "im3_screen",
-      "is_financial": true
     },
     {
       "ticker": "MRVI",
@@ -8929,7 +9191,7 @@
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-06-06T11:04:19.373987Z",
+    "_fetched_utc": "2026-06-06T12:06:56.051455Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
@@ -9140,8 +9402,8 @@
     "_scraped_utc": "2026-06-02T19:46:41.194806Z"
   },
   "etf_overlap": {
-    "_scraped_utc": "2026-06-06T11:04:54.007299Z",
-    "_scan_version": "1.23.0",
+    "_scraped_utc": "2026-06-06T12:07:31.979951Z",
+    "_scan_version": "1.24.0",
     "etfs_scanned": 30,
     "etfs_with_holdings": 30,
     "source_etfs": [
@@ -9828,6 +10090,7 @@
   },
   "im3_explosive_tickers": [
     "ASM",
+    "AVAH",
     "GRND",
     "KLAC",
     "PKE",
