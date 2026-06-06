@@ -1,12 +1,9 @@
 {
   "meta": {
-    "scan_version": "1.21.3",
-    "last_scan_utc": "2026-06-06T08:48:13.094041Z",
+    "scan_version": "1.22.0",
+    "last_scan_utc": "2026-06-06T09:25:15.501270Z",
     "errors": [],
-    "warnings": [
-      "COT futures (TFF) failed: HTTPSConnectionPool(host='publicreporting.cftc.gov', port=443): Max retries exceeded with url: /resource/gpe5-46if.json?$order=report_date_as_yyyy_mm_dd%20DESC&$limit=100 (Caused by ConnectTimeoutError(<HTTPSConnection(host='publicreporting.cftc.gov', port=443) at 0x7fdb9b86e990>, 'Connection to publicreporting.cftc.gov timed out. (connect timeout=20)'))",
-      "COT futures (Crude) failed: HTTPSConnectionPool(host='publicreporting.cftc.gov', port=443): Max retries exceeded with url: /resource/72hh-3qpy.json?$order=report_date_as_yyyy_mm_dd%20DESC&$limit=200 (Caused by ConnectTimeoutError(<HTTPSConnection(host='publicreporting.cftc.gov', port=443) at 0x7fdb9ba440d0>, 'Connection to publicreporting.cftc.gov timed out. (connect timeout=20)'))"
-    ]
+    "warnings": []
   },
   "macros": {
     "us": {
@@ -84,7 +81,7 @@
       "usd_pkr": 278.28,
       "sbp_reserves": 21.27,
       "kse100": 171651.48,
-      "kse100_source": "psx-dps:int",
+      "kse100_source": "psx-dps:int (intraday \u2014 verify fresh)",
       "kse100_date": "2026-06-05",
       "pak_cpi": 7.3,
       "pak_ca": 1369.0,
@@ -573,7 +570,7 @@
       "name": "Versamet Royalties Corporation",
       "sector": "Basic Materials",
       "industry": "Other Precious Metals & Mining",
-      "market_cap": 1316113664,
+      "market_cap": 1316098560,
       "market_cap_m": 1316.0,
       "price": 12.12,
       "rev_growth": 465.2,
@@ -613,8 +610,8 @@
       "name": "Gloo Holdings, Inc.",
       "sector": "Technology",
       "industry": "Software - Application",
-      "market_cap": 434286560,
-      "market_cap_m": 434.0,
+      "market_cap": 424615968,
+      "market_cap_m": 425.0,
       "price": 5.27,
       "rev_growth": 417.7,
       "eps_growth": -77.4,
@@ -876,7 +873,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 15,
+        "s1_news_count": 13,
         "s5_volume_ratio": 0.75,
         "price": 12.2,
         "s6_momentum_pct": 89.4,
@@ -904,7 +901,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 18,
+        "s1_news_count": 17,
         "s5_volume_ratio": 0.62,
         "price": 42.59,
         "s6_momentum_pct": 29.6,
@@ -932,7 +929,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 11,
+        "s1_news_count": 16,
         "s5_volume_ratio": 1.09,
         "price": 11.56,
         "s6_momentum_pct": 36.0,
@@ -1070,7 +1067,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 6,
+        "s1_news_count": 7,
         "s5_volume_ratio": 0.4,
         "price": 11.62,
         "s6_momentum_pct": 40.3,
@@ -1154,7 +1151,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 1,
+        "s1_news_count": 2,
         "s5_volume_ratio": 2.1,
         "price": 11.79,
         "s6_momentum_pct": 74.9,
@@ -1459,7 +1456,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 4,
+        "s1_news_count": 3,
         "s6_momentum_pct": 15.0,
         "s6_momentum_src": "tv_perf3m",
         "rs_ok": true,
@@ -1542,7 +1539,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 17,
+        "s1_news_count": 19,
         "s5_volume_ratio": 0.92,
         "price": 1929.2,
         "s6_momentum_pct": 43.7,
@@ -1903,7 +1900,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 29,
+        "s1_news_count": 30,
         "s5_volume_ratio": 0.98,
         "price": 466.38,
         "s6_momentum_pct": 142.4,
@@ -1936,7 +1933,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 15,
+        "s1_news_count": 18,
         "s5_volume_ratio": 1.14,
         "price": 453.01,
         "s6_momentum_pct": 39.7,
@@ -2002,7 +1999,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 14,
+        "s1_news_count": 17,
         "s5_volume_ratio": 1.04,
         "price": 285.06,
         "s6_momentum_pct": 48.3,
@@ -2330,7 +2327,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 28,
+        "s1_news_count": 29,
         "s5_volume_ratio": 0.86,
         "price": 1559.3199,
         "s6_momentum_pct": 195.7,
@@ -2378,38 +2375,6 @@
       }
     },
     {
-      "ticker": "UMAC",
-      "name": "Unusual Machines, Inc.",
-      "sector": "Technology",
-      "src": "screen",
-      "tce_score": 6,
-      "conviction": 2,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 1,
-        "s5_volume": 1,
-        "s6_momentum": 1,
-        "s7_margin": 0,
-        "s8_capital": 1,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 20,
-        "s5_volume_ratio": 2.73,
-        "price": 26.7,
-        "s6_momentum_pct": 62.3,
-        "rs_vs_spy": 132.3,
-        "rs_ok": "True",
-        "s8_capital_short_pct": 14.1,
-        "s9_eps_rev_net": 0,
-        "rev_est": 8920890.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 15,
-        "total": 6
-      }
-    },
-    {
       "ticker": "QCOM",
       "name": "QCOM",
       "sector": "",
@@ -2427,7 +2392,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 29,
+        "s1_news_count": 30,
         "s5_volume_ratio": 2.96,
         "price": 215.94,
         "s6_momentum_pct": 59.7,
@@ -2508,6 +2473,38 @@
       }
     },
     {
+      "ticker": "DVLT",
+      "name": "Datavault AI Inc.",
+      "sector": "Technology",
+      "src": "screen",
+      "tce_score": 5,
+      "conviction": 2,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 1,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 1,
+        "s10_rev_rev": 0,
+        "s1_news_count": 10,
+        "s5_volume_ratio": 0.6,
+        "price": 0.43,
+        "s6_momentum_pct": -37.7,
+        "rs_vs_spy": -80.9,
+        "rs_ok": "False",
+        "s8_capital_short_pct": 14.6,
+        "s9_eps_rev_net": 1,
+        "rev_est": 45000000.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 15,
+        "total": 5
+      }
+    },
+    {
       "ticker": "WVE",
       "name": "Wave Life Sciences Ltd.",
       "sector": "Healthcare",
@@ -2525,7 +2522,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 8,
+        "s1_news_count": 9,
         "s5_volume_ratio": 0.44,
         "price": 5.73,
         "s6_momentum_pct": -56.3,
@@ -2536,6 +2533,37 @@
         "rev_est": 7103030.0,
         "s10_rev_rev_pct": 0.0,
         "s3_insider_count": 2,
+        "total": 5
+      }
+    },
+    {
+      "ticker": "UMAC",
+      "name": "Unusual Machines, Inc.",
+      "sector": "Technology",
+      "src": "screen",
+      "tce_score": 5,
+      "conviction": 2,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 20,
+        "s5_volume_ratio": 2.73,
+        "price": 26.7,
+        "s6_momentum_pct": 62.3,
+        "rs_vs_spy": 132.3,
+        "rs_ok": "True",
+        "s8_capital_short_pct": 14.1,
+        "s9_eps_rev_net": 0,
+        "rev_est": 8920890.0,
+        "s10_rev_rev_pct": 0.0,
         "total": 5
       }
     },
@@ -2589,7 +2617,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 20,
+        "s1_news_count": 19,
         "s5_volume_ratio": 1.07,
         "price": 205.1,
         "s6_momentum_pct": 15.5,
@@ -2622,7 +2650,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 26,
+        "s1_news_count": 29,
         "s5_volume_ratio": 0.98,
         "price": 307.34,
         "s6_momentum_pct": 19.5,
@@ -2700,37 +2728,6 @@
         "s10_rev_rev_pct": 0.0,
         "s3_insider_count": 43,
         "total": 5
-      }
-    },
-    {
-      "ticker": "DVLT",
-      "name": "Datavault AI Inc.",
-      "sector": "Technology",
-      "src": "screen",
-      "tce_score": 4,
-      "conviction": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 1,
-        "s9_eps_rev": 1,
-        "s10_rev_rev": 0,
-        "s1_news_count": 10,
-        "s5_volume_ratio": 0.6,
-        "price": 0.43,
-        "s6_momentum_pct": -37.7,
-        "rs_vs_spy": -80.9,
-        "rs_ok": "False",
-        "s8_capital_short_pct": 14.6,
-        "s9_eps_rev_net": 1,
-        "rev_est": 45000000.0,
-        "s10_rev_rev_pct": 0.0,
-        "total": 4
       }
     },
     {
@@ -2849,7 +2846,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 20,
+        "s1_news_count": 24,
         "s5_volume_ratio": 0.86,
         "price": 187.31,
         "s6_momentum_pct": -0.5,
@@ -2882,7 +2879,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 18,
+        "s1_news_count": 21,
         "s5_volume_ratio": 0.87,
         "price": 149.92,
         "s6_momentum_pct": -0.2,
@@ -2990,41 +2987,9 @@
       }
     },
     {
-      "ticker": "GLOO",
-      "name": "Gloo Holdings, Inc.",
-      "sector": "Technology",
-      "src": "screen",
-      "tce_score": 2,
-      "conviction": 0,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 6,
-        "s5_volume_ratio": 0.86,
-        "price": 5.27,
-        "s6_momentum_pct": -11.4,
-        "rs_vs_spy": -39.9,
-        "rs_ok": "False",
-        "s8_capital_short_pct": 1.2,
-        "s9_eps_rev_net": 0,
-        "rev_est": 36009400.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 5,
-        "total": 2
-      }
-    },
-    {
-      "ticker": "AXG",
-      "name": "Solowin Holdings",
-      "sector": "Financial Services",
+      "ticker": "VOXR",
+      "name": "Vox Royalty Corp.",
+      "sector": "Basic Materials",
       "src": "screen",
       "tce_score": 2,
       "conviction": 0,
@@ -3040,67 +3005,6 @@
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
         "s1_news_count": 8,
-        "s5_volume_ratio": 0.13,
-        "price": 3.43,
-        "s6_momentum_pct": -5.2,
-        "rs_vs_spy": -6.1,
-        "rs_ok": "False",
-        "s8_capital_short_pct": 0.4,
-        "rev_est": 0.0,
-        "s3_insider_count": 0,
-        "total": 2
-      }
-    },
-    {
-      "ticker": "MGRT",
-      "name": "Mega Fortune Company Limited",
-      "sector": "Technology",
-      "src": "screen",
-      "tce_score": 1,
-      "conviction": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 1,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 2,
-        "s5_volume_ratio": 0.1,
-        "price": 75.12,
-        "s6_momentum_pct": 784.8,
-        "rs_vs_spy": 1269.8,
-        "rs_ok": "True",
-        "s7_margin_spread_pct": -164.5,
-        "s8_capital_short_pct": 1.5,
-        "rev_est": 0.0,
-        "s3_insider_count": 0,
-        "total": 1
-      }
-    },
-    {
-      "ticker": "VOXR",
-      "name": "Vox Royalty Corp.",
-      "sector": "Basic Materials",
-      "src": "screen",
-      "tce_score": 1,
-      "conviction": 0,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 7,
         "s5_volume_ratio": 0.58,
         "price": 5.04,
         "s6_momentum_pct": -17.8,
@@ -3110,7 +3014,7 @@
         "s9_eps_rev_net": 0,
         "rev_est": 8766670.0,
         "s10_rev_rev_pct": 0.0,
-        "total": 1
+        "total": 2
       },
       "im3": {
         "ticker": "VOXR",
@@ -3376,6 +3280,66 @@
       }
     },
     {
+      "ticker": "AXG",
+      "name": "Solowin Holdings",
+      "sector": "Financial Services",
+      "src": "screen",
+      "tce_score": 2,
+      "conviction": 0,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 8,
+        "s5_volume_ratio": 0.13,
+        "price": 3.43,
+        "s6_momentum_pct": -5.2,
+        "rs_vs_spy": -6.1,
+        "rs_ok": "False",
+        "s8_capital_short_pct": 0.4,
+        "rev_est": 0.0,
+        "s3_insider_count": 0,
+        "total": 2
+      }
+    },
+    {
+      "ticker": "MGRT",
+      "name": "Mega Fortune Company Limited",
+      "sector": "Technology",
+      "src": "screen",
+      "tce_score": 1,
+      "conviction": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 1,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 2,
+        "s5_volume_ratio": 0.1,
+        "price": 75.12,
+        "s6_momentum_pct": 784.8,
+        "rs_vs_spy": 1269.8,
+        "rs_ok": "True",
+        "s7_margin_spread_pct": -164.5,
+        "s8_capital_short_pct": 1.5,
+        "rev_est": 0.0,
+        "total": 1
+      }
+    },
+    {
       "ticker": "VMET",
       "name": "Versamet Royalties Corporation",
       "sector": "Basic Materials",
@@ -3406,6 +3370,37 @@
       }
     },
     {
+      "ticker": "GLOO",
+      "name": "Gloo Holdings, Inc.",
+      "sector": "Technology",
+      "src": "screen",
+      "tce_score": 1,
+      "conviction": 0,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 6,
+        "s5_volume_ratio": 0.86,
+        "price": 5.27,
+        "s6_momentum_pct": -11.4,
+        "rs_vs_spy": -39.9,
+        "rs_ok": "False",
+        "s8_capital_short_pct": 1.2,
+        "s9_eps_rev_net": 0,
+        "rev_est": 36009400.0,
+        "s10_rev_rev_pct": 0.0,
+        "total": 1
+      }
+    },
+    {
       "ticker": "AGCC",
       "name": "Agencia Comercial Spirits Ltd",
       "sector": "Consumer Defensive",
@@ -3423,7 +3418,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 2,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.18,
         "price": 15.07,
         "s6_momentum_pct": -16.8,
@@ -8086,23 +8081,6 @@
       "is_financial": true
     },
     {
-      "ticker": "NAT",
-      "name": "Nordic American Tankers Limited",
-      "sector": "Energy",
-      "rev_growth": -16.6,
-      "op_growth": -38.2,
-      "np_growth": -73.7,
-      "eps_growth": 990.3,
-      "op_np_ratio": 1.93,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yf_stmt_im3",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
       "ticker": "CVEO",
       "name": "Civeo Corporation (Canada)",
       "sector": "Consumer Cyclical",
@@ -8281,6 +8259,23 @@
       "np_growth": -69.2,
       "eps_growth": 316.4,
       "op_np_ratio": 1.15,
+      "signal_a": false,
+      "signal_b": false,
+      "verdict": "NOT EXPLOSIVE",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yf_stmt_im3",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "NAT",
+      "name": "Nordic American Tankers Limited",
+      "sector": "Energy",
+      "rev_growth": -16.6,
+      "op_growth": -61.6,
+      "np_growth": -73.7,
+      "eps_growth": 990.3,
+      "op_np_ratio": 1.2,
       "signal_a": false,
       "signal_b": false,
       "verdict": "NOT EXPLOSIVE",
@@ -8803,6 +8798,125 @@
       "action": "CURRENT"
     }
   ],
+  "recession": {
+    "signals": {
+      "sahm": {
+        "value": 0.1,
+        "date": "2026-05-01"
+      },
+      "recession_prob": {
+        "value": 0.44,
+        "date": "2026-04-01"
+      },
+      "yc_2y": {
+        "value": 0.38,
+        "date": "2026-06-05"
+      },
+      "yc_3m": {
+        "value": 0.77,
+        "date": "2026-06-05"
+      },
+      "gdpnow": {
+        "value": 3.02,
+        "date": "2026-04-01"
+      },
+      "claims": {
+        "value": 225000.0,
+        "date": "2026-05-30"
+      }
+    },
+    "calendar": [
+      {
+        "title": "ISM Manufacturing PMI",
+        "date": "2026-06-01T10:00:00-04:00",
+        "impact": "High",
+        "forecast": "53.3",
+        "previous": "52.7"
+      },
+      {
+        "title": "ADP Non-Farm Employment Change",
+        "date": "2026-06-03T08:15:00-04:00",
+        "impact": "High",
+        "forecast": "118K",
+        "previous": "109K"
+      },
+      {
+        "title": "ISM Services PMI",
+        "date": "2026-06-03T10:00:00-04:00",
+        "impact": "High",
+        "forecast": "53.7",
+        "previous": "53.6"
+      },
+      {
+        "title": "Average Hourly Earnings m/m",
+        "date": "2026-06-05T08:30:00-04:00",
+        "impact": "High",
+        "forecast": "0.3%",
+        "previous": "0.2%"
+      },
+      {
+        "title": "Non-Farm Employment Change",
+        "date": "2026-06-05T08:30:00-04:00",
+        "impact": "High",
+        "forecast": "85K",
+        "previous": "115K"
+      },
+      {
+        "title": "Unemployment Rate",
+        "date": "2026-06-05T08:30:00-04:00",
+        "impact": "High",
+        "forecast": "4.3%",
+        "previous": "4.3%"
+      },
+      {
+        "title": "FOMC Member Powell Speaks",
+        "date": "2026-05-31T20:30:00-04:00",
+        "impact": "Medium",
+        "forecast": "",
+        "previous": ""
+      },
+      {
+        "title": "ISM Manufacturing Prices",
+        "date": "2026-06-01T10:00:00-04:00",
+        "impact": "Medium",
+        "forecast": "85.3",
+        "previous": "84.6"
+      },
+      {
+        "title": "JOLTS Job Openings",
+        "date": "2026-06-02T10:00:00-04:00",
+        "impact": "Medium",
+        "forecast": "6.87M",
+        "previous": "6.87M"
+      },
+      {
+        "title": "Treasury Sec Bessent Speaks",
+        "date": "2026-06-03T10:00:00-04:00",
+        "impact": "Medium",
+        "forecast": "",
+        "previous": ""
+      },
+      {
+        "title": "Unemployment Claims",
+        "date": "2026-06-04T08:30:00-04:00",
+        "impact": "Medium",
+        "forecast": "214K",
+        "previous": "215K"
+      },
+      {
+        "title": "Treasury Sec Bessent Speaks",
+        "date": "2026-06-04T10:00:00-04:00",
+        "impact": "Medium",
+        "forecast": "",
+        "previous": ""
+      }
+    ],
+    "source": "FRED + faireconomy",
+    "_fetched_utc": "2026-06-06T09:36:18.037941Z",
+    "risk": "LOW",
+    "score": 0,
+    "triggers": []
+  },
   "cot_futures": {
     "NASDAQ": {
       "long": 13658,
@@ -9009,8 +9123,8 @@
     "_scraped_utc": "2026-06-02T19:46:41.194806Z"
   },
   "etf_overlap": {
-    "_scraped_utc": "2026-06-05T17:40:14.162814Z",
-    "_scan_version": "1.21.3",
+    "_scraped_utc": "2026-06-06T09:36:59.116787Z",
+    "_scan_version": "1.22.0",
     "etfs_scanned": 30,
     "etfs_with_holdings": 30,
     "source_etfs": [
@@ -9019,7 +9133,7 @@
         "name": "First Trust NASDAQ Semiconductor ETF",
         "ytd": 100.1,
         "y1": 215.4,
-        "y3": 289.6,
+        "y3": 272.7,
         "expense": 0.6
       },
       {
@@ -9027,7 +9141,7 @@
         "name": "Invesco Semiconductors ETF",
         "ytd": 94.8,
         "y1": 201.9,
-        "y3": 259.1,
+        "y3": 243.2,
         "expense": 0.56
       },
       {
@@ -9035,7 +9149,7 @@
         "name": "iShares Semiconductor ETF",
         "ytd": 90.0,
         "y1": 179.9,
-        "y3": 259.3,
+        "y3": 243.0,
         "expense": 0.34
       },
       {
@@ -9043,7 +9157,7 @@
         "name": "Invesco PHLX Semiconductor ETF",
         "ytd": 83.1,
         "y1": 173.0,
-        "y3": 273.7,
+        "y3": 257.4,
         "expense": 0.19
       },
       {
@@ -9051,7 +9165,7 @@
         "name": "SPDR S&P Semiconductor ETF",
         "ytd": 87.0,
         "y1": 172.2,
-        "y3": 190.7,
+        "y3": 178.2,
         "expense": 0.35
       },
       {
@@ -9059,7 +9173,7 @@
         "name": "Invesco AI and Next Gen Software ETF",
         "ytd": 71.3,
         "y1": 127.9,
-        "y3": 165.7,
+        "y3": 157.4,
         "expense": 0.56
       },
       {
@@ -9067,7 +9181,7 @@
         "name": "Invesco S&P SmallCap Info Technology ETF",
         "ytd": 50.8,
         "y1": 100.8,
-        "y3": 80.8,
+        "y3": 74.6,
         "expense": 0.29
       },
       {
@@ -9075,7 +9189,7 @@
         "name": "Invesco Next Gen Connectivity ETF",
         "ytd": 60.8,
         "y1": 99.2,
-        "y3": 168.6,
+        "y3": 162.8,
         "expense": 0.4
       },
       {
@@ -9083,7 +9197,7 @@
         "name": "iShares MSCI USA Value Factor ETF",
         "ytd": 47.8,
         "y1": 91.0,
-        "y3": 133.0,
+        "y3": 127.5,
         "expense": 0.15
       },
       {
@@ -9091,7 +9205,7 @@
         "name": "Invesco S&P 500 Equal Weight Technology ETF",
         "ytd": 45.9,
         "y1": 77.9,
-        "y3": 126.0,
+        "y3": 121.8,
         "expense": 0.4
       },
       {
@@ -9099,7 +9213,7 @@
         "name": "SPDR NYSE Technology ETF",
         "ytd": 35.8,
         "y1": 74.9,
-        "y3": 174.6,
+        "y3": 166.2,
         "expense": 0.35
       },
       {
@@ -9107,7 +9221,7 @@
         "name": "Technology Select Sector SPDR ETF",
         "ytd": 36.1,
         "y1": 70.2,
-        "y3": 126.1,
+        "y3": 121.9,
         "expense": 0.08
       },
       {
@@ -9115,7 +9229,7 @@
         "name": "First Trust NASDAQ-100 Technology ETF",
         "ytd": 42.7,
         "y1": 70.0,
-        "y3": 119.5,
+        "y3": 114.0,
         "expense": 0.55
       },
       {
@@ -9123,7 +9237,7 @@
         "name": "iShares U.S. Digital Infrastructure & RE ETF",
         "ytd": 53.3,
         "y1": 66.0,
-        "y3": 92.5,
+        "y3": 91.5,
         "expense": 0.39
       },
       {
@@ -9131,7 +9245,7 @@
         "name": "iShares Expanded Tech Sector ETF",
         "ytd": 31.0,
         "y1": 65.0,
-        "y3": 154.4,
+        "y3": 149.0,
         "expense": 0.39
       },
       {
@@ -9139,7 +9253,7 @@
         "name": "Fidelity MSCI Info Technology Index ETF",
         "ytd": 32.1,
         "y1": 65.0,
-        "y3": 128.9,
+        "y3": 124.4,
         "expense": 0.08
       },
       {
@@ -9147,7 +9261,7 @@
         "name": "Vanguard Information Technology ETF",
         "ytd": 31.9,
         "y1": 64.4,
-        "y3": 126.5,
+        "y3": 122.1,
         "expense": 0.09
       },
       {
@@ -9155,7 +9269,7 @@
         "name": "iShares U.S. Technology ETF",
         "ytd": 29.2,
         "y1": 63.2,
-        "y3": 136.9,
+        "y3": 132.4,
         "expense": 0.38
       },
       {
@@ -9163,7 +9277,7 @@
         "name": "Invesco Large Cap Growth ETF",
         "ytd": 27.8,
         "y1": 47.1,
-        "y3": 132.6,
+        "y3": 130.1,
         "expense": 0.55
       },
       {
@@ -9171,7 +9285,7 @@
         "name": "Vanguard Energy ETF",
         "ytd": 29.3,
         "y1": 45.1,
-        "y3": 63.5,
+        "y3": 60.9,
         "expense": 0.09
       },
       {
@@ -9179,7 +9293,7 @@
         "name": "Energy Select Sector SPDR ETF",
         "ytd": 29.0,
         "y1": 44.2,
-        "y3": 61.4,
+        "y3": 58.9,
         "expense": 0.08
       },
       {
@@ -9187,7 +9301,7 @@
         "name": "Invesco NASDAQ 100 ETF",
         "ytd": 21.0,
         "y1": 43.7,
-        "y3": 106.0,
+        "y3": 102.7,
         "expense": 0.15
       },
       {
@@ -9195,7 +9309,7 @@
         "name": "Invesco QQQ",
         "ytd": 21.0,
         "y1": 43.6,
-        "y3": 105.6,
+        "y3": 102.2,
         "expense": 0.18
       },
       {
@@ -9203,7 +9317,7 @@
         "name": "Vanguard Russell 2000 ETF",
         "ytd": 17.6,
         "y1": 42.2,
-        "y3": 65.1,
+        "y3": 59.4,
         "expense": 0.06
       },
       {
@@ -9211,7 +9325,7 @@
         "name": "Invesco S&P 500 Pure Growth ETF",
         "ytd": 30.0,
         "y1": 41.8,
-        "y3": 102.1,
+        "y3": 98.7,
         "expense": 0.35
       },
       {
@@ -9219,7 +9333,7 @@
         "name": "Inspire 100 ETF",
         "ytd": 20.9,
         "y1": 38.5,
-        "y3": 79.9,
+        "y3": 76.8,
         "expense": 0.35
       },
       {
@@ -9227,7 +9341,7 @@
         "name": "Xtrackers S&P 500 Growth ETF",
         "ytd": 10.8,
         "y1": 30.7,
-        "y3": 97.1,
+        "y3": 89.9,
         "expense": 0.15
       },
       {
@@ -9235,7 +9349,7 @@
         "name": "Vanguard Small-Cap ETF",
         "ytd": 14.0,
         "y1": 30.0,
-        "y3": 60.0,
+        "y3": 55.9,
         "expense": 0.03
       },
       {
@@ -9243,7 +9357,7 @@
         "name": "Vanguard Russell 1000 Value ETF",
         "ytd": 13.3,
         "y1": 27.9,
-        "y3": 66.3,
+        "y3": 64.2,
         "expense": 0.06
       },
       {
@@ -9251,7 +9365,7 @@
         "name": "iShares Russell 1000 Value ETF",
         "ytd": 13.3,
         "y1": 27.8,
-        "y3": 65.8,
+        "y3": 63.6,
         "expense": 0.18
       }
     ],
@@ -9259,7 +9373,7 @@
       {
         "ticker": "MU",
         "etf_count": 23,
-        "agg_weight": 157.47,
+        "agg_weight": 155.1,
         "conviction": 91.8,
         "zacks_confirmed": true,
         "in_etfs": [
@@ -9272,13 +9386,13 @@
           "KNCT",
           "PSI"
         ],
-        "alloc_pct": 12.81
+        "alloc_pct": 12.59
       },
       {
         "ticker": "NVDA",
         "etf_count": 17,
-        "agg_weight": 137.38,
-        "conviction": 67.8,
+        "agg_weight": 137.89,
+        "conviction": 68.7,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -9290,13 +9404,13 @@
           "PWB",
           "QQQ"
         ],
-        "alloc_pct": 11.17
+        "alloc_pct": 11.19
       },
       {
         "ticker": "AMD",
         "etf_count": 20,
-        "agg_weight": 89.29,
-        "conviction": 54.5,
+        "agg_weight": 87.38,
+        "conviction": 54.3,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -9308,13 +9422,31 @@
           "PSI",
           "PWB"
         ],
-        "alloc_pct": 7.26
+        "alloc_pct": 7.09
+      },
+      {
+        "ticker": "INTC",
+        "etf_count": 19,
+        "agg_weight": 70.41,
+        "conviction": 47.1,
+        "zacks_confirmed": false,
+        "in_etfs": [
+          "FTEC",
+          "FTXL",
+          "IGM",
+          "IGPT",
+          "IWD",
+          "IYW",
+          "KNCT",
+          "PSI"
+        ],
+        "alloc_pct": 5.72
       },
       {
         "ticker": "AMAT",
         "etf_count": 18,
-        "agg_weight": 43.49,
-        "conviction": 46.2,
+        "agg_weight": 45.07,
+        "conviction": 47.0,
         "zacks_confirmed": true,
         "in_etfs": [
           "FTEC",
@@ -9326,31 +9458,13 @@
           "PWB",
           "QQQ"
         ],
-        "alloc_pct": 3.54
-      },
-      {
-        "ticker": "AVGO",
-        "etf_count": 16,
-        "agg_weight": 77.58,
-        "conviction": 45.8,
-        "zacks_confirmed": false,
-        "in_etfs": [
-          "FTEC",
-          "FTXL",
-          "IGM",
-          "IYW",
-          "KNCT",
-          "PSI",
-          "PWB",
-          "QQQ"
-        ],
-        "alloc_pct": 6.31
+        "alloc_pct": 3.66
       },
       {
         "ticker": "LRCX",
         "etf_count": 17,
-        "agg_weight": 45.09,
-        "conviction": 45.6,
+        "agg_weight": 46.25,
+        "conviction": 46.2,
         "zacks_confirmed": true,
         "in_etfs": [
           "FTEC",
@@ -9362,13 +9476,13 @@
           "QQQ",
           "QQQM"
         ],
-        "alloc_pct": 3.67
+        "alloc_pct": 3.75
       },
       {
         "ticker": "AAPL",
         "etf_count": 11,
-        "agg_weight": 89.98,
-        "conviction": 44.3,
+        "agg_weight": 89.87,
+        "conviction": 44.7,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -9380,31 +9494,31 @@
           "QQQM",
           "RSPT"
         ],
-        "alloc_pct": 7.32
+        "alloc_pct": 7.3
       },
       {
-        "ticker": "INTC",
-        "etf_count": 18,
-        "agg_weight": 65.46,
-        "conviction": 43.9,
+        "ticker": "AVGO",
+        "etf_count": 15,
+        "agg_weight": 72.49,
+        "conviction": 43.2,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
           "FTXL",
           "IGM",
-          "IGPT",
-          "IWD",
           "IYW",
           "KNCT",
-          "QQQ"
+          "PWB",
+          "QQQ",
+          "QQQM"
         ],
-        "alloc_pct": 5.32
+        "alloc_pct": 5.88
       },
       {
         "ticker": "CSCO",
         "etf_count": 13,
-        "agg_weight": 36.82,
-        "conviction": 38.0,
+        "agg_weight": 36.92,
+        "conviction": 38.3,
         "zacks_confirmed": true,
         "in_etfs": [
           "FTEC",
@@ -9416,13 +9530,13 @@
           "QQQM",
           "SNPG"
         ],
-        "alloc_pct": 2.99
+        "alloc_pct": 3.0
       },
       {
         "ticker": "QCOM",
         "etf_count": 18,
-        "agg_weight": 47.85,
-        "conviction": 37.7,
+        "agg_weight": 48.0,
+        "conviction": 38.0,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -9434,31 +9548,31 @@
           "KNCT",
           "QQQ"
         ],
-        "alloc_pct": 3.89
+        "alloc_pct": 3.9
       },
       {
         "ticker": "TXN",
-        "etf_count": 14,
-        "agg_weight": 31.72,
-        "conviction": 37.4,
+        "etf_count": 13,
+        "agg_weight": 27.18,
+        "conviction": 34.8,
         "zacks_confirmed": true,
         "in_etfs": [
           "FTEC",
           "FTXL",
           "IGM",
           "IYW",
-          "PSI",
           "QQQ",
           "QQQM",
-          "QTEC"
+          "QTEC",
+          "SOXQ"
         ],
-        "alloc_pct": 2.58
+        "alloc_pct": 2.21
       },
       {
         "ticker": "MRVL",
         "etf_count": 13,
-        "agg_weight": 51.45,
-        "conviction": 33.1,
+        "agg_weight": 52.16,
+        "conviction": 33.7,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -9470,13 +9584,13 @@
           "QQQM",
           "QTEC"
         ],
-        "alloc_pct": 4.18
+        "alloc_pct": 4.23
       },
       {
         "ticker": "KLAC",
         "etf_count": 17,
-        "agg_weight": 37.76,
-        "conviction": 33.0,
+        "agg_weight": 38.93,
+        "conviction": 33.6,
         "zacks_confirmed": false,
         "in_etfs": [
           "BIBL",
@@ -9488,13 +9602,13 @@
           "PWB",
           "QQQ"
         ],
-        "alloc_pct": 3.07
+        "alloc_pct": 3.16
       },
       {
         "ticker": "MSFT",
         "etf_count": 9,
-        "agg_weight": 58.16,
-        "conviction": 30.8,
+        "agg_weight": 57.88,
+        "conviction": 31.0,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -9506,13 +9620,13 @@
           "VGT",
           "XLK"
         ],
-        "alloc_pct": 4.73
+        "alloc_pct": 4.7
       },
       {
         "ticker": "CVX",
         "etf_count": 4,
         "agg_weight": 32.79,
-        "conviction": 26.1,
+        "conviction": 26.3,
         "zacks_confirmed": true,
         "in_etfs": [
           "IWD",
@@ -9520,13 +9634,13 @@
           "VONV",
           "XLE"
         ],
-        "alloc_pct": 2.67
+        "alloc_pct": 2.66
       },
       {
         "ticker": "GOOGL",
         "etf_count": 10,
-        "agg_weight": 39.92,
-        "conviction": 25.6,
+        "agg_weight": 40.02,
+        "conviction": 25.9,
         "zacks_confirmed": false,
         "in_etfs": [
           "IGM",
@@ -9544,7 +9658,7 @@
         "ticker": "XOM",
         "etf_count": 4,
         "agg_weight": 47.02,
-        "conviction": 21.1,
+        "conviction": 21.3,
         "zacks_confirmed": false,
         "in_etfs": [
           "IWD",
@@ -9557,8 +9671,8 @@
       {
         "ticker": "SNDK",
         "etf_count": 11,
-        "agg_weight": 22.0,
-        "conviction": 20.5,
+        "agg_weight": 22.17,
+        "conviction": 20.7,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -9570,13 +9684,13 @@
           "QQQM",
           "QTEC"
         ],
-        "alloc_pct": 1.79
+        "alloc_pct": 1.8
       },
       {
         "ticker": "META",
         "etf_count": 9,
-        "agg_weight": 23.86,
-        "conviction": 18.8,
+        "agg_weight": 24.17,
+        "conviction": 19.1,
         "zacks_confirmed": false,
         "in_etfs": [
           "IGM",
@@ -9588,13 +9702,31 @@
           "QQQM",
           "VONV"
         ],
-        "alloc_pct": 1.94
+        "alloc_pct": 1.96
+      },
+      {
+        "ticker": "ADI",
+        "etf_count": 10,
+        "agg_weight": 20.77,
+        "conviction": 19.0,
+        "zacks_confirmed": false,
+        "in_etfs": [
+          "FTEC",
+          "FTXL",
+          "IGM",
+          "IYW",
+          "PSI",
+          "QTEC",
+          "SOXQ",
+          "SOXX"
+        ],
+        "alloc_pct": 1.69
       },
       {
         "ticker": "MPWR",
         "etf_count": 9,
-        "agg_weight": 20.47,
-        "conviction": 17.6,
+        "agg_weight": 21.01,
+        "conviction": 18.0,
         "zacks_confirmed": false,
         "in_etfs": [
           "BIBL",
@@ -9606,13 +9738,13 @@
           "SOXQ",
           "SOXX"
         ],
-        "alloc_pct": 1.66
+        "alloc_pct": 1.71
       },
       {
         "ticker": "APH",
         "etf_count": 10,
-        "agg_weight": 16.3,
-        "conviction": 17.4,
+        "agg_weight": 16.31,
+        "conviction": 17.5,
         "zacks_confirmed": false,
         "in_etfs": [
           "BIBL",
@@ -9624,12 +9756,12 @@
           "RSPT",
           "VGT"
         ],
-        "alloc_pct": 1.33
+        "alloc_pct": 1.32
       },
       {
         "ticker": "ANET",
         "etf_count": 9,
-        "agg_weight": 19.04,
+        "agg_weight": 18.93,
         "conviction": 17.2,
         "zacks_confirmed": false,
         "in_etfs": [
@@ -9642,13 +9774,13 @@
           "VGT",
           "XLK"
         ],
-        "alloc_pct": 1.55
+        "alloc_pct": 1.54
       },
       {
         "ticker": "KMI",
         "etf_count": 3,
         "agg_weight": 7.49,
-        "conviction": 16.1,
+        "conviction": 16.2,
         "zacks_confirmed": true,
         "in_etfs": [
           "BIBL",
@@ -9660,8 +9792,8 @@
       {
         "ticker": "PLTR",
         "etf_count": 9,
-        "agg_weight": 15.84,
-        "conviction": 16.0,
+        "agg_weight": 15.66,
+        "conviction": 16.1,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -9673,25 +9805,7 @@
           "RSPT",
           "VGT"
         ],
-        "alloc_pct": 1.29
-      },
-      {
-        "ticker": "ADI",
-        "etf_count": 9,
-        "agg_weight": 15.49,
-        "conviction": 15.9,
-        "zacks_confirmed": false,
-        "in_etfs": [
-          "FTEC",
-          "FTXL",
-          "IGM",
-          "IYW",
-          "QTEC",
-          "SOXQ",
-          "SOXX",
-          "VGT"
-        ],
-        "alloc_pct": 1.26
+        "alloc_pct": 1.27
       }
     ]
   },
