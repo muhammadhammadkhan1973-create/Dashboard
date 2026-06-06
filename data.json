@@ -1,7 +1,7 @@
 {
   "meta": {
     "scan_version": "1.24.0",
-    "last_scan_utc": "2026-06-06T15:20:43.755609Z",
+    "last_scan_utc": "2026-06-06T15:48:22.937094Z",
     "errors": [],
     "warnings": []
   },
@@ -173,12 +173,12 @@
     ],
     [
       "Active US universe (NASDAQ-sourced)",
-      5260,
+      5259,
       "After ETFs/funds removed"
     ],
     [
       "Small-cap zone ($300M-$2bn) PRE-FILTERED",
-      760,
+      759,
       "Market cap filter at source"
     ],
     [
@@ -845,7 +845,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 15,
+        "s1_news_count": 12,
         "s5_volume_ratio": 0.75,
         "price": 12.2,
         "s6_momentum_pct": 89.4,
@@ -929,7 +929,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 16,
+        "s1_news_count": 15,
         "s5_volume_ratio": 1.09,
         "price": 11.56,
         "s6_momentum_pct": 36.0,
@@ -1123,7 +1123,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 3,
+        "s1_news_count": 4,
         "s5_volume_ratio": 0.29,
         "price": 144.23,
         "s6_momentum_pct": 7.5,
@@ -1290,7 +1290,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.25,
         "price": 364.66,
         "s6_momentum_pct": 26.5,
@@ -1539,7 +1539,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 18,
+        "s1_news_count": 17,
         "s5_volume_ratio": 0.92,
         "price": 1929.2,
         "s6_momentum_pct": 43.7,
@@ -1804,6 +1804,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 7,
@@ -1869,7 +1870,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 23,
+        "s1_news_count": 22,
         "s5_volume_ratio": 1.47,
         "price": 121.64,
         "s6_momentum_pct": 55.5,
@@ -1902,7 +1903,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 16,
+        "s1_news_count": 15,
         "s5_volume_ratio": 1.41,
         "price": 401.39,
         "s6_momentum_pct": 27.4,
@@ -1968,7 +1969,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 17,
+        "s1_news_count": 16,
         "s5_volume_ratio": 1.14,
         "price": 453.01,
         "s6_momentum_pct": 39.7,
@@ -2034,7 +2035,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 18,
+        "s1_news_count": 13,
         "s5_volume_ratio": 1.04,
         "price": 285.06,
         "s6_momentum_pct": 48.3,
@@ -2394,7 +2395,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 22,
+        "s1_news_count": 21,
         "s5_volume_ratio": 2.73,
         "price": 26.7,
         "s6_momentum_pct": 62.3,
@@ -2426,7 +2427,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 29,
+        "s1_news_count": 30,
         "s5_volume_ratio": 2.96,
         "price": 215.94,
         "s6_momentum_pct": 59.7,
@@ -2492,7 +2493,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 6,
+        "s1_news_count": 5,
         "s5_volume_ratio": 6.91,
         "price": 6.9,
         "s6_momentum_pct": 245.0,
@@ -2524,7 +2525,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 8,
+        "s1_news_count": 10,
         "s5_volume_ratio": 0.6,
         "price": 0.43,
         "s6_momentum_pct": -37.7,
@@ -2636,6 +2637,38 @@
       }
     },
     {
+      "ticker": "INTC",
+      "name": "INTC",
+      "sector": "",
+      "src": "etf",
+      "tce_score": 5,
+      "conviction": 2,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 1,
+        "s5_volume": 0,
+        "s6_momentum": 1,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 1,
+        "s10_rev_rev": 0,
+        "s1_news_count": 27,
+        "s5_volume_ratio": 1.22,
+        "price": 99.17,
+        "s6_momentum_pct": 128.4,
+        "rs_vs_spy": 137.6,
+        "rs_ok": "True",
+        "s8_capital_short_pct": 2.8,
+        "s9_eps_rev_net": 31,
+        "rev_est": 14404009660.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 26,
+        "total": 5
+      }
+    },
+    {
       "ticker": "AAPL",
       "name": "AAPL",
       "sector": "",
@@ -2653,7 +2686,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 28,
+        "s1_news_count": 24,
         "s5_volume_ratio": 0.98,
         "price": 307.34,
         "s6_momentum_pct": 19.5,
@@ -2686,7 +2719,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 27,
+        "s1_news_count": 28,
         "s5_volume_ratio": 1.02,
         "price": 593.0,
         "s6_momentum_pct": -8.0,
@@ -2784,7 +2817,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 28,
+        "s1_news_count": 24,
         "s5_volume_ratio": 1.23,
         "price": 416.67,
         "s6_momentum_pct": 2.1,
@@ -2850,7 +2883,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 17,
+        "s1_news_count": 16,
         "s5_volume_ratio": 0.87,
         "price": 149.92,
         "s6_momentum_pct": -0.2,
@@ -2863,38 +2896,6 @@
         "s10_rev_rev_pct": 0.0,
         "s3_insider_count": 2,
         "total": 4
-      }
-    },
-    {
-      "ticker": "INTC",
-      "name": "INTC",
-      "sector": "",
-      "src": "etf",
-      "tce_score": 3,
-      "conviction": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s5_volume": 0,
-        "s6_momentum": 1,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 1,
-        "s10_rev_rev": 0,
-        "s1_news_count": 0,
-        "s5_volume_ratio": 1.22,
-        "price": 99.17,
-        "s6_momentum_pct": 128.4,
-        "rs_vs_spy": 137.6,
-        "rs_ok": "True",
-        "s8_capital_short_pct": 2.8,
-        "s9_eps_rev_net": 31,
-        "rev_est": 14404009660.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 26,
-        "total": 3
       }
     },
     {
@@ -3007,7 +3008,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 6,
+        "s1_news_count": 7,
         "s5_volume_ratio": 0.86,
         "price": 5.27,
         "s6_momentum_pct": -11.4,
@@ -3018,6 +3019,36 @@
         "rev_est": 36009400.0,
         "s10_rev_rev_pct": 0.0,
         "s3_insider_count": 5,
+        "total": 2
+      }
+    },
+    {
+      "ticker": "AXG",
+      "name": "Solowin Holdings",
+      "sector": "Financial Services",
+      "src": "screen",
+      "tce_score": 2,
+      "conviction": 0,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 8,
+        "s5_volume_ratio": 0.13,
+        "price": 3.43,
+        "s6_momentum_pct": -5.2,
+        "rs_vs_spy": -6.1,
+        "rs_ok": "False",
+        "s8_capital_short_pct": 0.4,
+        "rev_est": 0.0,
+        "s3_insider_count": 0,
         "total": 2
       }
     },
@@ -3334,6 +3365,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 4,
@@ -3379,36 +3411,6 @@
       }
     },
     {
-      "ticker": "AXG",
-      "name": "Solowin Holdings",
-      "sector": "Financial Services",
-      "src": "screen",
-      "tce_score": 1,
-      "conviction": 0,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 6,
-        "s5_volume_ratio": 0.13,
-        "price": 3.43,
-        "s6_momentum_pct": -5.2,
-        "rs_vs_spy": -6.1,
-        "rs_ok": "False",
-        "s8_capital_short_pct": 0.4,
-        "rev_est": 0.0,
-        "s3_insider_count": 0,
-        "total": 1
-      }
-    },
-    {
       "ticker": "AGCC",
       "name": "Agencia Comercial Spirits Ltd",
       "sector": "Consumer Defensive",
@@ -3426,7 +3428,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 2,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.18,
         "price": 15.07,
         "s6_momentum_pct": -16.8,
@@ -4630,6 +4632,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 269887000.0,
@@ -4949,6 +4952,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 112282000.0,
@@ -5238,6 +5242,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 6,
@@ -5549,6 +5554,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 448358000.0,
@@ -5838,6 +5844,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 5,
@@ -6149,6 +6156,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 133164000.0,
@@ -6438,6 +6446,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 4,
@@ -6749,6 +6758,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 56734000.0,
@@ -7068,6 +7078,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 303235000.0,
@@ -7387,6 +7398,7 @@
             "max": 4
           }
         ],
+        "max": 44,
         "bank_coverage": 0.61,
         "bank_inputs": {
           "nii": 132438000.0,
@@ -7706,6 +7718,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 200910000.0,
@@ -7995,6 +8008,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 5,
@@ -8306,6 +8320,7 @@
             "max": 4
           }
         ],
+        "max": 44,
         "bank_coverage": 0.61,
         "bank_inputs": {
           "nii": 104951000.0,
@@ -8625,6 +8640,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 106037000.0,
@@ -8944,6 +8960,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 172499000.0,
@@ -9233,6 +9250,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 6,
@@ -9544,6 +9562,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 98935000.0,
@@ -9863,6 +9882,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 187373000.0,
@@ -10182,6 +10202,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 134238000.0,
@@ -10501,6 +10522,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 87157000.0,
@@ -10820,6 +10842,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 134943000.0,
@@ -11139,6 +11162,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 92889000.0,
@@ -11428,6 +11452,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 7,
@@ -11739,6 +11764,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 151905000.0,
@@ -12058,6 +12084,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 103878000.0,
@@ -12347,6 +12374,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 5,
@@ -12628,6 +12656,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 6,
@@ -12939,6 +12968,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 88981000.0,
@@ -13228,6 +13258,7 @@
             "max": 3
           }
         ],
+        "max": 162,
         "bank_coverage": null,
         "bank_inputs": null,
         "piotroski": 3,
@@ -13539,6 +13570,7 @@
             "max": 4
           }
         ],
+        "max": 49,
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": 60080000.0,
@@ -16603,7 +16635,7 @@
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-06-06T15:31:44.610153Z",
+    "_fetched_utc": "2026-06-06T15:58:17.113502Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
