@@ -9,10 +9,6 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: dashboard-scan        # only one scan run at a time; queued runs wait, none cancelled
-  cancel-in-progress: false
-
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -29,7 +25,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests yfinance pandas feedparser python-dateutil fredapi openpyxl
+          pip install requests yfinance pandas feedparser python-dateutil fredapi
 
       - name: Run scanner
         env:
@@ -63,10 +59,31 @@ jobs:
           # Read previous list (stored in data.json from last run)
           prev_tickers = sorted(data.get('im3_explosive_tickers', []))
 
-          changed = new_tickers != prev_tickers
-          print(f"Previous: {prev_tickers}")
-          print(f"New:      {new_tickers}")
-          print(f"Changed:  {changed}")
+          names_changed = new_tickers != prev_tickers
+
+          # Self-heal: also re-score if any current explosive / TCE-HIGH ticker
+          # is MISSING its im3 score (e.g. after a data.json state loss / restore).
+          def _has_im3(records, tk):
+              for r in records:
+                  if r.get('ticker') == tk:
+                      v = r.get('im3')
+                      return isinstance(v, dict) and len(v) > 0
+              return False
+
+          ex_recs  = data.get('explosive_us', [])
+          tce_recs = data.get('tce_us', [])
+          missing_im3 = [
+              t for t in new_tickers
+              if not (_has_im3(ex_recs, t) or _has_im3(tce_recs, t))
+          ]
+          needs_heal = bool(missing_im3)
+
+          changed = names_changed or needs_heal
+          print(f"Previous:      {prev_tickers}")
+          print(f"New:           {new_tickers}")
+          print(f"Names changed: {names_changed}")
+          print(f"Missing im3:   {missing_im3}")
+          print(f"Changed:       {changed}")
 
           # Write output for next step
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
@@ -178,15 +195,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          cp data.json /tmp/scan-data.json          # our fresh scan output (incl. IM3 scores)
-          for i in 1 2 3 4 5; do
-            git fetch origin main
-            git reset --hard origin/main             # re-base onto the latest main
-            cp /tmp/scan-data.json data.json         # our data.json always wins (only the bot writes it)
-            git add data.json
-            git diff --quiet --cached && { echo "data.json unchanged vs latest main"; exit 0; }
-            git commit -m "Scan run"
-            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
-            echo "push race lost, retrying ($i/5)"; sleep $((RANDOM % 5 + 3))
-          done
-          echo "push failed after 5 attempts"; exit 1
+          git add data.json
+          git diff --quiet --cached || git commit -m "Scan run"
+          git push
