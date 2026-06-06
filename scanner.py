@@ -56,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.22.0'  # 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.22.1'  # 1.22.1: KSE-100 diagnostics ([diag] lines for market-watch/indices/eod/int) to pin down the live index source from a real run — v1.22.0 fell through to stale int. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -429,6 +429,28 @@ def _kse_extract_ts(rows):
     return (round(val, 2) if val is not None else None), date_str
 
 
+def _kse_diag_html(src, r):
+    """One-line visibility into what a dps.psx HTML source actually returns, so the
+    parser can be fixed from a real run instead of guessed. Never raises."""
+    try:
+        import re
+        body = r.text or ''
+        m = re.search(r'KSE\s*-?\s*100', body, re.I)
+        snip = body[max(0, m.start() - 20): m.start() + 140].replace('\n', ' ') if m else '(no KSE-100 anchor)'
+        log(f'  · [diag] KSE {src}: HTTP {r.status_code} len {len(body)} grab={_kse_grab(body)} snip={snip!r}')
+    except Exception as e:
+        log(f'  · [diag] KSE {src}: diag failed {e}')
+
+
+def _kse_diag_ts(src, r, rows):
+    try:
+        n = len(rows) if isinstance(rows, list) else 'n/a'
+        last = rows[-1] if isinstance(rows, list) and rows else None
+        log(f'  · [diag] KSE {src}: HTTP {r.status_code} rows={n} last={last}')
+    except Exception as e:
+        log(f'  · [diag] KSE {src}: diag failed {e}')
+
+
 def fetch_kse100():
     """KSE-100 index level. B1 fix (v1.22.0): the intraday timeseries (`int`) was
     returning a frozen last-good tick (171651.48 unchanged across runs while USD/PKR
@@ -443,6 +465,7 @@ def fetch_kse100():
                      ('https://dps.psx.com.pk/indices', 'psx-dps:indices')):
         try:
             r = requests.get(url, headers=headers, timeout=12)
+            _kse_diag_html(src, r)
             if r.status_code == 200:
                 v = _kse_grab(r.text)
                 if v is not None:
@@ -457,6 +480,7 @@ def fetch_kse100():
         if r.status_code == 200:
             j = r.json()
             rows = j.get('data') if isinstance(j, dict) else j
+            _kse_diag_ts('eod', r, rows)
             v, d = _kse_extract_ts(rows)
             if v is not None:
                 return v, 'psx-dps:eod', (d or today)
@@ -470,6 +494,7 @@ def fetch_kse100():
         if r.status_code == 200:
             j = r.json()
             rows = j.get('data') if isinstance(j, dict) else j
+            _kse_diag_ts('int', r, rows)
             v, d = _kse_extract_ts(rows)
             if v is not None:
                 return v, 'psx-dps:int (intraday — verify fresh)', (d or today)
