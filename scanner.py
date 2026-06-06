@@ -56,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.23.0'  # 1.23.0: Wave D1 step 1 — INSTRUMENTATION ONLY (zero gating change). Added EPS-YoY-growth cols to the US TV scan and a [diag] line measuring the financial bucket's EPS-growth distribution, so a future bank-appropriate TV gate threshold is set from real data, not a guess. All ~387 financials still pass straight to Yahoo as before. (Version bump re-scrapes ETF overlap once.) 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.24.0'  # 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -1176,7 +1176,12 @@ _US_TV_COLS = ['name', 'market_cap_basic', 'exchange', 'sector',
                # (which bypasses the revenue gate) can be measured for a future
                # bank-appropriate TV gate. Read for diagnostics only — gating unchanged.
                'earnings_per_share_diluted_yoy_growth_fq',
-               'earnings_per_share_diluted_yoy_growth_ttm']
+               'earnings_per_share_diluted_yoy_growth_ttm',
+               # Wave D1 step 2: ROE is the bank-appropriate quality gate (canonical
+               # Sarmaaya framework: ROE is the lead stability factor). Instrumented this
+               # run (distribution + coverage); becomes the primary financial gate once
+               # TV coverage/units are confirmed on a live run.
+               'return_on_equity']
 
 
 def is_common_us_ticker(tk):
@@ -1206,6 +1211,17 @@ def classify_us_tv_row(rec, thr):
     if not (US_SMALL_CAP_MIN <= mc <= US_SMALL_CAP_MAX):
         return 'skip'
     if 'Financ' in (rec.get('sector') or ''):
+        # Wave D1 step 2 gate. Banks are screened on a bank-appropriate metric, not
+        # revenue growth (meaningless for a spread/credit business). Active gate this
+        # run: drop only clearly-DETERIORATING banks (EPS YoY < 0); banks with no TV EPS
+        # data pass straight through (never drop a bank for a missing vendor field).
+        # ROE — the canonical lead quality metric — is instrumented this run and becomes
+        # the primary gate next run once coverage/units are confirmed (see _fin_roe_diag).
+        fq  = rec.get('earnings_per_share_diluted_yoy_growth_fq')
+        ttm = rec.get('earnings_per_share_diluted_yoy_growth_ttm')
+        eps = fq if fq is not None else ttm
+        if eps is not None and eps < 0:
+            return 'skip'
         return 'financial'
     fq = rec.get('total_revenue_yoy_growth_fq')
     ttm = rec.get('total_revenue_yoy_growth_ttm')
@@ -1236,6 +1252,35 @@ def _fin_eps_diag(pairs):
     return (f'[diag] financials EPS-growth: {n} financials, {len(eff)} with data '
             f'(fq {n_fq}, ttm {n_ttm}); min {s[0]:.1f}% median {median:.1f}% max {s[-1]:.1f}%; '
             f'pass >=0% {p[0]} | >=5% {p[5]} | >=10% {p[10]} | >=15% {p[15]}')
+
+
+def _roe_pct(roe):
+    """PURE. Normalise a TradingView ROE value to PERCENT. TV may return either a percent
+    (e.g. 12.5) or a fraction (0.125); a bank ROE is ~5-25%, so |v|<=1.5 is treated as a
+    fraction and scaled x100. Guards the gate against silently dropping every bank if TV
+    returns fractions. Returns None for None."""
+    if roe is None:
+        return None
+    return roe * 100 if abs(roe) <= 1.5 else roe
+
+
+def _fin_roe_diag(values):
+    """PURE. Wave D1 step 2 instrumentation. Given TV ROE values for the financial bucket,
+    summarise the distribution and coverage so the ROE gate threshold (and unit handling)
+    can be confirmed from real data before ROE becomes the primary gate. Unit-normalised
+    via _roe_pct. Changes NO gating this run. Unit-tested."""
+    n = len(values)
+    pct = [_roe_pct(v) for v in values if v is not None]
+    if not pct:
+        return (f'[diag] financials ROE: {n} financials, 0 with TV ROE data '
+                f'— ROE gate stays deferred; EPS gate remains active')
+    s = sorted(pct)
+    mid = len(s) // 2
+    median = s[mid] if len(s) % 2 else (s[mid - 1] + s[mid]) / 2
+    p = {t: sum(1 for v in pct if v >= t) for t in (8, 10, 12, 15, 20)}
+    return (f'[diag] financials ROE: {n} financials, {len(pct)} with data; '
+            f'min {s[0]:.1f}% median {median:.1f}% max {s[-1]:.1f}%; '
+            f'pass >=8% {p[8]} | >=10% {p[10]} | >=12% {p[12]} | >=15% {p[15]} | >=20% {p[20]}')
 
 
 def fetch_us_universe_tv():
@@ -1294,22 +1339,35 @@ def fetch_us_universe_tv():
     large = us_large_cap_set()
     cands = set(large)   # named large-caps always reach the Yahoo screen (band bypass lives in screen_us_stock)
     buckets = {'financial': 0, 'growth': 0, 'ttm': 0}
-    fin_eps_pairs = []   # D1: measure the financial bucket's EPS growth (no gating change)
+    fin_eps_pairs = []   # D1: financial bucket EPS-growth (in-band financials, pre-gate)
+    fin_roe_vals  = []   # D1 step 2: financial bucket ROE (for the ROE-gate decision)
+    fin_dropped   = 0    # financials the EPS>=0 gate drops
     for rec in rows:
+        is_fin = ('Financ' in (rec.get('sector') or '')
+                  and (rec.get('exchange') or '') in US_MAIN_EXCH
+                  and US_SMALL_CAP_MIN <= (rec.get('market_cap_basic') or 0) <= US_SMALL_CAP_MAX)
+        if is_fin:
+            fq  = rec.get('earnings_per_share_diluted_yoy_growth_fq')
+            ttm = rec.get('earnings_per_share_diluted_yoy_growth_ttm')
+            fin_eps_pairs.append((fq, ttm))
+            fin_roe_vals.append(rec.get('return_on_equity'))
+            _eps = fq if fq is not None else ttm
+            if _eps is not None and _eps < 0:
+                fin_dropped += 1
         cls = classify_us_tv_row(rec, thr)
         if cls == 'skip':
             continue
         cands.add(rec['ticker'])
         buckets[cls] += 1
-        if cls == 'financial':
-            fin_eps_pairs.append((rec.get('earnings_per_share_diluted_yoy_growth_fq'),
-                                  rec.get('earnings_per_share_diluted_yoy_growth_ttm')))
     out = sorted(cands)
     log(f'  TV prefilter: {len(rows)} band names scanned -> Yahoo screens {len(out)} '
         f'(large-cap {len(large)} + financials {buckets["financial"]} + '
         f'growth {buckets["growth"]} + ttm-fallback {buckets["ttm"]}); '
         f'replaces a ~{len(rows) + len(large)}-name full-universe Yahoo screen')
+    log(f'  D1 EPS gate: {len(fin_eps_pairs)} in-band financials -> dropped {fin_dropped} (EPS<0) '
+        f'-> {buckets["financial"]} to Yahoo')
     log('  ' + _fin_eps_diag(fin_eps_pairs))
+    log('  ' + _fin_roe_diag(fin_roe_vals))
     return out
 
 
@@ -2204,20 +2262,43 @@ IM3_WEIGHTS = {
     'roic_wacc':      3,  'total_debt':      3,  'cash_share':     5,
     'cash_debt':      5,
 }
-# Bank replacement weights (same total 162 — 22 pts removed, 22 pts bank metrics)
+# Bank replacement weights. Canonical Sarmaaya "Financial Analysis of a Bank" (Week 6)
+# framework + Banking_IG_Architecture: banks are scored ONLY on bank-applicable factors.
+# Everything industrial is zeroed so it counts in neither score nor denominator.
 IM3_BANK_WEIGHTS = {k: v for k, v in IM3_WEIGHTS.items()}
-# Remove N/A metrics for banks
-for _bk in ('int_coverage', 'current_ratio', 'inv_turn', 'dro', 'fat', 'ccc'):
+# Zero metrics that DO NOT apply to a leveraged spread/credit business:
+#   - inventory/coverage/working-capital (industrial ops): int_coverage, current_ratio,
+#     inv_turn, dro, fat, ccc, nfa_turn
+#   - leverage ratios (a bank is leveraged 10-15x BY DESIGN): de_ratio, total_debt
+#   - FCF/operating concepts banks don't report the industrial way: op_cagr, op_margin,
+#     fcf_trend, croic, fcf_sale, fcf_cfo, cash_share, cash_debt
+#   - industrial valuation (no EBITDA; P/S, PEG, Graham, IV-MoS not bank-appropriate —
+#     canonical bank valuation is price-to-tangible-book): ev_ebitda, ps_ratio,
+#     peg_ratio, graham_val, mos, val_shareholders
+#   - quality models built for non-financials (the deck/architecture say so explicitly):
+#     piotroski_f, altman_z, beneish_m, roic_wacc
+_BANK_ZERO = ('int_coverage', 'current_ratio', 'inv_turn', 'dro', 'fat', 'ccc', 'nfa_turn',
+              'de_ratio', 'total_debt',
+              'op_cagr', 'op_margin', 'fcf_trend', 'croic', 'fcf_sale', 'fcf_cfo',
+              'cash_share', 'cash_debt',
+              'ev_ebitda', 'ps_ratio', 'peg_ratio', 'graham_val', 'mos', 'val_shareholders',
+              'piotroski_f', 'altman_z', 'beneish_m', 'roic_wacc')
+for _bk in _BANK_ZERO:
     IM3_BANK_WEIGHTS[_bk] = 0
-# Add bank-specific metrics
+# Bank-applicable kept from the industrial template (canonical mappings):
+#   rev_cagr->Markup growth, np_cagr->Net Profit growth, np_margin->Net Margin,
+#   tax_rate, eps_trend->EPS, cfo_trend->CFO, net_cash->Net Change in Cash,
+#   ccfo_cpat->cCFO vs cPAT, roe->ROE, pe/pb/earn_yield/div_yield->valuation.
+# Add bank-specific stability/business ratios:
 IM3_BANK_WEIGHTS.update({
-    'nim':   4,   # Net Interest Margin      (replaces int_coverage 2 + partial)
-    'casa':  3,   # CASA ratio               (replaces inv_turn 3)
-    'adr':   3,   # Advance-to-Deposit Ratio (replaces dro 3)
-    'npl':   5,   # Non-Performing Loans     (replaces current_ratio 5)
-    'car':   4,   # Capital Adequacy Ratio   (replaces fat 3 + ccc 3 = 6, split)
-    # Total added = 19, total removed = 19 → bank max = 162
+    'nim':   4,   # Net Interest Margin
+    'casa':  3,   # CASA ratio
+    'adr':   3,   # Advance-to-Deposit Ratio
+    'npl':   5,   # Non-Performing Loans / Gross Loans
+    'car':   4,   # Capital Adequacy Ratio
 })
+# Applicable bank max ~= 70 pts (51 retained industrial + 19 bank); the scorer computes
+# the denominator from applicable, non-NA metrics so banks are no longer scored out of 162.
 
 # Points conversion: GOOD=100%, WATCH=60%, BAD=20%, NA=0%
 def _pts(verdict, max_pts):
@@ -3019,8 +3100,9 @@ def _score_bank(ticker, d, bond_yield=0.043):
         tax_metric['verdict'] = v
         tax_metric['pts'] = _pts(v, W.get('tax_rate', 3))
 
-    # Zero out N/A bank metrics (Int Coverage, Current Ratio, Inv, DRO, FAT, CCC)
-    for key in ('int_coverage', 'current_ratio', 'inv_turn', 'dro', 'fat', 'ccc'):
+    # Zero out every metric that does not apply to a bank (full canonical set, not just
+    # the original 6) so it contributes to neither score nor denominator.
+    for key in _BANK_ZERO:
         m = next((x for x in result['metrics'] if x['key'] == key), None)
         if m:
             m['verdict'] = 'NA'
@@ -3088,18 +3170,36 @@ def _score_bank(ticker, d, bond_yield=0.043):
     # Add bank metrics to result
     result['metrics'].extend(bank_metrics)
 
-    # Recompute totals with bank weights
-    total = sum(_pts(m['verdict'], W.get(m['key'], m['max']))
-                for m in result['metrics'])
-    max_s = sum(W.get(m['key'], m['max']) for m in result['metrics']
-                if m['verdict'] != 'NA' or W.get(m['key'], 0) > 0)
-    pct   = (total / 162 * 100) if total else 0  # always /162 for consistency
+    # Input-availability probe (Wave D1/System-B Phase 2): records which canonical bank
+    # inputs Yahoo actually returned, so the next-phase ratios (spread ratio, PPNR growth,
+    # provision/GL, loan/deposit growth, ROA, true P/TBV) are built from confirmed data.
+    result['bank_inputs'] = {
+        'nii':          (nii_s[0]   if nii_s   else None),
+        'total_assets': (ta_s[0]    if ta_s    else None),
+        'gross_loans':  (loans_s[0] if loans_s else None),
+        'deposits':     (dep_s[0]   if dep_s   else None),
+        'npl_found':    npl  is not None,
+        'casa_found':   casa is not None,
+        'car_found':    car  is not None,
+    }
+
+    # ── COMPILE BANK SCORE (canonical denominator) ───────────
+    # Score on applicable (bank-weight>0) metrics only. The denominator excludes NA so a
+    # data-vendor gap (e.g. CASA/CAR absent on Yahoo for US banks) doesn't structurally
+    # penalise the bank. pct is NO LONGER score/162 — a bank is scored out of its own
+    # applicable max (~70), fixing the prior bug that capped every bank near 55%.
+    applicable = [m for m in result['metrics'] if W.get(m['key'], 0) > 0]
+    total = sum(_pts(m['verdict'], W.get(m['key'], 0)) for m in applicable)
+    max_s = sum(W.get(m['key'], 0) for m in applicable if m['verdict'] != 'NA')
+    n_meas = sum(1 for m in applicable if m['verdict'] != 'NA')
+    pct   = (total / max_s * 100) if max_s else 0
     grade = 'A' if pct >= 75 else 'B' if pct >= 60 else 'C' if pct >= 50 else 'FAIL'
 
-    result['score'] = total
-    result['max']   = 162
-    result['pct']   = round(pct, 1)
-    result['grade'] = grade
+    result['score']         = total
+    result['max']           = max_s
+    result['pct']           = round(pct, 1)
+    result['grade']         = grade
+    result['bank_coverage'] = round(n_meas / len(applicable), 2) if applicable else 0
     return result
 
 
