@@ -30,8 +30,25 @@ WEIGHTS = {
     'fcf_sale':5,'fcf_cfo':3,'ccc':3,'altman_z':5,'beneish_m':5,
     'piotroski_f':10,'roic_wacc':3,'cash_share':5,'cash_debt':5,
 }
-BANK_ZERO  = ('int_coverage','current_ratio','inv_turn','dro','fat','ccc')
+# Canonical Sarmaaya "Financial Analysis of a Bank" (Week 6) framework: banks are scored
+# ONLY on bank-applicable factors. Everything industrial is zeroed (score AND denominator):
+#   working-capital/coverage: int_coverage, current_ratio, inv_turn, dro, fat, ccc, nfa_turn
+#   leverage (a bank is levered 10-15x by design): de_ratio, total_debt
+#   FCF/operating (not reported the industrial way): op_cagr, op_margin, fcf_trend, croic,
+#     fcf_sale, fcf_cfo, cash_share, cash_debt
+#   industrial valuation (no EBITDA; bank valuation is P/TBV): ev_ebitda, ps_ratio,
+#     peg_ratio, graham_val, mos, val_shareholders
+#   non-financial quality models: piotroski_f, altman_z, beneish_m, roic_wacc
+BANK_ZERO  = ('int_coverage','current_ratio','inv_turn','dro','fat','ccc','nfa_turn',
+              'de_ratio','total_debt','op_cagr','op_margin','fcf_trend','croic',
+              'fcf_sale','fcf_cfo','cash_share','cash_debt','ev_ebitda','ps_ratio',
+              'peg_ratio','graham_val','mos','val_shareholders','piotroski_f',
+              'altman_z','beneish_m','roic_wacc')
 BANK_EXTRA = {'nim':4,'casa':3,'adr':3,'npl':5,'car':4}
+# Kept for banks (canonical mappings): rev_cagr->Markup gr, np_cagr->Net Profit gr,
+# np_margin->Net Margin, tax_rate, eps_trend->EPS, cfo_trend->CFO, net_cash->Net Change in
+# Cash, ccfo_cpat->cCFO vs cPAT, roe->ROE, pe/pb/earn_yield/div_yield. Applicable max ~= 70;
+# banks score out of that (NA excluded), NOT /162 (which capped every bank ~55%).
 
 LABELS = {
     'rev_cagr':'Revenue CAGR 5yr','op_cagr':'Op Profit CAGR','op_margin':'Op Margin',
@@ -438,6 +455,12 @@ def score_ticker(ticker):
         if car_v and car_v > 1: car_v = car_v/100
         cv2 = band(car_v,0.18,0.15) if car_v else 'NA'
         metrics.append({'key':'car','verdict':cv2,'pts':pts(cv2,4),'max':4})
+        # Phase-2 probe: which canonical bank inputs Yahoo actually returned (per bank)
+        bank_inputs = {'nii': v0(nii), 'total_assets': ta0, 'gross_loans': v0(loans),
+                       'deposits': v0(deps), 'npl_found': npl_v is not None,
+                       'casa_found': casa_v is not None, 'car_found': car_v is not None}
+    else:
+        bank_inputs = None
 
     # ── INTRINSIC VALUES
     bvps    = info.get('bookValue')
@@ -448,14 +471,28 @@ def score_ticker(ticker):
     iv_comp = avg(ivs)
     mos_pct = sdiv((iv_comp-price), iv_comp)*100 if iv_comp and price else None
 
-    total = sum(x['pts'] for x in metrics)
-    pct   = round(total/162*100, 1)
+    if is_bank:
+        # Score out of the APPLICABLE bank max (~70), excluding NA so a Yahoo data gap
+        # (CASA/CAR) does not structurally penalise the bank. Recomputed from W + verdicts
+        # so it is independent of how each metric's pts were stored. Fixes the /162 bug that
+        # capped every bank ~55%. Non-banks are unchanged (still /162) below.
+        applicable = [x for x in metrics if W.get(x['key'], 0) > 0]
+        total   = sum(pts(x['verdict'], W.get(x['key'], 0)) for x in applicable)
+        max_s   = sum(W.get(x['key'], 0) for x in applicable if x['verdict'] != 'NA')
+        n_meas  = sum(1 for x in applicable if x['verdict'] != 'NA')
+        pct     = round(total / max_s * 100, 1) if max_s else 0.0
+        bank_coverage = round(n_meas / len(applicable), 2) if applicable else 0
+    else:
+        total = sum(x['pts'] for x in metrics)
+        pct   = round(total/162*100, 1)
+        bank_coverage = None
     grade = 'A' if pct>=75 else 'B' if pct>=60 else 'C' if pct>=50 else 'FAIL'
 
     return {
         'ticker': ticker, 'name': info.get('longName') or info.get('shortName') or ticker,
         'sector': info.get('sector','—'), 'is_bank': is_bank, 'price': price,
         'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics,
+        'bank_coverage': bank_coverage, 'bank_inputs': bank_inputs,
         'piotroski': pf, 'altman_z': round(az,2) if az else None,
         'beneish_m': round(bm,2) if bm else None,
         'iv': {
