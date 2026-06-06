@@ -56,13 +56,18 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.24.0'  # 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.25.0'  # 1.25.0: (Wave D1 step 3) ROE>=ROE_FIN_MIN (8%) is now the PRIMARY financial screen gate (from the live diag: keeps 193/387, median 9.2%), with EPS-YoY>=0% as a not-deteriorating secondary; the Yahoo revenue gate is BYPASSED for financials (revenue meaningless for a spread/credit business) while non-financials still require revenueGrowth>=15%. Missing vendor field never drops a bank. Log line is now 'D1 bank gate: N in-band -> dropped R (ROE<8%) + E (EPS<0) -> M to Yahoo'. (Version bump re-scrapes ETF overlap once.) 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
 US_SMALL_CAP_MAX  = 2_000_000_000
 US_REV_GROWTH_MIN = 0.15
+ROE_FIN_MIN       = 8.0   # %; D1 step 3 — the PRIMARY financial (bank) screen gate. From the
+                          # live ROE diag (354/387 financials have ROE, median 9.2%): >=8% keeps
+                          # 193 of 387, a sensible candidate floor (NOT the canonical 20% scoring
+                          # bar). Replaces the revenue gate for financials (revenue is meaningless
+                          # for a spread/credit business). Tunable.
 US_REV_GROWTH_SANE_MAX = 500.0  # %; rev-growth above this is a micro-base artifact (near-zero prior-year
                                 # revenue -> astronomical %). Such names are demoted in the candidate
                                 # ranking so they can't grab a HIGH-CONVICTION slot (they still pass the screen).
@@ -1211,12 +1216,14 @@ def classify_us_tv_row(rec, thr):
     if not (US_SMALL_CAP_MIN <= mc <= US_SMALL_CAP_MAX):
         return 'skip'
     if 'Financ' in (rec.get('sector') or ''):
-        # Wave D1 step 2 gate. Banks are screened on a bank-appropriate metric, not
-        # revenue growth (meaningless for a spread/credit business). Active gate this
-        # run: drop only clearly-DETERIORATING banks (EPS YoY < 0); banks with no TV EPS
-        # data pass straight through (never drop a bank for a missing vendor field).
-        # ROE — the canonical lead quality metric — is instrumented this run and becomes
-        # the primary gate next run once coverage/units are confirmed (see _fin_roe_diag).
+        # Wave D1 step 3 gate. Banks are screened on bank-appropriate metrics, not revenue
+        # growth (meaningless for a spread/credit business; the revenue gate is bypassed for
+        # financials in screen_us_stock). PRIMARY gate = ROE >= ROE_FIN_MIN (the canonical lead
+        # quality metric, unit-normalised); SECONDARY = drop clearly-DETERIORATING banks (EPS
+        # YoY < 0). A missing vendor field is never a reason to drop a bank (pass through).
+        roe = _roe_pct(rec.get('return_on_equity'))
+        if roe is not None and roe < ROE_FIN_MIN:
+            return 'skip'
         fq  = rec.get('earnings_per_share_diluted_yoy_growth_fq')
         ttm = rec.get('earnings_per_share_diluted_yoy_growth_ttm')
         eps = fq if fq is not None else ttm
@@ -1273,7 +1280,7 @@ def _fin_roe_diag(values):
     pct = [_roe_pct(v) for v in values if v is not None]
     if not pct:
         return (f'[diag] financials ROE: {n} financials, 0 with TV ROE data '
-                f'— ROE gate stays deferred; EPS gate remains active')
+                f'— no ROE gate applied (all pass through); EPS<0 gate still active')
     s = sorted(pct)
     mid = len(s) // 2
     median = s[mid] if len(s) % 2 else (s[mid - 1] + s[mid]) / 2
@@ -1341,7 +1348,8 @@ def fetch_us_universe_tv():
     buckets = {'financial': 0, 'growth': 0, 'ttm': 0}
     fin_eps_pairs = []   # D1: financial bucket EPS-growth (in-band financials, pre-gate)
     fin_roe_vals  = []   # D1 step 2: financial bucket ROE (for the ROE-gate decision)
-    fin_dropped   = 0    # financials the EPS>=0 gate drops
+    fin_dropped_roe = 0  # D1 step 3: financials the ROE>=ROE_FIN_MIN primary gate drops
+    fin_dropped_eps = 0  # financials the EPS>=0 secondary gate drops (ROE-surviving only)
     for rec in rows:
         is_fin = ('Financ' in (rec.get('sector') or '')
                   and (rec.get('exchange') or '') in US_MAIN_EXCH
@@ -1351,9 +1359,12 @@ def fetch_us_universe_tv():
             ttm = rec.get('earnings_per_share_diluted_yoy_growth_ttm')
             fin_eps_pairs.append((fq, ttm))
             fin_roe_vals.append(rec.get('return_on_equity'))
+            _roe = _roe_pct(rec.get('return_on_equity'))
             _eps = fq if fq is not None else ttm
-            if _eps is not None and _eps < 0:
-                fin_dropped += 1
+            if _roe is not None and _roe < ROE_FIN_MIN:
+                fin_dropped_roe += 1
+            elif _eps is not None and _eps < 0:
+                fin_dropped_eps += 1
         cls = classify_us_tv_row(rec, thr)
         if cls == 'skip':
             continue
@@ -1364,8 +1375,9 @@ def fetch_us_universe_tv():
         f'(large-cap {len(large)} + financials {buckets["financial"]} + '
         f'growth {buckets["growth"]} + ttm-fallback {buckets["ttm"]}); '
         f'replaces a ~{len(rows) + len(large)}-name full-universe Yahoo screen')
-    log(f'  D1 EPS gate: {len(fin_eps_pairs)} in-band financials -> dropped {fin_dropped} (EPS<0) '
-        f'-> {buckets["financial"]} to Yahoo')
+    log(f'  D1 bank gate: {len(fin_eps_pairs)} in-band financials -> dropped '
+        f'{fin_dropped_roe} (ROE<{ROE_FIN_MIN:.0f}%) + {fin_dropped_eps} (EPS<0) '
+        f'-> {buckets["financial"]} to Yahoo (revenue gate bypassed for financials)')
     log('  ' + _fin_eps_diag(fin_eps_pairs))
     log('  ' + _fin_roe_diag(fin_roe_vals))
     return out
@@ -1384,13 +1396,19 @@ def screen_us_stock(ticker, yf_module):
         if ticker not in us_large_cap_set():
             if not (US_SMALL_CAP_MIN <= market_cap <= US_SMALL_CAP_MAX):
                 return None  # small-cap path keeps the $300M-$2B band; large-cap set bypasses ceiling (Decision 5)
+        sector = info.get('sector', 'Unknown') or 'Unknown'
+        is_fin = 'Financ' in sector
         rev_growth = info.get('revenueGrowth')
-        if rev_growth is None or rev_growth < US_REV_GROWTH_MIN:
-            return None
+        # D1 step 3: financials bypass the revenue-growth gate (revenue is meaningless for a
+        # spread/credit business; they are gated on ROE>=ROE_FIN_MIN + EPS-YoY at the TV
+        # prefilter). Non-financials still require revenueGrowth >= US_REV_GROWTH_MIN.
+        if not is_fin:
+            if rev_growth is None or rev_growth < US_REV_GROWTH_MIN:
+                return None
         insider = info.get('heldPercentInsiders', 0) or 0
         if insider < 0.05:
             return None
-        yf_rev = round(float(rev_growth) * 100, 1)
+        yf_rev = round(float(rev_growth) * 100, 1) if rev_growth is not None else None
         _eg = info.get('earningsGrowth')
         yf_eps = round(float(_eg) * 100, 1) if _eg is not None else None
         return {
