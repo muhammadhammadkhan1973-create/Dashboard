@@ -424,7 +424,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.6 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring (live survivors/funnels/rate path) + Wave C US Recession Watch (FRED + ForexFactory)
+  Muhammad Hammad Khan | Active Macro Dashboard v5.7 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring (live survivors/funnels/rate path) + Wave C US Recession Watch (FRED + ForexFactory) + bank IM3 scored on its own ~70-pt applicable max (System B), no longer /162
 </div>
 
 <script>
@@ -1299,10 +1299,14 @@ function im3CellHTML(ticker) {
 
   const gc = r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f';
   const fc = r.pct>=75?'#059669':r.pct>=60?'#D97706':r.pct>=50?'#F97316':'#E11D48';
+  // Denominator = the stock's own scored max (banks ~70 via System B, industrials 162).
+  // Prefer the record's max; else recover it from score/pct so it always matches the %
+  // (a bank's 39/49=79.6%, not the misleading 39/162). Works on existing data.json.
+  const dmax = r.max || (r.pct>0 ? Math.round(r.score/r.pct*100) : 162);
   return `<div style="min-width:110px;cursor:pointer;" onclick="im3ToggleDetail('${ticker}')">
     <div style="display:flex;align-items:center;gap:6px;">
       <span class="im3-grade-badge ${gc}" style="padding:2px 7px;font-size:11px;">Grade ${r.grade}</span>
-      <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;">${r.score}/162</span>
+      <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;">${r.score}/${dmax}</span>
       ${r.is_bank?'<span style="font-size:9px;background:#EEF2FF;color:var(--navy);padding:1px 4px;border-radius:3px;font-weight:700;">BANK</span>':''}
     </div>
     <div class="im3-score-bar" style="margin-top:4px;height:5px;">
@@ -1360,6 +1364,9 @@ function im3DetailHTML(ticker) {
   const _concerns = (r.top_concerns && r.top_concerns.length) ? r.top_concerns
     : _m.filter(m=>m.verdict==='BAD'&&m.max>0).sort((a,b)=>b.max-a.max).slice(0,4).map(m=>IM3_LABELS[m.key]||m.key);
   const _gradeText = r.grade==='FAIL' ? 'F' : r.grade;
+  const _dmax = r.max || (r.pct>0 ? Math.round(r.score/r.pct*100) : 162);
+  const _cov = (r.is_bank && r.bank_coverage!=null)
+    ? ` · ${Math.round(r.bank_coverage*100)}% coverage` : '';
 
   let html = `<td colspan="20" style="padding:0;background:#F8F9FE;">
     <div style="padding:20px 24px;border-top:2px solid var(--navy);">
@@ -1369,7 +1376,7 @@ function im3DetailHTML(ticker) {
       <div>
         <span style="font-family:var(--font-head);font-size:16px;font-weight:700;">${ticker} — IM3 Quality Score</span>
         ${r.is_bank?'<span style="background:#EEF2FF;color:var(--navy);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:8px;">🏦 BANK SCORING</span>':''}
-        <span class="im3-grade-badge ${r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f'}" style="margin-left:8px;">${r.score}/162 · ${r.pct}% · Grade ${_gradeText}</span>
+        <span class="im3-grade-badge ${r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f'}" style="margin-left:8px;">${r.score}/${_dmax} · ${r.pct}% · Grade ${_gradeText}${_cov}</span>
       </div>
       <button onclick="im3ToggleDetail('${ticker}')" style="background:none;border:1px solid #e5e7eb;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;color:var(--grey-d);">✕ Close</button>
     </div>
@@ -1498,7 +1505,7 @@ function renderExplosiveTable(elId, rows, market) {
         <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
         <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
         <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
-        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 pts</div>
+        <div style="opacity:0.75;margin-top:2px;">industrials /162 · banks /~70 (System B)</div>
       </div>
     </th>`:''}
   </tr></thead><tbody>`;
@@ -1616,7 +1623,7 @@ function renderTceTable(elId, rows, market) {
         <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
         <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
         <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
-        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 pts</div>
+        <div style="opacity:0.75;margin-top:2px;">industrials /162 · banks /~70 (System B)</div>
       </div>
     </th>`:''}
   </tr></thead><tbody>`;
