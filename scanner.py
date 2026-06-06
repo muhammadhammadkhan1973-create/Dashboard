@@ -56,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.22.1'  # 1.22.1: KSE-100 diagnostics ([diag] lines for market-watch/indices/eod/int) to pin down the live index source from a real run — v1.22.0 fell through to stale int. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.22.2'  # 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -429,90 +429,37 @@ def _kse_extract_ts(rows):
     return (round(val, 2) if val is not None else None), date_str
 
 
-def _kse_diag_html(src, r):
-    """One-line visibility into what a dps.psx HTML source actually returns, so the
-    parser can be fixed from a real run instead of guessed. Never raises."""
-    try:
-        import re
-        body = r.text or ''
-        m = re.search(r'KSE\s*-?\s*100', body, re.I)
-        snip = body[max(0, m.start() - 20): m.start() + 140].replace('\n', ' ') if m else '(no KSE-100 anchor)'
-        log(f'  · [diag] KSE {src}: HTTP {r.status_code} len {len(body)} grab={_kse_grab(body)} snip={snip!r}')
-    except Exception as e:
-        log(f'  · [diag] KSE {src}: diag failed {e}')
-
-
-def _kse_diag_ts(src, r, rows):
-    try:
-        n = len(rows) if isinstance(rows, list) else 'n/a'
-        last = rows[-1] if isinstance(rows, list) and rows else None
-        log(f'  · [diag] KSE {src}: HTTP {r.status_code} rows={n} last={last}')
-    except Exception as e:
-        log(f'  · [diag] KSE {src}: diag failed {e}')
-
-
 def fetch_kse100():
-    """KSE-100 index level. B1 fix (v1.22.0): the intraday timeseries (`int`) was
-    returning a frozen last-good tick (171651.48 unchanged across runs while USD/PKR
-    moved), so fresh HTML sources (market-watch, indices) are tried FIRST and the
-    stale `int` endpoint is demoted to the last numeric fallback. The chosen source
-    is logged so a stale read is visible on the run."""
-    headers = {'User-Agent': UA}
+    """KSE-100 index level. Resolved from v1.22.1 diagnostics:
+      - The index lives on the dps.psx *intraday* (`int`) timeseries — it ends at the
+        last trading session (171651.48 @ 2026-06-05) and is the CURRENT source.
+      - The `eod` timeseries for the index symbol is frozen at 2021 (~48,300) — stale
+        and below the sanity floor; never preferred.
+      - market-watch/indices HTML only carry index *membership tags* / meta text, not
+        the live level (JS-rendered), so they are not fetched (market-watch is ~470 KB).
+    Strategy: read both timeseries, keep the one with the most recent row date (int in
+    practice). The value reads identically across same-day runs because it is the last
+    session close — that is correct, not stale."""
+    headers = {'User-Agent': UA, 'Accept': 'application/json'}
     today = str(dt.date.today())
-
-    # 1. dps.psx fresh HTML — market-watch header + indices page carry the live index level
-    for url, src in (('https://dps.psx.com.pk/market-watch', 'psx-dps:market-watch'),
-                     ('https://dps.psx.com.pk/indices', 'psx-dps:indices')):
+    best = None  # (val, date_str, src)
+    for path, label in (('int', 'psx-dps:int (last session close)'),
+                        ('eod', 'psx-dps:eod')):
         try:
-            r = requests.get(url, headers=headers, timeout=12)
-            _kse_diag_html(src, r)
+            r = requests.get(f'https://dps.psx.com.pk/timeseries/{path}/KSE100',
+                             headers=headers, timeout=12)
             if r.status_code == 200:
-                v = _kse_grab(r.text)
+                j = r.json()
+                rows = j.get('data') if isinstance(j, dict) else j
+                v, d = _kse_extract_ts(rows)
                 if v is not None:
-                    return v, src, today
+                    if best is None or (d and best[1] and d > best[1]) or (d and not best[1]):
+                        best = (v, d, label)
         except Exception as e:
-            log(f'  · KSE-100 {src} miss: {e}')
+            log(f'  · KSE-100 dps/{path} miss: {e}')
 
-    # 2. eod timeseries — structured daily close (fresh after each session)
-    try:
-        r = requests.get('https://dps.psx.com.pk/timeseries/eod/KSE100',
-                         headers={**headers, 'Accept': 'application/json'}, timeout=12)
-        if r.status_code == 200:
-            j = r.json()
-            rows = j.get('data') if isinstance(j, dict) else j
-            _kse_diag_ts('eod', r, rows)
-            v, d = _kse_extract_ts(rows)
-            if v is not None:
-                return v, 'psx-dps:eod', (d or today)
-    except Exception as e:
-        log(f'  · KSE-100 dps/eod miss: {e}')
-
-    # 3. int timeseries — LAST resort; intraday can return a stale frozen tick when closed
-    try:
-        r = requests.get('https://dps.psx.com.pk/timeseries/int/KSE100',
-                         headers={**headers, 'Accept': 'application/json'}, timeout=12)
-        if r.status_code == 200:
-            j = r.json()
-            rows = j.get('data') if isinstance(j, dict) else j
-            _kse_diag_ts('int', r, rows)
-            v, d = _kse_extract_ts(rows)
-            if v is not None:
-                return v, 'psx-dps:int (intraday — verify fresh)', (d or today)
-    except Exception as e:
-        log(f'  · KSE-100 dps/int miss: {e}')
-
-    # 4. sarmaaya (usually robots-blocked; kept as a final attempt)
-    for url in ('https://sarmaaya.pk/psx/market/KSE100',
-                'https://sarmaaya.pk/indexes/KSE100'):
-        try:
-            r = requests.get(url, headers=headers, timeout=12)
-            if r.status_code == 200:
-                v = _kse_grab(r.text)
-                if v is not None:
-                    return v, 'sarmaaya', today
-        except Exception as e:
-            log(f'  · KSE-100 sarmaaya miss: {e}')
-
+    if best is not None:
+        return best[0], best[2], (best[1] or today)
     return None, None, None
 
 
