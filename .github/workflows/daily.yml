@@ -5,6 +5,11 @@ on:
     - cron: '0 2 * * *'   # 06:00 Dubai (UTC+4)
     - cron: '0 14 * * *'  # 18:00 Dubai (UTC+4)
   workflow_dispatch:
+    inputs:
+      force_im3:
+        description: 'Force a full IM3 re-score (re-scores all current explosive / TCE-HIGH tickers even if the list is unchanged)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -92,7 +97,11 @@ jobs:
           EOF
 
       - name: Score explosive stocks with IM3
-        if: steps.check_explosive.outputs.changed == 'true'
+        # Runs when the explosive/TCE-HIGH set changed OR a score is missing (self-heal),
+        # OR when manually forced via the "force_im3" Run-workflow toggle. The force path
+        # re-scores the CURRENT set with the live im3_score.py (e.g. after a scorer change),
+        # without any hand-edit of data.json.
+        if: steps.check_explosive.outputs.changed == 'true' || github.event.inputs.force_im3 == 'true'
         run: |
           python3 << 'EOF'
           import json, subprocess, sys
@@ -182,7 +191,7 @@ jobs:
           EOF
 
       - name: Update explosive ticker list (no change)
-        if: steps.check_explosive.outputs.changed == 'false'
+        if: steps.check_explosive.outputs.changed == 'false' && github.event.inputs.force_im3 != 'true'
         run: |
           python3 << 'EOF'
           import json
