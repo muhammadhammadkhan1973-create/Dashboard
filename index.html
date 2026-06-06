@@ -272,7 +272,7 @@
   </div>
 
   <!-- Panels 2-11 placeholders (full content from v4.1 preserved) -->
-  <div id="us" class="panel"><h2 class="section-title">United States Macro Dashboard</h2><div id="us_regime_banner" class="alert-banner"></div><h3 class="subsection-title">Leading Indicators</h3><div class="grid grid-3" id="us_indicators"></div><h3 class="subsection-title">Energy Leading Indicators</h3><div id="us_energy_banner" class="reading-box"></div><div class="grid grid-3" id="us_energy_indicators"></div><h3 class="subsection-title">Yield Curve</h3><div id="yield_curve_box"></div><h3 class="subsection-title">Four Regimes Quadrant</h3><div id="us_quadrant"></div><h3 class="subsection-title">Composite Sector Recommendation</h3><div id="us_sector_rec"></div><h3 class="subsection-title">Screen Survivors — US (live scan, top 15 to TCE)</h3><table id="us_candidates_table" class="historical-table"></table></div>
+  <div id="us" class="panel"><h2 class="section-title">United States Macro Dashboard</h2><div id="us_regime_banner" class="alert-banner"></div><h3 class="subsection-title">US Recession Watch</h3><div id="us_recession_box"></div><h3 class="subsection-title">Leading Indicators</h3><div class="grid grid-3" id="us_indicators"></div><h3 class="subsection-title">Energy Leading Indicators</h3><div id="us_energy_banner" class="reading-box"></div><div class="grid grid-3" id="us_energy_indicators"></div><h3 class="subsection-title">Yield Curve</h3><div id="yield_curve_box"></div><h3 class="subsection-title">Four Regimes Quadrant</h3><div id="us_quadrant"></div><h3 class="subsection-title">Composite Sector Recommendation</h3><div id="us_sector_rec"></div><h3 class="subsection-title">Screen Survivors — US (live scan, top 15 to TCE)</h3><table id="us_candidates_table" class="historical-table"></table></div>
   <div id="pak" class="panel"><h2 class="section-title">Pakistan / PSX Macro Dashboard</h2><div id="pak_regime_banner" class="alert-banner"></div><div id="pak_equity_backdrop"></div><h3 class="subsection-title">Seven Factors Status Board</h3><div class="grid grid-3" id="pak_seven_factors"></div><h3 class="subsection-title">REER / NEER</h3><div id="reer_box"></div><h3 class="subsection-title">Twin Deficit</h3><div id="twin_deficit_box"></div><h3 class="subsection-title">PSX Sector Implications</h3><div id="pak_sector_rec"></div><h3 class="subsection-title">Screen Survivors — PSX (live scan)</h3><table id="psx_candidates_table" class="historical-table"></table></div>
   <div id="devalert" class="panel"><h2 class="section-title">PKR Devaluation Early-Warning System</h2><div id="devalert_main"></div>
     <h3 class="subsection-title">① Distance to Crisis — Historical 4-of-5 Pattern</h3><div id="dev_distance"></div>
@@ -424,7 +424,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.5 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring: live screen survivors, live funnels, live SBP rate path
+  Muhammad Hammad Khan | Active Macro Dashboard v5.6 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring (live survivors/funnels/rate path) + Wave C US Recession Watch (FRED + ForexFactory)
 </div>
 
 <script>
@@ -1978,6 +1978,29 @@ function renderTcePredictions(elId, pred){
     +'<th>Logged</th><th style="text-align:right;">Open</th><th style="text-align:right;">Fwd</th></tr></thead>'
     +'<tbody>'+rows+'</tbody></table>';
 }
+function renderRecession(rec){
+  var el=document.getElementById('us_recession_box'); if(!el) return;
+  if(!rec||!rec.risk){el.innerHTML='<div class="reading-box">No recession data yet — populates from the scan (FRED recession series + ForexFactory calendar).</div>';return;}
+  var col=rec.risk==='HIGH'?'#c0392b':rec.risk==='ELEVATED'?'#c55a11':'#0a7d2c';
+  var s=rec.signals||{};
+  var fmt=function(o,suf){return (o&&o.value!=null)?(o.value+(suf||'')+(o.date?' <span style="color:var(--grey-d);font-size:11px;">('+o.date+')</span>':'')):'—';};
+  var sigRows=[['Sahm rule',fmt(s.sahm)],['10y–2y spread',fmt(s.yc_2y,'%')],['10y–3m spread',fmt(s.yc_3m,'%')],
+    ['Recession probability',fmt(s.recession_prob,'%')],['GDPNow',fmt(s.gdpnow,'%')],['Initial claims',fmt(s.claims)]]
+    .map(function(r){return '<tr><td>'+r[0]+'</td><td style="text-align:right;">'+r[1]+'</td></tr>';}).join('');
+  var trig=(rec.triggers&&rec.triggers.length)?('<ul style="margin:6px 0 0 18px;">'+rec.triggers.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul>'):'<span style="color:var(--grey-d);">No triggers firing.</span>';
+  var cal=(rec.calendar||[]);
+  var calRows=cal.length?cal.map(function(c){
+      var ic=String(c.impact||'').toLowerCase()==='high'?'#c0392b':'#c55a11';
+      return '<tr><td>'+(c.date||'')+'</td><td><span style="color:'+ic+';font-weight:600;">'+(c.impact||'')+'</span></td><td>'+(c.title||'')+'</td><td style="text-align:right;">'+(c.forecast||'—')+'</td><td style="text-align:right;">'+(c.previous||'—')+'</td></tr>';
+    }).join(''):'<tr><td colspan="5" style="color:var(--grey-d);">No upcoming high-impact US releases in the feed.</td></tr>';
+  el.innerHTML='<div class="alert-banner" style="background:'+col+';color:#fff;"><h3 style="margin:0;">RECESSION RISK: '+rec.risk+' <span style="font-weight:400;">(score '+(rec.score!=null?rec.score:'—')+'/100)</span></h3></div>'
+    +'<div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;">'
+    +'<div style="flex:1;min-width:240px;"><table class="historical-table"><thead><tr><th>Signal</th><th style="text-align:right;">Latest</th></tr></thead><tbody>'+sigRows+'</tbody></table></div>'
+    +'<div style="flex:1;min-width:240px;"><strong>Triggers</strong>'+trig+'<div style="font-size:11px;color:var(--grey-d);margin-top:6px;">Forecast/previous from ForexFactory; realized values from FRED. Source: '+(rec.source||'FRED + faireconomy')+'.</div></div>'
+    +'</div>'
+    +'<h3 class="subsection-title">Upcoming high-impact US releases</h3>'
+    +'<table class="historical-table"><thead><tr><th>Date</th><th>Impact</th><th>Event</th><th style="text-align:right;">Forecast</th><th style="text-align:right;">Previous</th></tr></thead><tbody>'+calRows+'</tbody></table>';
+}
 function renderCandidates(elId, rows, market){
   var el=document.getElementById(elId); if(!el) return;
   if(!Array.isArray(rows)||!rows.length){el.innerHTML='<tbody><tr><td style="color:var(--grey-d);padding:8px;">No live screen survivors in data.json yet — they populate from the scan.</td></tr></tbody>';return;}
@@ -2022,6 +2045,7 @@ function applyLive(){
   calcBacktest();
   renderCandidates('us_candidates_table',(LIVE&&Array.isArray(LIVE.us_candidates))?LIVE.us_candidates:[],'us');
   renderCandidates('psx_candidates_table',(LIVE&&Array.isArray(LIVE.psx_candidates))?LIVE.psx_candidates:[],'psx');
+  renderRecession((LIVE&&LIVE.recession)?LIVE.recession:null);
   renderProfiles();
 }
 async function loadLiveData(){
@@ -2177,6 +2201,7 @@ function recalc(){
   calcBacktest();
   renderCandidates('us_candidates_table',(LIVE&&Array.isArray(LIVE.us_candidates))?LIVE.us_candidates:[],'us');
   renderCandidates('psx_candidates_table',(LIVE&&Array.isArray(LIVE.psx_candidates))?LIVE.psx_candidates:[],'psx');
+  renderRecession((LIVE&&LIVE.recession)?LIVE.recession:null);
   renderProfiles();
 }
 window.addEventListener('DOMContentLoaded',()=>{
