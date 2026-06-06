@@ -58,8 +58,15 @@ jobs:
               r['ticker'] for r in data.get('tce_us', [])
               if r.get('tier') == 'HIGH'
           ])
-          # Combined — score both
-          new_tickers = sorted(set(explosive + tce_high))
+          # Financial both-signal tickers — flagged "FINANCIAL — score via bank model"
+          # (their EXPLOSIVE verdict is overwritten in scanner.py), so they must be added
+          # explicitly or they never reach im3_score.py (they would sit "Pending" forever).
+          financial = sorted([
+              r['ticker'] for r in data.get('explosive_us', [])
+              if r.get('verdict', '').startswith('FINANCIAL')
+          ])
+          # Combined — score explosives, banks (System B), and TCE-HIGH
+          new_tickers = sorted(set(explosive + financial + tce_high))
 
           # Read previous list (stored in data.json from last run)
           prev_tickers = sorted(data.get('im3_explosive_tickers', []))
@@ -119,7 +126,15 @@ jobs:
               r['ticker'] for r in data.get('tce_us', [])
               if r.get('tier') == 'HIGH'
           ]
-          explosive_tickers = sorted(set(explosive + tce_high))
+          # Financial both-signal tickers — scored via the bank model (IM3 System B).
+          # MUST be included here: scanner.py overwrites their EXPLOSIVE verdict with
+          # "FINANCIAL — score via bank model", so a startswith('EXPLOSIVE') filter alone
+          # would leave every bank unscored ("Pending next scan").
+          financial = [
+              r['ticker'] for r in data.get('explosive_us', [])
+              if r.get('verdict', '').startswith('FINANCIAL')
+          ]
+          explosive_tickers = sorted(set(explosive + financial + tce_high))
 
           if not explosive_tickers:
               print("No explosive stocks to score")
@@ -128,9 +143,12 @@ jobs:
           print(f"Scoring {len(explosive_tickers)} explosive stocks: {explosive_tickers}")
 
           # Run im3_score.py with --json flag
+          # timeout=1800: the set now includes ~55 financials (bank model) on top of the
+          # explosive + TCE-HIGH names; ~60 tickers x ~15s ~= 15 min, well under the job's
+          # 55-min budget but over the old 600s subprocess cap.
           result = subprocess.run(
               [sys.executable, 'im3_score.py', '--json'] + explosive_tickers,
-              capture_output=True, text=True, timeout=600
+              capture_output=True, text=True, timeout=1800
           )
 
           # stdout should be pure JSON; stderr has any debug output
