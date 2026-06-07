@@ -1,7 +1,7 @@
 {
   "meta": {
     "scan_version": "1.25.0",
-    "last_scan_utc": "2026-06-06T17:54:49.140006Z",
+    "last_scan_utc": "2026-06-07T05:21:58.867364Z",
     "errors": [],
     "warnings": []
   },
@@ -44,7 +44,7 @@
         "title": "Minutes of the Federal Open Market Committee, April 28-29, 2026",
         "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260520a.htm",
         "date": "2026-05-20",
-        "days_ago": 17,
+        "days_ago": 18,
         "stance": null,
         "recent": [
           {
@@ -88,17 +88,17 @@
       "pak_fiscal": 5.4
     },
     "metals": {
-      "gold_px": 4337.1,
+      "gold_px": 4365.3,
       "gold_px_date": "2026-06-05",
-      "silver_px": 68.94,
+      "silver_px": 69.1,
       "silver_px_date": "2026-06-05",
-      "platinum_px": 1792.0,
+      "platinum_px": 1797.9,
       "platinum_px_date": "2026-06-05",
-      "palladium_px": 1247.1,
+      "palladium_px": 1263.6,
       "palladium_px_date": "2026-06-05",
       "dxy": 100.07,
       "dxy_date": "2026-06-05",
-      "gs_ratio": 62.9,
+      "gs_ratio": 63.2,
       "cot_date": "06/02/26",
       "cot_gold_net": 176020,
       "cot_gold_oi": 326052,
@@ -194,7 +194,7 @@
     [
       "+ Top 15 to TCE",
       15,
-      "Live scan: 2026-06-06"
+      "Live scan: 2026-06-07"
     ]
   ],
   "psx_candidates": [
@@ -845,7 +845,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 4,
+        "s1_news_count": 5,
         "s5_volume_ratio": 1.77,
         "price": 71.61,
         "s6_momentum_pct": 75.4,
@@ -901,7 +901,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 13,
+        "s1_news_count": 12,
         "s5_volume_ratio": 0.62,
         "price": 42.59,
         "s6_momentum_pct": 29.6,
@@ -909,6 +909,34 @@
         "rs_ok": "False",
         "s7_margin_spread_pct": 17.4,
         "total": 4
+      }
+    },
+    {
+      "ticker": "HCAR",
+      "name": "HCAR",
+      "sector": "Consumer Durables",
+      "src": "screen",
+      "tce_score": 3,
+      "conviction": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 3,
+        "s5_volume_ratio": 3.92,
+        "price": 269.12,
+        "s6_momentum_pct": 75.7,
+        "rs_vs_spy": -12.2,
+        "rs_ok": "False",
+        "s7_margin_spread_pct": -37.3,
+        "total": 3
       }
     },
     {
@@ -929,7 +957,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 15,
+        "s1_news_count": 14,
         "s5_volume_ratio": 1.09,
         "price": 11.56,
         "s6_momentum_pct": 36.0,
@@ -1067,41 +1095,13 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 6,
+        "s1_news_count": 5,
         "s5_volume_ratio": 0.4,
         "price": 11.62,
         "s6_momentum_pct": 40.3,
         "rs_vs_spy": -50.2,
         "rs_ok": "False",
         "s7_margin_spread_pct": -146.7,
-        "total": 2
-      }
-    },
-    {
-      "ticker": "HCAR",
-      "name": "HCAR",
-      "sector": "Consumer Durables",
-      "src": "screen",
-      "tce_score": 2,
-      "conviction": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 1,
-        "s6_momentum": 1,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 2,
-        "s5_volume_ratio": 3.92,
-        "price": 269.12,
-        "s6_momentum_pct": 75.7,
-        "rs_vs_spy": -12.2,
-        "rs_ok": "False",
-        "s7_margin_spread_pct": -37.3,
         "total": 2
       }
     },
@@ -1162,33 +1162,6 @@
       }
     },
     {
-      "ticker": "NCPL",
-      "name": "NCPL",
-      "sector": "Utilities",
-      "src": "screen",
-      "tce_score": 2,
-      "conviction": 0,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 8,
-        "s5_volume_ratio": 0.22,
-        "price": 64.48,
-        "s6_momentum_pct": 12.0,
-        "rs_vs_spy": 95.6,
-        "rs_ok": "True",
-        "total": 2
-      }
-    },
-    {
       "ticker": "THCCL",
       "name": "THCCL",
       "sector": "Non-Energy Minerals",
@@ -1234,7 +1207,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.86,
         "price": 939.14,
         "s6_momentum_pct": 37.3,
@@ -1290,7 +1263,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.25,
         "price": 364.66,
         "s6_momentum_pct": 26.5,
@@ -1439,6 +1412,33 @@
       }
     },
     {
+      "ticker": "NCPL",
+      "name": "NCPL",
+      "sector": "Utilities",
+      "src": "screen",
+      "tce_score": 1,
+      "conviction": 0,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 7,
+        "s5_volume_ratio": 0.22,
+        "price": 64.48,
+        "s6_momentum_pct": 12.0,
+        "rs_vs_spy": 95.6,
+        "rs_ok": "True",
+        "total": 1
+      }
+    },
+    {
       "ticker": "GAL",
       "name": "GAL",
       "sector": "Producer Manufacturing",
@@ -1456,7 +1456,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 2,
         "s6_momentum_pct": 15.0,
         "s6_momentum_src": "tv_perf3m",
         "rs_ok": true,
@@ -1539,7 +1539,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 15,
+        "s1_news_count": 17,
         "s5_volume_ratio": 0.92,
         "price": 1929.2,
         "s6_momentum_pct": 43.7,
@@ -1820,39 +1820,6 @@
       }
     },
     {
-      "ticker": "MU",
-      "name": "MU",
-      "sector": "",
-      "src": "etf",
-      "tce_score": 7,
-      "conviction": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 1,
-        "s5_volume": 1,
-        "s6_momentum": 1,
-        "s7_margin": 1,
-        "s8_capital": 0,
-        "s9_eps_rev": 1,
-        "s10_rev_rev": 0,
-        "s1_news_count": 30,
-        "s5_volume_ratio": 1.65,
-        "price": 864.01,
-        "s6_momentum_pct": 133.4,
-        "rs_vs_spy": 241.7,
-        "rs_ok": "True",
-        "s7_margin_spread_pct": 559.7,
-        "s8_capital_short_pct": 3.1,
-        "s9_eps_rev_net": 3,
-        "rev_est": 33818351730.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 15,
-        "total": 7
-      }
-    },
-    {
       "ticker": "CSCO",
       "name": "CSCO",
       "sector": "",
@@ -1919,6 +1886,38 @@
       }
     },
     {
+      "ticker": "MU",
+      "name": "MU",
+      "sector": "",
+      "src": "etf",
+      "tce_score": 6,
+      "conviction": 3,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 1,
+        "s8_capital": 0,
+        "s9_eps_rev": 1,
+        "s10_rev_rev": 0,
+        "s1_news_count": 30,
+        "s5_volume_ratio": 1.65,
+        "price": 864.01,
+        "s6_momentum_pct": 133.4,
+        "rs_vs_spy": 241.7,
+        "rs_ok": "True",
+        "s7_margin_spread_pct": 559.7,
+        "s8_capital_short_pct": 3.1,
+        "s9_eps_rev_net": 3,
+        "rev_est": 33818351730.0,
+        "s10_rev_rev_pct": 0.0,
+        "total": 6
+      }
+    },
+    {
       "ticker": "AMD",
       "name": "AMD",
       "sector": "",
@@ -1936,7 +1935,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 29,
+        "s1_news_count": 30,
         "s5_volume_ratio": 0.98,
         "price": 466.38,
         "s6_momentum_pct": 142.4,
@@ -1969,7 +1968,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 15,
+        "s1_news_count": 16,
         "s5_volume_ratio": 1.14,
         "price": 453.01,
         "s6_momentum_pct": 39.7,
@@ -2002,7 +2001,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 19,
+        "s1_news_count": 20,
         "s5_volume_ratio": 0.71,
         "price": 303.28,
         "s6_momentum_pct": 52.1,
@@ -2035,7 +2034,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 16,
+        "s1_news_count": 17,
         "s5_volume_ratio": 1.04,
         "price": 285.06,
         "s6_momentum_pct": 48.3,
@@ -2363,7 +2362,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 29,
+        "s1_news_count": 27,
         "s5_volume_ratio": 0.86,
         "price": 1559.3199,
         "s6_momentum_pct": 195.7,
@@ -2395,7 +2394,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 21,
+        "s1_news_count": 22,
         "s5_volume_ratio": 2.73,
         "price": 26.7,
         "s6_momentum_pct": 62.3,
@@ -2427,7 +2426,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 30,
+        "s1_news_count": 27,
         "s5_volume_ratio": 2.96,
         "price": 215.94,
         "s6_momentum_pct": 59.7,
@@ -2476,38 +2475,6 @@
       }
     },
     {
-      "ticker": "HYLN",
-      "name": "Hyliion Holdings Corp.",
-      "sector": "Consumer Cyclical",
-      "src": "screen",
-      "tce_score": 5,
-      "conviction": 2,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s5_volume": 1,
-        "s6_momentum": 1,
-        "s7_margin": 0,
-        "s8_capital": 1,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 6,
-        "s5_volume_ratio": 6.91,
-        "price": 6.9,
-        "s6_momentum_pct": 245.0,
-        "rs_vs_spy": 262.5,
-        "rs_ok": "True",
-        "s8_capital_short_pct": 9.3,
-        "s9_eps_rev_net": 0,
-        "rev_est": 2250000.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 8,
-        "total": 5
-      }
-    },
-    {
       "ticker": "DVLT",
       "name": "Datavault AI Inc.",
       "sector": "Technology",
@@ -2540,6 +2507,38 @@
       }
     },
     {
+      "ticker": "WVE",
+      "name": "Wave Life Sciences Ltd.",
+      "sector": "Healthcare",
+      "src": "screen",
+      "tce_score": 5,
+      "conviction": 2,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 1,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 1,
+        "s10_rev_rev": 0,
+        "s1_news_count": 8,
+        "s5_volume_ratio": 0.44,
+        "price": 5.73,
+        "s6_momentum_pct": -56.3,
+        "rs_vs_spy": -77.6,
+        "rs_ok": "False",
+        "s8_capital_short_pct": 11.5,
+        "s9_eps_rev_net": 4,
+        "rev_est": 7103030.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 2,
+        "total": 5
+      }
+    },
+    {
       "ticker": "ASPI",
       "name": "ASP Isotopes Inc.",
       "sector": "Basic Materials",
@@ -2557,7 +2556,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 12,
+        "s1_news_count": 13,
         "s5_volume_ratio": 1.1,
         "price": 6.71,
         "s6_momentum_pct": 20.9,
@@ -2621,7 +2620,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 20,
+        "s1_news_count": 19,
         "s5_volume_ratio": 1.07,
         "price": 205.1,
         "s6_momentum_pct": 15.5,
@@ -2654,7 +2653,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 30,
+        "s1_news_count": 26,
         "s5_volume_ratio": 1.22,
         "price": 99.17,
         "s6_momentum_pct": 128.4,
@@ -2686,7 +2685,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 27,
+        "s1_news_count": 26,
         "s5_volume_ratio": 0.98,
         "price": 307.34,
         "s6_momentum_pct": 19.5,
@@ -2719,7 +2718,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 26,
+        "s1_news_count": 27,
         "s5_volume_ratio": 1.02,
         "price": 593.0,
         "s6_momentum_pct": -8.0,
@@ -2735,9 +2734,9 @@
       }
     },
     {
-      "ticker": "WVE",
-      "name": "Wave Life Sciences Ltd.",
-      "sector": "Healthcare",
+      "ticker": "HYLN",
+      "name": "Hyliion Holdings Corp.",
+      "sector": "Consumer Cyclical",
       "src": "screen",
       "tce_score": 4,
       "conviction": 2,
@@ -2745,24 +2744,23 @@
       "streams": {
         "s1_news": 1,
         "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s5_volume": 0,
-        "s6_momentum": 0,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 1,
         "s7_margin": 0,
         "s8_capital": 1,
-        "s9_eps_rev": 1,
+        "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 7,
-        "s5_volume_ratio": 0.44,
-        "price": 5.73,
-        "s6_momentum_pct": -56.3,
-        "rs_vs_spy": -77.6,
-        "rs_ok": "False",
-        "s8_capital_short_pct": 11.5,
-        "s9_eps_rev_net": 4,
-        "rev_est": 7103030.0,
+        "s1_news_count": 6,
+        "s5_volume_ratio": 6.91,
+        "price": 6.9,
+        "s6_momentum_pct": 245.0,
+        "rs_vs_spy": 262.5,
+        "rs_ok": "True",
+        "s8_capital_short_pct": 9.3,
+        "s9_eps_rev_net": 0,
+        "rev_est": 2250000.0,
         "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 2,
         "total": 4
       }
     },
@@ -2784,7 +2782,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 5,
+        "s1_news_count": 4,
         "s5_volume_ratio": 2.08,
         "price": 2.48,
         "s6_momentum_pct": 31.2,
@@ -2849,7 +2847,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 25,
+        "s1_news_count": 26,
         "s5_volume_ratio": 1.23,
         "price": 416.67,
         "s6_momentum_pct": 2.1,
@@ -2915,7 +2913,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 23,
+        "s1_news_count": 16,
         "s5_volume_ratio": 0.87,
         "price": 149.92,
         "s6_momentum_pct": -0.2,
@@ -2948,7 +2946,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.41,
         "price": 8.36,
         "s6_momentum_pct": 29.4,
@@ -2964,17 +2962,49 @@
       }
     },
     {
+      "ticker": "GLOO",
+      "name": "Gloo Holdings, Inc.",
+      "sector": "Technology",
+      "src": "screen",
+      "tce_score": 3,
+      "conviction": 0,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 1,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 8,
+        "s5_volume_ratio": 0.86,
+        "price": 5.27,
+        "s6_momentum_pct": -11.4,
+        "rs_vs_spy": -39.9,
+        "rs_ok": "False",
+        "s8_capital_short_pct": 1.2,
+        "s9_eps_rev_net": 0,
+        "rev_est": 36009400.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 5,
+        "total": 3
+      }
+    },
+    {
       "ticker": "RHLD",
       "name": "Resolute Holdings Management",
       "sector": "Industrials",
       "src": "screen",
-      "tce_score": 3,
+      "tce_score": 2,
       "conviction": 1,
       "tier": "IGNORE",
       "streams": {
         "s1_news": 0,
         "s2_sponsor": 0,
-        "s3_insider": 1,
+        "s3_insider": 0,
         "s5_volume": 1,
         "s6_momentum": 0,
         "s7_margin": 0,
@@ -2989,8 +3019,7 @@
         "rs_ok": "False",
         "s8_capital_short_pct": 10.9,
         "rev_est": 0.0,
-        "s3_insider_count": 5,
-        "total": 3
+        "total": 2
       }
     },
     {
@@ -3021,38 +3050,6 @@
         "rev_est": 44000000.0,
         "s10_rev_rev_pct": 0.0,
         "s3_insider_count": 18,
-        "total": 2
-      }
-    },
-    {
-      "ticker": "GLOO",
-      "name": "Gloo Holdings, Inc.",
-      "sector": "Technology",
-      "src": "screen",
-      "tce_score": 2,
-      "conviction": 0,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 7,
-        "s5_volume_ratio": 0.86,
-        "price": 5.27,
-        "s6_momentum_pct": -11.4,
-        "rs_vs_spy": -39.9,
-        "rs_ok": "False",
-        "s8_capital_short_pct": 1.2,
-        "s9_eps_rev_net": 0,
-        "rev_est": 36009400.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 5,
         "total": 2
       }
     },
@@ -3458,7 +3455,7 @@
         "last_date": "2026-06-05",
         "fwd_ret_pct": -11.2,
         "peak_ret_pct": 0.0,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3468,10 +3465,10 @@
         "date": "2026-06-04",
         "entry": 7.65,
         "last_price": 6.71,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -12.3,
         "peak_ret_pct": 4.2,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3481,10 +3478,10 @@
         "date": "2026-06-04",
         "entry": 31.475,
         "last_price": 26.7,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -15.2,
         "peak_ret_pct": 2.6,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3497,7 +3494,7 @@
         "last_date": "2026-06-05",
         "fwd_ret_pct": -5.5,
         "peak_ret_pct": 0.0,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3510,7 +3507,7 @@
         "last_date": "2026-06-06",
         "fwd_ret_pct": -3.3,
         "peak_ret_pct": 6.8,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3523,7 +3520,7 @@
         "last_date": "2026-06-04",
         "fwd_ret_pct": -1.3,
         "peak_ret_pct": 0.0,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3533,10 +3530,10 @@
         "date": "2026-06-04",
         "entry": 2098.8301,
         "last_price": 1929.2,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -8.1,
         "peak_ret_pct": 1.5,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3546,10 +3543,10 @@
         "date": "2026-06-04",
         "entry": 1013.84,
         "last_price": 864.01,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -14.8,
         "peak_ret_pct": 0.5,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3559,10 +3556,10 @@
         "date": "2026-06-04",
         "entry": 128.89,
         "last_price": 121.64,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -5.6,
         "peak_ret_pct": 0.9,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3572,10 +3569,10 @@
         "date": "2026-06-04",
         "entry": 521.87,
         "last_price": 466.38,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -10.6,
         "peak_ret_pct": 0.3,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3585,10 +3582,10 @@
         "date": "2026-06-04",
         "entry": 498.41,
         "last_price": 453.01,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -9.1,
         "peak_ret_pct": 0.7,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3598,10 +3595,10 @@
         "date": "2026-06-04",
         "entry": 335.82,
         "last_price": 303.28,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -9.7,
         "peak_ret_pct": 0.6,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3611,10 +3608,10 @@
         "date": "2026-06-04",
         "entry": 371.82,
         "last_price": 368.53,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -0.9,
         "peak_ret_pct": 0.1,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3627,7 +3624,7 @@
         "last_date": "2026-06-06",
         "fwd_ret_pct": -9.5,
         "peak_ret_pct": 0.9,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3637,10 +3634,10 @@
         "date": "2026-06-04",
         "entry": 1820.585,
         "last_price": 1559.3199,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -14.4,
         "peak_ret_pct": 0.0,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3650,10 +3647,10 @@
         "date": "2026-06-04",
         "entry": 240.56,
         "last_price": 215.94,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -10.2,
         "peak_ret_pct": 0.8,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3663,10 +3660,10 @@
         "date": "2026-06-04",
         "entry": 307.88,
         "last_price": 285.06,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -7.4,
         "peak_ret_pct": 0.0,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3676,10 +3673,10 @@
         "date": "2026-06-04",
         "entry": 0.4671,
         "last_price": 0.43,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -7.9,
         "peak_ret_pct": 0.6,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3689,10 +3686,10 @@
         "date": "2026-06-04",
         "entry": 218.16,
         "last_price": 205.1,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -6.0,
         "peak_ret_pct": 0.2,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3705,7 +3702,7 @@
         "last_date": "2026-06-06",
         "fwd_ret_pct": -5.9,
         "peak_ret_pct": 2.2,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3715,10 +3712,10 @@
         "date": "2026-06-04",
         "entry": 310.925,
         "last_price": 307.34,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -1.2,
         "peak_ret_pct": 0.8,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3728,10 +3725,10 @@
         "date": "2026-06-04",
         "entry": 110.89,
         "last_price": 99.17,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -10.6,
         "peak_ret_pct": 0.8,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3741,10 +3738,10 @@
         "date": "2026-06-04",
         "entry": 313.41,
         "last_price": 263.47,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -15.9,
         "peak_ret_pct": 1.0,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3757,7 +3754,7 @@
         "last_date": "2026-06-05",
         "fwd_ret_pct": -4.8,
         "peak_ret_pct": 0.3,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3767,10 +3764,10 @@
         "date": "2026-06-04",
         "entry": 40.94,
         "last_price": 39.62,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -3.2,
         "peak_ret_pct": 0.1,
-        "days_open": 2,
+        "days_open": 3,
         "resolved": false
       },
       {
@@ -3780,10 +3777,10 @@
         "date": "2026-06-05",
         "entry": 71.75,
         "last_price": 71.61,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -0.2,
         "peak_ret_pct": 0.0,
-        "days_open": 1,
+        "days_open": 2,
         "resolved": false
       },
       {
@@ -3793,10 +3790,10 @@
         "date": "2026-06-05",
         "entry": 11.71,
         "last_price": 12.2,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": 4.2,
         "peak_ret_pct": 4.2,
-        "days_open": 1,
+        "days_open": 2,
         "resolved": false
       },
       {
@@ -3806,10 +3803,10 @@
         "date": "2026-06-05",
         "entry": 22.8,
         "last_price": 22.79,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -0.0,
         "peak_ret_pct": 0.0,
-        "days_open": 1,
+        "days_open": 2,
         "resolved": false
       },
       {
@@ -3819,10 +3816,10 @@
         "date": "2026-06-05",
         "entry": 57.41,
         "last_price": 59.95,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": 4.4,
         "peak_ret_pct": 4.4,
-        "days_open": 1,
+        "days_open": 2,
         "resolved": false
       },
       {
@@ -3832,10 +3829,10 @@
         "date": "2026-06-05",
         "entry": 133.37,
         "last_price": 136.8,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": 2.6,
         "peak_ret_pct": 2.6,
-        "days_open": 1,
+        "days_open": 2,
         "resolved": false
       },
       {
@@ -3845,10 +3842,10 @@
         "date": "2026-06-05",
         "entry": 609.7,
         "last_price": 593.0,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": -2.7,
         "peak_ret_pct": 0.0,
-        "days_open": 1,
+        "days_open": 2,
         "resolved": false
       },
       {
@@ -3858,10 +3855,10 @@
         "date": "2026-06-05",
         "entry": 5.73,
         "last_price": 5.73,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": 0.0,
         "peak_ret_pct": 0.0,
-        "days_open": 1,
+        "days_open": 2,
         "resolved": false
       },
       {
@@ -3871,10 +3868,10 @@
         "date": "2026-06-06",
         "entry": 42.59,
         "last_price": 42.59,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": 0.0,
         "peak_ret_pct": 0.0,
-        "days_open": 0,
+        "days_open": 1,
         "resolved": false
       },
       {
@@ -3884,10 +3881,10 @@
         "date": "2026-06-06",
         "entry": 401.39,
         "last_price": 401.39,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": 0.0,
         "peak_ret_pct": 0.0,
-        "days_open": 0,
+        "days_open": 1,
         "resolved": false
       },
       {
@@ -3897,10 +3894,10 @@
         "date": "2026-06-06",
         "entry": 8.36,
         "last_price": 8.36,
-        "last_date": "2026-06-06",
+        "last_date": "2026-06-07",
         "fwd_ret_pct": 0.0,
         "peak_ret_pct": 0.0,
-        "days_open": 0,
+        "days_open": 1,
         "resolved": false
       }
     ],
@@ -3922,7 +3919,7 @@
         "avg_peak_pct": null
       }
     },
-    "updated": "2026-06-06"
+    "updated": "2026-06-07"
   },
   "explosive_psx": [
     {
@@ -13158,7 +13155,7 @@
       "rev_growth": -0.4,
       "op_growth": -0.3,
       "np_growth": 12.9,
-      "eps_growth": 492.3,
+      "eps_growth": 493.4,
       "op_np_ratio": -43.0,
       "signal_a": false,
       "signal_b": false,
@@ -14408,92 +14405,71 @@
     },
     "calendar": [
       {
-        "title": "ISM Manufacturing PMI",
-        "date": "2026-06-01T10:00:00-04:00",
+        "title": "Core CPI m/m",
+        "date": "2026-06-10T08:30:00-04:00",
         "impact": "High",
-        "forecast": "53.3",
-        "previous": "52.7"
+        "forecast": "0.5%",
+        "previous": "0.4%"
       },
       {
-        "title": "ADP Non-Farm Employment Change",
-        "date": "2026-06-03T08:15:00-04:00",
+        "title": "Core CPI y/y",
+        "date": "2026-06-10T08:30:00-04:00",
         "impact": "High",
-        "forecast": "118K",
-        "previous": "109K"
+        "forecast": "2.9%",
+        "previous": "2.8%"
       },
       {
-        "title": "ISM Services PMI",
-        "date": "2026-06-03T10:00:00-04:00",
-        "impact": "High",
-        "forecast": "53.7",
-        "previous": "53.6"
-      },
-      {
-        "title": "Average Hourly Earnings m/m",
-        "date": "2026-06-05T08:30:00-04:00",
+        "title": "CPI m/m",
+        "date": "2026-06-10T08:30:00-04:00",
         "impact": "High",
         "forecast": "0.3%",
-        "previous": "0.2%"
+        "previous": "0.6%"
       },
       {
-        "title": "Non-Farm Employment Change",
-        "date": "2026-06-05T08:30:00-04:00",
+        "title": "CPI y/y",
+        "date": "2026-06-10T08:30:00-04:00",
         "impact": "High",
-        "forecast": "85K",
-        "previous": "115K"
+        "forecast": "4.2%",
+        "previous": "3.8%"
       },
       {
-        "title": "Unemployment Rate",
-        "date": "2026-06-05T08:30:00-04:00",
+        "title": "Core PPI m/m",
+        "date": "2026-06-11T08:30:00-04:00",
         "impact": "High",
-        "forecast": "4.3%",
-        "previous": "4.3%"
+        "forecast": "0.5%",
+        "previous": "1.0%"
       },
       {
-        "title": "FOMC Member Powell Speaks",
-        "date": "2026-05-31T20:30:00-04:00",
-        "impact": "Medium",
-        "forecast": "",
-        "previous": ""
-      },
-      {
-        "title": "ISM Manufacturing Prices",
-        "date": "2026-06-01T10:00:00-04:00",
-        "impact": "Medium",
-        "forecast": "85.3",
-        "previous": "84.6"
-      },
-      {
-        "title": "JOLTS Job Openings",
-        "date": "2026-06-02T10:00:00-04:00",
-        "impact": "Medium",
-        "forecast": "6.87M",
-        "previous": "6.87M"
-      },
-      {
-        "title": "Treasury Sec Bessent Speaks",
-        "date": "2026-06-03T10:00:00-04:00",
-        "impact": "Medium",
-        "forecast": "",
-        "previous": ""
+        "title": "PPI m/m",
+        "date": "2026-06-11T08:30:00-04:00",
+        "impact": "High",
+        "forecast": "0.7%",
+        "previous": "1.4%"
       },
       {
         "title": "Unemployment Claims",
-        "date": "2026-06-04T08:30:00-04:00",
-        "impact": "Medium",
-        "forecast": "214K",
-        "previous": "215K"
-      },
-      {
-        "title": "Treasury Sec Bessent Speaks",
-        "date": "2026-06-04T10:00:00-04:00",
+        "date": "2026-06-11T08:30:00-04:00",
         "impact": "Medium",
         "forecast": "",
-        "previous": ""
+        "previous": "225K"
+      },
+      {
+        "title": "Prelim UoM Consumer Sentiment",
+        "date": "2026-06-12T10:00:00-04:00",
+        "impact": "Medium",
+        "forecast": "46.6",
+        "previous": "48.2"
+      },
+      {
+        "title": "Prelim UoM Inflation Expectations",
+        "date": "2026-06-12T10:00:00-04:00",
+        "impact": "Medium",
+        "forecast": "",
+        "previous": "4.5%"
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-06-06T18:04:10.465326Z",
+    "_fetched_utc": "2026-06-07T05:31:18.799611Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
