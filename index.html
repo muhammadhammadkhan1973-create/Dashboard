@@ -424,7 +424,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.7 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring (live survivors/funnels/rate path) + Wave C US Recession Watch (FRED + ForexFactory) + bank IM3 scored on its own ~70-pt applicable max (System B), no longer /162
+  Muhammad Hammad Khan | Active Macro Dashboard v5.8.1 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1 US Macro reading layer (3-lens rollup + structural-break tripwire)
 </div>
 
 <script>
@@ -458,36 +458,179 @@ function regimeOf(growth,inflation){
 // =========================================================
 // US DASHBOARD
 // =========================================================
+// =========================================================
+// WAVE M (M1) — MACRO READING LAYER (US). One rules table = the nucleus.
+// Each indicator carries a lens (Regime / Monetary-QE·QT / Economy), an absolute
+// band (primary), and the one-line "implies" incl. its cross-asset knock-on —
+// grounded in the narrative-vs-research comparison (Goldman/MS/PIMCO). Tunable
+// here in ONE place. v1 reads the live data.json (no scanner change).
+// =========================================================
+function _mr(state,cls,implies){return {state:state,cls:cls,implies:implies};}
+const MACRO_READS_US = [
+ {key:'fed_rate', label:'Fed Funds Rate', lens:'Monetary', unit:'%',
+  read:function(v,c){
+    var real=(!isNaN(c.core_pce))?(v-c.core_pce):null;
+    var rt=real!=null?(' Real rate '+(real>0?'+':'')+real.toFixed(1)+'% vs core PCE.'):'';
+    if(v>5)  return _mr('Very restrictive','neg','Very restrictive.'+rt+' Cuts off the table → USD bid, growth/tech headwind.');
+    if(v>=4) return _mr('Restrictive','warn','Restrictive.'+rt+' Limited room to cut.');
+    if(v>=3) return _mr('Mildly restrictive','neutral','Mildly restrictive.'+rt+' Direction (cut vs hold) sets the regime.');
+    return _mr('Accommodative','pos','Accommodative.'+rt+' Lower discount rate → tech/growth re-rate, USD softer, gold up.');
+  }},
+ {key:'us_2y', label:'2Y Treasury', lens:'Monetary · Regime', unit:'%',
+  read:function(v,c){
+    var gap=(!isNaN(c.fed_rate))?(v-c.fed_rate):null;
+    if(gap!=null&&gap>0.10)  return _mr('Above funds — hawkish','warn','2y '+gap.toFixed(2)+' above funds → market pricing FEWER/NO cuts (higher-for-longer). USD up, long-duration tech down, gold pressured.');
+    if(gap!=null&&gap<-0.25) return _mr('Below funds — cuts priced','pos','2y '+Math.abs(gap).toFixed(2)+' below funds → market pricing CUTS. Risk-on; tech/gold tailwind.');
+    return _mr('Near funds','neutral','2y ≈ funds → market balanced on the next move.');
+  }},
+ {key:'us_10y', label:'10Y Treasury', lens:'Regime', unit:'%',
+  read:function(v,c){
+    if(v>5)    return _mr('>5% compression','neg','Discount-rate shock → broad multiple compression; gold/tech down, USD up.');
+    if(v>4.5)  return _mr('Valuation headwind','warn','>4.5% → long-duration/tech de-rating; higher real yield → gold down, USD up.');
+    if(v>=3.5) return _mr('Neutral','neutral','3.5–4.5% neutral-to-mild headwind for rich multiples.');
+    return _mr('Supports multiples','pos','<3.5% supports rich multiples; tailwind for growth/tech and gold.');
+  }},
+ {key:'curve', label:'10Y–2Y Curve', lens:'Economy',
+  fmt:function(v){return (v>0?'+':'')+v.toFixed(0)+' bps';},
+  read:function(v,c){
+    if(v<0)   return _mr('INVERTED','neg','Inverted = classic recession pre-condition (regime-dependent; weight with credit). A re-inversion is a TRIPWIRE.');
+    if(v<50)  return _mr('Flat / late-cycle','warn','Positive but narrow → late-cycle, not recessionary. Watch for re-inversion, not the level.');
+    if(v<150) return _mr('Normalising','pos','Normalising/healthy slope.');
+    return _mr('Steep','pos','Steep → early-recovery signal.');
+  }},
+ {key:'core_pce', label:'Core PCE', lens:'Monetary', unit:'%',
+  read:function(v,c){
+    if(v>3)   return _mr('HOT','neg','>3% sticky → cuts constrained, hawkish bias; USD up, tech headwind.');
+    if(v>2.3) return _mr('Above target','warn','Above the 2% target → cautious Fed.');
+    return _mr('At target','pos','At/near 2% target → cut-enabling; risk-on.');
+  }},
+ {key:'cpi_yoy', label:'CPI YoY', lens:'Monetary · Economy', unit:'%',
+  read:function(v,c){
+    if(v>3)   return _mr('Above target','warn','Headline >3% keeps the Fed cautious; pairs with core PCE to block cuts.');
+    if(v>2.3) return _mr('Above target','warn','Above the 2% target.');
+    return _mr('At target','pos','Near target → cut room.');
+  }},
+ {key:'unemployment', label:'Unemployment', lens:'Economy', unit:'%',
+  read:function(v,c){
+    if(v>5)   return _mr('Recessionary','neg','>5% & rising = recessionary; Sahm-rule risk.');
+    if(v>4.5) return _mr('Softening','warn','4.5–5% softening labour.');
+    if(v>=4)  return _mr('Full employment','pos','Near full employment. Strong jobs = fewer Fed cuts ("good news is bad news" for tech).');
+    return _mr('Tight / hot','warn','<4% tight labour → wage/inflation pressure, hawkish.');
+  }},
+ {key:'umcsi', label:'Consumer Sentiment', lens:'Economy',
+  read:function(v,c){
+    var healthy=(!isNaN(c.hy_spread)&&c.hy_spread<3)&&(!isNaN(c.unemployment)&&c.unemployment<4.5);
+    var disc=healthy?' DISCOUNT — contradicted by tight credit + healthy labour (gas/politics-driven this cycle).':'';
+    if(v<50)  return _mr('Recessionary (discount)','warn','Sub-50 recessionary on its face, but'+disc);
+    if(v<70)  return _mr('Weak','warn','Weak confidence.');
+    if(v<90)  return _mr('Normal','neutral','Normal range.');
+    return _mr('Strong','pos','Strong consumer.');
+  }},
+ {key:'gdp_growth', label:'GDP Growth', lens:'Economy', unit:'%',
+  read:function(v,c){
+    if(v<0)   return _mr('Contraction','neg','Negative GDP = contraction. TRIPWIRE.');
+    if(v<1.5) return _mr('Below trend','warn','Below ~2% trend → slowing, not contracting.');
+    if(v<2.5) return _mr('Trend / soft-landing','pos','Trend growth; underwrites the "buyable correction" read.');
+    return _mr('Above trend','pos','Above-trend growth.');
+  }},
+ {key:'hy_spread', label:'HY Credit Spread', lens:'Regime', unit:'%',
+  read:function(v,c){
+    if(v>6)   return _mr('Recession-imminent','neg','>6% → credit event; risk-off, defend. STRUCTURAL.');
+    if(v>5)   return _mr('STRESS','neg','>5% credit stress → flips the tape to structural risk-off. TRIPWIRE.');
+    if(v>4.5) return _mr('Caution','warn','4.5–5% → caution; watch for widening.');
+    if(v>=3)  return _mr('Normal','neutral','3–4.5% normal/watch.');
+    return _mr('Calm / risk-on','pos','<3% credit calm → the equity drop is a CORRECTION, not structural. The key "is the story intact" test.');
+  }},
+ {key:'permits', label:'Building Permits', lens:'Economy', unit:'k',
+  read:function(v,c){
+    if(v<900)  return _mr('Recessionary','neg','<900k = recessionary (8 of last 9 recessions).');
+    if(v<1300) return _mr('Weak','warn','Weak housing; monitor a break lower.');
+    if(v<1500) return _mr('Soft','warn','Soft but not recessionary — the lone cautionary minority vs the risk-on tape (Moody\u2019s most-leading variable).');
+    return _mr('Healthy','pos','Healthy housing (~60yr avg 1.5M).');
+  }},
+ {key:'walcl_change', label:'Fed Balance Sheet (QE/QT)', lens:'Monetary',
+  fmt:function(v){return (v>0?'+':'')+v+'% 4-wk';},
+  read:function(v,c){
+    if(v>0.5)  return _mr('Expanding (QE)','pos','Balance sheet expanding → liquidity adding, risk-on; term premium down, gold up.');
+    if(v<-0.5) return _mr('Shrinking (QT)','warn','QT draining liquidity → tightening, risk-off.');
+    return _mr('Flat / neutral','neutral','Flat post-QT → liquidity headwind removed, but no new QE tailwind (QT-end \u2260 QE-restart).');
+  }},
+ {key:'dxy', label:'US Dollar Index', lens:'Regime · Monetary',
+  read:function(v,c){
+    if(v>110) return _mr('Very strong — stress','neg','>110 global stress → EM dollar-debt crises; gold/silver/commodities/EM/tech all down hard.');
+    if(v>105) return _mr('Strong','neg','>105 strong USD → gold↓, silver↓, EM equities↓, US multinational EPS↓.');
+    if(v>100) return _mr('Firm','warn','Firm USD → mild EM/tech headwind; gold/silver soft.');
+    if(v>=95) return _mr('Neutral','neutral','Neutral USD.');
+    return _mr('Weak','pos','Weak USD → EM/commodity/gold tailwind; bullish KSE-100.');
+  }},
+];
+
+function usRollup(c){
+  // The narrative's "has the story changed?" made into a live switch.
+  var trip = (!isNaN(c.hy_spread)&&c.hy_spread>5)
+          || (!isNaN(c.curve)&&c.curve<0)
+          || (!isNaN(c.gdp_growth)&&c.gdp_growth<0);
+  var regime, regimeCls;
+  if(trip){ regime='Structural risk-off — defend'; regimeCls='red'; }
+  else    { regime='Rate-driven correction / rotation — story intact'; regimeCls='yellow'; }
+  var gap=(!isNaN(c.us_2y)&&!isNaN(c.fed_rate))?(c.us_2y-c.fed_rate):NaN;
+  var mon, monCls;
+  if((!isNaN(gap)&&gap>0.1)||(!isNaN(c.core_pce)&&c.core_pce>3)){ mon='QT-leaning / higher-for-longer'; monCls='yellow'; }
+  else if(!isNaN(gap)&&gap<-0.25){ mon='Easing-biased'; monCls='green'; }
+  else { mon='Neutral'; monCls='neutral'; }
+  var econ, econCls;
+  if((!isNaN(c.gdp_growth)&&c.gdp_growth<0)||(!isNaN(c.unemployment)&&c.unemployment>5)){ econ='Contraction'; econCls='red'; }
+  else if(!isNaN(c.gdp_growth)&&c.gdp_growth<2.0){ econ='Soft, late-cycle'; econCls='yellow'; }
+  else { econ='Expansion'; econCls='green'; }
+  return {trip:trip, regime:regime, regimeCls:regimeCls, mon:mon, monCls:monCls, econ:econ, econCls:econCls};
+}
+
+function lensTile(label, verdict, cls){
+  var pal={green:['#e8f5e9','#1b5e20'],yellow:['#fff8e1','#7a5b00'],red:['#fdecea','#a32d2d'],neutral:['#eef2f7','#37474f']};
+  var c=pal[cls]||pal.neutral;
+  return '<div style="flex:1;min-width:160px;background:'+c[0]+';border-radius:8px;padding:8px 12px;">'
+    +'<div style="font-size:11px;color:'+c[1]+';opacity:.85;letter-spacing:.03em;">'+label+'</div>'
+    +'<div style="font-size:14px;font-weight:700;color:'+c[1]+';margin-top:2px;">'+verdict+'</div></div>';
+}
+
 function calcUS(){
   const ism=val('ism_mfg'),svc=val('ism_svc'),umcsi=val('umcsi');
   const y10=val('us_10y'),y2=val('us_2y'),pce=val('core_pce'),gdp=val('us_gdp'),dxy=val('dxy');
   const wti=val('wti'),brent=val('brent'),crudeProd=val('us_crude_prod'),oilRigs=val('us_oil_rigs');
   let html='';
-  html+=indicatorCard('ISM Manufacturing PMI',ism,ism>=50?'EXPANSION':ism>=47.5?'Mild contraction':'RECESSION SIGNAL',ism>=50?'pos':ism>=47.5?'warn':'neg',ism>=50?'Above 50 = manufacturing growing.':'Below 50 contraction risk.');
-  html+=indicatorCard('ISM Services PMI',svc,svc>=50?'EXPANSION':'Contraction',svc>=50?'pos':'neg',svc>=50?'Services 89% of US GDP expanding.':'Services contraction = recession likely.');
-  const ucls=umcsi>80?'pos':umcsi>=70?'neutral':umcsi>=55?'warn':'neg';
-  const ust=umcsi>80?'BULLISH':umcsi>=70?'Benign':umcsi>=55?'BEARISH':'EXTREMELY BEARISH';
-  html+=indicatorCard('UMCSI Consumer Sentiment',umcsi,ust,ucls,umcsi<55?'Below 55 = deep recession risk. Record-low 44.8 = consumer shock.':'Consumer confidence signal.');
-  const spread=(y10-y2)*100;
-  const scls=spread>30?'pos':spread>-30?'warn':'neg';
-  html+=indicatorCard('US 10Y-2Y Spread',(spread>0?'+':'')+spread.toFixed(0)+' bps',spread>30?'NORMAL curve':spread>-30?'FLAT curve':'INVERTED',scls,spread>30?'Expansion ahead.':spread<-30?'Recession signal.':'Transition zone.');
-  html+=indicatorCard('Core PCE Inflation',pce+'%',pce>3?'HOT':pce>2.3?'Above target':'AT TARGET',pce>3?'neg':pce>2.3?'warn':'pos',pce>3?'Above 2% Fed target; hiking pressure.':'Near target.');
-  html+=indicatorCard('DXY Dollar Index',dxy,dxy>105?'USD STRONG':dxy>100?'USD neutral-strong':dxy>=98?'USD neutral':'USD WEAK',dxy>105?'neg':dxy>100?'warn':'pos',dxy>105?'Bearish for EM (PSX)':dxy<98?'EM flows resume; bullish KSE-100':'Balanced EM environment.');
-  // QE/QT — Fed balance-sheet trend + latest live FOMC announcement
+  // Manual leading indicators not in the live feed (kept; Economy lens).
+  html+=indicatorCard('ISM Manufacturing PMI',ism,ism>=50?'EXPANSION':ism>=47.5?'Mild contraction':'RECESSION SIGNAL',ism>=50?'pos':ism>=47.5?'warn':'neg','<b>Economy</b> · '+(ism>=50?'Above 50 = manufacturing growing.':'Below 50 = contraction risk.'));
+  html+=indicatorCard('ISM Services PMI',svc,svc>=50?'EXPANSION':'Contraction',svc>=50?'pos':'neg','<b>Economy</b> · '+(svc>=50?'Services (89% of US GDP) expanding.':'Services contraction = recession likely.'));
+  // --- WAVE M (M1) reading layer: each live macro tagged with lens + implication + cross-asset knock-on ---
   const usLive=(LIVE&&LIVE.macros&&LIVE.macros.us)?LIVE.macros.us:{};
   const mLive =(LIVE&&LIVE.macros&&LIVE.macros.metals)?LIVE.macros.metals:{};
-  const walclT=(mLive.walcl_change!=null)?mLive.walcl_change:null;
-  const bsDir =walclT==null?'\u2014':(walclT>0.5?'Expanding (QE)':walclT<-0.5?'Shrinking (QT)':'Flat / neutral');
-  const bsCls =walclT==null?'neutral':(walclT>0.5?'pos':walclT<-0.5?'neg':'neutral');
-  const fomc  =usLive.fomc||null;
-  let qeNote='Fed balance sheet '+(mLive.walcl!=null?('$'+mLive.walcl+'T '):'')+(walclT!=null?('('+(walclT>0?'+':'')+walclT+'% 4-wk)'):'')+'. QE = easier liquidity / risk-on; QT = tightening / risk-off.';
-  if(fomc&&fomc.title){
-    const when=fomc.date?(fomc.date+(fomc.days_ago!=null?(' \u00b7 '+fomc.days_ago+'d ago'):'')):'';
-    qeNote='<b>Latest FOMC:</b> '+when+' \u2014 '+(fomc.link?('<a href="'+fomc.link+'" target="_blank" rel="noopener">'+fomc.title+'</a>'):fomc.title)+'<br>'+qeNote;
-  }
-  const qeStatus=fomc&&fomc.stance?fomc.stance:(walclT==null?'NO DATA':(walclT>0.5?'QE':walclT<-0.5?'QT':'NEUTRAL'));
-  html+=indicatorCard('Fed Policy \u2014 QE/QT',bsDir,qeStatus,bsCls,qeNote);
+  const gv=function(lv,id){return (lv!=null&&!isNaN(lv))?lv:(id?val(id):NaN);};
+  const c={
+    fed_rate:gv(usLive.fed_rate,'fed_rate'),
+    core_pce:gv(usLive.core_pce,'core_pce'),
+    cpi_yoy:(usLive.cpi_yoy!=null?usLive.cpi_yoy:NaN),
+    us_10y:gv(usLive.us_10y,'us_10y'),
+    us_2y:gv(usLive.us_2y,'us_2y'),
+    unemployment:(usLive.unemployment!=null?usLive.unemployment:NaN),
+    umcsi:gv(usLive.umcsi,'umcsi'),
+    gdp_growth:(usLive.gdp_growth!=null?usLive.gdp_growth:val('us_gdp')),
+    hy_spread:(usLive.hy_spread!=null?usLive.hy_spread:NaN),
+    permits:(usLive.permits!=null?usLive.permits:NaN),
+    walcl_change:(mLive.walcl_change!=null?mLive.walcl_change:NaN),
+    dxy:gv((mLive.dxy!=null?mLive.dxy:usLive.dxy),'dxy'),
+    wti:gv(usLive.wti,'wti'), brent:gv(usLive.brent,'brent')
+  };
+  c.curve=(!isNaN(c.us_10y)&&!isNaN(c.us_2y))?((c.us_10y-c.us_2y)*100):NaN;
+  MACRO_READS_US.forEach(function(it){
+    var v=c[it.key];
+    if(v==null||isNaN(v)){ html+=indicatorCard(it.label,'\u2014','no live data','neutral','<b>'+it.lens+'</b> · awaiting scan.'); return; }
+    var r=it.read(v,c);
+    var disp=it.fmt?it.fmt(v):(v+(it.unit||''));
+    html+=indicatorCard(it.label,disp,r.state,r.cls,'<b>'+it.lens+'</b> · '+r.implies);
+  });
   document.getElementById('us_indicators').innerHTML=html;
+  const spread=(!isNaN(c.curve))?c.curve:((y10-y2)*100);   // bps, for yield_curve_box + generateUSRec
+  const fomc=usLive.fomc||null;
   let eHtml='';
   eHtml+=indicatorCard('WTI Crude','$'+wti+'/bbl',wti>=90?'HIGH — net positive':wti>=65?'MID — balanced':'LOW — drilling stress',wti>=90?'pos':wti>=65?'neutral':'warn',wti>=90?'Elevated WTI lifts shale margins. Bullish Energy (XLE).':'Mid-band manageable.');
   eHtml+=indicatorCard('US Crude Production',crudeProd+'M b/d',crudeProd>=13.5?'NEAR RECORD':crudeProd>=12.5?'Strong':'Declining',crudeProd>=12.5?'pos':'warn',crudeProd>=13.5?'Near all-time highs. Structural export surplus.':'Watch production trend.');
@@ -495,8 +638,27 @@ function calcUS(){
   document.getElementById('us_energy_indicators').innerHTML=eHtml;
   document.getElementById('us_energy_banner').innerHTML='<strong>Net-Exporter Lens:</strong> US net petroleum exporter since 2020. Oil is now a partial hedge, not a pure cost. Lead weight on production trend (forward supply), not price alone.';
   const regime=regimeOf(gdp,pce);
-  document.getElementById('us_regime_banner').className='alert-banner '+regime.class;
-  document.getElementById('us_regime_banner').innerHTML=`<h3>US Regime: ${regime.name}</h3><p><b>GDP:</b> ${gdp}% | <b>Inflation:</b> ${pce}%</p><p style="margin-top:6px;"><b>Favored sectors:</b> ${regime.sectors}</p>`;
+  const RU=usRollup(c);
+  const tripColor=RU.trip?'#c0392b':'#BF8F00';
+  const curveTxt=isNaN(c.curve)?'\u2014':((c.curve>0?'+':'')+c.curve.toFixed(0)+'bps');
+  let usBanner='<h3>US Market Regime</h3>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px;">'
+      +lensTile('Regime',RU.regime,RU.regimeCls)
+      +lensTile('Monetary · QE/QT',RU.mon,RU.monCls)
+      +lensTile('Economy',RU.econ,RU.econCls)
+    +'</div>'
+    +'<div style="font-size:12px;color:var(--grey-d);margin:0 0 8px;"><b>Growth/inflation quadrant:</b> '+regime.name+' \u2014 favored sectors: '+regime.sectors+'</div>'
+    +'<div class="reading-box" style="border-left:4px solid '+tripColor+';">'
+      +'<b>'+(RU.trip?'\u26A0 Structural-break tripwire TRIPPED':'Structural-break tripwire: clear')+'</b> — flips to risk-off if '
+      +'HY OAS &gt;5% (now '+(isNaN(c.hy_spread)?'\u2014':c.hy_spread+'%')+') OR 2s10s re-inverts (now '+curveTxt+') OR GDP &lt;0 (now '+(isNaN(c.gdp_growth)?'\u2014':c.gdp_growth+'%')+'). '
+      +(RU.trip?'One or more breached — treat weakness as structural; defend.':'None breached — read tech/AI weakness as a rate-driven correction: lean energy / value / quality, size down rate-sensitive growth.')
+    +'</div>';
+  if(fomc&&fomc.title){
+    const when=fomc.date?(fomc.date+(fomc.days_ago!=null?(' \u00b7 '+fomc.days_ago+'d ago'):'')):'';
+    usBanner+='<div style="font-size:11px;color:var(--grey-d);margin-top:6px;"><b>Latest FOMC:</b> '+when+' \u2014 '+(fomc.link?('<a href="'+fomc.link+'" target="_blank" rel="noopener">'+fomc.title+'</a>'):fomc.title)+'</div>';
+  }
+  document.getElementById('us_regime_banner').className='alert-banner '+RU.regimeCls;
+  document.getElementById('us_regime_banner').innerHTML=usBanner;
   document.getElementById('yield_curve_box').innerHTML=`<div class="reading-box"><strong>10Y-2Y Spread: ${(spread>0?'+':'')+spread.toFixed(0)} bps</strong> — ${spread>30?'Normal curve, expansion expected.':spread>-30?'Flat, transition zone.':'Inverted, recession signal.'}</div>`;
   document.getElementById('us_quadrant').innerHTML=quadrant(gdp>0?'Positive':'Negative',pce>2.5?'High':'Low',regime.name);
   document.getElementById('us_sector_rec').innerHTML=generateUSRec(ism,svc,umcsi,spread,pce,gdp,dxy);
@@ -1299,14 +1461,10 @@ function im3CellHTML(ticker) {
 
   const gc = r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f';
   const fc = r.pct>=75?'#059669':r.pct>=60?'#D97706':r.pct>=50?'#F97316':'#E11D48';
-  // Denominator = the stock's own scored max (banks ~70 via System B, industrials 162).
-  // Prefer the record's max; else recover it from score/pct so it always matches the %
-  // (a bank's 39/49=79.6%, not the misleading 39/162). Works on existing data.json.
-  const dmax = r.max || (r.pct>0 ? Math.round(r.score/r.pct*100) : 162);
   return `<div style="min-width:110px;cursor:pointer;" onclick="im3ToggleDetail('${ticker}')">
     <div style="display:flex;align-items:center;gap:6px;">
       <span class="im3-grade-badge ${gc}" style="padding:2px 7px;font-size:11px;">Grade ${r.grade}</span>
-      <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;">${r.score}/${dmax}</span>
+      <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;">${r.score}/162</span>
       ${r.is_bank?'<span style="font-size:9px;background:#EEF2FF;color:var(--navy);padding:1px 4px;border-radius:3px;font-weight:700;">BANK</span>':''}
     </div>
     <div class="im3-score-bar" style="margin-top:4px;height:5px;">
@@ -1364,9 +1522,6 @@ function im3DetailHTML(ticker) {
   const _concerns = (r.top_concerns && r.top_concerns.length) ? r.top_concerns
     : _m.filter(m=>m.verdict==='BAD'&&m.max>0).sort((a,b)=>b.max-a.max).slice(0,4).map(m=>IM3_LABELS[m.key]||m.key);
   const _gradeText = r.grade==='FAIL' ? 'F' : r.grade;
-  const _dmax = r.max || (r.pct>0 ? Math.round(r.score/r.pct*100) : 162);
-  const _cov = (r.is_bank && r.bank_coverage!=null)
-    ? ` · ${Math.round(r.bank_coverage*100)}% coverage` : '';
 
   let html = `<td colspan="20" style="padding:0;background:#F8F9FE;">
     <div style="padding:20px 24px;border-top:2px solid var(--navy);">
@@ -1376,7 +1531,7 @@ function im3DetailHTML(ticker) {
       <div>
         <span style="font-family:var(--font-head);font-size:16px;font-weight:700;">${ticker} — IM3 Quality Score</span>
         ${r.is_bank?'<span style="background:#EEF2FF;color:var(--navy);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:8px;">🏦 BANK SCORING</span>':''}
-        <span class="im3-grade-badge ${r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f'}" style="margin-left:8px;">${r.score}/${_dmax} · ${r.pct}% · Grade ${_gradeText}${_cov}</span>
+        <span class="im3-grade-badge ${r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f'}" style="margin-left:8px;">${r.score}/162 · ${r.pct}% · Grade ${_gradeText}</span>
       </div>
       <button onclick="im3ToggleDetail('${ticker}')" style="background:none;border:1px solid #e5e7eb;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;color:var(--grey-d);">✕ Close</button>
     </div>
@@ -1505,7 +1660,7 @@ function renderExplosiveTable(elId, rows, market) {
         <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
         <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
         <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
-        <div style="opacity:0.75;margin-top:2px;">industrials /162 · banks /~70 (System B)</div>
+        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 pts</div>
       </div>
     </th>`:''}
   </tr></thead><tbody>`;
@@ -1623,7 +1778,7 @@ function renderTceTable(elId, rows, market) {
         <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
         <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
         <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
-        <div style="opacity:0.75;margin-top:2px;">industrials /162 · banks /~70 (System B)</div>
+        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 pts</div>
       </div>
     </th>`:''}
   </tr></thead><tbody>`;
