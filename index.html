@@ -427,7 +427,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.13 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks
+  Muhammad Hammad Khan | Active Macro Dashboard v5.14 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance
 </div>
 
 <script>
@@ -1523,7 +1523,7 @@ function im3CellHTML(ticker) {
   return `<div style="min-width:110px;cursor:pointer;" onclick="im3ToggleDetail('${ticker}')">
     <div style="display:flex;align-items:center;gap:6px;">
       <span class="im3-grade-badge ${gc}" style="padding:2px 7px;font-size:11px;">Grade ${r.grade}</span>
-      <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;">${r.score}/162</span>
+      <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;" title="${r.is_bank?'Bank — scored on bank-applicable factors only (System B), NA excluded':'Scored on all 162 points'}">${r.score}/${r.max||162}</span>
       ${r.is_bank?'<span style="font-size:9px;background:#EEF2FF;color:var(--navy);padding:1px 4px;border-radius:3px;font-weight:700;">BANK</span>':''}
     </div>
     <div class="im3-score-bar" style="margin-top:4px;height:5px;">
@@ -1590,7 +1590,7 @@ function im3DetailHTML(ticker) {
       <div>
         <span style="font-family:var(--font-head);font-size:16px;font-weight:700;">${ticker} — IM3 Quality Score</span>
         ${r.is_bank?'<span style="background:#EEF2FF;color:var(--navy);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:8px;">🏦 BANK SCORING</span>':''}
-        <span class="im3-grade-badge ${r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f'}" style="margin-left:8px;">${r.score}/162 · ${r.pct}% · Grade ${_gradeText}</span>
+        <span class="im3-grade-badge ${r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f'}" style="margin-left:8px;">${r.score}/${r.max||162} · ${r.pct}% · Grade ${_gradeText}</span>
       </div>
       <button onclick="im3ToggleDetail('${ticker}')" style="background:none;border:1px solid #e5e7eb;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;color:var(--grey-d);">✕ Close</button>
     </div>
@@ -1719,7 +1719,7 @@ function renderExplosiveTable(elId, rows, market) {
         <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
         <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
         <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
-        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 pts</div>
+        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 (banks: bank-applicable max, System B)</div>
       </div>
     </th>`:''}
   </tr></thead><tbody>`;
@@ -1837,7 +1837,7 @@ function renderTceTable(elId, rows, market) {
         <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
         <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
         <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
-        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 pts</div>
+        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 (banks: bank-applicable max, System B)</div>
       </div>
     </th>`:''}
   </tr></thead><tbody>`;
@@ -2066,6 +2066,24 @@ function calcMetals(){
       return vWord(sS+tS);
     }
     function driverTxt(a){return a.S.concat(a.T).map(function(x){return x.t;}).slice(0,6).join(', ');}
+    function cleanT(t){return String(t).replace(/[\u25b2\u25bc\u25ac]\+?[0-9.\-]+ WoW/g,'').replace(/\s*\([^)]*\)/g,'').replace(/\s+/g,' ').trim();}
+    function whyTxt(a,N){
+      var lab=N[0];
+      var all=a.S.concat(a.T).filter(function(x){return x.v!=null&&x.v!==0;});
+      if(!all.length) return (a.S.length||a.T.length)?'all live inputs are neutral right now.':'no live inputs yet \u2014 awaiting the feeds below.';
+      var neg=all.filter(function(x){return x.v<0;}).sort(function(p,q){return p.v-q.v;});
+      var pos=all.filter(function(x){return x.v>0;}).sort(function(p,q){return q.v-p.v;});
+      if(/SHORT|CAUTIOUS/.test(lab)){
+        var ps=neg.slice(0,2).map(function(x){return cleanT(x.t);}).filter(Boolean);
+        return ps.length?(ps.join(' and ')+' are the dominant headwinds'+(pos.length?'; the supports are not strong enough to offset them':'')+'.'):'';
+      }
+      if(/LONG/.test(lab)){
+        var ls=pos.slice(0,2).map(function(x){return cleanT(x.t);}).filter(Boolean);
+        return ls.length?(ls.join(' and ')+' carry the bull case.'):'';
+      }
+      var tn=neg.length?cleanT(neg[0].t):null, tp=pos.length?cleanT(pos[0].t):null;
+      return (tn&&tp)?(tn+' offsets '+tp+' \u2014 wait for one side to break.'):'mixed \u2014 no clear edge.';
+    }
 
     // GOLD (~70% strategic)
     var g=acc();
@@ -2124,7 +2142,8 @@ function calcMetals(){
           +badge(N)
           +'<span style="font-size:11.5px;color:var(--grey-d);">strategic '+(sS>0?'+':'')+sS+' \u00b7 tactical '+(tS>0?'+':'')+tS+'</span>'
         +'</div>'
-        +'<div style="font-size:11.5px;color:var(--grey-d);margin-top:3px;"><b>drivers:</b> '+(driverTxt(a)||'\u2014')+'</div>'
+        +'<div style="font-size:11.5px;margin-top:3px;"><b style="color:'+col[N[1]][1]+';">Why '+N[0]+':</b> <span style="color:var(--grey-d);">'+whyTxt(a,N)+'</span></div>'
+        +'<div style="font-size:11px;color:#9aa0a6;margin-top:3px;"><b>drivers:</b> '+(driverTxt(a)||'\u2014')+'</div>'
         +(a.aw.length?'<div style="font-size:10.5px;color:#9aa0a6;margin-top:2px;"><b>awaiting feed:</b> '+a.aw.join(', ')+'</div>':'')
       +'</div>';
     }
@@ -2313,47 +2332,133 @@ function renderTcePredictions(elId, pred){
 }
 function renderRecession(rec){
   var el=document.getElementById('us_recession_box'); if(!el) return;
-  if(!rec||!rec.risk){el.innerHTML='<div class="reading-box">No recession data yet — populates from the scan (FRED recession series + ForexFactory calendar).</div>';return;}
+  if(!rec||!rec.risk){el.innerHTML='<div class="reading-box">No recession data yet \u2014 populates from the scan (FRED recession series + ForexFactory calendar).</div>';return;}
   var col=rec.risk==='HIGH'?'#c0392b':rec.risk==='ELEVATED'?'#c55a11':'#0a7d2c';
   var s=rec.signals||{};
-  var fmt=function(o,suf){return (o&&o.value!=null)?(o.value+(suf||'')+(o.date?' <span style="color:var(--grey-d);font-size:11px;">('+o.date+')</span>':'')):'—';};
-  var sigRows=[['Sahm rule',fmt(s.sahm)],['10y–2y spread',fmt(s.yc_2y,'%')],['10y–3m spread',fmt(s.yc_3m,'%')],
-    ['Recession probability',fmt(s.recession_prob,'%')],['GDPNow',fmt(s.gdpnow,'%')],['Initial claims',fmt(s.claims)]]
-    .map(function(r){return '<tr><td>'+r[0]+'</td><td style="text-align:right;">'+r[1]+'</td></tr>';}).join('');
+  // ---- explained signal cards (screenshot-3 style) instead of bare Signal/Latest rows ----
+  function card(o,opt){
+    var v=(o&&o.value!=null)?o.value:null;
+    var cls=(v==null)?'neutral':opt.status(v);
+    var valTxt=(v==null)?'\u2014':(opt.fmt?opt.fmt(v):v);
+    var dateTxt=(o&&o.date)?' <span style="font-size:10px;color:var(--grey-d);font-family:var(--font-sans);">as of '+o.date+'</span>':'';
+    var statusTxt=(v==null)?'No data':opt.statusLabel(v);
+    var meaning=(v==null)?'\u2014':opt.meaning(v);
+    return '<div class="indicator-card '+cls+'">'
+      +'<div class="label">'+opt.name+'</div>'
+      +'<div class="value">'+valTxt+dateTxt+'</div>'
+      +'<div class="status">'+statusTxt+'</div>'
+      +'<div class="interp"><b>'+opt.cat+'</b> \u00b7 '+meaning+'<br><span style="opacity:.82;"><b>What it is:</b> '+opt.what+'</span></div>'
+      +'</div>';
+  }
+  var cards=[
+    card(s.sahm,{name:'Sahm Rule',cat:'Recession trigger',
+      status:function(v){return v>=0.5?'neg':v>=0.3?'warn':'pos';},
+      statusLabel:function(v){return v>=0.5?'TRIGGERED':v>=0.3?'Approaching':'No signal';},
+      meaning:function(v){return Number(v).toFixed(2)+' vs the 0.50 trigger '+(v>=0.5?'\u2014 recession signal firing':'\u2014 well below the line');},
+      what:'Fires when the 3-month-average unemployment rate rises 0.5pp above its lowest point of the prior 12 months \u2014 one of the most reliable real-time recession-start signals.'}),
+    card(s.yc_2y,{name:'10y-2y Spread',cat:'Yield curve',fmt:function(v){return v+'%';},
+      status:function(v){return v<0?'neg':v<0.2?'warn':'pos';},
+      statusLabel:function(v){return v<0?'Inverted':v<0.2?'Flat':'Normal';},
+      meaning:function(v){return (v<0?'inverted \u2014 a classic recession warning':'positive \u2014 the curve is not inverted (healthy)');},
+      what:'10-year minus 2-year Treasury yield. A negative (inverted) curve has preceded most US recessions by 6-18 months.'}),
+    card(s.yc_3m,{name:'10y-3m Spread',cat:'Yield curve',fmt:function(v){return v+'%';},
+      status:function(v){return v<0?'neg':v<0.2?'warn':'pos';},
+      statusLabel:function(v){return v<0?'Inverted':v<0.2?'Flat':'Normal';},
+      meaning:function(v){return (v<0?'inverted \u2014 the Fed\u2019s preferred recession signal is flashing':'positive \u2014 no inversion');},
+      what:'10-year minus 3-month Treasury yield \u2014 the Fed\u2019s preferred curve measure; inversion here is the single strongest recession predictor.'}),
+    card(s.recession_prob,{name:'Recession Probability',cat:'NY Fed model',fmt:function(v){return v+'%';},
+      status:function(v){return v>=50?'neg':v>=25?'warn':'pos';},
+      statusLabel:function(v){return v>=50?'High':v>=25?'Elevated':'Low';},
+      meaning:function(v){return v+'% model-implied chance of recession within 12 months';},
+      what:'NY Fed model: probability of recession 12 months ahead, derived from the yield curve.'}),
+    card(s.gdpnow,{name:'GDPNow',cat:'Growth nowcast',fmt:function(v){return (v>0?'+':'')+v+'%';},
+      status:function(v){return v<0?'neg':v<1?'warn':'pos';},
+      statusLabel:function(v){return v<0?'Contracting':v<1?'Soft':'Solid';},
+      meaning:function(v){return 'real GDP tracking '+(v>0?'+':'')+v+'% this quarter';},
+      what:'Atlanta Fed real-time estimate of current-quarter GDP growth, updated as data arrives.'}),
+    card(s.claims,{name:'Initial Jobless Claims',cat:'Labor market',fmt:function(v){return Number(v).toLocaleString();},
+      status:function(v){return v>=400000?'neg':v>=300000?'warn':'pos';},
+      statusLabel:function(v){return v>=400000?'Stress':v>=300000?'Rising':'Low';},
+      meaning:function(v){return Number(v).toLocaleString()+' weekly claims \u2014 '+(v>=300000?'labor market softening':'labor market firm');},
+      what:'Weekly new unemployment filings. A sustained climb above ~300k is an early sign of labor-market deterioration.'})
+  ].join('');
   var trig=(rec.triggers&&rec.triggers.length)?('<ul style="margin:6px 0 0 18px;">'+rec.triggers.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul>'):'<span style="color:var(--grey-d);">No triggers firing.</span>';
+  // ---- upcoming releases: readable ET date + why-it-matters ----
+  function fmtDate(d){
+    if(!d) return '';
+    var m=String(d).match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/);
+    if(!m) return d;
+    var Y=+m[1],Mo=+m[2],D=+m[3];
+    var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var wd=days[new Date(Y,Mo-1,D).getDay()];
+    var out=wd+' '+mons[Mo-1]+' '+D;
+    if(m[4]!=null){var h=+m[4],mi=+m[5],ap=h>=12?'PM':'AM',h12=((h+11)%12)+1;out+=', '+h12+':'+(mi<10?'0':'')+mi+' '+ap+' ET';}
+    return out;
+  }
+  function whyEvent(title){
+    var t=String(title||'').toLowerCase();
+    if(t.indexOf('core cpi')>-1||t.indexOf('core pce')>-1) return 'Core inflation \u2014 the Fed\u2019s key gauge. Hotter than forecast \u2192 cuts delayed \u2192 USD up, long-duration tech & gold pressured.';
+    if(t.indexOf('cpi')>-1||t.indexOf('ppi')>-1||t.indexOf('inflation')>-1) return 'Inflation print. Above forecast keeps the Fed cautious (fewer cuts); below forecast opens the door to easing \u2192 risk-on.';
+    if(t.indexOf('unemployment')>-1||t.indexOf('claims')>-1||t.indexOf('payroll')>-1||t.indexOf('jobs')>-1||t.indexOf('nonfarm')>-1) return 'Labor data. Strong = "good news is bad news" (fewer cuts); weak lifts recession-watch but raises cut odds.';
+    if(t.indexOf('sentiment')>-1||t.indexOf('confidence')>-1) return 'Consumer sentiment \u2014 leads spending. A drop signals demand softening ahead.';
+    if(t.indexOf('gdp')>-1) return 'Growth print \u2014 feeds the soft-landing-vs-recession debate that drives the regime read.';
+    if(t.indexOf('fomc')>-1||t.indexOf('fed funds')>-1||t.indexOf('rate decision')>-1) return 'Fed decision/communication \u2014 sets the rate path that drives the whole regime banner.';
+    return 'Moves rate-cut odds and the risk regime depending on the surprise vs forecast.';
+  }
   var cal=(rec.calendar||[]);
   var calRows=cal.length?cal.map(function(c){
       var ic=String(c.impact||'').toLowerCase()==='high'?'#c0392b':'#c55a11';
-      return '<tr><td>'+(c.date||'')+'</td><td><span style="color:'+ic+';font-weight:600;">'+(c.impact||'')+'</span></td><td>'+(c.title||'')+'</td><td style="text-align:right;">'+(c.forecast||'—')+'</td><td style="text-align:right;">'+(c.previous||'—')+'</td></tr>';
+      return '<tr><td style="white-space:nowrap;">'+fmtDate(c.date)+'</td>'
+        +'<td><span style="color:'+ic+';font-weight:600;">'+(c.impact||'')+'</span></td>'
+        +'<td><b>'+(c.title||'')+'</b><div style="font-size:11px;color:var(--grey-d);line-height:1.4;margin-top:2px;">'+whyEvent(c.title)+'</div></td>'
+        +'<td style="text-align:right;">'+(c.forecast||'\u2014')+'</td><td style="text-align:right;">'+(c.previous||'\u2014')+'</td></tr>';
     }).join(''):'<tr><td colspan="5" style="color:var(--grey-d);">No upcoming high-impact US releases in the feed.</td></tr>';
-  el.innerHTML='<div class="alert-banner" style="background:'+col+';color:#fff;"><h3 style="margin:0;">RECESSION RISK: '+rec.risk+' <span style="font-weight:400;">(score '+(rec.score!=null?rec.score:'—')+'/100)</span></h3></div>'
-    +'<div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;">'
-    +'<div style="flex:1;min-width:240px;"><table class="historical-table"><thead><tr><th>Signal</th><th style="text-align:right;">Latest</th></tr></thead><tbody>'+sigRows+'</tbody></table></div>'
-    +'<div style="flex:1;min-width:240px;"><strong>Triggers</strong>'+trig+'<div style="font-size:11px;color:var(--grey-d);margin-top:6px;">Forecast/previous from ForexFactory; realized values from FRED. Source: '+(rec.source||'FRED + faireconomy')+'.</div></div>'
-    +'</div>'
+  el.innerHTML='<div class="alert-banner" style="background:'+col+';color:#fff;"><h3 style="margin:0;">RECESSION RISK: '+rec.risk+' <span style="font-weight:400;">(score '+(rec.score!=null?rec.score:'\u2014')+'/100)</span></h3></div>'
+    +'<div class="grid grid-3" style="margin-top:12px;">'+cards+'</div>'
+    +'<div style="margin-top:14px;"><strong>Triggers</strong> '+trig+'<div style="font-size:11px;color:var(--grey-d);margin-top:6px;">Forecast/previous from ForexFactory; realized values from FRED. Source: '+(rec.source||'FRED + faireconomy')+'.</div></div>'
     +'<h3 class="subsection-title">Upcoming high-impact US releases</h3>'
-    +'<table class="historical-table"><thead><tr><th>Date</th><th>Impact</th><th>Event</th><th style="text-align:right;">Forecast</th><th style="text-align:right;">Previous</th></tr></thead><tbody>'+calRows+'</tbody></table>';
+    +'<table class="historical-table"><thead><tr><th>Date (ET)</th><th>Impact</th><th>Event &mdash; why it matters</th><th style="text-align:right;">Forecast</th><th style="text-align:right;">Previous</th></tr></thead><tbody>'+calRows+'</tbody></table>';
 }
+
 function renderCandidates(elId, rows, market){
   var el=document.getElementById(elId); if(!el) return;
-  if(!Array.isArray(rows)||!rows.length){el.innerHTML='<tbody><tr><td style="color:var(--grey-d);padding:8px;">No live screen survivors in data.json yet — they populate from the scan.</td></tr></tbody>';return;}
   var isUs=(market==='us');
-  var fmt=function(v,d){return (v===null||v===undefined||isNaN(v))?'—':Number(v).toFixed(d===undefined?1:d);};
+  var cap=isUs
+    ? 'Live screen survivors \u2014 names that cleared every gate (non-financials: revenue growth \u2265 15%; financials: ROE \u2265 8% + EPS not deteriorating). Top 15 pass to TCE. The columns ARE the gate metrics (green \u2713 = passed that gate). <b>Status</b> is a rank tier: HIGH-CONVICTION = top 3 by screen rank, STRONG = #4\u20138, WATCH = the rest \u2014 a position in the ranking, not a separate quality verdict (a name can rank top-3 on revenue yet still show a red EPS/ROE gate).'
+    : 'Live screen survivors from the TradingView Pakistan scanner \u2014 <b>discovered candidates, not your holdings</b> (OGDC / PPL / MCB / FFC / HUBC are scored separately). Columns are the growth gates. <b>Status</b> is a rank tier (HIGH-CONVICTION = top 3, STRONG = #4\u20138, WATCH = rest).';
+  var capHtml='<caption style="caption-side:top;text-align:left;font-size:11px;color:var(--grey-d);line-height:1.45;padding:0 0 8px;">'+cap+'</caption>';
+  if(!Array.isArray(rows)||!rows.length){el.innerHTML=capHtml+'<tbody><tr><td style="color:var(--grey-d);padding:8px;">No live screen survivors in data.json yet \u2014 they populate from the scan.</td></tr></tbody>';return;}
+  var fmt=function(v,d){return (v===null||v===undefined||isNaN(v))?'\u2014':Number(v).toFixed(d===undefined?1:d);};
+  function tierPill(st){
+    var s=String(st||'');
+    var c=s.indexOf('HIGH')>-1?['#D1FAE5','#065F46']:s.indexOf('STRONG')>-1?['#E0E7FF','#3730A3']:['#F3F4F6','#6B7280'];
+    return '<span style="background:'+c[0]+';color:'+c[1]+';padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700;white-space:nowrap;">'+(s||'\u2014')+'</span>';
+  }
+  function gate(v,ok){
+    if(v===null||v===undefined||isNaN(v)) return '<td style="text-align:right;color:#9ca3af;">\u2014</td>';
+    var c=ok?'#047857':'#b91c1c';
+    return '<td style="text-align:right;color:'+c+';font-weight:600;">'+Number(v).toFixed(1)+(ok?' \u2713':'')+'</td>';
+  }
   var head=isUs
-    ? '<tr><th>Ticker</th><th>Name</th><th>Sector</th><th style="text-align:right;">Mkt Cap $M</th><th style="text-align:right;">Rev %</th><th style="text-align:right;">EPS %</th><th style="text-align:right;">ROE %</th><th style="text-align:right;">P/E</th><th style="text-align:right;">Insider %</th><th>Status</th></tr>'
+    ? '<tr><th>Ticker</th><th>Name</th><th>Sector</th><th style="text-align:right;">Mkt Cap $M</th><th style="text-align:right;" title="Gate: \u2265 15% revenue growth (non-financials)">Rev %</th><th style="text-align:right;" title="Gate: EPS not deteriorating (\u2265 0%)">EPS %</th><th style="text-align:right;" title="Gate: \u2265 8% ROE (primary gate for financials)">ROE %</th><th style="text-align:right;">P/E</th><th style="text-align:right;" title="Higher insider ownership = conviction">Insider %</th><th>Status</th></tr>'
     : '<tr><th>Ticker</th><th>Name</th><th>Sector</th><th style="text-align:right;">Price</th><th style="text-align:right;">Rev %</th><th style="text-align:right;">EPS %</th><th style="text-align:right;">3M %</th><th>Status</th></tr>';
   var body=rows.map(function(r){
+    var isFin=/financ|bank|insur/i.test((r.sector||'')+' '+(r.industry||''));
     if(isUs){
+      var revOk=isFin?true:(Number(r.rev_growth)>=15);
+      var epsOk=(Number(r.eps_growth)>=0);
+      var roeOk=(Number(r.roe)>=8);
       return '<tr><td><strong>'+(r.ticker||'')+'</strong></td><td>'+(r.name||'')+'</td><td>'+(r.sector||'')+'</td>'
-        +'<td style="text-align:right;">'+fmt(r.market_cap_m,0)+'</td><td style="text-align:right;">'+fmt(r.rev_growth)+'</td>'
-        +'<td style="text-align:right;">'+fmt(r.eps_growth)+'</td><td style="text-align:right;">'+fmt(r.roe)+'</td>'
-        +'<td style="text-align:right;">'+fmt(r.pe)+'</td><td style="text-align:right;">'+fmt(r.insider_pct)+'</td><td>'+(r.status||'')+'</td></tr>';
+        +'<td style="text-align:right;">'+fmt(r.market_cap_m,0)+'</td>'
+        +gate(r.rev_growth,revOk)+gate(r.eps_growth,epsOk)+gate(r.roe,roeOk)
+        +'<td style="text-align:right;">'+fmt(r.pe)+'</td><td style="text-align:right;">'+fmt(r.insider_pct)+'</td><td>'+tierPill(r.status)+'</td></tr>';
     }
     return '<tr><td><strong>'+(r.ticker||'')+'</strong></td><td>'+(r.name||'')+'</td><td>'+(r.sector||'')+'</td>'
-      +'<td style="text-align:right;">'+fmt(r.price,2)+'</td><td style="text-align:right;">'+fmt(r.rev_growth)+'</td>'
-      +'<td style="text-align:right;">'+fmt(r.eps_growth)+'</td><td style="text-align:right;">'+fmt(r.perf_3m)+'</td><td>'+(r.status||'')+'</td></tr>';
+      +'<td style="text-align:right;">'+fmt(r.price,2)+'</td>'
+      +gate(r.rev_growth,(Number(r.rev_growth)>=0))+gate(r.eps_growth,(Number(r.eps_growth)>=0))
+      +'<td style="text-align:right;">'+fmt(r.perf_3m)+'</td><td>'+tierPill(r.status)+'</td></tr>';
   }).join('');
-  el.innerHTML='<thead>'+head+'</thead><tbody>'+body+'</tbody>';
+  el.innerHTML=capHtml+'<thead>'+head+'</thead><tbody>'+body+'</tbody>';
 }
 function applyLive(){
   if(LIVE&&LIVE.macros&&LIVE.macros.psx&&LIVE.macros.psx.usd_pkr){safe_lgPkr=LIVE.macros.psx.usd_pkr;}
