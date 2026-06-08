@@ -50,13 +50,18 @@ import requests
 import pandas as pd
 import numpy as np
 
+try:
+    import tce_psx_analyst                 # D2: PSX analyst-conviction streams (TV FactSet columns)
+except Exception:
+    tce_psx_analyst = None
+
 # =============================================================
 # CONFIG
 # =============================================================
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.30.0'  # 1.30.0: (Wave T3 feeds) oil WTI/Brent trend (Yahoo widened 5d->6mo, backfilled 5/21/63 -> wti_/brent_wow/mom/qoq, live day-1); KSE-100 trend (dedup-by-date session history -> kse100_wow/mom/qoq, accrues per session); Zacks sector rotation (pct_top_chg = each sector's #1/#2 breadth change vs the prior scrape, carried on skip days). Dashboard v5.16 reads these into the energy oil-momentum note, the US sector-rotation read, the allocation rate-path repricing line, and the PSX devaluation-slope alert (reserves/PKR trajectory). 1.29.0: (Wave T3 monthly/quarterly trend) cadence-matched MoM/QoQ/YoY on the macro PRINT series via _print_trend, backfilled from the FRED series (live day-1): core_pce/cpi_yoy trend the YoY *rate* (inflation accelerating vs decelerating, not the index level), gdp_growth quarterly (QoQ/YoY), and unemployment/umcsi/mfg_emp/industrial_prod/permits monthly levels (MoM/QoQ/YoY). Dashboard T3 interpretation (macro tab prints-vs-prior-release, Sector rotation, Allocation zone migration, Devaluation slope) is the paired index build. 1.28.0: (Wave T2 daily-WoW trend) WoW/MoM/QoQ on the daily market series via 5/21/63-trading-day windows, all backfilled from the source series (live day-1): FRED us_10y/us_2y/hy_spread + dfii10/breakeven_10y/gvz, Yahoo gold/silver/platinum/palladium px + dxy (period widened 5d->6mo) and usd_pkr; plus a us_2s10s spread value. Dashboard M1 US-regime + M6 metals engine now fold real-yield/DXY/breakeven/GVZ/yield direction into their reads. 1.27.0: (Wave T1 weekly-native trend) generic {d,v} dedup-by-date history + WoW/MoM/QoQ trend helpers applied to the four weekly-native series: COT metals net-%OI (now dedup-by-report-date, fixes same-day duplicate appends -> cot_{m}_pct_wow/_mom/_qoq), COT futures net (backfilled from the DESC CFTC rows -> net_wow/_mom/_qoq, live day-1), WALCL (backfilled from the FRED weekly series -> walcl_wow/_mom/_qoq), and SBP reserves (value-change-dedup history -> sbp_reserves_wow/_mom/_qoq). Dashboard M6 metals engine now folds COT *direction* into the tactical score. 1.26.0: (Wave M5/M6 metals data) added FRED real-yield DFII10 + 10y breakeven T10YIE + Gold-VIX GVZCLS into macros.metals (dfii10/breakeven_10y/gvz), and 156-week COT net-%-OI history+percentile persistence (cot_{gold,silver,copper}_hist/_pctile) so the dashboard M6 engine swaps its real-yield proxy for true TIPS and its COT proxy for a percentile as history accrues. 1.25.0: (Wave D1 step 3) ROE>=ROE_FIN_MIN (8%) is now the PRIMARY financial screen gate (from the live diag: keeps 193/387, median 9.2%), with EPS-YoY>=0% as a not-deteriorating secondary; the Yahoo revenue gate is BYPASSED for financials (revenue meaningless for a spread/credit business) while non-financials still require revenueGrowth>=15%. Missing vendor field never drops a bank. Log line is now 'D1 bank gate: N in-band -> dropped R (ROE<8%) + E (EPS<0) -> M to Yahoo'. (Version bump re-scrapes ETF overlap once.) 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.31.0'  # 1.31.0: (Wave D2 — PSX analyst conviction) wired tce_psx_analyst.py into the PSX TCE: PSX_SCAN_COLS now pulls the TV FactSet analyst block (price_target_average, recommendation_mark/buy/total, earnings_per_share_forecast_next_fq/fq, earnings_per_share_fq); derive_psx_candidates carries an analyst row per candidate; compute_tce_streams folds derive_psx_analyst_streams into three new conviction streams s11_target_upside (>=15% target upside) / s12_recommendation (>=60% buy or rec_mark>=0.5) / s9_eps_revision (forward EPS rising >=2% run-over-run, persisted via prev_fwd). Added to COUNTED+CONVICTION GLOBALLY but only the PSX path sets them, so US tiers are provably unchanged (validated: KLAC-like still HIGH 7/4; covered PSX name reaches HIGH 5/5; uncovered PSX name unchanged WATCH 2/2). Probe-confirmed TV coverage: analyst block 98-100%%, 15/15 on holdings. (Version bump re-scrapes ETF overlap once.) 1.30.0: (Wave T3 feeds) oil WTI/Brent trend (Yahoo widened 5d->6mo, backfilled 5/21/63 -> wti_/brent_wow/mom/qoq, live day-1); KSE-100 trend (dedup-by-date session history -> kse100_wow/mom/qoq, accrues per session); Zacks sector rotation (pct_top_chg = each sector's #1/#2 breadth change vs the prior scrape, carried on skip days). Dashboard v5.16 reads these into the energy oil-momentum note, the US sector-rotation read, the allocation rate-path repricing line, and the PSX devaluation-slope alert (reserves/PKR trajectory). 1.29.0: (Wave T3 monthly/quarterly trend) cadence-matched MoM/QoQ/YoY on the macro PRINT series via _print_trend, backfilled from the FRED series (live day-1): core_pce/cpi_yoy trend the YoY *rate* (inflation accelerating vs decelerating, not the index level), gdp_growth quarterly (QoQ/YoY), and unemployment/umcsi/mfg_emp/industrial_prod/permits monthly levels (MoM/QoQ/YoY). Dashboard T3 interpretation (macro tab prints-vs-prior-release, Sector rotation, Allocation zone migration, Devaluation slope) is the paired index build. 1.28.0: (Wave T2 daily-WoW trend) WoW/MoM/QoQ on the daily market series via 5/21/63-trading-day windows, all backfilled from the source series (live day-1): FRED us_10y/us_2y/hy_spread + dfii10/breakeven_10y/gvz, Yahoo gold/silver/platinum/palladium px + dxy (period widened 5d->6mo) and usd_pkr; plus a us_2s10s spread value. Dashboard M1 US-regime + M6 metals engine now fold real-yield/DXY/breakeven/GVZ/yield direction into their reads. 1.27.0: (Wave T1 weekly-native trend) generic {d,v} dedup-by-date history + WoW/MoM/QoQ trend helpers applied to the four weekly-native series: COT metals net-%OI (now dedup-by-report-date, fixes same-day duplicate appends -> cot_{m}_pct_wow/_mom/_qoq), COT futures net (backfilled from the DESC CFTC rows -> net_wow/_mom/_qoq, live day-1), WALCL (backfilled from the FRED weekly series -> walcl_wow/_mom/_qoq), and SBP reserves (value-change-dedup history -> sbp_reserves_wow/_mom/_qoq). Dashboard M6 metals engine now folds COT *direction* into the tactical score. 1.26.0: (Wave M5/M6 metals data) added FRED real-yield DFII10 + 10y breakeven T10YIE + Gold-VIX GVZCLS into macros.metals (dfii10/breakeven_10y/gvz), and 156-week COT net-%-OI history+percentile persistence (cot_{gold,silver,copper}_hist/_pctile) so the dashboard M6 engine swaps its real-yield proxy for true TIPS and its COT proxy for a percentile as history accrues. 1.25.0: (Wave D1 step 3) ROE>=ROE_FIN_MIN (8%) is now the PRIMARY financial screen gate (from the live diag: keeps 193/387, median 9.2%), with EPS-YoY>=0% as a not-deteriorating secondary; the Yahoo revenue gate is BYPASSED for financials (revenue meaningless for a spread/credit business) while non-financials still require revenueGrowth>=15%. Missing vendor field never drops a bank. Log line is now 'D1 bank gate: N in-band -> dropped R (ROE<8%) + E (EPS<0) -> M to Yahoo'. (Version bump re-scrapes ETF overlap once.) 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -1759,7 +1764,11 @@ _PSX_FALLBACK = [
 
 # --- F5 live universe via TradingView Pakistan scanner (pure parse/derive + thin network wrapper) ---
 PSX_SCAN_COLS = ['name', 'close', 'volume', 'market_cap_basic', 'Perf.3M', 'sector',
-                 'total_revenue_yoy_growth_ttm', 'earnings_per_share_diluted_yoy_growth_ttm']
+                 'total_revenue_yoy_growth_ttm', 'earnings_per_share_diluted_yoy_growth_ttm',
+                 # D2 analyst-conviction columns (TV FactSet): target/recommendation/forward-EPS
+                 'price_target_average', 'recommendation_mark', 'recommendation_buy',
+                 'recommendation_total', 'earnings_per_share_forecast_next_fq',
+                 'earnings_per_share_forecast_fq', 'earnings_per_share_fq']
 PSX_MCAP_MIN  = 3e9     # exclude micro-caps (PKR)
 PSX_MCAP_MAX  = 60e9    # exclude KSE-30 mega-caps; keep the small/mid "sweet spot"
 PSX_TOP_N     = 25
@@ -1805,10 +1814,15 @@ def derive_psx_candidates(rows, mcap_min=PSX_MCAP_MIN, mcap_max=PSX_MCAP_MAX, to
         score = (px * vol) * (1 + max(chg3m, 0) / 100.0)
         scored.append((score, r))
     scored.sort(key=lambda x: -x[0])
+    def _analyst(r):  # D2: raw analyst fields for tce_psx_analyst.derive_psx_analyst_streams
+        return {k: r.get(k) for k in ('close', 'price_target_average', 'recommendation_mark',
+                                      'recommendation_buy', 'recommendation_total',
+                                      'earnings_per_share_forecast_next_fq',
+                                      'earnings_per_share_forecast_fq', 'earnings_per_share_fq')}
     return [(r['ticker'], r.get('name') or r['ticker'], r.get('sector') or '',
              _f(r.get('total_revenue_yoy_growth_ttm')),
              _f(r.get('earnings_per_share_diluted_yoy_growth_ttm')),
-             _f(r.get('Perf.3M')))
+             _f(r.get('Perf.3M')), _analyst(r))
             for _, r in scored[:top_n]]
 
 
@@ -1828,8 +1842,9 @@ def screen_psx_stock(ticker_tuple):
     rev_growth = ticker_tuple[3] if len(ticker_tuple) > 3 else None
     eps_growth = ticker_tuple[4] if len(ticker_tuple) > 4 else None
     perf_3m    = ticker_tuple[5] if len(ticker_tuple) > 5 else None
+    analyst    = ticker_tuple[6] if len(ticker_tuple) > 6 else None   # D2: TV analyst row (or None)
     out = {'ticker': ticker, 'name': name, 'sector': sector,
-           'price': None, 'avg_volume': None,
+           'price': None, 'avg_volume': None, 'analyst': analyst,
            'rev_growth': rev_growth, 'eps_growth': eps_growth, 'perf_3m': perf_3m,
            'growth_source': 'psx_annual' if rev_growth is not None else None,
            'data_source': 'cached', 'status': 'STRONG'}
@@ -1920,8 +1935,9 @@ def screen_psx_universe():
 ATTENTION   = ('s1_news', 's2_sponsor', 's3_insider', 's5_volume')
 FUNDAMENTAL = ('s6_momentum', 's7_margin', 's8_capital')
 REVISION    = ('s9_eps_rev', 's10_rev_rev')
-CONVICTION  = FUNDAMENTAL + REVISION            # streams that must converge for HIGH (the discriminators)
-COUNTED     = ATTENTION + FUNDAMENTAL + REVISION
+ANALYST     = ('s9_eps_revision', 's11_target_upside', 's12_recommendation')  # D2: PSX-only (TV FactSet). US never sets these -> stays 0 -> US scoring provably unchanged.
+CONVICTION  = FUNDAMENTAL + REVISION + ANALYST  # streams that must converge for HIGH (the discriminators)
+COUNTED     = ATTENTION + FUNDAMENTAL + REVISION + ANALYST
 BINARY_STREAMS = COUNTED                        # back-compat alias
 
 # Tuning (precision backtest, 2026-06-03): the price core is a real-but-modest trend-confirmer whose
@@ -2075,7 +2091,8 @@ def update_tce_predictions(prev, today_iso, rows,
 
 
 def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None,
-                        eps_growth_pct=None, rev_growth_pct=None, perf_3m=None):
+                        eps_growth_pct=None, rev_growth_pct=None, perf_3m=None,
+                        analyst_row=None, prev_fwd_eps=None):
     streams = {k: 0 for k in COUNTED}
 
     # s1_news / s2_sponsor — Google News RSS recent count (last 14 days)
@@ -2167,12 +2184,29 @@ def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None
 
     streams.setdefault('rs_ok', True)
     streams['total'] = sum(streams.get(k, 0) for k in COUNTED)
+    # D2: PSX analyst-conviction streams (TV FactSet). US never enters this branch, so its
+    # s9_eps_revision/s11_target_upside/s12_recommendation stay 0 (US scoring unchanged).
+    if market == 'psx' and analyst_row and tce_psx_analyst is not None:
+        try:
+            _a = tce_psx_analyst.derive_psx_analyst_streams(analyst_row, prev_fwd_eps)
+            for _s in _a.get('streams', []):
+                if _s in streams:
+                    streams[_s] = 1
+            streams['analyst_covered'] = _a.get('analyst_covered', False)
+            streams['analyst_detail'] = _a.get('detail', {})
+            _fe = _a.get('detail', {}).get('fwd_eps')
+            if _fe is not None:
+                streams['fwd_eps'] = _fe          # persisted for next-run revision detection
+        except Exception:
+            pass
+
     return streams
 
 
-def run_tce(candidates, market='us', max_count=20, spy_6mo_ret=None, prev_rev=None):
+def run_tce(candidates, market='us', max_count=20, spy_6mo_ret=None, prev_rev=None, prev_fwd=None):
     log(f'=== TCE on {market.upper()} ({len(candidates)} candidates) ===')
     prev_rev = prev_rev or {}
+    prev_fwd = prev_fwd or {}
     tce_results = []
     for c in candidates[:max_count]:
         ticker = c['ticker']
@@ -2181,9 +2215,11 @@ def run_tce(candidates, market='us', max_count=20, spy_6mo_ret=None, prev_rev=No
             _eg = c.get('eps_growth') if market == 'psx' else None
             _rg = c.get('rev_growth') if market == 'psx' else None
             _p3m = c.get('perf_3m') if market == 'psx' else None    # TV 3M perf -> s6 fallback when no .KA history
+            _ar  = c.get('analyst') if market == 'psx' else None     # D2: TV analyst row (PSX only)
             streams = compute_tce_streams(ticker, market, spy_6mo_ret=spy_6mo_ret,
                                           prev_rev_est=prev_rev.get(ticker),
-                                          eps_growth_pct=_eg, rev_growth_pct=_rg, perf_3m=_p3m)
+                                          eps_growth_pct=_eg, rev_growth_pct=_rg, perf_3m=_p3m,
+                                          analyst_row=_ar, prev_fwd_eps=prev_fwd.get(ticker))
             tier_label, total, conv = tce_tier(streams, market)
             tce_results.append({
                 'ticker': ticker, 'name': c.get('name', ticker), 'sector': c.get('sector', ''),
@@ -3671,9 +3707,11 @@ def main():
     try:
         _prev_psx = {r['ticker']: r['streams'].get('rev_est') for r in EXISTING.get('tce_psx', [])
                      if isinstance(r.get('streams'), dict)}
+        _prev_fwd = {r['ticker']: r['streams'].get('fwd_eps') for r in EXISTING.get('tce_psx', [])
+                     if isinstance(r.get('streams'), dict) and r['streams'].get('fwd_eps') is not None}
         data['tce_psx'] = run_tce(data['psx_candidates'], market='psx',
                                   max_count=max(len(data['psx_candidates']), 10),
-                                  spy_6mo_ret=_spy6, prev_rev=_prev_psx)
+                                  spy_6mo_ret=_spy6, prev_rev=_prev_psx, prev_fwd=_prev_fwd)
     except Exception as e:
         log(f'PSX TCE crashed: {e}')
         data['meta']['errors'].append(f'psx_tce: {e}')
