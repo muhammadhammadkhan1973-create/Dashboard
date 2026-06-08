@@ -427,7 +427,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.15 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields
+  Muhammad Hammad Khan | Active Macro Dashboard v5.16 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory)
 </div>
 
 <script>
@@ -652,6 +652,13 @@ function calcUS(){
   eHtml+=indicatorCard('US Rotary Rigs (total)',oilRigs+' rigs',oilRigs>=700?'High activity':oilRigs>=560?'Steady':'Subdued',oilRigs>=560?'pos':'warn','Total US oil+gas rotary rigs (EIA, monthly). <b>Why it is here:</b> a leading supply gauge — rigs drilling now become production in 6–12 months, so falling rigs tighten future crude supply (bullish oil, supports the &ldquo;Arab&nbsp;Light&nbsp;&gt;$60 = overweight E&amp;P&rdquo; tilt and your XOM·CVX·COP·EOG), while rising rigs add supply. Shale efficiency means high output on fewer rigs, so read the <i>trend</i>, not just the level.');
   document.getElementById('us_energy_indicators').innerHTML=eHtml;
   document.getElementById('us_energy_banner').innerHTML='<strong>Net-Exporter Lens:</strong> US net petroleum exporter since 2020. Oil is now a partial hedge, not a pure cost. Lead weight on production trend (forward supply), not price alone.';
+  (function(){var U=(LIVE&&LIVE.macros&&LIVE.macros.us)?LIVE.macros.us:{};
+    if(U.wti_wow==null&&U.brent_wow==null)return;
+    function a(x){return x>0?'\u25b2':x<0?'\u25bc':'\u25ac';}function pp(x){return (x>0?'+':'')+x;}
+    var w=U.wti_wow,b=U.brent_wow,bias=(w!=null?w:0)+(b!=null?b:0);
+    var read=bias>1?'rising \u2014 supports the Arab-Light>$60 overweight-E&P tilt (XOM\u00b7CVX\u00b7COP\u00b7EOG)':bias<-1?'falling \u2014 eases the E&P tilt; watch shale margins':'flat';
+    document.getElementById('us_energy_banner').innerHTML += '<div style="font-size:11.5px;color:#555;margin-top:6px;border-top:1px solid #eee;padding-top:5px;"><b>Oil momentum (WoW):</b> WTI '+(U.wti!=null?'$'+U.wti:'')+(w!=null?' '+pp(w)+' '+a(w):'')+(U.brent!=null?' \u00b7 Brent $'+U.brent:'')+(b!=null?' '+pp(b)+' '+a(b):'')+' \u2014 '+read+' (Wave T3).</div>';
+  })();
   const regime=regimeOf(gdp,pce);
   const RU=usRollup(c);
   const tripColor=RU.trip?'#c0392b':'#BF8F00';
@@ -696,6 +703,20 @@ function calcUS(){
   document.getElementById('yield_curve_box').innerHTML=`<div class="reading-box"><strong>10Y-2Y Spread: ${(spread>0?'+':'')+spread.toFixed(0)} bps</strong> — ${spread>30?'Normal curve, expansion expected.':spread>-30?'Flat, transition zone.':'Inverted, recession signal.'}</div>`;
   document.getElementById('us_quadrant').innerHTML=quadrant(gdp>0?'Positive':'Negative',pce>2.5?'High':'Low',regime.name);
   document.getElementById('us_sector_rec').innerHTML=generateUSRec(ism,svc,umcsi,spread,pce,gdp,dxy);
+  (function(){var Z=(LIVE&&LIVE.zacks_sectors)?LIVE.zacks_sectors:null; if(!Z)return;
+    var rows=[];Object.keys(Z).forEach(function(k){if(k.charAt(0)==='_')return;var v=Z[k];if(v&&typeof v==='object'&&v.pct_top_chg!=null)rows.push([k,v.pct_top_chg]);});
+    if(!rows.length)return;
+    rows.sort(function(p,q){return q[1]-p[1];});
+    function a(x){return x>0?'\u25b2':x<0?'\u25bc':'\u25ac';}function pp(x){return (x>0?'+':'')+x;}
+    var inn=rows.filter(function(r){return r[1]>0;}).slice(0,3).map(function(r){return r[0]+' '+pp(r[1])+'pp '+a(r[1]);});
+    var outg=rows.filter(function(r){return r[1]<0;}).slice(-3).map(function(r){return r[0]+' '+pp(r[1])+'pp '+a(r[1]);});
+    var html='<div class="reading-box" style="margin-top:10px;"><b>Sector rotation (Zacks #1/#2 breadth vs prior scrape):</b> '
+      +(inn.length?'<span style="color:#047857;">rotating IN \u2014 '+inn.join(', ')+'</span>':'')
+      +(inn.length&&outg.length?' \u00b7 ':'')
+      +(outg.length?'<span style="color:#b91c1c;">rotating OUT \u2014 '+outg.join(', ')+'</span>':'')
+      +' <span style="color:var(--grey-d);">\u2014 where Zacks rank momentum is concentrating (Wave T3).</span></div>';
+    document.getElementById('us_sector_rec').innerHTML += html;
+  })();
 }
 function quadrant(growth,inflation,currentRegime){
   const cells=[{name:'GOLDILOCKS',g:'Positive',i:'Low',color:'#FFF2CC'},{name:'REFLATION',g:'Positive',i:'High',color:'#C6EFCE'},{name:'DISINFLATION',g:'Negative',i:'Low',color:'#FFC7CE'},{name:'STAGFLATION',g:'Negative',i:'High',color:'#FCE4D6'}];
@@ -871,6 +892,20 @@ function calcDevAlert(){
   else if(fireCount===2){distMsg=dist+' triggers away from the historical cluster. Watchful but stable.';distColor='#BF8F00';}
   else{distMsg=dist+' triggers away from the historical crash cluster. Risk is FAR, not near.';distColor='#548235';}
   document.getElementById('dev_distance').innerHTML=`<div class="reading-box" style="border-left:5px solid ${distColor};"><div style="font-size:22px;font-weight:800;color:${distColor};">${fireCount} / 5 core triggers firing</div><div style="margin-top:6px;font-weight:600;">${distMsg}</div><div style="margin-top:6px;font-size:12px;color:var(--grey-d);">Distance to historical devaluation threshold: <b>${dist>0?dist+' more trigger'+(dist>1?'s':''):'reached'}</b>. Pattern basis: 2008, 2013, 2018, 2022, 2023 each had ≥4 of these firing within 6 months prior.</div></div>`;
+
+  (function(){var P=(LIVE&&LIVE.macros&&LIVE.macros.psx)?LIVE.macros.psx:{};
+    if(P.sbp_reserves_mom==null&&P.usd_pkr_mom==null&&P.sbp_reserves_wow==null&&P.usd_pkr_wow==null)return;
+    function a(x){return x>0?'\u25b2':x<0?'\u25bc':'\u25ac';}function pp(x){return (x>0?'+':'')+x;}
+    var rv=(P.sbp_reserves_mom!=null?P.sbp_reserves_mom:P.sbp_reserves_wow);
+    var fx=(P.usd_pkr_mom!=null?P.usd_pkr_mom:P.usd_pkr_wow);
+    var parts=[];
+    if(rv!=null)parts.push('reserves '+pp(rv)+' '+a(rv)+(rv<0?' (drawing down \u2014 stress)':rv>0?' (rebuilding)':' (flat)'));
+    if(fx!=null)parts.push('USD/PKR '+pp(fx)+' '+a(fx)+(fx>0?' (PKR weakening)':fx<0?' (PKR firming)':' (flat)'));
+    if(!parts.length)return;
+    var stress=((rv!=null&&rv<0)?1:0)+((fx!=null&&fx>0)?1:0);
+    var col=stress>=2?'#b91c1c':stress===1?'#c55a11':'#047857';
+    var el=document.getElementById('dev_distance'); if(el) el.innerHTML += '<div class="reading-box" style="border-left:5px solid '+col+';margin-top:10px;"><b>Devaluation slope (trajectory, not level):</b> '+parts.join(' \u00b7 ')+' \u2014 '+(stress>=2?'both moving the wrong way \u2014 pressure building':stress===1?'one side deteriorating \u2014 watch':'trajectory stable')+'. The slope is the alert, not the level (Wave T3).</div>';
+  })();
 
   // ================= ② CORE TRIGGER TABLE =================
   let ct='<thead><tr><th>Core Trigger</th><th>Current</th><th>Status</th><th>Read</th></tr></thead><tbody>';
@@ -1151,6 +1186,19 @@ function calcZone(){
     }
   })();
   document.getElementById('zone_kse_table').innerHTML='<div class="reading-box">KSE-100 monthly (reference): Sep 163,848 → Dec 174,054 → Mar 148,743 → May 167,844.</div>';
+  (function(){var U=(LIVE&&LIVE.macros&&LIVE.macros.us)?LIVE.macros.us:{};var P=(LIVE&&LIVE.macros&&LIVE.macros.psx)?LIVE.macros.psx:{};
+    function a(x){return x>0?'\u25b2':x<0?'\u25bc':'\u25ac';}function pp(x){return (x>0?'+':'')+x;}
+    var rp=document.getElementById('zone_rate_path');
+    if(rp&&(U.us_10y_wow!=null||U.us_2s10s!=null)){
+      var y=U.us_10y_wow,s10=U.us_2s10s;
+      var read=(y!=null&&y>0)?'global rates repricing UP \u2014 keeps the defensive tilt (RED-zone bias holds)':(y!=null&&y<0)?'global rates easing \u2014 a sustained move would migrate the zone toward risk-on':'rate path stable';
+      rp.insertAdjacentHTML('beforeend','<div class="reading-box" style="margin-top:8px;font-size:11.5px;"><b>Rate-path repricing:</b> US 10y'+(U.us_10y!=null?' '+U.us_10y+'%':'')+(y!=null?' '+pp(y)+' '+a(y)+' WoW':'')+(s10!=null?' \u00b7 2s10s '+s10:'')+' \u2014 '+read+'. SBP sets the PKR zone; the US path sets the global cost-of-capital backdrop (Wave T3).</div>');
+    }
+    var kt=document.getElementById('zone_kse_table');
+    if(kt&&(P.kse100_wow!=null||P.kse100_mom!=null)){
+      kt.insertAdjacentHTML('beforeend','<div class="reading-box" style="margin-top:8px;font-size:11.5px;"><b>KSE-100 trend (live):</b> '+(P.kse100!=null?Number(P.kse100).toLocaleString():'')+(P.kse100_wow!=null?' \u00b7 '+pp(P.kse100_wow)+' DoD '+a(P.kse100_wow):'')+(P.kse100_mom!=null?' \u00b7 '+pp(P.kse100_mom)+' WoW '+a(P.kse100_mom):'')+' (Wave T3).</div>');
+    }
+  })();
   const favSectors=(curr==='DARK GREEN'||curr==='LIGHT GREEN')
     ? 'Cyclicals lead — Cement, IT, Auto, Engineering, Textile'
     : 'Defensives lead — Banks, Oil/E&P, Fertilizer, Power, Utilities';
