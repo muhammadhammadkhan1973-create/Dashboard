@@ -90,7 +90,18 @@ jobs:
           ]
           needs_heal = bool(missing_im3)
 
-          changed = names_changed or needs_heal
+          # Scorer-version auto-force: if im3_score.py itself changed since the last
+          # successful score, re-score even when the ticker set is unchanged (so a
+          # scorer upgrade like System B propagates automatically — no manual checkbox).
+          import hashlib
+          try:    cur_hash = hashlib.sha256(open('im3_score.py','rb').read()).hexdigest()
+          except Exception: cur_hash = ''
+          try:    prev_hash = open('.im3_scorer_hash').read().strip()
+          except Exception: prev_hash = ''
+          scorer_changed = bool(cur_hash) and cur_hash != prev_hash
+          print(f"Scorer changed: {scorer_changed} (cur {cur_hash[:8]} vs prev {prev_hash[:8]})")
+
+          changed = names_changed or needs_heal or scorer_changed
           print(f"Previous:      {prev_tickers}")
           print(f"New:           {new_tickers}")
           print(f"Names changed: {names_changed}")
@@ -206,6 +217,14 @@ jobs:
               json.dump(data, f, indent=2, default=str)
 
           print(f"data.json updated with IM3 scores for {len(score_map)} stocks")
+
+          # Stamp the scorer version so the next run only re-scores on a real change.
+          import hashlib
+          try:
+              open('.im3_scorer_hash','w').write(hashlib.sha256(open('im3_score.py','rb').read()).hexdigest())
+              print('Updated .im3_scorer_hash')
+          except Exception as _e:
+              print('scorer hash write failed:', _e)
           EOF
 
       - name: Update explosive ticker list (no change)
@@ -222,6 +241,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data.json
+          git add data.json .im3_scorer_hash
           git diff --quiet --cached || git commit -m "Scan run"
           git push
