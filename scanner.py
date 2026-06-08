@@ -56,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.27.0'  # 1.27.0: (Wave T1 weekly-native trend) generic {d,v} dedup-by-date history + WoW/MoM/QoQ trend helpers applied to the four weekly-native series: COT metals net-%OI (now dedup-by-report-date, fixes same-day duplicate appends -> cot_{m}_pct_wow/_mom/_qoq), COT futures net (backfilled from the DESC CFTC rows -> net_wow/_mom/_qoq, live day-1), WALCL (backfilled from the FRED weekly series -> walcl_wow/_mom/_qoq), and SBP reserves (value-change-dedup history -> sbp_reserves_wow/_mom/_qoq). Dashboard M6 metals engine now folds COT *direction* into the tactical score. 1.26.0: (Wave M5/M6 metals data) added FRED real-yield DFII10 + 10y breakeven T10YIE + Gold-VIX GVZCLS into macros.metals (dfii10/breakeven_10y/gvz), and 156-week COT net-%-OI history+percentile persistence (cot_{gold,silver,copper}_hist/_pctile) so the dashboard M6 engine swaps its real-yield proxy for true TIPS and its COT proxy for a percentile as history accrues. 1.25.0: (Wave D1 step 3) ROE>=ROE_FIN_MIN (8%) is now the PRIMARY financial screen gate (from the live diag: keeps 193/387, median 9.2%), with EPS-YoY>=0% as a not-deteriorating secondary; the Yahoo revenue gate is BYPASSED for financials (revenue meaningless for a spread/credit business) while non-financials still require revenueGrowth>=15%. Missing vendor field never drops a bank. Log line is now 'D1 bank gate: N in-band -> dropped R (ROE<8%) + E (EPS<0) -> M to Yahoo'. (Version bump re-scrapes ETF overlap once.) 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.28.0'  # 1.28.0: (Wave T2 daily-WoW trend) WoW/MoM/QoQ on the daily market series via 5/21/63-trading-day windows, all backfilled from the source series (live day-1): FRED us_10y/us_2y/hy_spread + dfii10/breakeven_10y/gvz, Yahoo gold/silver/platinum/palladium px + dxy (period widened 5d->6mo) and usd_pkr; plus a us_2s10s spread value. Dashboard M1 US-regime + M6 metals engine now fold real-yield/DXY/breakeven/GVZ/yield direction into their reads. 1.27.0: (Wave T1 weekly-native trend) generic {d,v} dedup-by-date history + WoW/MoM/QoQ trend helpers applied to the four weekly-native series: COT metals net-%OI (now dedup-by-report-date, fixes same-day duplicate appends -> cot_{m}_pct_wow/_mom/_qoq), COT futures net (backfilled from the DESC CFTC rows -> net_wow/_mom/_qoq, live day-1), WALCL (backfilled from the FRED weekly series -> walcl_wow/_mom/_qoq), and SBP reserves (value-change-dedup history -> sbp_reserves_wow/_mom/_qoq). Dashboard M6 metals engine now folds COT *direction* into the tactical score. 1.26.0: (Wave M5/M6 metals data) added FRED real-yield DFII10 + 10y breakeven T10YIE + Gold-VIX GVZCLS into macros.metals (dfii10/breakeven_10y/gvz), and 156-week COT net-%-OI history+percentile persistence (cot_{gold,silver,copper}_hist/_pctile) so the dashboard M6 engine swaps its real-yield proxy for true TIPS and its COT proxy for a percentile as history accrues. 1.25.0: (Wave D1 step 3) ROE>=ROE_FIN_MIN (8%) is now the PRIMARY financial screen gate (from the live diag: keeps 193/387, median 9.2%), with EPS-YoY>=0% as a not-deteriorating secondary; the Yahoo revenue gate is BYPASSED for financials (revenue meaningless for a spread/credit business) while non-financials still require revenueGrowth>=15%. Missing vendor field never drops a bank. Log line is now 'D1 bank gate: N in-band -> dropped R (ROE<8%) + E (EPS<0) -> M to Yahoo'. (Version bump re-scrapes ETF overlap once.) 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -276,6 +276,9 @@ def fetch_us_macros():
                         val = round(val, 2)
                     out[key] = val
                     out[f'{key}_date'] = str(s.index[-1].date())
+                    if key in ('us_10y','us_2y','hy_spread'):
+                        for _tk,_tv in _series_trend([round(float(x),2) for x in s.values[-64:]], w=(5,21,63)).items():
+                            out[f'{key}_{_tk}'] = _tv
                     log(f'  ✓ {key} = {out[key]}')
             except Exception as e:
                 warn(f'FRED {key} ({sid}) failed: {e}')
@@ -284,6 +287,8 @@ def fetch_us_macros():
                     out[key] = lg
                     log(f'  · {key}: kept last-good = {lg}')
 
+        if out.get('us_10y') is not None and out.get('us_2y') is not None:
+            out['us_2s10s'] = round(out['us_10y'] - out['us_2y'], 2)
         # Live oil — Yahoo first, then TradingView futures, then FRED (last resort, may be stale)
         oil = fetch_live_oil()
         _oil_missing = [k for k in ('wti', 'brent') if k not in oil]
@@ -518,9 +523,11 @@ def fetch_psx_macros():
 
     try:
         import yfinance as yf
-        h = yf.Ticker('USDPKR=X').history(period='5d')
+        h = yf.Ticker('USDPKR=X').history(period='6mo')
         if len(h) > 0:
             out['usd_pkr'] = round(float(h['Close'].iloc[-1]), 2)
+            for _tk,_tv in _series_trend([round(float(x),2) for x in h['Close'].values[-64:]], w=(5,21,63)).items():
+                out['usd_pkr_'+_tk] = _tv
             log(f'  ✓ USD/PKR: {out["usd_pkr"]}')
     except Exception as e:
         warn(f'USD/PKR failed: {e}')
@@ -1018,10 +1025,12 @@ def fetch_metals():
     }
     for key, sym in yahoo_tickers.items():
         try:
-            h = yf.Ticker(sym).history(period='5d')
+            h = yf.Ticker(sym).history(period='6mo')
             if len(h) > 0:
                 out[key] = round(float(h['Close'].iloc[-1]), 2)
                 out[f'{key}_date'] = str(h.index[-1].date())
+                for _tk,_tv in _series_trend([round(float(x),2) for x in h['Close'].values[-64:]], w=(5,21,63)).items():
+                    out[f'{key}_{_tk}'] = _tv
                 log(f'  ✓ {key} ({sym}): {out[key]}')
         except Exception as e:
             warn(f'{key} ({sym}) failed: {e}')
@@ -1066,6 +1075,8 @@ def fetch_metals():
                     if len(s) > 0:
                         out[key] = round(float(s.iloc[-1]), 2)
                         out[f'{key}_date'] = str(s.index[-1].date())
+                        for _tk,_tv in _series_trend([round(float(x),2) for x in s.values[-64:]], w=(5,21,63)).items():
+                            out[f'{key}_{_tk}'] = _tv
                         log(f'  ✓ {key} ({sid}): {out[key]}')
                 except Exception as e2:
                     warn(f'{key} ({sid}) FRED failed: {e2}')
