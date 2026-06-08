@@ -1,0 +1,24 @@
+name: TV Probe (one-off)
+
+# Manual-only. Runs tv_scan_probe.py and prints TradingView column-coverage
+# to the Actions log. Not part of daily.yml. Safe to delete after one run.
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install requests
+
+      - name: Run TV probe
+        run: python tv_scan_probe.py
