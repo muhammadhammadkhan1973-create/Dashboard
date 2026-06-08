@@ -427,7 +427,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.11 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks
+  Muhammad Hammad Khan | Active Macro Dashboard v5.12 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks
 </div>
 
 <script>
@@ -2041,7 +2041,8 @@ function calcMetals(){
     var riskOn=(hySpread!=null&&hySpread<3)&&(gdpGrowth!=null&&gdpGrowth>=0);
     var rv=(ry==null)?null:(ry>2?-2:ry>1?-1:ry>=0?1:2);
     var dv=(dxy==null)?null:(dxy>105?-2:dxy>100?-1:dxy>=95?0:1);
-    function cotVote(pct,pctile){ if(pctile!=null){return pctile>80?-1:pctile<20?1:0;} if(pct==null)return null; return pct>40?-1:pct<0?1:0; }
+    function cotVote(pct,pctile,wow){ var base; if(pctile!=null){base=pctile>80?-1:pctile<20?1:0;} else if(pct==null){return null;} else {base=pct>40?-1:pct<0?1:0;} if(wow!=null){ if(base<0)return wow>0?-2:(wow<0?0:base); if(base>0)return wow<0?2:(wow>0?0:base); } return base; }
+    function cotArrow(wow){ if(wow==null)return ''; var a=wow>0?'\u25b2':(wow<0?'\u25bc':'\u25ac'); return ' ('+a+(wow>0?'+':'')+wow+' WoW)'; }
     function acc(){return {S:[],T:[],aw:[]};}
     function pS(a,v,t){ if(v==null)a.aw.push(t); else a.S.push({v:v,t:t}); }
     function pT(a,v,t){ if(v==null)a.aw.push(t); else a.T.push({v:v,t:t}); }
@@ -2061,7 +2062,7 @@ function calcMetals(){
     pS(g, dv, 'DXY '+(dxy!=null?dxy.toFixed(0):''));
     if(cb!=null) pS(g, cb>30?1:cb<0?-1:0, 'CB buying '+cb+'t'); else g.S.push({v:1,t:'CB-buying floor (static \u2014 awaiting WGC)'});
     if(be!=null) pS(g, be>2.5?1:be<1.5?-1:0, 'breakeven '+be+'%'); else g.aw.push('breakeven (T10YIE)');
-    pT(g, cotVote(M.cot_gold_pct,M.cot_gold_pctile), 'COT gold');
+    pT(g, cotVote(M.cot_gold_pct,M.cot_gold_pctile,M.cot_gold_pct_wow), 'COT gold'+cotArrow(M.cot_gold_pct_wow));
     if(hySpread!=null) pT(g, hySpread>5?2:hySpread>4.5?1:0, hySpread>4.5?'safe-haven bid':'credit calm (no haven bid)');
     if(gvz!=null) pT(g, 0, 'GVZ '+gvz); else g.aw.push('GVZ (gold-VIX)');
     g.aw.push('technicals (50/200-DMA, RSI)'); g.aw.push('ETF flows'); g.aw.push('miner divergence');
@@ -2074,7 +2075,7 @@ function calcMetals(){
     if(agDef!=null) pS(ag, agDef>0?1:-1, 'supply '+(agDef>0?'deficit':'surplus')+' '+Math.abs(agDef)+'Moz'); else ag.aw.push('supply deficit (Silver Institute)');
     if(pmi!=null) pS(ag, pmi>50?1:-1, 'China PMI '+pmi); else pS(ag, riskOff?-1:riskOn?1:0, 'industrial '+(riskOff?'drag':riskOn?'bid':'neutral')+' (risk proxy)');
     if(gs!=null) pT(ag, gs>90?2:gs>80?1:gs>=60?0:-1, 'G:S '+gs.toFixed(0)+(gs>80?' silver cheap':gs<60?' silver rich':' fair'));
-    pT(ag, cotVote(M.cot_silver_pct,M.cot_silver_pctile), 'COT silver');
+    pT(ag, cotVote(M.cot_silver_pct,M.cot_silver_pctile,M.cot_silver_pct_wow), 'COT silver'+cotArrow(M.cot_silver_pct_wow));
     ag.aw.push('SLV flows'); ag.aw.push('technicals');
     var agN=netStance(sum(ag.S),sum(ag.T),ag.S.length>0,ag.T.length>0);
 
@@ -2083,7 +2084,7 @@ function calcMetals(){
     if(pmi!=null) pS(cu, pmi>50?1:-1, 'China PMI '+pmi); else cu.aw.push('China PMI');
     if(cuBal!=null) pS(cu, cuBal<0?1:-1, 'ICSG '+(cuBal<0?'deficit':'surplus')); else cu.aw.push('ICSG balance');
     pS(cu, dv, 'DXY');
-    pT(cu, cotVote(M.cot_copper_pct,M.cot_copper_pctile), 'COT copper');
+    pT(cu, cotVote(M.cot_copper_pct,M.cot_copper_pctile,M.cot_copper_pct_wow), 'COT copper'+cotArrow(M.cot_copper_pct_wow));
     cu.aw.push('LME/SHFE inventories'); cu.aw.push('technicals');
     var cuN=netStance(sum(cu.S),sum(cu.T),cu.S.length>0,cu.T.length>0);
 
@@ -2092,7 +2093,7 @@ function calcMetals(){
     if(ptDef!=null) pS(pt, ptDef>0?2:-1, 'WPIC '+(ptDef>0?'deficit':'surplus')+' '+Math.abs(ptDef)+'koz'); else pt.aw.push('WPIC deficit');
     pS(pt, dv, 'DXY');
     pt.aw.push('auto-catalyst / Pt-Pd substitution');
-    if(M.cot_platinum_pct!=null) pT(pt, cotVote(M.cot_platinum_pct,M.cot_platinum_pctile), 'COT platinum'); else pt.aw.push('COT platinum');
+    if(M.cot_platinum_pct!=null) pT(pt, cotVote(M.cot_platinum_pct,M.cot_platinum_pctile,M.cot_platinum_pct_wow), 'COT platinum'+cotArrow(M.cot_platinum_pct_wow)); else pt.aw.push('COT platinum');
     if(gPt!=null) pT(pt, gPt>2.2?1:gPt<1.3?-1:0, 'gold:Pt '+gPt.toFixed(2)); else pt.aw.push('gold:Pt ratio');
     var ptN=netStance(sum(pt.S),sum(pt.T),pt.S.length>0,pt.T.length>0);
 
@@ -2100,7 +2101,7 @@ function calcMetals(){
     var pd=acc();
     if(pdBal!=null) pS(pd, pdBal<0?1:-1, 'balance '+(pdBal<0?'deficit':'surplus')); else pd.aw.push('supply balance');
     pd.S.push({v:-1,t:'secular EV headwind (auto-catalyst demand fading)'});
-    if(M.cot_palladium_pct!=null) pT(pd, cotVote(M.cot_palladium_pct,M.cot_palladium_pctile), 'COT palladium (squeeze-prone)'); else pd.aw.push('COT palladium');
+    if(M.cot_palladium_pct!=null) pT(pd, cotVote(M.cot_palladium_pct,M.cot_palladium_pctile,M.cot_palladium_pct_wow), 'COT palladium (squeeze-prone)'+cotArrow(M.cot_palladium_pct_wow)); else pd.aw.push('COT palladium');
     var pdN=netStance(sum(pd.S),sum(pd.T),pd.S.length>0,pd.T.length>0);
 
     function badge(w){var c=col[w[1]];return '<span style="background:'+c[0]+';color:'+c[1]+';border-radius:5px;padding:2px 9px;font-size:12px;font-weight:800;white-space:nowrap;">'+w[0]+'</span>';}
@@ -2118,7 +2119,7 @@ function calcMetals(){
     }
     el.innerHTML='<div class="reading-box" style="margin-bottom:14px;">'
       +'<div style="font-weight:700;color:var(--navy);margin-bottom:2px;">Metals buy/sell engine <span style="font-weight:400;font-size:11px;color:var(--grey-d);">\u2014 two layers: STRATEGIC (macro, months) + TACTICAL (timing, weeks) \u2192 net stance</span></div>'
-      +'<div style="font-size:10.5px;color:#9aa0a6;margin-bottom:6px;">Real yield: '+(ryTrue?'live TIPS (DFII10)':'proxy = 10y \u2212 core PCE until the DFII10 feed lands')+' \u00b7 COT: '+(M.cot_gold_pctile!=null?'156-wk percentile':'net-%-OI proxy until M5 history')+'.</div>'
+      +'<div style="font-size:10.5px;color:#9aa0a6;margin-bottom:6px;">Real yield: '+(ryTrue?'live TIPS (DFII10)':'proxy = 10y \u2212 core PCE until the DFII10 feed lands')+' \u00b7 COT: '+(M.cot_gold_pctile!=null?'156-wk percentile':(M.cot_gold_pct_wow!=null?'net-%-OI + WoW direction (Wave T1)':'net-%-OI proxy until M5 history'))+'.</div>'
       +rowM('GOLD',g,gN)+rowM('SILVER',ag,agN)+rowM('COPPER',cu,cuN)+rowM('PLATINUM',pt,ptN)+rowM('PALLADIUM',pd,pdN)
       +'<div style="font-size:10.5px;color:var(--grey-d);margin-top:6px;">Net = both layers combined: strong macro + supportive timing \u2192 LONG/SHORT; strong macro + opposing positioning extreme \u2192 NEUTRAL (wait for the extreme to clear). Thresholds tunable. G:S bands &lt;60/60\u201380/80\u2013100/100+.</div>'
       +'</div>';
