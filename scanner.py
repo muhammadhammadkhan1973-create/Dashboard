@@ -56,7 +56,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.25.0'  # 1.25.0: (Wave D1 step 3) ROE>=ROE_FIN_MIN (8%) is now the PRIMARY financial screen gate (from the live diag: keeps 193/387, median 9.2%), with EPS-YoY>=0% as a not-deteriorating secondary; the Yahoo revenue gate is BYPASSED for financials (revenue meaningless for a spread/credit business) while non-financials still require revenueGrowth>=15%. Missing vendor field never drops a bank. Log line is now 'D1 bank gate: N in-band -> dropped R (ROE<8%) + E (EPS<0) -> M to Yahoo'. (Version bump re-scrapes ETF overlap once.) 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.26.0'  # 1.26.0: (Wave M5/M6 metals data) added FRED real-yield DFII10 + 10y breakeven T10YIE + Gold-VIX GVZCLS into macros.metals (dfii10/breakeven_10y/gvz), and 156-week COT net-%-OI history+percentile persistence (cot_{gold,silver,copper}_hist/_pctile) so the dashboard M6 engine swaps its real-yield proxy for true TIPS and its COT proxy for a percentile as history accrues. 1.25.0: (Wave D1 step 3) ROE>=ROE_FIN_MIN (8%) is now the PRIMARY financial screen gate (from the live diag: keeps 193/387, median 9.2%), with EPS-YoY>=0% as a not-deteriorating secondary; the Yahoo revenue gate is BYPASSED for financials (revenue meaningless for a spread/credit business) while non-financials still require revenueGrowth>=15%. Missing vendor field never drops a bank. Log line is now 'D1 bank gate: N in-band -> dropped R (ROE<8%) + E (EPS<0) -> M to Yahoo'. (Version bump re-scrapes ETF overlap once.) 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -1009,6 +1009,26 @@ def fetch_metals():
                 if lg is not None:
                     out[k] = lg
 
+    # 2b. WAVE M6 — true real yield (10y TIPS), 10y breakeven, Gold VIX via FRED (same proven Fred path)
+    if FRED_KEY:
+        try:
+            from fredapi import Fred
+            fred = Fred(api_key=FRED_KEY)
+            for key, sid in (('dfii10', 'DFII10'), ('breakeven_10y', 'T10YIE'), ('gvz', 'GVZCLS')):
+                try:
+                    s = fred.get_series(sid).dropna()
+                    if len(s) > 0:
+                        out[key] = round(float(s.iloc[-1]), 2)
+                        out[f'{key}_date'] = str(s.index[-1].date())
+                        log(f'  ✓ {key} ({sid}): {out[key]}')
+                except Exception as e2:
+                    warn(f'{key} ({sid}) FRED failed: {e2}')
+                    lg = safe_get(EXISTING, 'macros', 'metals', key)
+                    if lg is not None:
+                        out[key] = lg
+        except Exception as e:
+            warn(f'M6 FRED block failed: {e}')
+
     # 3. COT positioning — CFTC CMX page
     try:
         r = requests.get('https://www.cftc.gov/dea/futures/deacmxsf.htm',
@@ -1047,12 +1067,22 @@ def fetch_metals():
                     out[f'{pfx}_long_pct']  = round(nc_l / oi * 100, 1)
                     out[f'{pfx}_short_pct'] = round(nc_s / oi * 100, 1)
                     log(f'  ✓ COT {metal}: long={nc_l:,} short={nc_s:,} net={out[f"{pfx}_net"]:,} ({out[f"{pfx}_pct"]}% OI)')
+                    # WAVE M5 — persist net-%-OI history (cap 156 weeks) and compute percentile rank
+                    hist_key = f'{pfx}_hist'
+                    hist = list(safe_get(EXISTING, 'macros', 'metals', hist_key) or [])
+                    hist.append(out[f'{pfx}_pct'])
+                    hist = hist[-156:]
+                    out[hist_key] = hist
+                    if len(hist) >= 20:
+                        below = sum(1 for x in hist if x <= out[f'{pfx}_pct'])
+                        out[f'{pfx}_pctile'] = round(below / len(hist) * 100)
+                        log(f'    COT {metal} percentile: {out[f"{pfx}_pctile"]}th ({len(hist)}wk history)')
 
     except Exception as e:
         warn(f'COT CFTC fetch failed: {e}')
-        for k in ('cot_gold_net','cot_gold_oi','cot_gold_pct','cot_gold_long','cot_gold_short','cot_gold_long_pct','cot_gold_short_pct',
-                  'cot_silver_net','cot_silver_oi','cot_silver_pct','cot_silver_long','cot_silver_short','cot_silver_long_pct','cot_silver_short_pct',
-                  'cot_copper_net','cot_copper_oi','cot_copper_pct','cot_copper_long','cot_copper_short','cot_copper_long_pct','cot_copper_short_pct','cot_date'):
+        for k in ('cot_gold_net','cot_gold_oi','cot_gold_pct','cot_gold_long','cot_gold_short','cot_gold_long_pct','cot_gold_short_pct','cot_gold_hist','cot_gold_pctile',
+                  'cot_silver_net','cot_silver_oi','cot_silver_pct','cot_silver_long','cot_silver_short','cot_silver_long_pct','cot_silver_short_pct','cot_silver_hist','cot_silver_pctile',
+                  'cot_copper_net','cot_copper_oi','cot_copper_pct','cot_copper_long','cot_copper_short','cot_copper_long_pct','cot_copper_short_pct','cot_copper_hist','cot_copper_pctile','cot_date'):
             lg = safe_get(EXISTING, 'macros', 'metals', k)
             if lg is not None:
                 out[k] = lg
