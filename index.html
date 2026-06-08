@@ -427,7 +427,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.14 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance
+  Muhammad Hammad Khan | Active Macro Dashboard v5.15 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields
 </div>
 
 <script>
@@ -624,12 +624,24 @@ function calcUS(){
     wti:gv(usLive.wti,'wti'), brent:gv(usLive.brent,'brent')
   };
   c.curve=(!isNaN(c.us_10y)&&!isNaN(c.us_2y))?((c.us_10y-c.us_2y)*100):NaN;
+  // WAVE T3 dashboard: per-card trend note from the macro-print MoM/QoQ/YoY fields
+  function t3CardTrend(key,U){
+    if(!U) return '';
+    function a(x){ return x>0?'\u25b2':x<0?'\u25bc':'\u25ac'; }
+    function pp(x){ return (x>0?'+':'')+x; }
+    if((key==='cpi_yoy'||key==='core_pce') && U[key+'_mom']!=null){ var d=U[key+'_mom']; return '<br><span style="color:#555;">Trend: YoY rate '+pp(d)+'pp MoM '+a(d)+' \u2014 '+(d>0?'accelerating':d<0?'cooling':'flat')+'</span>'; }
+    if(key==='unemployment' && U.unemployment_mom!=null){ var u=U.unemployment_mom; return '<br><span style="color:#555;">Trend: '+pp(u)+'pp MoM '+a(u)+' \u2014 '+(u>0?'rising (softening)':u<0?'falling (tightening)':'flat')+'</span>'; }
+    if(key==='gdp_growth' && U.gdp_growth_qoq!=null){ var g=U.gdp_growth_qoq; return '<br><span style="color:#555;">Trend: '+pp(g)+'pp QoQ '+a(g)+' \u2014 '+(g>0?'accelerating':g<0?'decelerating':'flat')+'</span>'; }
+    if(key==='umcsi' && U.umcsi_mom!=null){ var sv=U.umcsi_mom; return '<br><span style="color:#555;">Trend: '+pp(sv)+' MoM '+a(sv)+' \u2014 '+(sv>0?'improving':sv<0?'weakening':'flat')+'</span>'; }
+    if(key==='permits' && U.permits_mom!=null){ var x=U.permits_mom; return '<br><span style="color:#555;">Trend: '+pp(x)+'k MoM '+a(x)+'</span>'; }
+    return '';
+  }
   MACRO_READS_US.forEach(function(it){
     var v=c[it.key];
     if(v==null||isNaN(v)){ html+=indicatorCard(it.label,'\u2014','no live data','neutral','<b>'+it.lens+'</b> · awaiting scan.'); return; }
     var r=it.read(v,c);
     var disp=it.fmt?it.fmt(v):(v+(it.unit||''));
-    html+=indicatorCard(it.label,disp,r.state,r.cls,'<b>'+it.lens+'</b> · '+r.implies);
+    html+=indicatorCard(it.label,disp,r.state,r.cls,'<b>'+it.lens+'</b> · '+r.implies+t3CardTrend(it.key,usLive));
   });
   document.getElementById('us_indicators').innerHTML=html;
   const spread=(!isNaN(c.curve))?c.curve:((y10-y2)*100);   // bps, for yield_curve_box + generateUSRec
@@ -667,6 +679,19 @@ function calcUS(){
     if(U.us_10y_wow==null && U.hy_spread_wow==null) return;
     var drift='Regime drift (WoW): 10y '+(U.us_10y!=null?U.us_10y+'%':'')+arr(U.us_10y_wow)+(U.us_2s10s!=null?' \u00b7 2s10s '+U.us_2s10s+arr((U.us_10y_wow||0)-(U.us_2y_wow||0)):'')+(U.hy_spread!=null?' \u00b7 HY '+U.hy_spread+arr(U.hy_spread_wow):'');
     b.innerHTML += '<div style="font-size:11px;color:#555;margin-top:6px;border-top:1px solid #eee;padding-top:5px;">'+drift+' \u2014 yields \u25b2 tightening drift / \u25bc easing; HY \u25b2 stress building</div>';
+  })();
+  (function(){ var b=document.getElementById('us_regime_banner'); if(!b||!LIVE||!LIVE.macros||!LIVE.macros.us)return; var U=LIVE.macros.us;
+    // WAVE T3: macro momentum vs prior RELEASE (MoM on the YoY inflation rate, MoM on labor, QoQ on growth)
+    if(U.cpi_yoy_mom==null && U.core_pce_mom==null && U.unemployment_mom==null && U.gdp_growth_qoq==null) return;
+    function sg(x){ return x>0?'\u25b2':x<0?'\u25bc':'\u25ac'; }
+    function pp(x){ return (x>0?'+':'')+x; }
+    var parts=[];
+    var ci=U.cpi_yoy_mom, pc=U.core_pce_mom;
+    if(ci!=null||pc!=null){ var iv=(ci!=null?ci:0)+(pc!=null?pc:0); parts.push('inflation '+(iv>0.05?'accelerating':iv<-0.05?'cooling':'steady')+' (CPI YoY '+(ci!=null?pp(ci)+'pp '+sg(ci):'\u2014')+(pc!=null?' \u00b7 core PCE '+pp(pc)+'pp '+sg(pc):'')+')'); }
+    if(U.unemployment_mom!=null){ var um=U.unemployment_mom; parts.push('labor '+(um>0?'softening':um<0?'tightening':'steady')+' (unemp '+pp(um)+'pp '+sg(um)+')'); }
+    if(U.gdp_growth_qoq!=null){ var gq=U.gdp_growth_qoq; parts.push('growth '+(gq>0?'re-accelerating':gq<0?'decelerating':'flat')+' (GDP '+pp(gq)+'pp QoQ '+sg(gq)+')'); }
+    if(!parts.length) return;
+    b.innerHTML += '<div style="font-size:11px;color:#555;margin-top:5px;border-top:1px solid #eee;padding-top:5px;"><b>Macro momentum (vs prior release):</b> '+parts.join(' \u00b7 ')+' \u2014 the direction the prints are moving, independent of their level (Wave T3).</div>';
   })();
   document.getElementById('yield_curve_box').innerHTML=`<div class="reading-box"><strong>10Y-2Y Spread: ${(spread>0?'+':'')+spread.toFixed(0)} bps</strong> — ${spread>30?'Normal curve, expansion expected.':spread>-30?'Flat, transition zone.':'Inverted, recession signal.'}</div>`;
   document.getElementById('us_quadrant').innerHTML=quadrant(gdp>0?'Positive':'Negative',pce>2.5?'High':'Low',regime.name);
