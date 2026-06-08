@@ -337,6 +337,11 @@ def fetch_us_macros():
                 out[key] = oil[key]
                 out[f'{key}_source'] = oil[f'{key}_source']
                 out[f'{key}_date']   = oil.get(f'{key}_date')
+                for _w in ('wow', 'mom', 'qoq'):  # Wave T3 oil trend: carry the backfilled trend fields through the merge
+                    if f'{key}_{_w}' in oil:
+                        out[f'{key}_{_w}'] = oil[f'{key}_{_w}']
+                    if f'{key}_{_w}_dir' in oil:
+                        out[f'{key}_{_w}_dir'] = oil[f'{key}_{_w}_dir']
             else:
                 try:
                     s = _fred_series(fred_id)   # F2: same retry/backoff as the main series loop
