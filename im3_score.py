@@ -455,10 +455,44 @@ def score_ticker(ticker):
         if car_v and car_v > 1: car_v = car_v/100
         cv2 = band(car_v,0.18,0.15) if car_v else 'NA'
         metrics.append({'key':'car','verdict':cv2,'pts':pts(cv2,4),'max':4})
-        # Phase-2 probe: which canonical bank inputs Yahoo actually returned (per bank)
-        bank_inputs = {'nii': v0(nii), 'total_assets': ta0, 'gross_loans': v0(loans),
-                       'deposits': v0(deps), 'npl_found': npl_v is not None,
-                       'casa_found': casa_v is not None, 'car_found': car_v is not None}
+        # Phase-2 probe: which canonical bank inputs Yahoo actually returned (per bank).
+        # Extended to capture the raw fields the next-stage canonical ratios need
+        # (Provision/Gross-Loans, Loan & Deposit growth, P/TBV) plus a preview of each
+        # computed ratio, so ONE live run reveals exactly which are scoreable before they
+        # are added as scored metrics. All None-safe; never raises, never drops a bank.
+        _prov   = gs(inc, ['provision for loan losses', 'provision for credit losses',
+                           'provisionforcreditlosses', 'credit losses provision'])
+        _intang = gs(bal, ['goodwill and other intangible assets', 'intangible assets',
+                           'goodwill', 'otherintangibleassets'])
+        _bvps   = info.get('bookValue')
+        _shares = info.get('sharesOutstanding')
+        _prov0, _loans0, _loans1 = v0(_prov), v0(loans), v1(loans)
+        _deps0,  _deps1          = v0(deps), v1(deps)
+        _intang0                 = v0(_intang)
+        def _gr(a, b):
+            try:
+                return round((a - b) / abs(b) * 100, 1) if (a is not None and b not in (None, 0)) else None
+            except Exception:
+                return None
+        _tbvps = None  # tangible book value per share (book net of intangibles/share) -> P/TBV
+        try:
+            if _bvps is not None and _shares and _intang0 is not None:
+                _tbvps = _bvps - (_intang0 / _shares)
+            elif _bvps is not None and _intang0 is None:
+                _tbvps = _bvps  # no intangibles reported -> tangible == book
+        except Exception:
+            _tbvps = None
+        bank_inputs = {'nii': v0(nii), 'total_assets': ta0, 'gross_loans': _loans0,
+                       'deposits': _deps0, 'npl_found': npl_v is not None,
+                       'casa_found': casa_v is not None, 'car_found': car_v is not None,
+                       # Phase-2 raw inputs + computed-ratio previews (None when source absent):
+                       'provisions': _prov0,
+                       'provision_to_loans': sdiv(_prov0, _loans0),
+                       'loan_growth_pct': _gr(_loans0, _loans1),
+                       'deposit_growth_pct': _gr(_deps0, _deps1),
+                       'book_value_ps': _bvps, 'intangibles': _intang0,
+                       'tangible_bvps': round(_tbvps, 2) if _tbvps is not None else None,
+                       'p_tbv': sdiv(price, _tbvps) if (_tbvps and _tbvps > 0) else None}
     else:
         bank_inputs = None
 
