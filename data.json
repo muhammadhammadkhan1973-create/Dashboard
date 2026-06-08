@@ -1,7 +1,7 @@
 {
   "meta": {
-    "scan_version": "1.25.0",
-    "last_scan_utc": "2026-06-08T05:27:42.659119Z",
+    "scan_version": "1.26.0",
+    "last_scan_utc": "2026-06-08T05:55:08.743307Z",
     "errors": [],
     "warnings": []
   },
@@ -31,10 +31,10 @@
       "hy_spread_date": "2026-06-04",
       "permits": 1423.0,
       "permits_date": "2026-04-01",
-      "wti": 94.46,
+      "wti": 94.68,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-08",
-      "brent": 97.35,
+      "brent": 97.57,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-08",
       "brent_wti_spread": 2.89,
@@ -88,17 +88,17 @@
       "pak_fiscal": 5.4
     },
     "metals": {
-      "gold_px": 4332.4,
+      "gold_px": 4312.2,
       "gold_px_date": "2026-06-08",
-      "silver_px": 67.76,
+      "silver_px": 66.49,
       "silver_px_date": "2026-06-08",
-      "platinum_px": 1756.2,
+      "platinum_px": 1739.4,
       "platinum_px_date": "2026-06-08",
-      "palladium_px": 1229.5,
+      "palladium_px": 1217.0,
       "palladium_px_date": "2026-06-08",
-      "dxy": 99.99,
+      "dxy": 100.06,
       "dxy_date": "2026-06-08",
-      "gs_ratio": 63.9,
+      "gs_ratio": 64.9,
       "cot_date": "06/02/26",
       "cot_gold_net": 176020,
       "cot_gold_oi": 326052,
@@ -126,7 +126,22 @@
       "cot_copper_long": 111525,
       "cot_copper_short": 32692,
       "cot_copper_long_pct": 40.3,
-      "cot_copper_short_pct": 11.8
+      "cot_copper_short_pct": 11.8,
+      "dfii10": 2.11,
+      "dfii10_date": "2026-06-04",
+      "breakeven_10y": 2.36,
+      "breakeven_10y_date": "2026-06-05",
+      "gvz": 23.87,
+      "gvz_date": "2026-06-04",
+      "cot_gold_hist": [
+        54.0
+      ],
+      "cot_silver_hist": [
+        23.3
+      ],
+      "cot_copper_hist": [
+        28.5
+      ]
     }
   },
   "universe_sizes": {
@@ -206,20 +221,7 @@
       "avg_volume": 3621500,
       "rev_growth": 47.6064169635743,
       "eps_growth": 46.65302483893188,
-      "perf_3m": 33.74851720047451,
-      "growth_source": "psx_annual",
-      "data_source": "psx_eod",
-      "status": "HIGH-CONVICTION"
-    },
-    {
-      "ticker": "JVDC",
-      "name": "JVDC",
-      "sector": "Non-Energy Minerals",
-      "price": 46.98,
-      "avg_volume": 233500,
-      "rev_growth": 57.49601402764946,
-      "eps_growth": 77.90455220270563,
-      "perf_3m": 43.309859154929555,
+      "perf_3m": 31.87030446816925,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "HIGH-CONVICTION"
@@ -232,23 +234,23 @@
       "avg_volume": 13091500,
       "rev_growth": -22.361704979794027,
       "eps_growth": 13.954581938172424,
-      "perf_3m": 87.46312684365783,
+      "perf_3m": 87.02064896755162,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "HIGH-CONVICTION"
     },
     {
-      "ticker": "TRG",
-      "name": "TRG",
-      "sector": "Commercial Services",
-      "price": 168.61,
-      "avg_volume": 17639426,
-      "rev_growth": -58.89900662251656,
-      "eps_growth": 52.41487622039085,
-      "perf_3m": 55.64462257849034,
+      "ticker": "JVDC",
+      "name": "JVDC",
+      "sector": "Non-Energy Minerals",
+      "price": 46.98,
+      "avg_volume": 233500,
+      "rev_growth": 57.49601402764946,
+      "eps_growth": 77.90455220270563,
+      "perf_3m": 42.12273641851107,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
-      "status": "STRONG"
+      "status": "HIGH-CONVICTION"
     },
     {
       "ticker": "PSX",
@@ -258,7 +260,33 @@
       "avg_volume": 936000,
       "rev_growth": 21.552854413103205,
       "eps_growth": 38.964729481250366,
-      "perf_3m": 22.88613303269449,
+      "perf_3m": 25.140924464487043,
+      "growth_source": "psx_annual",
+      "data_source": "psx_eod",
+      "status": "STRONG"
+    },
+    {
+      "ticker": "TRG",
+      "name": "TRG",
+      "sector": "Commercial Services",
+      "price": 168.61,
+      "avg_volume": 17639426,
+      "rev_growth": -58.89900662251656,
+      "eps_growth": 52.41487622039085,
+      "perf_3m": 56.201291471832576,
+      "growth_source": "psx_annual",
+      "data_source": "psx_eod",
+      "status": "STRONG"
+    },
+    {
+      "ticker": "TPLP",
+      "name": "TPLP",
+      "sector": "Finance",
+      "price": 15.91,
+      "avg_volume": 34870000,
+      "rev_growth": -575.7044127945462,
+      "eps_growth": -22.458254381809557,
+      "perf_3m": 38.142857142857146,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "STRONG"
@@ -271,7 +299,7 @@
       "avg_volume": 1319500,
       "rev_growth": 187.05159026626015,
       "eps_growth": 160.6148380987102,
-      "perf_3m": 25.408794832292763,
+      "perf_3m": 25.003378469688368,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "STRONG"
@@ -284,46 +312,7 @@
       "avg_volume": 13826872,
       "rev_growth": 8.078549117137541,
       "eps_growth": 75.22849669179872,
-      "perf_3m": 40.58786741713571,
-      "growth_source": "psx_annual",
-      "data_source": "psx_eod",
-      "status": "STRONG"
-    },
-    {
-      "ticker": "SEARL",
-      "name": "SEARL",
-      "sector": "Health Technology",
-      "price": 251.59,
-      "avg_volume": 652975,
-      "rev_growth": 59.66521610621156,
-      "eps_growth": -4.805984104721823,
-      "perf_3m": 9.109756097560973,
-      "growth_source": "psx_annual",
-      "data_source": "psx_eod",
-      "status": "WATCH"
-    },
-    {
-      "ticker": "TPLP",
-      "name": "TPLP",
-      "sector": "Finance",
-      "price": 15.91,
-      "avg_volume": 34870000,
-      "rev_growth": -575.7044127945462,
-      "eps_growth": -22.458254381809557,
-      "perf_3m": 34.85714285714285,
-      "growth_source": "psx_annual",
-      "data_source": "psx_eod",
-      "status": "WATCH"
-    },
-    {
-      "ticker": "GHNI",
-      "name": "GHNI",
-      "sector": "Consumer Durables",
-      "price": 280.89,
-      "avg_volume": 722000,
-      "rev_growth": 118.4161815796377,
-      "eps_growth": 102.81281704007638,
-      "perf_3m": 31.86344238975818,
+      "perf_3m": 39.77485928705442,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
@@ -336,20 +325,33 @@
       "avg_volume": 27979000,
       "rev_growth": -26.917514577200258,
       "eps_growth": -173.64943003469355,
-      "perf_3m": 34.60648148148148,
+      "perf_3m": 36.342592592592574,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
     },
     {
-      "ticker": "TPLT",
-      "name": "TPLT",
-      "sector": "Communications",
-      "price": 11.77,
-      "avg_volume": 51500,
-      "rev_growth": -47.87018917948634,
-      "eps_growth": 50.02222814972881,
-      "perf_3m": 163.29849012775847,
+      "ticker": "SEARL",
+      "name": "SEARL",
+      "sector": "Health Technology",
+      "price": 251.59,
+      "avg_volume": 652975,
+      "rev_growth": 59.66521610621156,
+      "eps_growth": -4.805984104721823,
+      "perf_3m": 9.121951219512201,
+      "growth_source": "psx_annual",
+      "data_source": "psx_eod",
+      "status": "WATCH"
+    },
+    {
+      "ticker": "GHNI",
+      "name": "GHNI",
+      "sector": "Consumer Durables",
+      "price": 280.89,
+      "avg_volume": 722000,
+      "rev_growth": 118.4161815796377,
+      "eps_growth": 102.81281704007638,
+      "perf_3m": 31.2873399715505,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
@@ -362,20 +364,20 @@
       "avg_volume": 395500,
       "rev_growth": 56.6414407646261,
       "eps_growth": 19.336271057791656,
-      "perf_3m": 64.45459596271373,
+      "perf_3m": 63.59034508302981,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
     },
     {
-      "ticker": "PAEL",
-      "name": "PAEL",
-      "sector": "Producer Manufacturing",
-      "price": 35.22,
-      "avg_volume": 2713500,
-      "rev_growth": 26.263700714368497,
-      "eps_growth": 52.827732675641435,
-      "perf_3m": -0.12597631645249976,
+      "ticker": "TPLT",
+      "name": "TPLT",
+      "sector": "Communications",
+      "price": 11.77,
+      "avg_volume": 51500,
+      "rev_growth": -47.87018917948634,
+      "eps_growth": 50.02222814972881,
+      "perf_3m": 161.5563298490128,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
@@ -388,46 +390,7 @@
       "avg_volume": 4056000,
       "rev_growth": 17.61961490865163,
       "eps_growth": -74.99751095181202,
-      "perf_3m": 15.789473684210526,
-      "growth_source": "psx_annual",
-      "data_source": "psx_eod",
-      "status": "WATCH"
-    },
-    {
-      "ticker": "NCPL",
-      "name": "NCPL",
-      "sector": "Utilities",
-      "price": 16.03,
-      "avg_volume": 247500,
-      "rev_growth": -11.084055459144036,
-      "eps_growth": null,
-      "perf_3m": 1.2400635930047712,
-      "growth_source": "psx_annual",
-      "data_source": "psx_eod",
-      "status": "WATCH"
-    },
-    {
-      "ticker": "PIBTL",
-      "name": "PIBTL",
-      "sector": "Transportation",
-      "price": 11.04,
-      "avg_volume": 7993000,
-      "rev_growth": 47.81615835061798,
-      "eps_growth": null,
-      "perf_3m": 16.97722567287784,
-      "growth_source": "psx_annual",
-      "data_source": "psx_eod",
-      "status": "WATCH"
-    },
-    {
-      "ticker": "NPL",
-      "name": "NPL",
-      "sector": "Utilities",
-      "price": 20.67,
-      "avg_volume": 2274500,
-      "rev_growth": -34.26071984954426,
-      "eps_growth": null,
-      "perf_3m": 7.240310077519382,
+      "perf_3m": 13.052631578947372,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
@@ -440,7 +403,46 @@
       "avg_volume": 2255000,
       "rev_growth": -7.545022590111854,
       "eps_growth": -59.012014006278676,
-      "perf_3m": 35.40540540540541,
+      "perf_3m": 34.918918918918926,
+      "growth_source": "psx_annual",
+      "data_source": "psx_eod",
+      "status": "WATCH"
+    },
+    {
+      "ticker": "PAEL",
+      "name": "PAEL",
+      "sector": "Producer Manufacturing",
+      "price": 35.22,
+      "avg_volume": 2713500,
+      "rev_growth": 26.263700714368497,
+      "eps_growth": 52.827732675641435,
+      "perf_3m": -0.45351473922902424,
+      "growth_source": "psx_annual",
+      "data_source": "psx_eod",
+      "status": "WATCH"
+    },
+    {
+      "ticker": "NCPL",
+      "name": "NCPL",
+      "sector": "Utilities",
+      "price": 16.03,
+      "avg_volume": 247500,
+      "rev_growth": -11.084055459144036,
+      "eps_growth": null,
+      "perf_3m": 1.1128775834658233,
+      "growth_source": "psx_annual",
+      "data_source": "psx_eod",
+      "status": "WATCH"
+    },
+    {
+      "ticker": "PIBTL",
+      "name": "PIBTL",
+      "sector": "Transportation",
+      "price": 11.04,
+      "avg_volume": 7993000,
+      "rev_growth": 47.81615835061798,
+      "eps_growth": null,
+      "perf_3m": 16.28709454796412,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
@@ -453,7 +455,20 @@
       "avg_volume": 500,
       "rev_growth": -23.96127173099974,
       "eps_growth": null,
-      "perf_3m": 1673.2579484543653,
+      "perf_3m": 1676.1876789778983,
+      "growth_source": "psx_annual",
+      "data_source": "psx_eod",
+      "status": "WATCH"
+    },
+    {
+      "ticker": "NPL",
+      "name": "NPL",
+      "sector": "Utilities",
+      "price": 20.67,
+      "avg_volume": 2274500,
+      "rev_growth": -34.26071984954426,
+      "eps_growth": null,
+      "perf_3m": 6.790697674418597,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
@@ -466,7 +481,20 @@
       "avg_volume": 13666500,
       "rev_growth": -18.538884529528417,
       "eps_growth": -19.76978236256133,
-      "perf_3m": 49.01041666666667,
+      "perf_3m": 47.916666666666664,
+      "growth_source": "psx_annual",
+      "data_source": "psx_eod",
+      "status": "WATCH"
+    },
+    {
+      "ticker": "DCL",
+      "name": "DCL",
+      "sector": "Non-Energy Minerals",
+      "price": 11.42,
+      "avg_volume": 7482000,
+      "rev_growth": 13.615070340571444,
+      "eps_growth": -384.6452668166019,
+      "perf_3m": 61.48359486447932,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
@@ -479,33 +507,7 @@
       "avg_volume": 272600,
       "rev_growth": 25.20139658826677,
       "eps_growth": null,
-      "perf_3m": 17.80963785235767,
-      "growth_source": "psx_annual",
-      "data_source": "psx_eod",
-      "status": "WATCH"
-    },
-    {
-      "ticker": "TREET",
-      "name": "TREET",
-      "sector": "Consumer Non-Durables",
-      "price": 34.65,
-      "avg_volume": 5209000,
-      "rev_growth": 3.16697793541303,
-      "eps_growth": 62.29158831640969,
-      "perf_3m": 10.374771480804386,
-      "growth_source": "psx_annual",
-      "data_source": "psx_eod",
-      "status": "WATCH"
-    },
-    {
-      "ticker": "NML",
-      "name": "NML",
-      "sector": "Process Industries",
-      "price": 100.51,
-      "avg_volume": 1557000,
-      "rev_growth": -2.2318513881230113,
-      "eps_growth": 626.5792506577947,
-      "perf_3m": 0.35486160397444994,
+      "perf_3m": 18.204472636654906,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
@@ -518,7 +520,20 @@
       "avg_volume": 14500,
       "rev_growth": 25.6984413587993,
       "eps_growth": null,
-      "perf_3m": 33.574941755112604,
+      "perf_3m": 34.015014237639136,
+      "growth_source": "psx_annual",
+      "data_source": "psx_eod",
+      "status": "WATCH"
+    },
+    {
+      "ticker": "NML",
+      "name": "NML",
+      "sector": "Process Industries",
+      "price": 100.51,
+      "avg_volume": 1557000,
+      "rev_growth": -2.2318513881230113,
+      "eps_growth": 626.5792506577947,
+      "perf_3m": 0.6316536550745112,
       "growth_source": "psx_annual",
       "data_source": "psx_eod",
       "status": "WATCH"
@@ -570,7 +585,7 @@
       "name": "Versamet Royalties Corporation",
       "sector": "Basic Materials",
       "industry": "Other Precious Metals & Mining",
-      "market_cap": 1316113664,
+      "market_cap": 1316098560,
       "market_cap_m": 1316.0,
       "price": 12.12,
       "rev_growth": 465.2,
@@ -610,8 +625,8 @@
       "name": "Gloo Holdings, Inc.",
       "sector": "Technology",
       "industry": "Software - Application",
-      "market_cap": 434286560,
-      "market_cap_m": 434.0,
+      "market_cap": 424615968,
+      "market_cap_m": 425.0,
       "price": 5.27,
       "rev_growth": 417.7,
       "eps_growth": -77.4,
@@ -856,34 +871,6 @@
       }
     },
     {
-      "ticker": "TRG",
-      "name": "TRG",
-      "sector": "Commercial Services",
-      "src": "screen",
-      "tce_score": 4,
-      "conviction": 2,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 1,
-        "s6_momentum": 1,
-        "s7_margin": 1,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 3,
-        "s5_volume_ratio": 1.77,
-        "price": 71.61,
-        "s6_momentum_pct": 75.4,
-        "rs_vs_spy": -15.7,
-        "rs_ok": "False",
-        "s7_margin_spread_pct": 111.3,
-        "total": 4
-      }
-    },
-    {
       "ticker": "PSX",
       "name": "PSX",
       "sector": "Finance",
@@ -912,6 +899,34 @@
       }
     },
     {
+      "ticker": "TRG",
+      "name": "TRG",
+      "sector": "Commercial Services",
+      "src": "screen",
+      "tce_score": 4,
+      "conviction": 2,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 1,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 3,
+        "s5_volume_ratio": 1.77,
+        "price": 71.61,
+        "s6_momentum_pct": 75.4,
+        "rs_vs_spy": -15.7,
+        "rs_ok": "False",
+        "s7_margin_spread_pct": 111.3,
+        "total": 4
+      }
+    },
+    {
       "ticker": "HCAR",
       "name": "HCAR",
       "sector": "Consumer Durables",
@@ -936,34 +951,6 @@
         "rs_vs_spy": -13.2,
         "rs_ok": "False",
         "s7_margin_spread_pct": -37.3,
-        "total": 3
-      }
-    },
-    {
-      "ticker": "TREET",
-      "name": "TREET",
-      "sector": "Consumer Non-Durables",
-      "src": "screen",
-      "tce_score": 3,
-      "conviction": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 1,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 15,
-        "s5_volume_ratio": 0.34,
-        "price": 24.51,
-        "s6_momentum_pct": 19.8,
-        "rs_vs_spy": -31.5,
-        "rs_ok": "False",
-        "s7_margin_spread_pct": 59.1,
         "total": 3
       }
     },
@@ -1107,6 +1094,34 @@
       }
     },
     {
+      "ticker": "DCL",
+      "name": "DCL",
+      "sector": "Non-Energy Minerals",
+      "src": "screen",
+      "tce_score": 2,
+      "conviction": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 2,
+        "s5_volume_ratio": 2.08,
+        "price": 11.79,
+        "s6_momentum_pct": 74.9,
+        "rs_vs_spy": -15.6,
+        "rs_ok": "False",
+        "s7_margin_spread_pct": -398.3,
+        "total": 2
+      }
+    },
+    {
       "ticker": "NML",
       "name": "NML",
       "sector": "Process Industries",
@@ -1152,7 +1167,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 12,
+        "s1_news_count": 13,
         "s5_volume_ratio": 0.36,
         "price": 10.98,
         "s6_momentum_pct": 19.6,
@@ -1218,32 +1233,6 @@
       }
     },
     {
-      "ticker": "GAL",
-      "name": "GAL",
-      "sector": "Producer Manufacturing",
-      "src": "screen",
-      "tce_score": 1,
-      "conviction": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 1,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 2,
-        "s6_momentum_pct": 25.4,
-        "s6_momentum_src": "tv_perf3m",
-        "rs_ok": true,
-        "s7_margin_spread_pct": -26.4,
-        "total": 1
-      }
-    },
-    {
       "ticker": "TPLP",
       "name": "TPLP",
       "sector": "Finance",
@@ -1272,6 +1261,32 @@
       }
     },
     {
+      "ticker": "GAL",
+      "name": "GAL",
+      "sector": "Producer Manufacturing",
+      "src": "screen",
+      "tce_score": 1,
+      "conviction": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 1,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 2,
+        "s6_momentum_pct": 25.0,
+        "s6_momentum_src": "tv_perf3m",
+        "rs_ok": true,
+        "s7_margin_spread_pct": -26.4,
+        "total": 1
+      }
+    },
+    {
       "ticker": "GHNI",
       "name": "GHNI",
       "sector": "Consumer Durables",
@@ -1296,6 +1311,34 @@
         "rs_vs_spy": 3.3,
         "rs_ok": "True",
         "s7_margin_spread_pct": -15.6,
+        "total": 1
+      }
+    },
+    {
+      "ticker": "GATM",
+      "name": "GATM",
+      "sector": "Process Industries",
+      "src": "screen",
+      "tce_score": 1,
+      "conviction": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 1,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 0,
+        "s5_volume_ratio": 0.19,
+        "price": 23.32,
+        "s6_momentum_pct": 33.3,
+        "rs_vs_spy": -23.9,
+        "rs_ok": "False",
+        "s7_margin_spread_pct": -51.5,
         "total": 1
       }
     },
@@ -1351,34 +1394,6 @@
         "s6_momentum_pct": 30.1,
         "rs_vs_spy": 3.4,
         "rs_ok": "True",
-        "total": 1
-      }
-    },
-    {
-      "ticker": "GATM",
-      "name": "GATM",
-      "sector": "Process Industries",
-      "src": "screen",
-      "tce_score": 1,
-      "conviction": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 1,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 0,
-        "s5_volume_ratio": 0.19,
-        "price": 23.32,
-        "s6_momentum_pct": 33.3,
-        "rs_vs_spy": -23.9,
-        "rs_ok": "False",
-        "s7_margin_spread_pct": -51.5,
         "total": 1
       }
     },
@@ -1870,7 +1885,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 17,
+        "s1_news_count": 21,
         "s5_volume_ratio": 1.47,
         "price": 121.64,
         "s6_momentum_pct": 55.5,
@@ -1903,7 +1918,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 12,
+        "s1_news_count": 14,
         "s5_volume_ratio": 1.41,
         "price": 401.39,
         "s6_momentum_pct": 27.4,
@@ -1969,7 +1984,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 15,
+        "s1_news_count": 18,
         "s5_volume_ratio": 1.14,
         "price": 453.01,
         "s6_momentum_pct": 39.7,
@@ -2002,7 +2017,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 16,
+        "s1_news_count": 22,
         "s5_volume_ratio": 0.71,
         "price": 303.28,
         "s6_momentum_pct": 52.1,
@@ -2035,7 +2050,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 16,
+        "s1_news_count": 15,
         "s5_volume_ratio": 1.04,
         "price": 285.06,
         "s6_momentum_pct": 48.3,
@@ -2363,7 +2378,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 23,
+        "s1_news_count": 28,
         "s5_volume_ratio": 0.86,
         "price": 1559.3199,
         "s6_momentum_pct": 195.7,
@@ -2395,7 +2410,7 @@
         "s8_capital": 1,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 22,
+        "s1_news_count": 23,
         "s5_volume_ratio": 2.73,
         "price": 26.7,
         "s6_momentum_pct": 62.3,
@@ -2427,7 +2442,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
-        "s1_news_count": 27,
+        "s1_news_count": 29,
         "s5_volume_ratio": 2.96,
         "price": 215.94,
         "s6_momentum_pct": 59.7,
@@ -2473,70 +2488,6 @@
         "s10_rev_rev_pct": 0.0,
         "s3_insider_count": 19,
         "total": 6
-      }
-    },
-    {
-      "ticker": "HYLN",
-      "name": "Hyliion Holdings Corp.",
-      "sector": "Consumer Cyclical",
-      "src": "screen",
-      "tce_score": 5,
-      "conviction": 2,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s5_volume": 1,
-        "s6_momentum": 1,
-        "s7_margin": 0,
-        "s8_capital": 1,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 6,
-        "s5_volume_ratio": 6.91,
-        "price": 6.9,
-        "s6_momentum_pct": 245.0,
-        "rs_vs_spy": 262.5,
-        "rs_ok": "True",
-        "s8_capital_short_pct": 9.3,
-        "s9_eps_rev_net": 0,
-        "rev_est": 2250000.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 8,
-        "total": 5
-      }
-    },
-    {
-      "ticker": "DVLT",
-      "name": "Datavault AI Inc.",
-      "sector": "Technology",
-      "src": "screen",
-      "tce_score": 5,
-      "conviction": 2,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 1,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 1,
-        "s9_eps_rev": 1,
-        "s10_rev_rev": 0,
-        "s1_news_count": 10,
-        "s5_volume_ratio": 0.6,
-        "price": 0.43,
-        "s6_momentum_pct": -37.7,
-        "rs_vs_spy": -80.9,
-        "rs_ok": "False",
-        "s8_capital_short_pct": 14.6,
-        "s9_eps_rev_net": 1,
-        "rev_est": 45000000.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 15,
-        "total": 5
       }
     },
     {
@@ -2800,6 +2751,68 @@
       }
     },
     {
+      "ticker": "HYLN",
+      "name": "Hyliion Holdings Corp.",
+      "sector": "Consumer Cyclical",
+      "src": "screen",
+      "tce_score": 4,
+      "conviction": 2,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 5,
+        "s5_volume_ratio": 6.91,
+        "price": 6.9,
+        "s6_momentum_pct": 245.0,
+        "rs_vs_spy": 262.5,
+        "rs_ok": "True",
+        "s8_capital_short_pct": 9.3,
+        "s9_eps_rev_net": 0,
+        "rev_est": 2250000.0,
+        "s10_rev_rev_pct": 0.0,
+        "total": 4
+      }
+    },
+    {
+      "ticker": "DVLT",
+      "name": "Datavault AI Inc.",
+      "sector": "Technology",
+      "src": "screen",
+      "tce_score": 4,
+      "conviction": 2,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 1,
+        "s10_rev_rev": 0,
+        "s1_news_count": 10,
+        "s5_volume_ratio": 0.6,
+        "price": 0.43,
+        "s6_momentum_pct": -37.7,
+        "rs_vs_spy": -80.9,
+        "rs_ok": "False",
+        "s8_capital_short_pct": 14.6,
+        "s9_eps_rev_net": 1,
+        "rev_est": 45000000.0,
+        "s10_rev_rev_pct": 0.0,
+        "total": 4
+      }
+    },
+    {
       "ticker": "OABI",
       "name": "OmniAb, Inc.",
       "sector": "Healthcare",
@@ -2859,7 +2872,7 @@
         "s8_capital_short_pct": 1.1,
         "s9_eps_rev_net": -1,
         "rev_est": 29435447460.0,
-        "s10_rev_rev_pct": -0.02,
+        "s10_rev_rev_pct": 0.0,
         "s3_insider_count": 18,
         "total": 4
       }
@@ -2915,7 +2928,7 @@
         "s8_capital": 0,
         "s9_eps_rev": 1,
         "s10_rev_rev": 0,
-        "s1_news_count": 19,
+        "s1_news_count": 22,
         "s5_volume_ratio": 0.86,
         "price": 187.31,
         "s6_momentum_pct": -0.5,
@@ -2964,36 +2977,6 @@
       }
     },
     {
-      "ticker": "RHLD",
-      "name": "Resolute Holdings Management",
-      "sector": "Industrials",
-      "src": "screen",
-      "tce_score": 3,
-      "conviction": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s2_sponsor": 0,
-        "s3_insider": 1,
-        "s5_volume": 1,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 1,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s1_news_count": 1,
-        "s5_volume_ratio": 1.62,
-        "price": 118.68,
-        "s6_momentum_pct": -27.3,
-        "rs_vs_spy": -49.7,
-        "rs_ok": "False",
-        "s8_capital_short_pct": 10.9,
-        "rev_est": 0.0,
-        "s3_insider_count": 5,
-        "total": 3
-      }
-    },
-    {
       "ticker": "GLOO",
       "name": "Gloo Holdings, Inc.",
       "sector": "Technology",
@@ -3023,6 +3006,35 @@
         "s10_rev_rev_pct": 0.0,
         "s3_insider_count": 5,
         "total": 3
+      }
+    },
+    {
+      "ticker": "RHLD",
+      "name": "Resolute Holdings Management",
+      "sector": "Industrials",
+      "src": "screen",
+      "tce_score": 2,
+      "conviction": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s1_news_count": 1,
+        "s5_volume_ratio": 1.62,
+        "price": 118.68,
+        "s6_momentum_pct": -27.3,
+        "rs_vs_spy": -49.7,
+        "rs_ok": "False",
+        "s8_capital_short_pct": 10.9,
+        "rev_est": 0.0,
+        "total": 2
       }
     },
     {
@@ -3083,7 +3095,6 @@
         "s7_margin_spread_pct": -164.5,
         "s8_capital_short_pct": 1.5,
         "rev_est": 0.0,
-        "s3_insider_count": 0,
         "total": 1
       }
     },
@@ -4092,23 +4103,6 @@
       "is_financial": false
     },
     {
-      "ticker": "TREET",
-      "name": "TREET",
-      "sector": "Consumer Non-Durables",
-      "rev_growth": 3.16697793541303,
-      "op_growth": null,
-      "np_growth": null,
-      "eps_growth": 62.29158831640969,
-      "op_np_ratio": 19.67,
-      "signal_a": false,
-      "signal_b": true,
-      "verdict": "INFLECTION (Signal B only \u2014 verify quality)",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "psx_annual",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
       "ticker": "TRG",
       "name": "TRG",
       "sector": "Commercial Services",
@@ -4262,6 +4256,23 @@
       "is_financial": false
     },
     {
+      "ticker": "DCL",
+      "name": "DCL",
+      "sector": "Non-Energy Minerals",
+      "rev_growth": 13.615070340571444,
+      "op_growth": null,
+      "np_growth": null,
+      "eps_growth": -384.6452668166019,
+      "op_np_ratio": -28.25,
+      "signal_a": false,
+      "signal_b": false,
+      "verdict": "NOT EXPLOSIVE",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "psx_annual",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
       "ticker": "NCPL",
       "name": "NCPL",
       "sector": "Utilities",
@@ -4296,10 +4307,10 @@
       "is_financial": false
     },
     {
-      "ticker": "NPL",
-      "name": "NPL",
-      "sector": "Utilities",
-      "rev_growth": -34.26071984954426,
+      "ticker": "KPUS",
+      "name": "KPUS",
+      "sector": "Process Industries",
+      "rev_growth": -23.96127173099974,
       "op_growth": null,
       "np_growth": null,
       "eps_growth": null,
@@ -4313,10 +4324,10 @@
       "is_financial": false
     },
     {
-      "ticker": "KPUS",
-      "name": "KPUS",
-      "sector": "Process Industries",
-      "rev_growth": -23.96127173099974,
+      "ticker": "NPL",
+      "name": "NPL",
+      "sector": "Utilities",
+      "rev_growth": -34.26071984954426,
       "op_growth": null,
       "np_growth": null,
       "eps_growth": null,
@@ -6164,9 +6175,9 @@
         "beneish_m": 2.93,
         "iv": {
           "dcf_eps": 1362.98,
-          "graham": 25.77,
+          "graham": 25.83,
           "peter_lynch": null,
-          "composite": 694.37,
+          "composite": 694.41,
           "mos_pct": 97.3
         }
       }
@@ -10416,9 +10427,9 @@
         "beneish_m": 2.8,
         "iv": {
           "dcf_eps": 2997.21,
-          "graham": 21.42,
+          "graham": 21.46,
           "peter_lynch": null,
-          "composite": 1509.32,
+          "composite": 1509.34,
           "mos_pct": 99.4
         }
       }
@@ -13743,23 +13754,6 @@
       "is_financial": true
     },
     {
-      "ticker": "NAT",
-      "name": "Nordic American Tankers Limited",
-      "sector": "Energy",
-      "rev_growth": -16.6,
-      "op_growth": -38.2,
-      "np_growth": -73.7,
-      "eps_growth": 990.3,
-      "op_np_ratio": 1.93,
-      "signal_a": false,
-      "signal_b": false,
-      "verdict": "NOT EXPLOSIVE",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "yf_stmt_im3",
-      "fidelity": "im3_screen",
-      "is_financial": false
-    },
-    {
       "ticker": "MRLN",
       "name": "Merlin, Inc.",
       "sector": "Industrials",
@@ -13921,6 +13915,23 @@
       "np_growth": -69.2,
       "eps_growth": 316.4,
       "op_np_ratio": 1.15,
+      "signal_a": false,
+      "signal_b": false,
+      "verdict": "NOT EXPLOSIVE",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "yf_stmt_im3",
+      "fidelity": "im3_screen",
+      "is_financial": false
+    },
+    {
+      "ticker": "NAT",
+      "name": "Nordic American Tankers Limited",
+      "sector": "Energy",
+      "rev_growth": -16.6,
+      "op_growth": -61.6,
+      "np_growth": -73.7,
+      "eps_growth": 990.3,
+      "op_np_ratio": 1.2,
       "signal_a": false,
       "signal_b": false,
       "verdict": "NOT EXPLOSIVE",
@@ -14485,7 +14496,7 @@
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-06-08T05:37:12.836256Z",
+    "_fetched_utc": "2026-06-08T06:04:15.844203Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
@@ -14696,8 +14707,8 @@
     "_scraped_utc": "2026-06-02T19:46:41.194806Z"
   },
   "etf_overlap": {
-    "_scraped_utc": "2026-06-06T17:22:12.213628Z",
-    "_scan_version": "1.25.0",
+    "_scraped_utc": "2026-06-08T06:04:52.869151Z",
+    "_scan_version": "1.26.0",
     "etfs_scanned": 30,
     "etfs_with_holdings": 30,
     "source_etfs": [
@@ -14946,7 +14957,7 @@
       {
         "ticker": "MU",
         "etf_count": 23,
-        "agg_weight": 154.37,
+        "agg_weight": 150.29,
         "conviction": 91.8,
         "zacks_confirmed": true,
         "in_etfs": [
@@ -14959,13 +14970,13 @@
           "KNCT",
           "PSI"
         ],
-        "alloc_pct": 12.49
+        "alloc_pct": 12.19
       },
       {
         "ticker": "NVDA",
         "etf_count": 18,
-        "agg_weight": 139.37,
-        "conviction": 70.7,
+        "agg_weight": 140.86,
+        "conviction": 72.5,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -14977,13 +14988,13 @@
           "PWB",
           "QQQ"
         ],
-        "alloc_pct": 11.28
+        "alloc_pct": 11.43
       },
       {
         "ticker": "AMD",
         "etf_count": 20,
-        "agg_weight": 87.24,
-        "conviction": 54.4,
+        "agg_weight": 86.65,
+        "conviction": 55.0,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -14995,13 +15006,13 @@
           "PSI",
           "PWB"
         ],
-        "alloc_pct": 7.06
+        "alloc_pct": 7.03
       },
       {
         "ticker": "INTC",
         "etf_count": 19,
-        "agg_weight": 70.47,
-        "conviction": 47.3,
+        "agg_weight": 70.53,
+        "conviction": 48.0,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -15013,13 +15024,13 @@
           "KNCT",
           "PSI"
         ],
-        "alloc_pct": 5.7
+        "alloc_pct": 5.72
       },
       {
         "ticker": "AMAT",
         "etf_count": 18,
-        "agg_weight": 45.26,
-        "conviction": 47.1,
+        "agg_weight": 45.49,
+        "conviction": 47.6,
         "zacks_confirmed": true,
         "in_etfs": [
           "FTEC",
@@ -15031,13 +15042,13 @@
           "PWB",
           "QQQ"
         ],
-        "alloc_pct": 3.66
+        "alloc_pct": 3.69
       },
       {
         "ticker": "LRCX",
         "etf_count": 17,
-        "agg_weight": 46.28,
-        "conviction": 46.3,
+        "agg_weight": 46.04,
+        "conviction": 46.7,
         "zacks_confirmed": true,
         "in_etfs": [
           "FTEC",
@@ -15049,13 +15060,13 @@
           "QQQ",
           "QQQM"
         ],
-        "alloc_pct": 3.75
+        "alloc_pct": 3.74
       },
       {
         "ticker": "AAPL",
         "etf_count": 11,
-        "agg_weight": 90.18,
-        "conviction": 45.0,
+        "agg_weight": 90.91,
+        "conviction": 46.1,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -15067,13 +15078,13 @@
           "QQQM",
           "RSPT"
         ],
-        "alloc_pct": 7.3
+        "alloc_pct": 7.38
       },
       {
         "ticker": "AVGO",
         "etf_count": 15,
-        "agg_weight": 71.54,
-        "conviction": 43.0,
+        "agg_weight": 68.72,
+        "conviction": 42.6,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -15085,13 +15096,13 @@
           "QQQ",
           "QQQM"
         ],
-        "alloc_pct": 5.79
+        "alloc_pct": 5.58
       },
       {
         "ticker": "CSCO",
         "etf_count": 13,
-        "agg_weight": 37.07,
-        "conviction": 38.4,
+        "agg_weight": 37.34,
+        "conviction": 38.8,
         "zacks_confirmed": true,
         "in_etfs": [
           "FTEC",
@@ -15103,13 +15114,13 @@
           "QQQM",
           "SNPG"
         ],
-        "alloc_pct": 3.0
+        "alloc_pct": 3.03
       },
       {
         "ticker": "QCOM",
         "etf_count": 18,
-        "agg_weight": 48.0,
-        "conviction": 38.1,
+        "agg_weight": 47.75,
+        "conviction": 38.5,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -15121,13 +15132,13 @@
           "KNCT",
           "QQQ"
         ],
-        "alloc_pct": 3.88
+        "alloc_pct": 3.87
       },
       {
         "ticker": "TXN",
         "etf_count": 13,
-        "agg_weight": 27.24,
-        "conviction": 34.9,
+        "agg_weight": 27.31,
+        "conviction": 35.2,
         "zacks_confirmed": true,
         "in_etfs": [
           "FTEC",
@@ -15139,13 +15150,13 @@
           "QTEC",
           "SOXQ"
         ],
-        "alloc_pct": 2.2
+        "alloc_pct": 2.22
       },
       {
         "ticker": "MRVL",
         "etf_count": 13,
-        "agg_weight": 52.81,
-        "conviction": 34.0,
+        "agg_weight": 53.89,
+        "conviction": 34.9,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -15157,13 +15168,13 @@
           "QQQM",
           "QTEC"
         ],
-        "alloc_pct": 4.27
+        "alloc_pct": 4.37
       },
       {
         "ticker": "KLAC",
         "etf_count": 17,
-        "agg_weight": 39.06,
-        "conviction": 33.7,
+        "agg_weight": 39.74,
+        "conviction": 34.4,
         "zacks_confirmed": false,
         "in_etfs": [
           "BIBL",
@@ -15175,13 +15186,13 @@
           "PWB",
           "QQQ"
         ],
-        "alloc_pct": 3.16
+        "alloc_pct": 3.22
       },
       {
         "ticker": "MSFT",
         "etf_count": 9,
-        "agg_weight": 57.22,
-        "conviction": 30.9,
+        "agg_weight": 57.32,
+        "conviction": 31.5,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -15193,13 +15204,13 @@
           "VGT",
           "XLK"
         ],
-        "alloc_pct": 4.63
+        "alloc_pct": 4.65
       },
       {
         "ticker": "CVX",
         "etf_count": 4,
         "agg_weight": 32.75,
-        "conviction": 26.3,
+        "conviction": 26.7,
         "zacks_confirmed": true,
         "in_etfs": [
           "IWD",
@@ -15207,13 +15218,13 @@
           "VONV",
           "XLE"
         ],
-        "alloc_pct": 2.65
+        "alloc_pct": 2.66
       },
       {
         "ticker": "GOOGL",
         "etf_count": 10,
-        "agg_weight": 40.29,
-        "conviction": 26.0,
+        "agg_weight": 40.57,
+        "conviction": 26.5,
         "zacks_confirmed": false,
         "in_etfs": [
           "IGM",
@@ -15225,13 +15236,13 @@
           "QQQM",
           "SNPG"
         ],
-        "alloc_pct": 3.26
+        "alloc_pct": 3.29
       },
       {
         "ticker": "XOM",
         "etf_count": 4,
         "agg_weight": 46.97,
-        "conviction": 21.4,
+        "conviction": 21.9,
         "zacks_confirmed": false,
         "in_etfs": [
           "IWD",
@@ -15239,13 +15250,13 @@
           "VONV",
           "XLE"
         ],
-        "alloc_pct": 3.8
+        "alloc_pct": 3.81
       },
       {
         "ticker": "SNDK",
         "etf_count": 11,
-        "agg_weight": 22.04,
-        "conviction": 20.7,
+        "agg_weight": 21.71,
+        "conviction": 20.8,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -15257,13 +15268,31 @@
           "QQQM",
           "QTEC"
         ],
-        "alloc_pct": 1.78
+        "alloc_pct": 1.76
+      },
+      {
+        "ticker": "META",
+        "etf_count": 9,
+        "agg_weight": 24.28,
+        "conviction": 19.4,
+        "zacks_confirmed": false,
+        "in_etfs": [
+          "IGM",
+          "IGPT",
+          "IWD",
+          "IYW",
+          "PWB",
+          "QQQ",
+          "QQQM",
+          "VONV"
+        ],
+        "alloc_pct": 1.97
       },
       {
         "ticker": "ADI",
         "etf_count": 10,
-        "agg_weight": 20.82,
-        "conviction": 19.1,
+        "agg_weight": 20.76,
+        "conviction": 19.3,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -15278,28 +15307,10 @@
         "alloc_pct": 1.68
       },
       {
-        "ticker": "META",
-        "etf_count": 9,
-        "agg_weight": 24.25,
-        "conviction": 19.1,
-        "zacks_confirmed": false,
-        "in_etfs": [
-          "IGM",
-          "IGPT",
-          "IWD",
-          "IYW",
-          "PWB",
-          "QQQ",
-          "QQQM",
-          "VONV"
-        ],
-        "alloc_pct": 1.96
-      },
-      {
         "ticker": "MPWR",
         "etf_count": 9,
-        "agg_weight": 20.99,
-        "conviction": 18.0,
+        "agg_weight": 20.96,
+        "conviction": 18.2,
         "zacks_confirmed": false,
         "in_etfs": [
           "BIBL",
@@ -15316,8 +15327,8 @@
       {
         "ticker": "APH",
         "etf_count": 10,
-        "agg_weight": 16.31,
-        "conviction": 17.5,
+        "agg_weight": 16.18,
+        "conviction": 17.6,
         "zacks_confirmed": false,
         "in_etfs": [
           "BIBL",
@@ -15329,26 +15340,13 @@
           "RSPT",
           "VGT"
         ],
-        "alloc_pct": 1.32
-      },
-      {
-        "ticker": "KMI",
-        "etf_count": 3,
-        "agg_weight": 7.48,
-        "conviction": 16.2,
-        "zacks_confirmed": true,
-        "in_etfs": [
-          "BIBL",
-          "VDE",
-          "XLE"
-        ],
-        "alloc_pct": 0.61
+        "alloc_pct": 1.31
       },
       {
         "ticker": "GOOG",
         "etf_count": 7,
-        "agg_weight": 22.15,
-        "conviction": 16.1,
+        "agg_weight": 22.41,
+        "conviction": 16.4,
         "zacks_confirmed": false,
         "in_etfs": [
           "IGM",
@@ -15359,13 +15357,13 @@
           "SNPG",
           "VONV"
         ],
-        "alloc_pct": 1.79
+        "alloc_pct": 1.82
       },
       {
         "ticker": "PLTR",
         "etf_count": 9,
-        "agg_weight": 15.52,
-        "conviction": 16.0,
+        "agg_weight": 15.53,
+        "conviction": 16.2,
         "zacks_confirmed": false,
         "in_etfs": [
           "FTEC",
@@ -15378,6 +15376,19 @@
           "VGT"
         ],
         "alloc_pct": 1.26
+      },
+      {
+        "ticker": "KMI",
+        "etf_count": 3,
+        "agg_weight": 7.46,
+        "conviction": 16.2,
+        "zacks_confirmed": true,
+        "in_etfs": [
+          "BIBL",
+          "VDE",
+          "XLE"
+        ],
+        "alloc_pct": 0.61
       }
     ]
   },
