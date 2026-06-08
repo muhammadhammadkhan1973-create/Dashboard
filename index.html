@@ -427,7 +427,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.16 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory)
+  Muhammad Hammad Khan | Active Macro Dashboard v5.17 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&amp;P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory) + v5.17 Wave D2 labels: the three PSX analyst-conviction streams now render as readable chips on the PSX TCE table — Target (mean price-target upside %), Rec (analyst buy share %), and Fwd-EPS (forward-EPS revised up) — each pulling the analyst_detail block; PSX-only, so they show n/a on US rows
 </div>
 
 <script>
@@ -1850,7 +1850,7 @@ function renderTceTable(elId, rows, market) {
     el.innerHTML=`<p style="color:var(--grey-d);">${market==='psx'?'PSX TCE: sparser signals normal (revisions/short-interest thin on PSX).':'No US TCE in latest scan.'}</p>`;
     return;
   }
-  const STREAM_LABELS={s1_news:'News',s2_sponsor:'Sponsor',s3_insider:'Insider',s5_volume:'Volume',s6_momentum:'Mom',s7_margin:'Margin',s8_capital:'Capital',s9_eps_rev:'EPS-rev',s10_rev_rev:'Rev-rev'};
+  const STREAM_LABELS={s1_news:'News',s2_sponsor:'Sponsor',s3_insider:'Insider',s5_volume:'Volume',s6_momentum:'Mom',s7_margin:'Margin',s8_capital:'Capital',s9_eps_rev:'EPS-rev',s10_rev_rev:'Rev-rev',s9_eps_revision:'Fwd-EPS',s11_target_upside:'Target',s12_recommendation:'Rec'};
   const SDEF=[
     {bk:'s1_news',     lbl:'News',    us:false, cv:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Google News articles, last 14d (fires ≥3)'},
     {bk:'s2_sponsor',  lbl:'Sponsor', us:false, cv:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Heavy coverage — same news count (fires ≥8)'},
@@ -1860,7 +1860,10 @@ function renderTceTable(elId, rows, market) {
     {bk:'s7_margin',   lbl:'Margin',  us:false, cv:true,  val:s=>(s.s7_margin_spread_pct!=null?((s.s7_margin_spread_pct>0?'+':'')+s.s7_margin_spread_pct+'pt'):'·'), tip:'Earnings outgrowing revenue = margin inflection — CONVICTION'},
     {bk:'s8_capital',  lbl:'Capital', us:false, cv:true,  val:s=>(s.s8_capital_short_pct!=null?(s.s8_capital_short_pct+'%'):'·'), tip:'Short interest % of float (fires ≥8%) — squeeze fuel / CONVICTION'},
     {bk:'s9_eps_rev',  lbl:'EPS-rev', us:false, cv:true,  val:s=>(s.s9_eps_rev_net!=null?((s.s9_eps_rev_net>0?'+':'')+s.s9_eps_rev_net):'·'), tip:'EPS estimate raises minus cuts, 30d (fires net>0) — CONVICTION'},
-    {bk:'s10_rev_rev', lbl:'Rev-rev', us:false, cv:true,  val:s=>(s.s10_rev_rev_pct!=null?((s.s10_rev_rev_pct>0?'+':'')+s.s10_rev_rev_pct+'%'):'·'), tip:'Revenue estimate revision vs last run — builds over runs — CONVICTION'}
+    {bk:'s10_rev_rev', lbl:'Rev-rev', us:false, cv:true,  val:s=>(s.s10_rev_rev_pct!=null?((s.s10_rev_rev_pct>0?'+':'')+s.s10_rev_rev_pct+'%'):'·'), tip:'Revenue estimate revision vs last run — builds over runs — CONVICTION'},
+    {bk:'s11_target_upside',  lbl:'Target',  us:false, px:true, cv:true, val:s=>((s.analyst_detail&&s.analyst_detail.target_upside_pct!=null)?((s.analyst_detail.target_upside_pct>0?'+':'')+s.analyst_detail.target_upside_pct+'%'):'·'), tip:'Analyst mean price-target upside vs current price (fires ≥+15%; FactSet consensus via TradingView, PSX-only) — CONVICTION'},
+    {bk:'s12_recommendation', lbl:'Rec',     us:false, px:true, cv:true, val:s=>((s.analyst_detail&&s.analyst_detail.buy_ratio!=null)?(Math.round(s.analyst_detail.buy_ratio*100)+'%'):'·'), tip:'Analyst buy share of all recommendations (fires ≥60% buy, or rec-mark ≥0.5; FactSet via TradingView, PSX-only) — CONVICTION'},
+    {bk:'s9_eps_revision',    lbl:'Fwd-EPS', us:false, px:true, cv:true, val:s=>((s.analyst_detail&&s.analyst_detail.fwd_eps!=null)?(''+s.analyst_detail.fwd_eps):'·'), tip:'Forward EPS estimate revised UP ≥2% run-over-run (FactSet via TradingView, PSX-only; needs a prior run to compare, builds over time) — CONVICTION'}
   ];
   function streamCellsHTML(streams, mkt){
     if(!streams||typeof streams!=='object'||Array.isArray(streams)){
@@ -1869,13 +1872,13 @@ function renderTceTable(elId, rows, market) {
     }
     const isPsx=mkt==='psx';
     let chips=SDEF.map(d=>{
-      const na=isPsx&&d.us;
+      const na=(isPsx&&d.us)||(!isPsx&&d.px);
       const fired=!na&&streams[d.bk]===1;
       const val=na?'—':d.val(streams);
       const bg=fired?'#D1FAE5':(na?'#FAFAFA':'#F3F4F6');
       const fg=fired?'#065F46':(na?'#CBD5E1':'#9CA3AF');
       const bd=fired?'#6EE7B7':(d.cv?'#C7D2FE':'#E5E7EB');
-      const tip=na?(d.lbl+': US-only stream, n/a for PSX'):(d.tip+(fired?' — FIRED':' — not fired'));
+      const tip=na?(d.lbl+': '+(d.px?'PSX-only analyst stream, n/a for US':'US-only stream, n/a for PSX')):(d.tip+(fired?' — FIRED':' — not fired'));
       return '<span title="'+tip+'" style="display:inline-flex;flex-direction:column;align-items:center;min-width:40px;padding:2px 4px;border-radius:5px;background:'+bg+';color:'+fg+';border:1px solid '+bd+(d.cv?';border-bottom:2px solid #6366F1':'')+';">'
         +'<span style="font-size:8.5px;font-weight:600;letter-spacing:.2px;">'+d.lbl+'</span>'
         +'<span style="font-size:10px;font-weight:700;">'+val+'</span></span>';
