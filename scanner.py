@@ -63,7 +63,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.31.1'  # 1.31.1: (D2 hardening) the guarded tce_psx_analyst import no longer fails silently — it captures the error and run_tce emits a LOUD degraded-data warning ('D2 analyst overlay DISABLED ... confirm tce_psx_analyst.py is in the repo root') so a missing module surfaces in the run summary instead of dying invisibly (root-caused the 1.31.0 no-fire: the module simply was not committed). Logging-only; scoring unchanged. (Version bump re-scrapes ETF overlap once.) 1.31.0: (Wave D2 — PSX analyst conviction) wired tce_psx_analyst.py into the PSX TCE: PSX_SCAN_COLS now pulls the TV FactSet analyst block (price_target_average, recommendation_mark/buy/total, earnings_per_share_forecast_next_fq/fq, earnings_per_share_fq); derive_psx_candidates carries an analyst row per candidate; compute_tce_streams folds derive_psx_analyst_streams into three new conviction streams s11_target_upside (>=15% target upside) / s12_recommendation (>=60% buy or rec_mark>=0.5) / s9_eps_revision (forward EPS rising >=2% run-over-run, persisted via prev_fwd). Added to COUNTED+CONVICTION GLOBALLY but only the PSX path sets them, so US tiers are provably unchanged (validated: KLAC-like still HIGH 7/4; covered PSX name reaches HIGH 5/5; uncovered PSX name unchanged WATCH 2/2). Probe-confirmed TV coverage: analyst block 98-100%%, 15/15 on holdings. (Version bump re-scrapes ETF overlap once.) 1.30.0: (Wave T3 feeds) oil WTI/Brent trend (Yahoo widened 5d->6mo, backfilled 5/21/63 -> wti_/brent_wow/mom/qoq, live day-1); KSE-100 trend (dedup-by-date session history -> kse100_wow/mom/qoq, accrues per session); Zacks sector rotation (pct_top_chg = each sector's #1/#2 breadth change vs the prior scrape, carried on skip days). Dashboard v5.16 reads these into the energy oil-momentum note, the US sector-rotation read, the allocation rate-path repricing line, and the PSX devaluation-slope alert (reserves/PKR trajectory). 1.29.0: (Wave T3 monthly/quarterly trend) cadence-matched MoM/QoQ/YoY on the macro PRINT series via _print_trend, backfilled from the FRED series (live day-1): core_pce/cpi_yoy trend the YoY *rate* (inflation accelerating vs decelerating, not the index level), gdp_growth quarterly (QoQ/YoY), and unemployment/umcsi/mfg_emp/industrial_prod/permits monthly levels (MoM/QoQ/YoY). Dashboard T3 interpretation (macro tab prints-vs-prior-release, Sector rotation, Allocation zone migration, Devaluation slope) is the paired index build. 1.28.0: (Wave T2 daily-WoW trend) WoW/MoM/QoQ on the daily market series via 5/21/63-trading-day windows, all backfilled from the source series (live day-1): FRED us_10y/us_2y/hy_spread + dfii10/breakeven_10y/gvz, Yahoo gold/silver/platinum/palladium px + dxy (period widened 5d->6mo) and usd_pkr; plus a us_2s10s spread value. Dashboard M1 US-regime + M6 metals engine now fold real-yield/DXY/breakeven/GVZ/yield direction into their reads. 1.27.0: (Wave T1 weekly-native trend) generic {d,v} dedup-by-date history + WoW/MoM/QoQ trend helpers applied to the four weekly-native series: COT metals net-%OI (now dedup-by-report-date, fixes same-day duplicate appends -> cot_{m}_pct_wow/_mom/_qoq), COT futures net (backfilled from the DESC CFTC rows -> net_wow/_mom/_qoq, live day-1), WALCL (backfilled from the FRED weekly series -> walcl_wow/_mom/_qoq), and SBP reserves (value-change-dedup history -> sbp_reserves_wow/_mom/_qoq). Dashboard M6 metals engine now folds COT *direction* into the tactical score. 1.26.0: (Wave M5/M6 metals data) added FRED real-yield DFII10 + 10y breakeven T10YIE + Gold-VIX GVZCLS into macros.metals (dfii10/breakeven_10y/gvz), and 156-week COT net-%-OI history+percentile persistence (cot_{gold,silver,copper}_hist/_pctile) so the dashboard M6 engine swaps its real-yield proxy for true TIPS and its COT proxy for a percentile as history accrues. 1.25.0: (Wave D1 step 3) ROE>=ROE_FIN_MIN (8%) is now the PRIMARY financial screen gate (from the live diag: keeps 193/387, median 9.2%), with EPS-YoY>=0% as a not-deteriorating secondary; the Yahoo revenue gate is BYPASSED for financials (revenue meaningless for a spread/credit business) while non-financials still require revenueGrowth>=15%. Missing vendor field never drops a bank. Log line is now 'D1 bank gate: N in-band -> dropped R (ROE<8%) + E (EPS<0) -> M to Yahoo'. (Version bump re-scrapes ETF overlap once.) 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
+SCAN_VERSION = '1.32.0'  # 1.32.0: (Tier 1 — prediction feedback loop hardened) the forward-validation ledger is now trustworthy ahead of the ~Sept maturations. Gap-1 (stale maturity price): open predictions are re-priced every run via a live fetch (_reprice_us batch yfinance + _reprice_psx targeted TV scan) for any open pick whose ticker has left the scan pool / decayed to IGNORE, so a pick no longer freezes at a stale return when it matures. Gap-2 (no alpha): each pick now stores entry_bench (SPY for US, KSE-100 for PSX) and computes bench_ret_pct + alpha_pct + peak_alpha_pct each run, so a "win" can be judged market-relative, not just absolute +40% in a bull tape (legacy picks logged pre-1.32.0 have no entry_bench -> alpha stays null for them). Gap-3 (no control): the ledger now also logs TCE-pool IGNORE picks as a control arm and reports HIGH/WATCH lift_vs_ignore over the IGNORE base rate. Dedup is now per (ticker, tier) so a name escalating IGNORE->WATCH->HIGH logs a fresh prediction at each tier (each tier's signal measured from when it fired). update_tce_predictions stays PURE (extra_prices + bench injected by the caller; fully unit-tested); the re-price fetches are network-only -> confirm on the runner. Logging/validation change; live US/PSX TCE scoring unchanged. (Version bump re-scrapes ETF overlap once.) 1.31.1: (D2 hardening) the guarded tce_psx_analyst import no longer fails silently — it captures the error and run_tce emits a LOUD degraded-data warning ('D2 analyst overlay DISABLED ... confirm tce_psx_analyst.py is in the repo root') so a missing module surfaces in the run summary instead of dying invisibly (root-caused the 1.31.0 no-fire: the module simply was not committed). Logging-only; scoring unchanged. (Version bump re-scrapes ETF overlap once.) 1.31.0: (Wave D2 — PSX analyst conviction) wired tce_psx_analyst.py into the PSX TCE: PSX_SCAN_COLS now pulls the TV FactSet analyst block (price_target_average, recommendation_mark/buy/total, earnings_per_share_forecast_next_fq/fq, earnings_per_share_fq); derive_psx_candidates carries an analyst row per candidate; compute_tce_streams folds derive_psx_analyst_streams into three new conviction streams s11_target_upside (>=15% target upside) / s12_recommendation (>=60% buy or rec_mark>=0.5) / s9_eps_revision (forward EPS rising >=2% run-over-run, persisted via prev_fwd). Added to COUNTED+CONVICTION GLOBALLY but only the PSX path sets them, so US tiers are provably unchanged (validated: KLAC-like still HIGH 7/4; covered PSX name reaches HIGH 5/5; uncovered PSX name unchanged WATCH 2/2). Probe-confirmed TV coverage: analyst block 98-100%%, 15/15 on holdings. (Version bump re-scrapes ETF overlap once.) 1.30.0: (Wave T3 feeds) oil WTI/Brent trend (Yahoo widened 5d->6mo, backfilled 5/21/63 -> wti_/brent_wow/mom/qoq, live day-1); KSE-100 trend (dedup-by-date session history -> kse100_wow/mom/qoq, accrues per session); Zacks sector rotation (pct_top_chg = each sector's #1/#2 breadth change vs the prior scrape, carried on skip days). Dashboard v5.16 reads these into the energy oil-momentum note, the US sector-rotation read, the allocation rate-path repricing line, and the PSX devaluation-slope alert (reserves/PKR trajectory). 1.29.0: (Wave T3 monthly/quarterly trend) cadence-matched MoM/QoQ/YoY on the macro PRINT series via _print_trend, backfilled from the FRED series (live day-1): core_pce/cpi_yoy trend the YoY *rate* (inflation accelerating vs decelerating, not the index level), gdp_growth quarterly (QoQ/YoY), and unemployment/umcsi/mfg_emp/industrial_prod/permits monthly levels (MoM/QoQ/YoY). Dashboard T3 interpretation (macro tab prints-vs-prior-release, Sector rotation, Allocation zone migration, Devaluation slope) is the paired index build. 1.28.0: (Wave T2 daily-WoW trend) WoW/MoM/QoQ on the daily market series via 5/21/63-trading-day windows, all backfilled from the source series (live day-1): FRED us_10y/us_2y/hy_spread + dfii10/breakeven_10y/gvz, Yahoo gold/silver/platinum/palladium px + dxy (period widened 5d->6mo) and usd_pkr; plus a us_2s10s spread value. Dashboard M1 US-regime + M6 metals engine now fold real-yield/DXY/breakeven/GVZ/yield direction into their reads. 1.27.0: (Wave T1 weekly-native trend) generic {d,v} dedup-by-date history + WoW/MoM/QoQ trend helpers applied to the four weekly-native series: COT metals net-%OI (now dedup-by-report-date, fixes same-day duplicate appends -> cot_{m}_pct_wow/_mom/_qoq), COT futures net (backfilled from the DESC CFTC rows -> net_wow/_mom/_qoq, live day-1), WALCL (backfilled from the FRED weekly series -> walcl_wow/_mom/_qoq), and SBP reserves (value-change-dedup history -> sbp_reserves_wow/_mom/_qoq). Dashboard M6 metals engine now folds COT *direction* into the tactical score. 1.26.0: (Wave M5/M6 metals data) added FRED real-yield DFII10 + 10y breakeven T10YIE + Gold-VIX GVZCLS into macros.metals (dfii10/breakeven_10y/gvz), and 156-week COT net-%-OI history+percentile persistence (cot_{gold,silver,copper}_hist/_pctile) so the dashboard M6 engine swaps its real-yield proxy for true TIPS and its COT proxy for a percentile as history accrues. 1.25.0: (Wave D1 step 3) ROE>=ROE_FIN_MIN (8%) is now the PRIMARY financial screen gate (from the live diag: keeps 193/387, median 9.2%), with EPS-YoY>=0% as a not-deteriorating secondary; the Yahoo revenue gate is BYPASSED for financials (revenue meaningless for a spread/credit business) while non-financials still require revenueGrowth>=15%. Missing vendor field never drops a bank. Log line is now 'D1 bank gate: N in-band -> dropped R (ROE<8%) + E (EPS<0) -> M to Yahoo'. (Version bump re-scrapes ETF overlap once.) 1.24.0: (Track 1 — D1 step 2 gate) banks gated on a bank-appropriate metric: EPS-YoY>=0% active (drops deteriorating banks, no-data passes through), Yahoo revenue gate kept as backstop this run (monotonic, no candidate ballooning); ROE column+distribution diag added — ROE becomes primary financial gate next run once TV coverage/units confirmed. (Track 2 — IM3 System B refactor) score_im3_bank now zeroes ALL non-bank metrics (Piotroski/Altman/Beneish/ROIC-WACC, EV-EBITDA/PEG/PS/Graham/MoS, FCF/CROIC, D/E/total-debt, op-margin/turns) per the Sarmaaya Week-6 framework, and scores banks out of their APPLICABLE max (~70) instead of /162 — fixes the bug that capped every bank ~55% (grade C). Added bank_coverage + bank_inputs probe for the Phase-2 canonical-ratio additions. (Version bump re-scrapes ETF overlap once.) 1.23.0: Wave D1 step 1 instrumentation. 1.22.2: KSE-100 RESOLVED via diagnostics — the index lives on the dps.psx INT (intraday) timeseries (current; 171651.48 @ last session), NOT eod (frozen at 2021). int now primary with date-preference; dead market-watch(470KB)/indices/sarmaaya HTML + diag removed. Value was the last-session close, never stale. 1.22.0: (a) COT/CFTC timeout (8,12) to bound dead-endpoint cost; (b) KSE-100 fresh HTML sources (market-watch/indices) first, stale int demoted last; (c) NEW recession watch block (FRED Sahm/yield-curve/RECPRO/GDPNow/claims + ForexFactory faireconomy calendar). 1.21.3: also carry forward per-record im3 score dicts (not just the ticker list) so a skipped IM3 re-score doesn't wipe the scores from data.json. 1.21.2: preserve im3_explosive_tickers so the workflow's IM3 change-detection can skip re-scoring on stable days. 1.21.1: drop TV-leaked preferred-share tickers + demote micro-base rev-growth artifacts. 1.21.0: US screening migration Phase 1 (TV america pre-filter before Yahoo; financials pass straight to Yahoo; hard fallback to full Yahoo universe if TV unreachable)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -2024,15 +2024,67 @@ def tce_tier(streams, market='us'):
 
 
 def _spy_6mo_return():
+    """Returns (6mo % return, last close) for SPY; (None, None) on failure. Last close feeds the
+    prediction-ledger US benchmark (alpha)."""
     try:
         import yfinance as yf
         h = yf.Ticker('SPY').history(period='6mo')
         if len(h) >= 2:
             c = h['Close']
-            return round((c.iloc[-1] - c.iloc[0]) / c.iloc[0] * 100, 1)
+            return round((c.iloc[-1] - c.iloc[0]) / c.iloc[0] * 100, 1), round(float(c.iloc[-1]), 4)
     except Exception:
         pass
-    return None
+    return None, None
+
+
+def _reprice_us(tickers):
+    """Gap-1: batch last-close for US tickers (open predictions that have left the scan pool) so their
+    forward return keeps updating to maturity instead of freezing stale. yfinance-only -> sandbox cannot
+    run it (blocked); confirms on the GitHub runner. Loud (warn) on failure, never raises."""
+    out = {}
+    tickers = [t for t in tickers if t]
+    if not tickers:
+        return out
+    try:
+        import yfinance as yf
+        df = yf.download(tickers, period='5d', progress=False, threads=True)
+        if df is not None and not df.empty:
+            close = df['Close'] if 'Close' in getattr(df, 'columns', []) else df
+            if hasattr(close, 'columns'):                  # multi-ticker -> DataFrame of close columns
+                for t in tickers:
+                    try:
+                        s = close[t].dropna()
+                        if len(s):
+                            out[t] = round(float(s.iloc[-1]), 4)
+                    except Exception:
+                        pass
+            else:                                          # single ticker -> Series
+                s = close.dropna()
+                if len(s):
+                    out[tickers[0]] = round(float(s.iloc[-1]), 4)
+    except Exception as e:
+        warn(f'prediction re-price (US) failed for {len(tickers)} ticker(s): {e}')
+    return out
+
+
+def _reprice_psx(tickers):
+    """Gap-1: last-close for off-pool PSX predictions via a targeted TradingView Pakistan scan
+    (symbols filter). Returns {ticker: price}. Loud on failure, never raises."""
+    out = {}
+    tickers = [t for t in tickers if t]
+    if not tickers:
+        return out
+    try:
+        body = {'symbols': {'tickers': [f'PSX:{t}' for t in tickers]}, 'columns': ['close']}
+        r = requests.post('https://scanner.tradingview.com/pakistan/scan', json=body,
+                          headers={'User-Agent': UA, 'Accept': 'application/json'}, timeout=20)
+        if r.status_code == 200:
+            for row in parse_tv_scan(r.json(), ['close']):
+                if row.get('ticker') and row.get('close') is not None:
+                    out[row['ticker']] = round(float(row['close']), 4)
+    except Exception as e:
+        warn(f'prediction re-price (PSX) failed for {len(tickers)} ticker(s): {e}')
+    return out
 
 
 def _pred_days(d0, d1):
@@ -2043,18 +2095,26 @@ def _pred_days(d0, d1):
 
 
 def update_tce_predictions(prev, today_iso, rows,
-                           horizon_days=PRED_HORIZON_DAYS, winner_thresh=PRED_WINNER_THRESH):
+                           horizon_days=PRED_HORIZON_DAYS, winner_thresh=PRED_WINNER_THRESH,
+                           extra_prices=None, bench=None):
     """Forward-validation ledger (the automated replacement for the impossible historical revision
-    backtest). Logs each run's HIGH/WATCH picks with entry price, then on every later run marks the
-    latest forward return and freezes it once the pick matures (>= horizon). Summarises per-tier
-    hit-rate / avg forward / avg peak over matured picks. Pure + unit-tested (no I/O, no clock —
-    `today_iso` and `rows` are passed in, so date math is deterministic).
+    backtest). Logs each run's HIGH/WATCH/IGNORE picks with entry price + benchmark, marks the latest
+    forward return AND market-relative alpha on every later run, and freezes once the pick matures
+    (>= horizon). Summarises per-tier hit-rate / avg forward / avg alpha / beat-benchmark over matured
+    picks, plus HIGH/WATCH lift over the IGNORE base rate. Pure + unit-tested (no I/O, no clock).
       prev: prior {'predictions':[...]} dict (or None)
-      rows: this run's picks as [{'ticker','tier','market','price'}] (price required)"""
+      rows: this run's picks [{'ticker','tier','market','price'}] — HIGH/WATCH/IGNORE from the TCE pool
+      extra_prices: {ticker: live price} for OPEN preds NOT in this run's pool (Gap-1: keeps forward
+                    returns updating to maturity even after a name churns out of the pool / decays to IGNORE)
+      bench: {'us': spy_price, 'psx': kse100_level} benchmark levels this run (Gap-2: alpha)
+    Dedup is per (ticker, tier): a name that escalates IGNORE->WATCH->HIGH logs a fresh prediction at
+    each tier, so each tier's signal is measured from the moment it fired (Gap-3 control included)."""
     prev = prev or {}
     preds = [dict(p) for p in prev.get('predictions', [])]
-    price = {r['ticker']: r['price'] for r in rows if r.get('price')}
-    open_tickers = set()
+    bench = bench or {}
+    price = dict(extra_prices or {})                           # off-pool live prices first ...
+    price.update({r['ticker']: r['price'] for r in rows if r.get('price')})  # ... this run's pool overrides
+    open_keys = set()                                          # dedup key = (ticker, tier)
     for p in preds:                                            # update + freeze at maturity
         d = _pred_days(p.get('date', ''), today_iso)
         p['days_open'] = d
@@ -2064,31 +2124,50 @@ def update_tce_predictions(prev, today_iso, rows,
             p['last_price'] = round(cur, 4); p['last_date'] = today_iso
             p['fwd_ret_pct'] = ret
             p['peak_ret_pct'] = round(max(p.get('peak_ret_pct', ret), ret), 1)
+            eb = p.get('entry_bench'); cb = bench.get(p.get('market', 'us'))   # Gap-2: market-relative alpha
+            if eb and cb:
+                bret = round((cb - eb) / eb * 100, 1)
+                a = round(ret - bret, 1)
+                p['bench_ret_pct'] = bret; p['alpha_pct'] = a
+                p['peak_alpha_pct'] = round(max(p.get('peak_alpha_pct', a), a), 1)
         if d >= horizon_days and not p.get('resolved'):
             p['resolved'] = True
         if d < horizon_days:
-            open_tickers.add(p['ticker'])
-    for r in rows:                                             # log new picks not already open
-        tk = r['ticker']; cur = price.get(tk)
-        if cur and tk not in open_tickers:
-            preds.append({'ticker': tk, 'tier': r.get('tier'), 'market': r.get('market', 'us'),
+            open_keys.add((p['ticker'], p.get('tier')))
+    for r in rows:                                             # log new picks not already open (per ticker+tier)
+        tk = r['ticker']; tier = r.get('tier'); cur = price.get(tk)
+        if cur and (tk, tier) not in open_keys:
+            eb = bench.get(r.get('market', 'us'))
+            preds.append({'ticker': tk, 'tier': tier, 'market': r.get('market', 'us'),
                           'date': today_iso, 'entry': round(cur, 4), 'last_price': round(cur, 4),
                           'last_date': today_iso, 'fwd_ret_pct': 0.0, 'peak_ret_pct': 0.0,
+                          'entry_bench': round(eb, 4) if eb else None,
+                          'bench_ret_pct': (0.0 if eb else None),
+                          'alpha_pct': (0.0 if eb else None), 'peak_alpha_pct': (0.0 if eb else None),
                           'days_open': 0, 'resolved': False})
-            open_tickers.add(tk)
+            open_keys.add((tk, tier))
     summary = {'horizon_days': horizon_days, 'winner_thresh': winner_thresh,
                'total_logged': len(preds),
                'open': sum(1 for p in preds if p.get('days_open', 0) < horizon_days)}
-    for tier in ('HIGH', 'WATCH'):
+    for tier in ('HIGH', 'WATCH', 'IGNORE'):
         matured = [p for p in preds if p.get('tier') == tier and p.get('days_open', 0) >= horizon_days]
         n = len(matured)
         if n:
             hits = sum(1 for p in matured if p.get('fwd_ret_pct', 0) >= winner_thresh)
+            avals = [p['alpha_pct'] for p in matured if p.get('alpha_pct') is not None]
+            beat = sum(1 for a in avals if a > 0)
             summary[tier] = {'matured': n, 'hit_rate': round(hits / n, 3),
                              'avg_fwd_pct': round(sum(p.get('fwd_ret_pct', 0) for p in matured) / n, 1),
-                             'avg_peak_pct': round(sum(p.get('peak_ret_pct', 0) for p in matured) / n, 1)}
+                             'avg_peak_pct': round(sum(p.get('peak_ret_pct', 0) for p in matured) / n, 1),
+                             'beat_bench_rate': (round(beat / len(avals), 3) if avals else None),
+                             'avg_alpha_pct': (round(sum(avals) / len(avals), 1) if avals else None)}
         else:
-            summary[tier] = {'matured': 0, 'hit_rate': None, 'avg_fwd_pct': None, 'avg_peak_pct': None}
+            summary[tier] = {'matured': 0, 'hit_rate': None, 'avg_fwd_pct': None, 'avg_peak_pct': None,
+                             'beat_bench_rate': None, 'avg_alpha_pct': None}
+    base = summary['IGNORE'].get('hit_rate')                   # Gap-3: lift of HIGH/WATCH over IGNORE base rate
+    for tier in ('HIGH', 'WATCH'):
+        hr = summary[tier].get('hit_rate')
+        summary[tier]['lift_vs_ignore'] = (round(hr / base, 2) if (hr is not None and base) else None)
     return {'predictions': preds, 'summary': summary, 'updated': today_iso}
 
 
@@ -3695,7 +3774,7 @@ def main():
         data['psx_funnel']    = EXISTING.get('psx_funnel', [])
         data['psx_candidates'] = EXISTING.get('psx_candidates', [])
 
-    _spy6 = _spy_6mo_return()
+    _spy6, _spy_px = _spy_6mo_return()
     _prev_us = {r['ticker']: r['streams'].get('rev_est') for r in EXISTING.get('tce_us', [])
                 if isinstance(r.get('streams'), dict)}
     _etf_stocks = (EXISTING.get('etf_overlap', {}) or {}).get('stocks', [])
@@ -3723,20 +3802,38 @@ def main():
         data['meta']['errors'].append(f'psx_tce: {e}')
         data['tce_psx'] = EXISTING.get('tce_psx', [])
 
-    # Forward-validation: log this run's HIGH/WATCH picks + entry price; track forward returns over time.
+    # Forward-validation: log this run's TCE-pool picks (HIGH/WATCH/IGNORE) + entry price + benchmark;
+    # re-price off-pool open picks so they mature on a live price; track forward return AND alpha over time.
     try:
         _today = dt.date.today().isoformat()
-        _rows = []
+        _rows = []; _pool = set()
         for _mkt, _key in (('us', 'tce_us'), ('psx', 'tce_psx')):
             for r in data.get(_key, []):
                 pr = r.get('streams', {}).get('price') if isinstance(r.get('streams'), dict) else None
-                if r.get('tier') in ('HIGH', 'WATCH') and pr:
+                if r.get('tier') in ('HIGH', 'WATCH', 'IGNORE') and pr:
                     _rows.append({'ticker': r['ticker'], 'tier': r['tier'], 'market': _mkt, 'price': pr})
-        data['tce_predictions'] = update_tce_predictions(EXISTING.get('tce_predictions'), _today, _rows)
+                    _pool.add(r['ticker'])
+        # Gap-1: live-reprice OPEN predictions whose ticker isn't in this run's pool (else they freeze stale at maturity)
+        _pp = (EXISTING.get('tce_predictions') or {}).get('predictions', [])
+        _open_us  = sorted({p['ticker'] for p in _pp if not p.get('resolved')
+                            and p.get('market', 'us') == 'us' and p.get('days_open', 0) < PRED_HORIZON_DAYS
+                            and p['ticker'] not in _pool})
+        _open_psx = sorted({p['ticker'] for p in _pp if not p.get('resolved')
+                            and p.get('market') == 'psx' and p.get('days_open', 0) < PRED_HORIZON_DAYS
+                            and p['ticker'] not in _pool})
+        _extra = {}
+        _extra.update(_reprice_us(_open_us))
+        _extra.update(_reprice_psx(_open_psx))
+        # Gap-2: benchmark levels for alpha — SPY (already fetched for the guardrail) + KSE-100 (PSX macros)
+        _bench = {'us': _spy_px, 'psx': safe_get(data, 'macros', 'psx', 'kse100')}
+        data['tce_predictions'] = update_tce_predictions(EXISTING.get('tce_predictions'), _today, _rows,
+                                                         extra_prices=_extra, bench=_bench)
         _s = data['tce_predictions']['summary']
-        log(f"TCE predictions: {_s['total_logged']} logged, {_s['open']} open; "
-            f"HIGH matured={_s['HIGH']['matured']} hit_rate={_s['HIGH']['hit_rate']}; "
-            f"WATCH matured={_s['WATCH']['matured']} hit_rate={_s['WATCH']['hit_rate']}")
+        log(f"TCE predictions: {_s['total_logged']} logged, {_s['open']} open "
+            f"(re-priced {len(_extra)}/{len(_open_us) + len(_open_psx)} off-pool); "
+            f"HIGH matured={_s['HIGH']['matured']} hit={_s['HIGH']['hit_rate']} alpha={_s['HIGH']['avg_alpha_pct']} lift={_s['HIGH']['lift_vs_ignore']}; "
+            f"WATCH matured={_s['WATCH']['matured']} hit={_s['WATCH']['hit_rate']}; "
+            f"IGNORE matured={_s['IGNORE']['matured']} hit={_s['IGNORE']['hit_rate']}")
     except Exception as e:
         log(f'TCE prediction logger failed: {e}')
         data['tce_predictions'] = EXISTING.get('tce_predictions', {})
