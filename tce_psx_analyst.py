@@ -12,8 +12,7 @@ import math
 
 # thresholds (tunable, mirror US TCE conviction discipline)
 TGT_UPSIDE_THRESH = 0.15     # +15% analyst upside -> forward conviction
-REC_BUY_RATIO     = 0.60     # >=60% of analysts buy -> consensus conviction
-REC_MARK_BULLISH  = 2.0      # recommendation_mark is FactSet 1(strong buy)..5(strong sell); <=2.0 = buy-or-better
+REC_BUY_RATIO     = 0.70     # >=70% of covered analysts rate buy -> consensus conviction (buy70)
 EPS_REV_THRESH    = 0.02     # +2% forward-estimate lift run-to-run -> upward revision (real s9)
 
 def _num(x):
@@ -48,16 +47,16 @@ def derive_psx_analyst_streams(row, prev_fwd_eps=None):
         if upside >= TGT_UPSIDE_THRESH:
             out['streams'].append('s11_target_upside')
 
-    # s12 — buy consensus
+    # s12 — buy consensus. Fires on a strong analyst buy-ratio only.
     if rec_tot > 0:
         buy_ratio = rec_buy / rec_tot
         out['detail']['buy_ratio'] = round(buy_ratio, 2)
-        out['detail']['rec_mark'] = rec_mk
-        # recommendation_mark is the FactSet consensus on a 1(strong buy)..5(strong sell) scale
-        # (probe-confirmed: sample 1.125, impossible on the previously-assumed -1..+1). Bullish
-        # is LOW, so buy-or-better is rec_mk <= REC_MARK_BULLISH (the old >=0.5 was always-true
-        # for any covered name -> s12 fired on coverage alone; this makes it discriminative).
-        if buy_ratio >= REC_BUY_RATIO or (rec_mk is not None and rec_mk <= REC_MARK_BULLISH):
+        out['detail']['rec_mark'] = rec_mk          # kept as context only (chips), NOT a firing condition
+        # The rec_mark OR-clause was dropped: live data showed recommendation_mark clusters in
+        # 1.0..1.9 for covered names (US large-caps AND PSX), so any <= threshold fired s12 on
+        # coverage alone (e.g. QCOM at 18% buy, PSX NPL/SEARL at 0% buy). buy_ratio >= 0.70 is the
+        # discriminative "strong buy consensus" bar, independent of the noisy mark.
+        if buy_ratio >= REC_BUY_RATIO:
             out['streams'].append('s12_recommendation')
 
     # s9 — EPS revision (the real one PSX lacks): forward estimate rising vs last snapshot
