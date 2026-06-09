@@ -427,7 +427,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.17 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&amp;P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory) + v5.17 Wave D2 labels: the three PSX analyst-conviction streams now render as readable chips on the PSX TCE table — Target (mean price-target upside %), Rec (analyst buy share %), and Fwd-EPS (forward-EPS revised up) — each pulling the analyst_detail block; PSX-only, so they show n/a on US rows
+  Muhammad Hammad Khan | Active Macro Dashboard v5.18 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&amp;P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory) + v5.17 Wave D2 labels: the three PSX analyst-conviction streams now render as readable chips on the PSX TCE table — Target (mean price-target upside %), Rec (analyst buy share %), and Fwd-EPS (forward-EPS revised up) — each pulling the analyst_detail block; PSX-only, so they show n/a on US rows + v5.18 Feedback-loop panel: the TCE Forward-Validation ledger now shows a per-tier scorecard (HIGH/WATCH/IGNORE: open, matured, hit-rate ≥+40%, avg fwd, avg alpha vs SPY/KSE-100, beat-market %, and HIGH/WATCH lift over the IGNORE control base rate), an earliest-maturation “first verdict ~DATE” line that reads pending until picks reach the 90-day horizon, and an open-picks table with forward return + alpha + days-to-maturity
 </div>
 
 <script>
@@ -2384,27 +2384,68 @@ function renderTcePredictions(elId, pred){
   if(!pred||!Array.isArray(pred.predictions)||pred.predictions.length===0){
     el.innerHTML='<p style="color:var(--grey-d);">No TCE predictions logged yet — they accumulate as the scanner runs.</p>'; return;
   }
-  const s=pred.summary||{}, hz=(s.horizon_days||90);
-  const tierSum=function(t){var x=s[t]||{}; var hr=(x.hit_rate==null)?'—':(Math.round(x.hit_rate*100)+'%');
-    var af=(x.avg_fwd_pct==null)?'—':(x.avg_fwd_pct+'%'); return t+': '+(x.matured||0)+' matured, hit '+hr+', avg fwd '+af;};
-  const open=pred.predictions.filter(function(p){return (p.days_open||0)<hz;})
-    .slice().sort(function(a,b){return (b.fwd_ret_pct||0)-(a.fwd_ret_pct||0);});
-  const rows=open.map(function(p){
-    var fr=(p.fwd_ret_pct||0);
-    var col=fr>0?'#0a7d2c':fr<0?'#c0392b':'var(--grey-d)';
-    var tcol=p.tier==='HIGH'?'var(--blue)':'var(--grey-d)';
-    return '<tr><td style="font-weight:600;">'+p.ticker+'</td><td style="color:'+tcol+';font-weight:600;">'+(p.tier||'')+'</td>'
-      +'<td>'+(p.market||'')+'</td><td>'+(p.date||'')+'</td><td style="text-align:right;">'+(p.days_open||0)+'d</td>'
-      +'<td style="text-align:right;color:'+col+';">'+(fr>0?'+':'')+fr+'%</td></tr>';
+  const preds=pred.predictions, s=pred.summary||{}, hz=(s.horizon_days||90), win=(s.winner_thresh||40);
+  const pctP=function(v){return v==null?'\u2014':((v>0?'+':'')+v+'%');};
+  const rate=function(v){return v==null?'\u2014':(Math.round(v*100)+'%');};
+  const liftFmt=function(v){return v==null?'\u2014':(v+'\u00d7');};
+  const totalMatured=['HIGH','WATCH','IGNORE'].reduce(function(a,t){return a+((s[t]&&s[t].matured)||0);},0);
+  const openP=preds.filter(function(p){return !p.resolved && (p.days_open||0)<hz;});
+  let earliest=null;
+  openP.forEach(function(p){ if(p.date){ var d=new Date(p.date+'T00:00:00'); if(!earliest||d<earliest) earliest=d; }});
+  let verdict;
+  if(totalMatured>0){
+    verdict='<strong>'+totalMatured+' matured</strong> \u2014 the scorecard below is live.';
+  } else if(earliest){
+    var mature=new Date(earliest.getTime()+hz*86400000);
+    var daysOut=Math.max(0,Math.ceil((mature-new Date())/86400000));
+    verdict='First verdict <strong>~'+mature.toISOString().slice(0,10)+'</strong> ('+daysOut+'d out) \u2014 hit-rate, alpha and lift are <em>pending until picks reach the '+hz+'-day horizon</em>.';
+  } else {
+    verdict='Picks mature at '+hz+'d; the scorecard populates then.';
+  }
+  const openCount=function(t){return preds.filter(function(p){return p.tier===t && !p.resolved && (p.days_open||0)<hz;}).length;};
+  const scRow=function(t){
+    var x=s[t]||{}, m=x.matured||0, pend=(m===0);
+    var c=function(v){return pend?'<span style="color:#b0b0b0;">pending</span>':v;};
+    var tc=t==='HIGH'?'var(--green)':t==='WATCH'?'var(--orange)':'var(--grey-d)';
+    return '<tr>'
+      +'<td style="font-weight:700;color:'+tc+';">'+t+'</td>'
+      +'<td style="text-align:right;">'+openCount(t)+'</td>'
+      +'<td style="text-align:right;">'+m+'</td>'
+      +'<td style="text-align:right;">'+c(rate(x.hit_rate))+'</td>'
+      +'<td style="text-align:right;">'+c(pctP(x.avg_fwd_pct))+'</td>'
+      +'<td style="text-align:right;">'+c(pctP(x.avg_alpha_pct))+'</td>'
+      +'<td style="text-align:right;">'+c(rate(x.beat_bench_rate))+'</td>'
+      +'<td style="text-align:right;">'+(t==='IGNORE'?'<span style="color:var(--grey-d);">base</span>':c(liftFmt(x.lift_vs_ignore)))+'</td>'
+      +'</tr>';
+  };
+  const open=openP.slice().sort(function(a,b){return (b.fwd_ret_pct||0)-(a.fwd_ret_pct||0);}).slice(0,20);
+  const detail=open.map(function(p){
+    var fr=(p.fwd_ret_pct||0), al=p.alpha_pct;
+    var fc=fr>0?'#0a7d2c':fr<0?'#c0392b':'var(--grey-d)';
+    var ac=(al==null)?'var(--grey-d)':al>0?'#0a7d2c':al<0?'#c0392b':'var(--grey-d)';
+    var tcol=p.tier==='HIGH'?'var(--green)':p.tier==='WATCH'?'var(--orange)':'var(--grey-d)';
+    var dleft=Math.max(0,hz-(p.days_open||0));
+    return '<tr><td style="font-weight:600;">'+p.ticker+'</td>'
+      +'<td style="color:'+tcol+';font-weight:600;">'+(p.tier||'')+'</td>'
+      +'<td>'+(p.market||'')+'</td><td>'+(p.date||'')+'</td>'
+      +'<td style="text-align:right;">'+(p.days_open||0)+'d</td>'
+      +'<td style="text-align:right;color:var(--grey-d);">'+dleft+'d</td>'
+      +'<td style="text-align:right;color:'+fc+';">'+pctP(fr)+'</td>'
+      +'<td style="text-align:right;color:'+ac+';">'+(al==null?'\u2014':pctP(al))+'</td></tr>';
   }).join('');
-  el.innerHTML='<p style="margin:0 0 8px;font-size:13px;color:var(--grey-d);">'
-    +'<strong>Forward-validation ledger.</strong> Logged '+(s.total_logged||pred.predictions.length)
-    +' · open '+(s.open!=null?s.open:open.length)+' · '+tierSum('HIGH')+' · '+tierSum('WATCH')
-    +' · <em>picks mature at '+hz+'d; hit-rate populates then.</em></p>'
+  el.innerHTML=
+    '<p style="margin:0 0 6px;font-size:13px;color:var(--grey-d);"><strong>Forward-validation ledger.</strong> '
+    +'Every HIGH/WATCH/IGNORE pick is logged with its entry price + benchmark, re-priced each run (even after it leaves the scan pool), and frozen at the '+hz+'-day horizon. A \u201Cwin\u201D = forward return \u2265+'+win+'%; alpha = return minus its market (SPY for US, KSE-100 for PSX); IGNORE is the control arm, so HIGH/WATCH lift = their hit-rate \u00f7 the IGNORE base rate. This is the test of whether convergence actually predicts \u2014 not just whether the engine is well-built.</p>'
+    +'<p style="margin:0 0 10px;font-size:13px;">Logged <strong>'+(s.total_logged||preds.length)+'</strong> \u00b7 open <strong>'+(s.open!=null?s.open:openP.length)+'</strong> \u00b7 matured <strong>'+totalMatured+'</strong>. '+verdict+'</p>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;"><thead>'
+    +'<tr style="text-align:left;border-bottom:2px solid #ccc;"><th>Tier</th><th style="text-align:right;">Open</th><th style="text-align:right;">Matured</th>'
+    +'<th style="text-align:right;">Hit \u2265+'+win+'%</th><th style="text-align:right;">Avg fwd</th><th style="text-align:right;">Avg alpha</th><th style="text-align:right;">Beat mkt</th><th style="text-align:right;">Lift vs IGN</th></tr></thead>'
+    +'<tbody>'+scRow('HIGH')+scRow('WATCH')+scRow('IGNORE')+'</tbody></table>'
+    +'<p style="margin:0 0 4px;font-size:12px;color:var(--grey-d);">Open picks (top 20 by forward return):</p>'
     +'<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead>'
-    +'<tr style="text-align:left;border-bottom:1px solid #ccc;"><th>Ticker</th><th>Tier</th><th>Mkt</th>'
-    +'<th>Logged</th><th style="text-align:right;">Open</th><th style="text-align:right;">Fwd</th></tr></thead>'
-    +'<tbody>'+rows+'</tbody></table>';
+    +'<tr style="text-align:left;border-bottom:1px solid #ccc;"><th>Ticker</th><th>Tier</th><th>Mkt</th><th>Logged</th>'
+    +'<th style="text-align:right;">Open</th><th style="text-align:right;">To mature</th><th style="text-align:right;">Fwd</th><th style="text-align:right;">Alpha</th></tr></thead>'
+    +'<tbody>'+detail+'</tbody></table>';
 }
 function renderRecession(rec){
   var el=document.getElementById('us_recession_box'); if(!el) return;
