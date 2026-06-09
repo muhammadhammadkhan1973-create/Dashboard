@@ -427,7 +427,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.18 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&amp;P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory) + v5.17 Wave D2 labels: the three PSX analyst-conviction streams now render as readable chips on the PSX TCE table — Target (mean price-target upside %), Rec (analyst buy share %), and Fwd-EPS (forward-EPS revised up) — each pulling the analyst_detail block; PSX-only, so they show n/a on US rows + v5.18 Feedback-loop panel: the TCE Forward-Validation ledger now shows a per-tier scorecard (HIGH/WATCH/IGNORE: open, matured, hit-rate ≥+40%, avg fwd, avg alpha vs SPY/KSE-100, beat-market %, and HIGH/WATCH lift over the IGNORE control base rate), an earliest-maturation “first verdict ~DATE” line that reads pending until picks reach the 90-day horizon, and an open-picks table with forward return + alpha + days-to-maturity
+  Muhammad Hammad Khan | Active Macro Dashboard v5.19 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&amp;P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory) + v5.17 Wave D2 labels: the three PSX analyst-conviction streams now render as readable chips on the PSX TCE table — Target (mean price-target upside %), Rec (analyst buy share %), and Fwd-EPS (forward-EPS revised up) — each pulling the analyst_detail block; PSX-only, so they show n/a on US rows + v5.19 Wave O Part 2 (metric meaning): every screen-survivor row now carries a visible plain-language “reads:” line interpreting its metrics (Rev/EPS/ROE/P/E for US, Rev/EPS/3M for PSX) in threshold terms — e.g. “P/E 52 — priced for perfection”, “ROE 92% — elite returns on capital”, “Rev +498% — explosive top-line”; and the gate thresholds are now visible in each screen caption (✓ Rev ≥15% · EPS ≥0% · ROE ≥8% for US; ✓ Rev ≥0% · EPS ≥0% for PSX) instead of hidden in column tooltips. Sector/peer + regime enrichment of the reads arrives with Wave O L1 (TV sector medians) + v5.18 Feedback-loop panel: the TCE Forward-Validation ledger now shows a per-tier scorecard (HIGH/WATCH/IGNORE: open, matured, hit-rate ≥+40%, avg fwd, avg alpha vs SPY/KSE-100, beat-market %, and HIGH/WATCH lift over the IGNORE control base rate), an earliest-maturation “first verdict ~DATE” line that reads pending until picks reach the 90-day horizon, and an open-picks table with forward return + alpha + days-to-maturity
 </div>
 
 <script>
@@ -2541,8 +2541,8 @@ function renderCandidates(elId, rows, market){
   var el=document.getElementById(elId); if(!el) return;
   var isUs=(market==='us');
   var cap=isUs
-    ? 'Live screen survivors \u2014 names that cleared every gate (non-financials: revenue growth \u2265 15%; financials: ROE \u2265 8% + EPS not deteriorating). Top 15 pass to TCE. The columns ARE the gate metrics (green \u2713 = passed that gate). <b>Status</b> is a rank tier: HIGH-CONVICTION = top 3 by screen rank, STRONG = #4\u20138, WATCH = the rest \u2014 a position in the ranking, not a separate quality verdict (a name can rank top-3 on revenue yet still show a red EPS/ROE gate).'
-    : 'Live screen survivors from the TradingView Pakistan scanner \u2014 <b>discovered candidates, not your holdings</b> (OGDC / PPL / MCB / FFC / HUBC are scored separately). Columns are the growth gates. <b>Status</b> is a rank tier (HIGH-CONVICTION = top 3, STRONG = #4\u20138, WATCH = rest).';
+    ? 'Live screen survivors \u2014 names that cleared every gate (non-financials: revenue growth \u2265 15%; financials: ROE \u2265 8% + EPS not deteriorating). Top 15 pass to TCE. The columns ARE the gate metrics (green \u2713 = passed that gate). <b>Status</b> is a rank tier: HIGH-CONVICTION = top 3 by screen rank, STRONG = #4\u20138, WATCH = the rest \u2014 a position in the ranking, not a separate quality verdict (a name can rank top-3 on revenue yet still show a red EPS/ROE gate). <b>Gate legend:</b> \u2713 Rev \u226515% \u00b7 EPS \u22650% \u00b7 ROE \u22658% (financials gate on ROE; revenue bypassed for banks).'
+    : 'Live screen survivors from the TradingView Pakistan scanner \u2014 <b>discovered candidates, not your holdings</b> (OGDC / PPL / MCB / FFC / HUBC are scored separately). Columns are the growth gates. <b>Status</b> is a rank tier (HIGH-CONVICTION = top 3, STRONG = #4\u20138, WATCH = rest). <b>Gate legend:</b> \u2713 Rev \u22650% \u00b7 EPS \u22650%.';
   var capHtml='<caption style="caption-side:top;text-align:left;font-size:11px;color:var(--grey-d);line-height:1.45;padding:0 0 8px;">'+cap+'</caption>';
   if(!Array.isArray(rows)||!rows.length){el.innerHTML=capHtml+'<tbody><tr><td style="color:var(--grey-d);padding:8px;">No live screen survivors in data.json yet \u2014 they populate from the scan.</td></tr></tbody>';return;}
   var fmt=function(v,d){return (v===null||v===undefined||isNaN(v))?'\u2014':Number(v).toFixed(d===undefined?1:d);};
@@ -2559,8 +2559,28 @@ function renderCandidates(elId, rows, market){
   var head=isUs
     ? '<tr><th>Ticker</th><th>Name</th><th>Sector</th><th style="text-align:right;">Mkt Cap $M</th><th style="text-align:right;" title="Gate: \u2265 15% revenue growth (non-financials)">Rev %</th><th style="text-align:right;" title="Gate: EPS not deteriorating (\u2265 0%)">EPS %</th><th style="text-align:right;" title="Gate: \u2265 8% ROE (primary gate for financials)">ROE %</th><th style="text-align:right;">P/E</th><th style="text-align:right;" title="Higher insider ownership = conviction">Insider %</th><th>Status</th></tr>'
     : '<tr><th>Ticker</th><th>Name</th><th>Sector</th><th style="text-align:right;">Price</th><th style="text-align:right;">Rev %</th><th style="text-align:right;">EPS %</th><th style="text-align:right;">3M %</th><th>Status</th></tr>';
+  function pctn(v){return (v>0?'+':'')+Number(v).toFixed(0)+'%';}
+  function reads(r){
+    var out=[];
+    var rg=Number(r.rev_growth);
+    if(!isNaN(rg)) out.push(rg>=100?'Rev '+pctn(rg)+' \u2014 explosive top-line':rg>=15?'Rev '+pctn(rg)+' \u2014 strong growth':rg>=0?'Rev '+pctn(rg)+' \u2014 modest growth':'Rev '+pctn(rg)+' \u2014 shrinking top-line');
+    var eg=Number(r.eps_growth);
+    if(!isNaN(eg)) out.push(eg>=50?'EPS '+pctn(eg)+' \u2014 earnings surging':eg>=0?'EPS '+pctn(eg)+' \u2014 earnings growing':'EPS '+pctn(eg)+' \u2014 earnings falling');
+    if(isUs){
+      var roe=Number(r.roe);
+      if(!isNaN(roe)) out.push(roe>=20?'ROE '+roe.toFixed(0)+'% \u2014 elite returns on capital':roe>=10?'ROE '+roe.toFixed(0)+'% \u2014 solid':roe>=0?'ROE '+roe.toFixed(0)+'% \u2014 thin':'ROE '+roe.toFixed(0)+'% \u2014 negative');
+      var pe=Number(r.pe);
+      if(!isNaN(pe)&&pe>0) out.push(pe<=12?'P/E '+pe.toFixed(0)+' \u2014 cheap (under ~12yr of earnings)':pe<=20?'P/E '+pe.toFixed(0)+' \u2014 reasonable':pe<=30?'P/E '+pe.toFixed(0)+' \u2014 full':pe<=40?'P/E '+pe.toFixed(0)+' \u2014 expensive':'P/E '+pe.toFixed(0)+' \u2014 priced for perfection');
+    } else {
+      var p3=Number(r.perf_3m);
+      if(!isNaN(p3)) out.push(p3>=50?'3M '+pctn(p3)+' \u2014 strong momentum':p3>=0?'3M '+pctn(p3)+' \u2014 positive momentum':'3M '+pctn(p3)+' \u2014 negative momentum');
+    }
+    return out.length?out.join(' \u00b7 '):'no scored metrics';
+  }
+  var ncols=isUs?10:8;
   var body=rows.map(function(r){
     var isFin=/financ|bank|insur/i.test((r.sector||'')+' '+(r.industry||''));
+    var rd='<tr><td colspan="'+ncols+'" style="padding:1px 6px 9px;font-size:11px;color:var(--grey-d);font-style:italic;border:none;">reads: '+reads(r)+'</td></tr>';
     if(isUs){
       var revOk=isFin?true:(Number(r.rev_growth)>=15);
       var epsOk=(Number(r.eps_growth)>=0);
@@ -2568,12 +2588,12 @@ function renderCandidates(elId, rows, market){
       return '<tr><td><strong>'+(r.ticker||'')+'</strong></td><td>'+(r.name||'')+'</td><td>'+(r.sector||'')+'</td>'
         +'<td style="text-align:right;">'+fmt(r.market_cap_m,0)+'</td>'
         +gate(r.rev_growth,revOk)+gate(r.eps_growth,epsOk)+gate(r.roe,roeOk)
-        +'<td style="text-align:right;">'+fmt(r.pe)+'</td><td style="text-align:right;">'+fmt(r.insider_pct)+'</td><td>'+tierPill(r.status)+'</td></tr>';
+        +'<td style="text-align:right;">'+fmt(r.pe)+'</td><td style="text-align:right;">'+fmt(r.insider_pct)+'</td><td>'+tierPill(r.status)+'</td></tr>'+rd;
     }
     return '<tr><td><strong>'+(r.ticker||'')+'</strong></td><td>'+(r.name||'')+'</td><td>'+(r.sector||'')+'</td>'
       +'<td style="text-align:right;">'+fmt(r.price,2)+'</td>'
       +gate(r.rev_growth,(Number(r.rev_growth)>=0))+gate(r.eps_growth,(Number(r.eps_growth)>=0))
-      +'<td style="text-align:right;">'+fmt(r.perf_3m)+'</td><td>'+tierPill(r.status)+'</td></tr>';
+      +'<td style="text-align:right;">'+fmt(r.perf_3m)+'</td><td>'+tierPill(r.status)+'</td></tr>'+rd;
   }).join('');
   el.innerHTML=capHtml+'<thead>'+head+'</thead><tbody>'+body+'</tbody>';
 }
