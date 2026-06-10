@@ -243,4 +243,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data.json .im3_scorer_hash
           git diff --quiet --cached || git commit -m "Scan run"
-          git push
+          # Rebase-on-reject: if a deploy commit advanced remote main while the scan was running,
+          # a plain push is rejected (non-fast-forward). Pull --rebase the scan commit on top, then
+          # push. --autostash guards any stray worktree change. Scan data.json is never lost to a race.
+          git push || { git pull --rebase --autostash origin main && git push; }
