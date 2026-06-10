@@ -1,7 +1,7 @@
 {
   "meta": {
-    "scan_version": "1.44.0",
-    "last_scan_utc": "2026-06-10T12:14:29.639712Z",
+    "scan_version": "1.45.0",
+    "last_scan_utc": "2026-06-10T12:47:09.600526Z",
     "errors": [],
     "warnings": []
   },
@@ -96,25 +96,25 @@
       "permits_yoy": -22.0,
       "permits_yoy_dir": "down",
       "us_2s10s": 0.41,
-      "wti": 89.92,
+      "wti": 89.37,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-10",
-      "wti_wow": -6.1,
+      "wti_wow": -6.65,
       "wti_wow_dir": "down",
-      "wti_mom": -8.15,
+      "wti_mom": -8.7,
       "wti_mom_dir": "down",
-      "wti_qoq": 2.67,
+      "wti_qoq": 2.12,
       "wti_qoq_dir": "up",
-      "brent": 93.05,
+      "brent": 92.47,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-10",
-      "brent_wow": -4.76,
+      "brent_wow": -5.34,
       "brent_wow_dir": "down",
-      "brent_mom": -11.16,
+      "brent_mom": -11.74,
       "brent_mom_dir": "down",
-      "brent_qoq": 1.07,
+      "brent_qoq": 0.49,
       "brent_qoq_dir": "up",
-      "brent_wti_spread": 3.13,
+      "brent_wti_spread": 3.1,
       "us_oil_rigs": 545,
       "us_rigs_utc": "2026-06-03T16:31:08.332127Z",
       "fomc": {
@@ -193,17 +193,17 @@
       "kse100_wow_dir": "down"
     },
     "metals": {
-      "gold_px": 4170.5,
+      "gold_px": 4192.7,
       "gold_px_date": "2026-06-10",
-      "silver_px": 63.55,
+      "silver_px": 65.05,
       "silver_px_date": "2026-06-10",
-      "platinum_px": 1654.4,
+      "platinum_px": 1680.7,
       "platinum_px_date": "2026-06-10",
-      "palladium_px": 1231.5,
+      "palladium_px": 1245.0,
       "palladium_px_date": "2026-06-10",
-      "dxy": 100.0,
+      "dxy": 99.87,
       "dxy_date": "2026-06-10",
-      "gs_ratio": 65.6,
+      "gs_ratio": 64.5,
       "cot_date": "06/02/26",
       "cot_gold_net": 176020,
       "cot_gold_oi": 326052,
@@ -304,35 +304,35 @@
       "cot_silver_pct_wow_dir": "flat",
       "cot_copper_pct_wow": 0.0,
       "cot_copper_pct_wow_dir": "flat",
-      "gold_px_wow": -266.2,
+      "gold_px_wow": -244.0,
       "gold_px_wow_dir": "down",
-      "gold_px_mom": -548.2,
+      "gold_px_mom": -526.0,
       "gold_px_mom_dir": "down",
-      "gold_px_qoq": -996.9,
+      "gold_px_qoq": -974.7,
       "gold_px_qoq_dir": "down",
-      "silver_px_wow": -9.93,
+      "silver_px_wow": -8.43,
       "silver_px_wow_dir": "down",
-      "silver_px_mom": -21.94,
+      "silver_px_mom": -20.44,
       "silver_px_mom_dir": "down",
-      "silver_px_qoq": -21.52,
+      "silver_px_qoq": -20.02,
       "silver_px_qoq_dir": "down",
-      "platinum_px_wow": -214.3,
+      "platinum_px_wow": -188.0,
       "platinum_px_wow_dir": "down",
-      "platinum_px_mom": -461.1,
+      "platinum_px_mom": -434.8,
       "platinum_px_mom_dir": "down",
-      "platinum_px_qoq": -550.6,
+      "platinum_px_qoq": -524.3,
       "platinum_px_qoq_dir": "down",
-      "palladium_px_wow": -85.6,
+      "palladium_px_wow": -72.1,
       "palladium_px_wow_dir": "down",
-      "palladium_px_mom": -282.3,
+      "palladium_px_mom": -268.8,
       "palladium_px_mom_dir": "down",
-      "palladium_px_qoq": -392.9,
+      "palladium_px_qoq": -379.4,
       "palladium_px_qoq_dir": "down",
-      "dxy_wow": 0.78,
+      "dxy_wow": 0.65,
       "dxy_wow_dir": "up",
-      "dxy_mom": 2.16,
+      "dxy_mom": 2.03,
       "dxy_mom_dir": "up",
-      "dxy_qoq": 1.17,
+      "dxy_qoq": 1.04,
       "dxy_qoq_dir": "up",
       "dfii10_wow": 0.14,
       "dfii10_wow_dir": "up",
@@ -1040,7 +1040,13 @@
       "perf_3m": 11.743119266055057,
       "growth_source": "psx_annual",
       "data_source": "tv_scan",
-      "status": "WATCH"
+      "status": "WATCH",
+      "fund_ownership": {
+        "funds": 7,
+        "avg_weight": 9.53,
+        "max_weight": 13.84,
+        "sum_weight": 66.71
+      }
     },
     {
       "ticker": "PPL",
@@ -1064,7 +1070,13 @@
       "perf_3m": 6.695238095238096,
       "growth_source": "psx_annual",
       "data_source": "tv_scan",
-      "status": "WATCH"
+      "status": "WATCH",
+      "fund_ownership": {
+        "funds": 5,
+        "avg_weight": 5.61,
+        "max_weight": 11.57,
+        "sum_weight": 28.04
+      }
     },
     {
       "ticker": "MCB",
@@ -1088,7 +1100,13 @@
       "perf_3m": 7.93478260869565,
       "growth_source": "psx_annual",
       "data_source": "tv_scan",
-      "status": "WATCH"
+      "status": "WATCH",
+      "fund_ownership": {
+        "funds": 3,
+        "avg_weight": 4.4,
+        "max_weight": 7.61,
+        "sum_weight": 13.19
+      }
     },
     {
       "ticker": "FFC",
@@ -1112,7 +1130,13 @@
       "perf_3m": 10.716000000000006,
       "growth_source": "psx_annual",
       "data_source": "tv_scan",
-      "status": "WATCH"
+      "status": "WATCH",
+      "fund_ownership": {
+        "funds": 8,
+        "avg_weight": 6.74,
+        "max_weight": 9.37,
+        "sum_weight": 53.9
+      }
     },
     {
       "ticker": "HUBC",
@@ -1136,7 +1160,13 @@
       "perf_3m": 5.673267326732677,
       "growth_source": "psx_annual",
       "data_source": "tv_scan",
-      "status": "WATCH"
+      "status": "WATCH",
+      "fund_ownership": {
+        "funds": 4,
+        "avg_weight": 6.88,
+        "max_weight": 9.77,
+        "sum_weight": 27.54
+      }
     }
   ],
   "us_candidates": [
@@ -1441,6 +1471,238 @@
       "status": "WATCH"
     }
   ],
+  "psx_fund_ownership": {
+    "by_ticker": {
+      "OGDC": {
+        "funds": 7,
+        "avg_weight": 9.53,
+        "max_weight": 13.84,
+        "sum_weight": 66.71
+      },
+      "HUBC": {
+        "funds": 4,
+        "avg_weight": 6.88,
+        "max_weight": 9.77,
+        "sum_weight": 27.54
+      },
+      "MARI": {
+        "funds": 3,
+        "avg_weight": 7.58,
+        "max_weight": 9.14,
+        "sum_weight": 22.74
+      },
+      "LUCK": {
+        "funds": 6,
+        "avg_weight": 6.12,
+        "max_weight": 8.28,
+        "sum_weight": 36.71
+      },
+      "MEBL": {
+        "funds": 8,
+        "avg_weight": 7.88,
+        "max_weight": 17.96,
+        "sum_weight": 63.02
+      },
+      "FFC": {
+        "funds": 8,
+        "avg_weight": 6.74,
+        "max_weight": 9.37,
+        "sum_weight": 53.9
+      },
+      "CHCC": {
+        "funds": 1,
+        "avg_weight": 5.44,
+        "max_weight": 5.44,
+        "sum_weight": 5.44
+      },
+      "PPL": {
+        "funds": 5,
+        "avg_weight": 5.61,
+        "max_weight": 11.57,
+        "sum_weight": 28.04
+      },
+      "ENGRO": {
+        "funds": 4,
+        "avg_weight": 5.36,
+        "max_weight": 8.6,
+        "sum_weight": 21.42
+      },
+      "SYS": {
+        "funds": 4,
+        "avg_weight": 4.13,
+        "max_weight": 4.62,
+        "sum_weight": 16.51
+      },
+      "EFERT": {
+        "funds": 2,
+        "avg_weight": 3.58,
+        "max_weight": 4.8,
+        "sum_weight": 7.17
+      },
+      "UBL": {
+        "funds": 5,
+        "avg_weight": 7.64,
+        "max_weight": 18.38,
+        "sum_weight": 38.18
+      },
+      "HBL": {
+        "funds": 4,
+        "avg_weight": 7.98,
+        "max_weight": 17.95,
+        "sum_weight": 31.92
+      },
+      "SRVI": {
+        "funds": 1,
+        "avg_weight": 3.37,
+        "max_weight": 3.37,
+        "sum_weight": 3.37
+      },
+      "MCB": {
+        "funds": 3,
+        "avg_weight": 4.4,
+        "max_weight": 7.61,
+        "sum_weight": 13.19
+      },
+      "HMB": {
+        "funds": 1,
+        "avg_weight": 6.47,
+        "max_weight": 6.47,
+        "sum_weight": 6.47
+      },
+      "BAHL": {
+        "funds": 1,
+        "avg_weight": 5.65,
+        "max_weight": 5.65,
+        "sum_weight": 5.65
+      },
+      "BAFL": {
+        "funds": 2,
+        "avg_weight": 6.65,
+        "max_weight": 8.71,
+        "sum_weight": 13.3
+      },
+      "AKBL": {
+        "funds": 1,
+        "avg_weight": 4.88,
+        "max_weight": 4.88,
+        "sum_weight": 4.88
+      },
+      "FABL": {
+        "funds": 1,
+        "avg_weight": 2.07,
+        "max_weight": 2.07,
+        "sum_weight": 2.07
+      },
+      "DGKC": {
+        "funds": 1,
+        "avg_weight": 2.39,
+        "max_weight": 2.39,
+        "sum_weight": 2.39
+      },
+      "MLCF": {
+        "funds": 1,
+        "avg_weight": 2.33,
+        "max_weight": 2.33,
+        "sum_weight": 2.33
+      },
+      "KOHC": {
+        "funds": 1,
+        "avg_weight": 5.8,
+        "max_weight": 5.8,
+        "sum_weight": 5.8
+      },
+      "NML": {
+        "funds": 1,
+        "avg_weight": 3.7,
+        "max_weight": 3.7,
+        "sum_weight": 3.7
+      },
+      "KTML": {
+        "funds": 1,
+        "avg_weight": 3.3,
+        "max_weight": 3.3,
+        "sum_weight": 3.3
+      },
+      "PSO": {
+        "funds": 2,
+        "avg_weight": 5.29,
+        "max_weight": 6.37,
+        "sum_weight": 10.58
+      },
+      "ATRL": {
+        "funds": 1,
+        "avg_weight": 4.8,
+        "max_weight": 4.8,
+        "sum_weight": 4.8
+      },
+      "FATIMA": {
+        "funds": 1,
+        "avg_weight": 3.84,
+        "max_weight": 3.84,
+        "sum_weight": 3.84
+      }
+    },
+    "meta": {
+      "funds_scanned": 9,
+      "tickers_covered": 28,
+      "funds": [
+        {
+          "slug": "Al_Meezan_Mutual_Fund",
+          "amc": "Al Meezan",
+          "as_of": "March 31, 2026",
+          "holdings": 10
+        },
+        {
+          "slug": "Meezan_Balanced_Fund",
+          "amc": "Al Meezan",
+          "as_of": "March 31, 2026",
+          "holdings": 5
+        },
+        {
+          "slug": "Meezan_Asset_Allocation_Fund",
+          "amc": "Al Meezan",
+          "as_of": "March 31, 2026",
+          "holdings": 10
+        },
+        {
+          "slug": "UBL_Stock_Advantage_Fund",
+          "amc": "UBL",
+          "as_of": "?",
+          "holdings": 9
+        },
+        {
+          "slug": "UBL_Financial_Sector_Fund",
+          "amc": "UBL",
+          "as_of": "?",
+          "holdings": 9
+        },
+        {
+          "slug": "UBL_Asset_Allocation_Fund",
+          "amc": "UBL",
+          "as_of": "December 31, 2025",
+          "holdings": 9
+        },
+        {
+          "slug": "NBP_Stock_Fund",
+          "amc": "NBP",
+          "as_of": "?",
+          "holdings": 8
+        },
+        {
+          "slug": "HBL_Stock_Fund",
+          "amc": "HBL",
+          "as_of": "?",
+          "holdings": 10
+        },
+        {
+          "slug": "HBL_Islamic_Equity_Fund",
+          "amc": "HBL",
+          "as_of": "?",
+          "holdings": 10
+        }
+      ]
+    }
+  },
   "tce_psx": [
     {
       "ticker": "TPL",
@@ -1463,7 +1725,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 19,
+        "s1_news_count": 20,
         "s5_volume_ratio": 0.86,
         "price": 14.32,
         "s6_momentum_pct": 101.7,
@@ -1496,7 +1758,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 3,
+        "s1_news_count": 7,
         "s5_volume_ratio": 1.92,
         "price": 71.67,
         "s6_momentum_pct": 53.8,
@@ -1529,7 +1791,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 18,
+        "s1_news_count": 17,
         "s5_volume_ratio": 0.3,
         "price": 225.3,
         "s6_momentum_pct": 5.8,
@@ -1963,7 +2225,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 4,
+        "s1_news_count": 3,
         "s5_volume_ratio": 0.27,
         "price": 16.31,
         "s6_momentum_pct": 5.2,
@@ -2061,7 +2323,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 4,
+        "s1_news_count": 5,
         "s5_volume_ratio": 0.66,
         "price": 12.02,
         "s6_momentum_pct": 29.2,
@@ -2127,7 +2389,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 12,
+        "s1_news_count": 29,
         "s5_volume_ratio": 0.27,
         "price": 214.95,
         "s6_momentum_pct": 7.4,
@@ -2293,7 +2555,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 2,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.8,
         "price": 8.04,
         "s6_momentum_pct": 20.7,
@@ -2359,7 +2621,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 1,
+        "s1_news_count": 0,
         "s5_volume_ratio": 0.27,
         "price": 43.01,
         "s6_momentum_pct": 18.0,
@@ -2800,7 +3062,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 1,
-        "s1_news_count": 29,
+        "s1_news_count": 30,
         "s5_volume_ratio": 1.59,
         "price": 949.28,
         "s6_momentum_pct": 143.9,
@@ -4088,7 +4350,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 1,
-        "s1_news_count": 24,
+        "s1_news_count": 20,
         "s5_volume_ratio": 0.73,
         "price": 324.45,
         "s6_momentum_pct": 53.7,
@@ -4710,7 +4972,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 20,
+        "s1_news_count": 23,
         "s5_volume_ratio": 1.42,
         "price": 124.15,
         "s6_momentum_pct": 63.8,
@@ -5067,7 +5329,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 12,
+        "s1_news_count": 11,
         "s5_volume_ratio": 1.39,
         "price": 403.89,
         "s6_momentum_pct": 26.7,
@@ -5378,7 +5640,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 5,
+        "s1_news_count": 6,
         "s5_volume_ratio": 1.21,
         "price": 3.67,
         "s6_momentum_pct": -41.7,
@@ -5423,7 +5685,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 4,
+        "s1_news_count": 6,
         "s5_volume_ratio": 0.87,
         "price": 5.7,
         "s6_momentum_pct": -57.1,
@@ -6712,7 +6974,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 20,
+        "s1_news_count": 27,
         "s5_volume_ratio": 1.14,
         "price": 411.74,
         "s6_momentum_pct": 0.8,
@@ -6758,7 +7020,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 28,
+        "s1_news_count": 27,
         "s5_volume_ratio": 0.94,
         "price": 363.31,
         "s6_momentum_pct": 18.7,
@@ -7069,7 +7331,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 14,
+        "s1_news_count": 15,
         "s5_volume_ratio": 0.96,
         "price": 915.64,
         "s6_momentum_pct": 30.2,
@@ -7115,7 +7377,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 22,
+        "s1_news_count": 27,
         "s5_volume_ratio": 0.77,
         "price": 1642.0,
         "s6_momentum_pct": 178.9,
@@ -7514,7 +7776,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 25,
+        "s1_news_count": 27,
         "s5_volume_ratio": 2.53,
         "price": 217.77,
         "s6_momentum_pct": 58.3,
@@ -7605,7 +7867,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 29,
+        "s1_news_count": 28,
         "s5_volume_ratio": 1.14,
         "price": 110.27,
         "s6_momentum_pct": 141.9,
@@ -7696,7 +7958,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 6,
+        "s1_news_count": 5,
         "s5_volume_ratio": 1.07,
         "price": 4.15,
         "s6_momentum_pct": -17.3,
@@ -7741,7 +8003,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 6,
+        "s1_news_count": 5,
         "s5_volume_ratio": 7.27,
         "price": 7.22,
         "s6_momentum_pct": 266.5,
@@ -7786,7 +8048,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 23,
+        "s1_news_count": 24,
         "s5_volume_ratio": 0.85,
         "price": 151.75,
         "s6_momentum_pct": 1.6,
@@ -8507,11 +8769,11 @@
       "name": "ABTC",
       "sector": "Technology Services",
       "src": "screen",
-      "tce_score": 1,
+      "tce_score": 0,
       "conviction": 0,
       "tier": "IGNORE",
       "streams": {
-        "s1_news": 1,
+        "s1_news": 0,
         "s2_sponsor": 0,
         "s3_insider": 0,
         "s5_volume": 0,
@@ -8523,7 +8785,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 3,
+        "s1_news_count": 2,
         "s5_volume_ratio": 0.91,
         "price": 0.901,
         "s6_momentum_pct": -18.1,
@@ -8534,7 +8796,7 @@
         "rev_est": 73800000.0,
         "s10_rev_rev_pct": 0.0,
         "s3_insider_count": 0,
-        "total": 1,
+        "total": 0,
         "analyst_covered": false,
         "analyst_detail": {}
       }
@@ -20405,7 +20667,7 @@
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-06-10T12:20:25.601869Z",
+    "_fetched_utc": "2026-06-10T12:53:00.161970Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
@@ -20643,8 +20905,8 @@
     "_scraped_utc": "2026-06-09T21:42:32.405633Z"
   },
   "etf_overlap": {
-    "_scraped_utc": "2026-06-10T12:21:01.319314Z",
-    "_scan_version": "1.44.0",
+    "_scraped_utc": "2026-06-10T12:53:48.520850Z",
+    "_scan_version": "1.45.0",
     "etfs_scanned": 30,
     "etfs_with_holdings": 30,
     "source_etfs": [
