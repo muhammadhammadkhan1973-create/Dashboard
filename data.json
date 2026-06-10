@@ -1,9 +1,12 @@
 {
   "meta": {
-    "scan_version": "1.45.0",
-    "last_scan_utc": "2026-06-10T12:47:09.600526Z",
+    "scan_version": "1.46.0",
+    "last_scan_utc": "2026-06-10T13:07:06.529235Z",
     "errors": [],
-    "warnings": []
+    "warnings": [
+      "COT futures (TFF) failed: HTTPSConnectionPool(host='publicreporting.cftc.gov', port=443): Max retries exceeded with url: /resource/gpe5-46if.json?$order=report_date_as_yyyy_mm_dd%20DESC&$limit=100 (Caused by ConnectTimeoutError(<HTTPSConnection(host='publicreporting.cftc.gov', port=443) at 0x7f3b347c3110>, 'Connection to publicreporting.cftc.gov timed out. (connect timeout=8)'))",
+      "COT futures (Crude) failed: HTTPSConnectionPool(host='publicreporting.cftc.gov', port=443): Max retries exceeded with url: /resource/72hh-3qpy.json?$order=report_date_as_yyyy_mm_dd%20DESC&$limit=200 (Caused by ConnectTimeoutError(<HTTPSConnection(host='publicreporting.cftc.gov', port=443) at 0x7f3b38a91f50>, 'Connection to publicreporting.cftc.gov timed out. (connect timeout=8)'))"
+    ]
   },
   "macros": {
     "us": {
@@ -96,25 +99,25 @@
       "permits_yoy": -22.0,
       "permits_yoy_dir": "down",
       "us_2s10s": 0.41,
-      "wti": 89.37,
+      "wti": 89.01,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-10",
-      "wti_wow": -6.65,
+      "wti_wow": -7.01,
       "wti_wow_dir": "down",
-      "wti_mom": -8.7,
+      "wti_mom": -9.06,
       "wti_mom_dir": "down",
-      "wti_qoq": 2.12,
+      "wti_qoq": 1.76,
       "wti_qoq_dir": "up",
-      "brent": 92.47,
+      "brent": 92.05,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-10",
-      "brent_wow": -5.34,
+      "brent_wow": -5.76,
       "brent_wow_dir": "down",
-      "brent_mom": -11.74,
+      "brent_mom": -12.16,
       "brent_mom_dir": "down",
-      "brent_qoq": 0.49,
+      "brent_qoq": 0.07,
       "brent_qoq_dir": "up",
-      "brent_wti_spread": 3.1,
+      "brent_wti_spread": 3.04,
       "us_oil_rigs": 545,
       "us_rigs_utc": "2026-06-03T16:31:08.332127Z",
       "fomc": {
@@ -193,17 +196,17 @@
       "kse100_wow_dir": "down"
     },
     "metals": {
-      "gold_px": 4192.7,
+      "gold_px": 4169.4,
       "gold_px_date": "2026-06-10",
-      "silver_px": 65.05,
+      "silver_px": 64.39,
       "silver_px_date": "2026-06-10",
-      "platinum_px": 1680.7,
+      "platinum_px": 1677.2,
       "platinum_px_date": "2026-06-10",
-      "palladium_px": 1245.0,
+      "palladium_px": 1238.5,
       "palladium_px_date": "2026-06-10",
-      "dxy": 99.87,
+      "dxy": 99.88,
       "dxy_date": "2026-06-10",
-      "gs_ratio": 64.5,
+      "gs_ratio": 64.8,
       "cot_date": "06/02/26",
       "cot_gold_net": 176020,
       "cot_gold_oi": 326052,
@@ -304,35 +307,35 @@
       "cot_silver_pct_wow_dir": "flat",
       "cot_copper_pct_wow": 0.0,
       "cot_copper_pct_wow_dir": "flat",
-      "gold_px_wow": -244.0,
+      "gold_px_wow": -267.3,
       "gold_px_wow_dir": "down",
-      "gold_px_mom": -526.0,
+      "gold_px_mom": -549.3,
       "gold_px_mom_dir": "down",
-      "gold_px_qoq": -974.7,
+      "gold_px_qoq": -998.0,
       "gold_px_qoq_dir": "down",
-      "silver_px_wow": -8.43,
+      "silver_px_wow": -9.09,
       "silver_px_wow_dir": "down",
-      "silver_px_mom": -20.44,
+      "silver_px_mom": -21.1,
       "silver_px_mom_dir": "down",
-      "silver_px_qoq": -20.02,
+      "silver_px_qoq": -20.68,
       "silver_px_qoq_dir": "down",
-      "platinum_px_wow": -188.0,
+      "platinum_px_wow": -191.5,
       "platinum_px_wow_dir": "down",
-      "platinum_px_mom": -434.8,
+      "platinum_px_mom": -438.3,
       "platinum_px_mom_dir": "down",
-      "platinum_px_qoq": -524.3,
+      "platinum_px_qoq": -527.8,
       "platinum_px_qoq_dir": "down",
-      "palladium_px_wow": -72.1,
+      "palladium_px_wow": -78.6,
       "palladium_px_wow_dir": "down",
-      "palladium_px_mom": -268.8,
+      "palladium_px_mom": -275.3,
       "palladium_px_mom_dir": "down",
-      "palladium_px_qoq": -379.4,
+      "palladium_px_qoq": -385.9,
       "palladium_px_qoq_dir": "down",
-      "dxy_wow": 0.65,
+      "dxy_wow": 0.66,
       "dxy_wow_dir": "up",
-      "dxy_mom": 2.03,
+      "dxy_mom": 2.04,
       "dxy_mom_dir": "up",
-      "dxy_qoq": 1.04,
+      "dxy_qoq": 1.05,
       "dxy_qoq_dir": "up",
       "dfii10_wow": 0.14,
       "dfii10_wow_dir": "up",
@@ -1072,10 +1075,10 @@
       "data_source": "tv_scan",
       "status": "WATCH",
       "fund_ownership": {
-        "funds": 5,
-        "avg_weight": 5.61,
+        "funds": 6,
+        "avg_weight": 6.12,
         "max_weight": 11.57,
-        "sum_weight": 28.04
+        "sum_weight": 36.74
       }
     },
     {
@@ -1516,10 +1519,10 @@
         "sum_weight": 5.44
       },
       "PPL": {
-        "funds": 5,
-        "avg_weight": 5.61,
+        "funds": 6,
+        "avg_weight": 6.12,
         "max_weight": 11.57,
-        "sum_weight": 28.04
+        "sum_weight": 36.74
       },
       "ENGRO": {
         "funds": 4,
@@ -1582,10 +1585,10 @@
         "sum_weight": 13.3
       },
       "AKBL": {
-        "funds": 1,
-        "avg_weight": 4.88,
-        "max_weight": 4.88,
-        "sum_weight": 4.88
+        "funds": 2,
+        "avg_weight": 5.34,
+        "max_weight": 5.8,
+        "sum_weight": 10.68
       },
       "FABL": {
         "funds": 1,
@@ -1667,13 +1670,13 @@
         {
           "slug": "UBL_Stock_Advantage_Fund",
           "amc": "UBL",
-          "as_of": "?",
+          "as_of": "04-Aug-2006",
           "holdings": 9
         },
         {
           "slug": "UBL_Financial_Sector_Fund",
           "amc": "UBL",
-          "as_of": "?",
+          "as_of": "06-Apr-2018",
           "holdings": 9
         },
         {
@@ -1685,19 +1688,19 @@
         {
           "slug": "NBP_Stock_Fund",
           "amc": "NBP",
-          "as_of": "?",
-          "holdings": 8
+          "as_of": "Mar 31, 2026",
+          "holdings": 10
         },
         {
           "slug": "HBL_Stock_Fund",
           "amc": "HBL",
-          "as_of": "?",
+          "as_of": "31-Aug-2007",
           "holdings": 10
         },
         {
           "slug": "HBL_Islamic_Equity_Fund",
           "amc": "HBL",
-          "as_of": "?",
+          "as_of": "28-May-2014",
           "holdings": 10
         }
       ]
@@ -1725,7 +1728,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 20,
+        "s1_news_count": 19,
         "s5_volume_ratio": 0.86,
         "price": 14.32,
         "s6_momentum_pct": 101.7,
@@ -1758,7 +1761,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 7,
+        "s1_news_count": 4,
         "s5_volume_ratio": 1.92,
         "price": 71.67,
         "s6_momentum_pct": 53.8,
@@ -1791,7 +1794,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 17,
+        "s1_news_count": 18,
         "s5_volume_ratio": 0.3,
         "price": 225.3,
         "s6_momentum_pct": 5.8,
@@ -2225,7 +2228,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 3,
+        "s1_news_count": 4,
         "s5_volume_ratio": 0.27,
         "price": 16.31,
         "s6_momentum_pct": 5.2,
@@ -2258,7 +2261,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 4,
+        "s1_news_count": 3,
         "s5_volume_ratio": 0.43,
         "price": 12.33,
         "s6_momentum_pct": 26.5,
@@ -2323,7 +2326,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 5,
+        "s1_news_count": 4,
         "s5_volume_ratio": 0.66,
         "price": 12.02,
         "s6_momentum_pct": 29.2,
@@ -2356,7 +2359,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 14,
+        "s1_news_count": 12,
         "s5_volume_ratio": 0.44,
         "price": 13.57,
         "s6_momentum_pct": 8.3,
@@ -2621,7 +2624,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.27,
         "price": 43.01,
         "s6_momentum_pct": 18.0,
@@ -2752,11 +2755,11 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 20,
+        "s1_news_count": 21,
         "s5_volume_ratio": 2.71,
-        "price": 25.85,
-        "s6_momentum_pct": 49.6,
-        "rs_vs_spy": 137.6,
+        "price": 23.9,
+        "s6_momentum_pct": 29.2,
+        "rs_vs_spy": 119.1,
         "rs_ok": true,
         "s8_capital_short_pct": 15.1,
         "s9_eps_rev_net": 0,
@@ -3062,7 +3065,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 1,
-        "s1_news_count": 30,
+        "s1_news_count": 29,
         "s5_volume_ratio": 1.59,
         "price": 949.28,
         "s6_momentum_pct": 143.9,
@@ -3375,9 +3378,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 9,
         "s5_volume_ratio": 0.56,
-        "price": 0.42,
-        "s6_momentum_pct": -38.2,
-        "rs_vs_spy": -79.1,
+        "price": 0.4,
+        "s6_momentum_pct": -40.3,
+        "rs_vs_spy": -80.5,
         "rs_ok": false,
         "s8_capital_short_pct": 15.3,
         "s9_eps_rev_net": 1,
@@ -3395,316 +3398,6 @@
           "eps_surprise_pct": -12.5
         },
         "fwd_eps": -0.02
-      }
-    },
-    {
-      "ticker": "ASPI",
-      "name": "ASPI",
-      "sector": "Health Technology",
-      "src": "screen",
-      "tce_score": 7,
-      "conviction": 4,
-      "tier": "HIGH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 1,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 1,
-        "s9_eps_rev": 1,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 1,
-        "s12_recommendation": 1,
-        "s1_news_count": 11,
-        "s5_volume_ratio": 1.08,
-        "price": 6.83,
-        "s6_momentum_pct": 17.6,
-        "rs_vs_spy": 2.6,
-        "rs_ok": true,
-        "s8_capital_short_pct": 20.0,
-        "s9_eps_rev_net": 1,
-        "rev_est": 1498000.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 8,
-        "total": 5,
-        "analyst_covered": true,
-        "analyst_detail": {
-          "target_upside_pct": 103.1,
-          "buy_ratio": 1.0,
-          "rec_mark": 1.0,
-          "fwd_eps": -0.306667,
-          "eps_rev_pct": 0.0,
-          "eps_surprise_pct": 48.8
-        },
-        "fwd_eps": -0.306667
-      },
-      "im3": {
-        "ticker": "ASPI",
-        "name": "ASP Isotopes Inc.",
-        "sector": "Basic Materials",
-        "is_bank": false,
-        "price": 6.4,
-        "score": 85,
-        "pct": 52.5,
-        "grade": "C",
-        "metrics": [
-          {
-            "key": "rev_cagr",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "op_cagr",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 1
-          },
-          {
-            "key": "np_cagr",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 1
-          },
-          {
-            "key": "op_margin",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 5
-          },
-          {
-            "key": "np_margin",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 5
-          },
-          {
-            "key": "tax_rate",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "int_coverage",
-            "verdict": "BAD",
-            "pts": 0,
-            "max": 2
-          },
-          {
-            "key": "de_ratio",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5
-          },
-          {
-            "key": "total_debt",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "current_ratio",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "cfo_trend",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5
-          },
-          {
-            "key": "net_cash",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3
-          },
-          {
-            "key": "ccfo_cpat",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "nfa_turn",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "roe",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 3
-          },
-          {
-            "key": "eps_trend",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5
-          },
-          {
-            "key": "pe_ratio",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "peg_ratio",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "earn_yield",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 3
-          },
-          {
-            "key": "pb_ratio",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "graham_val",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3
-          },
-          {
-            "key": "ps_ratio",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 3
-          },
-          {
-            "key": "div_yield",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "ev_ebitda",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3
-          },
-          {
-            "key": "mos",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "val_shareholders",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5
-          },
-          {
-            "key": "inv_turn",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "dro",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "fat",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "ccc",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "fcf_trend",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5
-          },
-          {
-            "key": "croic",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "fcf_sale",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 5
-          },
-          {
-            "key": "fcf_cfo",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "cash_debt",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "cash_share",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "altman_z",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 5
-          },
-          {
-            "key": "beneish_m",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 5
-          },
-          {
-            "key": "piotroski_f",
-            "verdict": "BAD",
-            "pts": 2,
-            "max": 10
-          },
-          {
-            "key": "roic_wacc",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3
-          }
-        ],
-        "max": 162,
-        "bank_coverage": null,
-        "bank_inputs": null,
-        "piotroski": 2,
-        "altman_z": -1.11,
-        "beneish_m": 68099989.71,
-        "iv": {
-          "dcf_eps": -1848.16,
-          "graham": null,
-          "peter_lynch": null,
-          "composite": null,
-          "mos_pct": null
-        }
       }
     },
     {
@@ -3728,7 +3421,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 20,
+        "s1_news_count": 19,
         "s5_volume_ratio": 1.06,
         "price": 208.64,
         "s6_momentum_pct": 14.4,
@@ -4039,7 +3732,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 1,
-        "s1_news_count": 24,
+        "s1_news_count": 23,
         "s5_volume_ratio": 1.14,
         "price": 492.17,
         "s6_momentum_pct": 45.4,
@@ -4054,7 +3747,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 4.1,
+          "target_upside_pct": 4.9,
           "buy_ratio": 0.72,
           "rec_mark": 1.2375,
           "fwd_eps": 3.359698,
@@ -4350,7 +4043,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 1,
-        "s1_news_count": 20,
+        "s1_news_count": 24,
         "s5_volume_ratio": 0.73,
         "price": 324.45,
         "s6_momentum_pct": 53.7,
@@ -4365,7 +4058,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -0.6,
+          "target_upside_pct": 0.5,
           "buy_ratio": 0.7,
           "rec_mark": 1.27027,
           "fwd_eps": 1.664232,
@@ -5283,7 +4976,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 1,
-        "s1_news_count": 28,
+        "s1_news_count": 25,
         "s5_volume_ratio": 3.56,
         "price": 288.85,
         "s6_momentum_pct": 211.9,
@@ -5329,7 +5022,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 11,
+        "s1_news_count": 12,
         "s5_volume_ratio": 1.39,
         "price": 403.89,
         "s6_momentum_pct": 26.7,
@@ -5640,11 +5333,11 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 6,
+        "s1_news_count": 5,
         "s5_volume_ratio": 1.21,
-        "price": 3.67,
-        "s6_momentum_pct": -41.7,
-        "rs_vs_spy": -71.4,
+        "price": 3.82,
+        "s6_momentum_pct": -40.2,
+        "rs_vs_spy": -69.9,
         "rs_ok": false,
         "s8_capital_short_pct": 24.3,
         "s9_eps_rev_net": 1,
@@ -5687,9 +5380,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 6,
         "s5_volume_ratio": 0.87,
-        "price": 5.7,
-        "s6_momentum_pct": -57.1,
-        "rs_vs_spy": -79.9,
+        "price": 5.78,
+        "s6_momentum_pct": -58.0,
+        "rs_vs_spy": -79.5,
         "rs_ok": false,
         "s8_capital_short_pct": 11.9,
         "s9_eps_rev_net": 4,
@@ -5707,6 +5400,316 @@
           "eps_surprise_pct": 59.8
         },
         "fwd_eps": -0.302404
+      }
+    },
+    {
+      "ticker": "ASPI",
+      "name": "ASPI",
+      "sector": "Health Technology",
+      "src": "screen",
+      "tce_score": 6,
+      "conviction": 4,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 0,
+        "s3_insider": 1,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 1,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 1,
+        "s12_recommendation": 1,
+        "s1_news_count": 3,
+        "s5_volume_ratio": 1.08,
+        "price": 6.4,
+        "s6_momentum_pct": 6.0,
+        "rs_vs_spy": -4.4,
+        "rs_ok": false,
+        "s8_capital_short_pct": 20.0,
+        "s9_eps_rev_net": 1,
+        "rev_est": 1498000.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 8,
+        "total": 4,
+        "analyst_covered": true,
+        "analyst_detail": {
+          "target_upside_pct": 103.1,
+          "buy_ratio": 1.0,
+          "rec_mark": 1.0,
+          "fwd_eps": -0.306667,
+          "eps_rev_pct": 0.0,
+          "eps_surprise_pct": 48.8
+        },
+        "fwd_eps": -0.306667
+      },
+      "im3": {
+        "ticker": "ASPI",
+        "name": "ASP Isotopes Inc.",
+        "sector": "Basic Materials",
+        "is_bank": false,
+        "price": 6.4,
+        "score": 85,
+        "pct": 52.5,
+        "grade": "C",
+        "metrics": [
+          {
+            "key": "rev_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "op_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "np_cagr",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 1
+          },
+          {
+            "key": "op_margin",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "np_margin",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "tax_rate",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "int_coverage",
+            "verdict": "BAD",
+            "pts": 0,
+            "max": 2
+          },
+          {
+            "key": "de_ratio",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "total_debt",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "current_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "cfo_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "net_cash",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "ccfo_cpat",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "nfa_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "roe",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "eps_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "pe_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "peg_ratio",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "earn_yield",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "pb_ratio",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "graham_val",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "ps_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3
+          },
+          {
+            "key": "div_yield",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5
+          },
+          {
+            "key": "ev_ebitda",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          },
+          {
+            "key": "mos",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "val_shareholders",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "inv_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "dro",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "fat",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "ccc",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "fcf_trend",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5
+          },
+          {
+            "key": "croic",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "fcf_sale",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "fcf_cfo",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3
+          },
+          {
+            "key": "cash_debt",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "cash_share",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5
+          },
+          {
+            "key": "altman_z",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "beneish_m",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5
+          },
+          {
+            "key": "piotroski_f",
+            "verdict": "BAD",
+            "pts": 2,
+            "max": 10
+          },
+          {
+            "key": "roic_wacc",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3
+          }
+        ],
+        "max": 162,
+        "bank_coverage": null,
+        "bank_inputs": null,
+        "piotroski": 2,
+        "altman_z": -1.11,
+        "beneish_m": 68099989.71,
+        "iv": {
+          "dcf_eps": -1848.16,
+          "graham": null,
+          "peter_lynch": null,
+          "composite": null,
+          "mos_pct": null
+        }
       }
     },
     {
@@ -6663,7 +6666,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 17,
+        "s1_news_count": 18,
         "s5_volume_ratio": 0.91,
         "price": 2108.0601,
         "s6_momentum_pct": 47.7,
@@ -6678,7 +6681,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -10.7,
+          "target_upside_pct": -9.7,
           "buy_ratio": 0.48,
           "rec_mark": 1.467742,
           "fwd_eps": 9.932792,
@@ -6974,7 +6977,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 27,
+        "s1_news_count": 20,
         "s5_volume_ratio": 1.14,
         "price": 411.74,
         "s6_momentum_pct": 0.8,
@@ -7020,7 +7023,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 27,
+        "s1_news_count": 28,
         "s5_volume_ratio": 0.94,
         "price": 363.31,
         "s6_momentum_pct": 18.7,
@@ -7331,7 +7334,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 15,
+        "s1_news_count": 17,
         "s5_volume_ratio": 0.96,
         "price": 915.64,
         "s6_momentum_pct": 30.2,
@@ -7379,9 +7382,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 27,
         "s5_volume_ratio": 0.77,
-        "price": 1642.0,
-        "s6_momentum_pct": 178.9,
-        "rs_vs_spy": 597.0,
+        "price": 1646.54,
+        "s6_momentum_pct": 166.0,
+        "rs_vs_spy": 599.0,
         "rs_ok": true,
         "s8_capital_short_pct": 9.7,
         "s9_eps_rev_net": 12,
@@ -7689,9 +7692,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 11,
         "s5_volume_ratio": 1.56,
-        "price": 5.48,
-        "s6_momentum_pct": -49.7,
-        "rs_vs_spy": -77.7,
+        "price": 5.31,
+        "s6_momentum_pct": -55.8,
+        "rs_vs_spy": -78.6,
         "rs_ok": false,
         "s8_capital_short_pct": 3.0,
         "s9_eps_rev_net": 0,
@@ -7733,10 +7736,10 @@
         "s11_target_upside": 1,
         "s12_recommendation": 1,
         "s1_news_count": 20,
-        "s5_volume_ratio": 16.76,
-        "price": 7.89,
-        "s6_momentum_pct": -24.7,
-        "rs_vs_spy": -35.4,
+        "s5_volume_ratio": 16.77,
+        "price": 7.43,
+        "s6_momentum_pct": -7.2,
+        "rs_vs_spy": -39.6,
         "rs_ok": false,
         "s9_eps_rev_net": -1,
         "rev_est": 5750000.0,
@@ -7776,7 +7779,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 27,
+        "s1_news_count": 26,
         "s5_volume_ratio": 2.53,
         "price": 217.77,
         "s6_momentum_pct": 58.3,
@@ -7824,9 +7827,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 10,
         "s5_volume_ratio": 1.03,
-        "price": 9.7,
-        "s6_momentum_pct": -30.9,
-        "rs_vs_spy": -78.9,
+        "price": 9.73,
+        "s6_momentum_pct": -30.7,
+        "rs_vs_spy": -78.8,
         "rs_ok": false,
         "s8_capital_short_pct": 24.3,
         "s9_eps_rev_net": -3,
@@ -7958,11 +7961,11 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 5,
+        "s1_news_count": 6,
         "s5_volume_ratio": 1.07,
-        "price": 4.15,
-        "s6_momentum_pct": -17.3,
-        "rs_vs_spy": -54.6,
+        "price": 4.05,
+        "s6_momentum_pct": -20.4,
+        "rs_vs_spy": -55.8,
         "rs_ok": false,
         "s8_capital_short_pct": 3.1,
         "s9_eps_rev_net": 0,
@@ -8003,11 +8006,11 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 5,
-        "s5_volume_ratio": 7.27,
-        "price": 7.22,
-        "s6_momentum_pct": 266.5,
-        "rs_vs_spy": 264.1,
+        "s1_news_count": 6,
+        "s5_volume_ratio": 7.28,
+        "price": 6.34,
+        "s6_momentum_pct": 215.4,
+        "rs_vs_spy": 218.7,
         "rs_ok": true,
         "s8_capital_short_pct": 7.3,
         "s9_eps_rev_net": 0,
@@ -8017,9 +8020,9 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -21.1,
-          "buy_ratio": 0.5,
-          "rec_mark": 1.5,
+          "target_upside_pct": 10.4,
+          "buy_ratio": 0.67,
+          "rec_mark": 1.333333,
           "fwd_eps": -0.0814,
           "eps_rev_pct": 0.0,
           "eps_surprise_pct": 13.2
@@ -8048,7 +8051,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 24,
+        "s1_news_count": 19,
         "s5_volume_ratio": 0.85,
         "price": 151.75,
         "s6_momentum_pct": 1.6,
@@ -8096,9 +8099,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 4,
         "s5_volume_ratio": 0.64,
-        "price": 5.1,
-        "s6_momentum_pct": -14.9,
-        "rs_vs_spy": -12.7,
+        "price": 4.85,
+        "s6_momentum_pct": -20.8,
+        "rs_vs_spy": -17.4,
         "rs_ok": false,
         "s8_capital_short_pct": 2.0,
         "s9_eps_rev_net": 0,
@@ -8715,10 +8718,10 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s1_news_count": 1,
-        "s5_volume_ratio": 1.53,
-        "price": 118.31,
-        "s6_momentum_pct": -31.0,
-        "rs_vs_spy": -51.2,
+        "s5_volume_ratio": 1.54,
+        "price": 122.13,
+        "s6_momentum_pct": -27.9,
+        "rs_vs_spy": -49.4,
         "rs_ok": false,
         "s8_capital_short_pct": 11.5,
         "rev_est": 0.0,
@@ -8751,9 +8754,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 3,
         "s5_volume_ratio": 3.42,
-        "price": 17.41,
-        "s6_momentum_pct": -14.7,
-        "rs_vs_spy": -16.5,
+        "price": 18.03,
+        "s6_momentum_pct": -11.0,
+        "rs_vs_spy": -13.2,
         "rs_ok": false,
         "s7_margin_spread_pct": -48.3,
         "s8_capital_short_pct": 3.0,
@@ -8785,11 +8788,11 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 2,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.91,
-        "price": 0.901,
-        "s6_momentum_pct": -18.1,
-        "rs_vs_spy": -61.7,
+        "price": 0.853,
+        "s6_momentum_pct": -26.5,
+        "rs_vs_spy": -64.1,
         "rs_ok": false,
         "s8_capital_short_pct": 2.3,
         "s9_eps_rev_net": 0,
@@ -8810,9 +8813,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 6.765,
-        "last_price": 5.96,
+        "last_price": 5.71,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -11.9,
+        "fwd_ret_pct": -15.6,
         "peak_ret_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -8823,9 +8826,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 7.65,
-        "last_price": 6.83,
+        "last_price": 6.4,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -10.7,
+        "fwd_ret_pct": -16.3,
         "peak_ret_pct": 4.2,
         "days_open": 6,
         "resolved": false
@@ -8836,9 +8839,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 31.475,
-        "last_price": 25.85,
+        "last_price": 23.9,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -17.9,
+        "fwd_ret_pct": -24.1,
         "peak_ret_pct": 2.6,
         "days_open": 6,
         "resolved": false
@@ -8849,9 +8852,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 3.88,
-        "last_price": 3.57,
+        "last_price": 3.71,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -8.0,
+        "fwd_ret_pct": -4.4,
         "peak_ret_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -8862,9 +8865,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 7.135,
-        "last_price": 7.22,
+        "last_price": 6.34,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 1.2,
+        "fwd_ret_pct": -11.1,
         "peak_ret_pct": 6.8,
         "days_open": 6,
         "resolved": false
@@ -8875,9 +8878,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 2.695,
-        "last_price": 2.28,
+        "last_price": 2.4,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -15.4,
+        "fwd_ret_pct": -10.9,
         "peak_ret_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -8992,9 +8995,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 1820.585,
-        "last_price": 1642.0,
+        "last_price": 1646.54,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -9.8,
+        "fwd_ret_pct": -9.6,
         "peak_ret_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -9031,9 +9034,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 0.4671,
-        "last_price": 0.42,
+        "last_price": 0.4,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -10.1,
+        "fwd_ret_pct": -14.4,
         "peak_ret_pct": 0.6,
         "days_open": 6,
         "resolved": false
@@ -9109,9 +9112,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 165.65,
-        "last_price": 156.4,
+        "last_price": 152.16,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -5.6,
+        "fwd_ret_pct": -8.1,
         "peak_ret_pct": 0.3,
         "days_open": 6,
         "resolved": false
@@ -9122,9 +9125,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 40.94,
-        "last_price": 40.46,
+        "last_price": 41.89,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -1.2,
+        "fwd_ret_pct": 2.3,
         "peak_ret_pct": 2.3,
         "days_open": 6,
         "resolved": false
@@ -9220,9 +9223,9 @@
         "market": "us",
         "date": "2026-06-05",
         "entry": 609.7,
-        "last_price": 585.39,
+        "last_price": 584.59,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -4.0,
+        "fwd_ret_pct": -4.1,
         "peak_ret_pct": 0.0,
         "days_open": 5,
         "resolved": false
@@ -9233,9 +9236,9 @@
         "market": "us",
         "date": "2026-06-05",
         "entry": 5.73,
-        "last_price": 5.7,
+        "last_price": 5.78,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -0.5,
+        "fwd_ret_pct": 0.9,
         "peak_ret_pct": 0.9,
         "days_open": 5,
         "resolved": false
@@ -9375,13 +9378,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 5.08,
-        "last_price": 5.08,
+        "last_price": 4.78,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": -5.9,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": -5.9,
         "peak_alpha_pct": 0.0,
         "days_open": 1,
         "resolved": false
@@ -9392,13 +9395,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 5.7,
-        "last_price": 5.7,
+        "last_price": 5.78,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": 1.4,
         "peak_ret_pct": 1.4,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": 1.4,
         "peak_alpha_pct": 2.2,
         "days_open": 1,
         "resolved": false
@@ -9477,13 +9480,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 118.31,
-        "last_price": 118.31,
+        "last_price": 122.13,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": 3.2,
         "peak_ret_pct": 3.2,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": 3.2,
         "peak_alpha_pct": 3.6,
         "days_open": 1,
         "resolved": false
@@ -9511,13 +9514,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 4.15,
-        "last_price": 4.15,
+        "last_price": 4.05,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": -2.4,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": -2.4,
         "peak_alpha_pct": 0.0,
         "days_open": 1,
         "resolved": false
@@ -9528,13 +9531,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 2.28,
-        "last_price": 2.28,
+        "last_price": 2.4,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": 5.3,
         "peak_ret_pct": 5.3,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": 5.3,
         "peak_alpha_pct": 5.6,
         "days_open": 1,
         "resolved": false
@@ -9545,13 +9548,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 76.52,
-        "last_price": 76.52,
+        "last_price": 79.0,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": 3.2,
         "peak_ret_pct": 11.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": 3.2,
         "peak_alpha_pct": 12.6,
         "days_open": 1,
         "resolved": false
@@ -9562,13 +9565,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 5.1,
-        "last_price": 5.1,
+        "last_price": 4.85,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": -4.9,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": -4.9,
         "peak_alpha_pct": 0.0,
         "days_open": 1,
         "resolved": false
@@ -9579,13 +9582,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 14.9,
-        "last_price": 14.9,
+        "last_price": 15.2,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": 2.0,
         "peak_ret_pct": 2.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": 2.0,
         "peak_alpha_pct": 2.7,
         "days_open": 1,
         "resolved": false
@@ -9864,13 +9867,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 7.22,
-        "last_price": 7.22,
+        "last_price": 6.34,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": -12.2,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": -12.2,
         "peak_alpha_pct": 0.0,
         "days_open": 1,
         "resolved": false
@@ -9881,13 +9884,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 5.08,
-        "last_price": 5.08,
+        "last_price": 4.78,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": -5.9,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": -5.9,
         "peak_alpha_pct": 0.0,
         "days_open": 1,
         "resolved": false
@@ -9916,13 +9919,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 0.42,
-        "last_price": 0.42,
+        "last_price": 0.4,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": -4.8,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": -4.8,
         "peak_alpha_pct": 0.0,
         "days_open": 1,
         "resolved": false
@@ -9967,13 +9970,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 40.46,
-        "last_price": 40.46,
+        "last_price": 41.89,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": 3.5,
         "peak_ret_pct": 3.5,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": 3.5,
         "peak_alpha_pct": 4.6,
         "days_open": 1,
         "resolved": false
@@ -10069,13 +10072,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 1642.0,
-        "last_price": 1642.0,
+        "last_price": 1646.54,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": 0.3,
         "peak_ret_pct": 0.6,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": 0.3,
         "peak_alpha_pct": 1.8,
         "days_open": 1,
         "resolved": false
@@ -10208,13 +10211,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 22.91,
-        "last_price": 25.85,
+        "last_price": 23.9,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 12.8,
+        "fwd_ret_pct": 4.3,
         "peak_ret_pct": 12.8,
         "entry_bench": 730.44,
         "bench_ret_pct": 1.2,
-        "alpha_pct": 11.6,
+        "alpha_pct": 3.1,
         "peak_alpha_pct": 11.6,
         "days_open": 1,
         "resolved": false
@@ -10242,13 +10245,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 14.35,
-        "last_price": 13.73,
+        "last_price": 14.65,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": -4.3,
+        "fwd_ret_pct": 2.1,
         "peak_ret_pct": 2.1,
         "entry_bench": 730.44,
         "bench_ret_pct": 1.2,
-        "alpha_pct": -5.5,
+        "alpha_pct": 0.9,
         "peak_alpha_pct": 1.6,
         "days_open": 1,
         "resolved": false
@@ -10599,13 +10602,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 6.83,
-        "last_price": 6.83,
+        "last_price": 6.4,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": -6.3,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": -6.3,
         "peak_alpha_pct": 0.0,
         "days_open": 0,
         "resolved": false
@@ -10667,14 +10670,14 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 3.67,
-        "last_price": 3.67,
+        "last_price": 3.82,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
-        "peak_ret_pct": 0.0,
+        "fwd_ret_pct": 4.1,
+        "peak_ret_pct": 4.1,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
-        "peak_alpha_pct": 0.0,
+        "alpha_pct": 4.1,
+        "peak_alpha_pct": 4.1,
         "days_open": 0,
         "resolved": false
       },
@@ -10684,13 +10687,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 5.48,
-        "last_price": 5.48,
+        "last_price": 5.31,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": -3.1,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": -3.1,
         "peak_alpha_pct": 0.0,
         "days_open": 0,
         "resolved": false
@@ -10701,14 +10704,14 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 9.7,
-        "last_price": 9.7,
+        "last_price": 9.73,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
-        "peak_ret_pct": 0.0,
+        "fwd_ret_pct": 0.3,
+        "peak_ret_pct": 0.3,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
-        "peak_alpha_pct": 0.0,
+        "alpha_pct": 0.3,
+        "peak_alpha_pct": 0.3,
         "days_open": 0,
         "resolved": false
       },
@@ -10718,13 +10721,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 7.89,
-        "last_price": 7.89,
+        "last_price": 7.43,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": -5.8,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": -5.8,
         "peak_alpha_pct": 0.0,
         "days_open": 0,
         "resolved": false
@@ -10752,14 +10755,14 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 17.41,
-        "last_price": 17.41,
+        "last_price": 18.03,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
-        "peak_ret_pct": 0.0,
+        "fwd_ret_pct": 3.6,
+        "peak_ret_pct": 3.6,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
-        "peak_alpha_pct": 0.0,
+        "alpha_pct": 3.6,
+        "peak_alpha_pct": 3.6,
         "days_open": 0,
         "resolved": false
       },
@@ -10769,13 +10772,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 0.901,
-        "last_price": 0.901,
+        "last_price": 0.853,
         "last_date": "2026-06-10",
-        "fwd_ret_pct": 0.0,
+        "fwd_ret_pct": -5.3,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 0.0,
-        "alpha_pct": 0.0,
+        "alpha_pct": -5.3,
         "peak_alpha_pct": 0.0,
         "days_open": 0,
         "resolved": false
@@ -20667,7 +20670,7 @@
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-06-10T12:53:00.161970Z",
+    "_fetched_utc": "2026-06-10T13:13:09.319550Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
@@ -20905,8 +20908,8 @@
     "_scraped_utc": "2026-06-09T21:42:32.405633Z"
   },
   "etf_overlap": {
-    "_scraped_utc": "2026-06-10T12:53:48.520850Z",
-    "_scan_version": "1.45.0",
+    "_scraped_utc": "2026-06-10T13:13:47.159183Z",
+    "_scan_version": "1.46.0",
     "etfs_scanned": 30,
     "etfs_with_holdings": 30,
     "source_etfs": [
@@ -20915,7 +20918,7 @@
         "name": "First Trust NASDAQ Semiconductor ETF",
         "ytd": 100.1,
         "y1": 215.4,
-        "y3": 277.4,
+        "y3": 270.1,
         "expense": 0.6
       },
       {
@@ -20939,7 +20942,7 @@
         "name": "Invesco PHLX Semiconductor ETF",
         "ytd": 83.1,
         "y1": 173.0,
-        "y3": 261.2,
+        "y3": 254.1,
         "expense": 0.19
       },
       {
@@ -20979,7 +20982,7 @@
         "name": "iShares MSCI USA Value Factor ETF",
         "ytd": 47.8,
         "y1": 91.0,
-        "y3": 126.6,
+        "y3": 125.7,
         "expense": 0.15
       },
       {
@@ -20995,7 +20998,7 @@
         "name": "SPDR NYSE Technology ETF",
         "ytd": 35.8,
         "y1": 74.9,
-        "y3": 168.5,
+        "y3": 163.6,
         "expense": 0.35
       },
       {
@@ -21019,7 +21022,7 @@
         "name": "iShares U.S. Digital Infrastructure & RE ETF",
         "ytd": 53.3,
         "y1": 66.0,
-        "y3": 86.4,
+        "y3": 83.5,
         "expense": 0.39
       },
       {
@@ -21027,7 +21030,7 @@
         "name": "iShares Expanded Tech Sector ETF",
         "ytd": 31.0,
         "y1": 65.0,
-        "y3": 150.5,
+        "y3": 146.4,
         "expense": 0.39
       },
       {
@@ -21035,7 +21038,7 @@
         "name": "Fidelity MSCI Info Technology Index ETF",
         "ytd": 32.1,
         "y1": 65.0,
-        "y3": 123.8,
+        "y3": 119.4,
         "expense": 0.08
       },
       {
@@ -21051,7 +21054,7 @@
         "name": "iShares U.S. Technology ETF",
         "ytd": 29.2,
         "y1": 63.2,
-        "y3": 132.7,
+        "y3": 128.8,
         "expense": 0.38
       },
       {
@@ -21083,7 +21086,7 @@
         "name": "Invesco NASDAQ 100 ETF",
         "ytd": 21.0,
         "y1": 43.7,
-        "y3": 102.6,
+        "y3": 100.3,
         "expense": 0.15
       },
       {
@@ -21091,7 +21094,7 @@
         "name": "Invesco QQQ",
         "ytd": 21.0,
         "y1": 43.6,
-        "y3": 102.2,
+        "y3": 99.8,
         "expense": 0.18
       },
       {
@@ -21115,7 +21118,7 @@
         "name": "Inspire 100 ETF",
         "ytd": 20.9,
         "y1": 38.5,
-        "y3": 77.1,
+        "y3": 77.9,
         "expense": 0.35
       },
       {
@@ -21123,7 +21126,7 @@
         "name": "Xtrackers S&P 500 Growth ETF",
         "ytd": 10.8,
         "y1": 30.7,
-        "y3": 90.3,
+        "y3": 89.5,
         "expense": 0.15
       },
       {
@@ -21147,7 +21150,7 @@
         "name": "iShares Russell 1000 Value ETF",
         "ytd": 13.3,
         "y1": 27.8,
-        "y3": 62.3,
+        "y3": 62.9,
         "expense": 0.18
       }
     ],
@@ -21587,7 +21590,6 @@
     "AMD",
     "AMSC",
     "ASM",
-    "ASPI",
     "AVGO",
     "CARE",
     "CCNE",
