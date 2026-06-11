@@ -7,7 +7,7 @@ v2.4: PSX support added (US path unchanged). A "PSX:" ticker prefix routes
       coverage — broker layer pending), scores on a REDUCED denominator that
       excludes the NA history metrics (same mechanic as the bank branch), and
       uses a PKR risk-free (PAK_BOND=11.5%) for earnings-yield & DCF-EPS so PSX
-      valuation isn't judged against the US bond. Validated: OGDC 52/73 (B).
+      valuation isn't judged against the US bond. Validated: OGDC 62/83 (B). Bank probe: TV exposes 1/32 System-B inputs -> PSX banks score generic-reduced; full System-B via broker.
 v2.3: ROOT-CAUSE FIX for the MU/AVGO/AMSC regression. _sec_annual now uses
       LAST-write-wins within each concept (the restated comparative value,
       matching proven v2.0) and preferred-concept-wins across synonyms (keeps
@@ -671,8 +671,13 @@ def score_ticker(ticker):
     for key, ser in [('rev_cagr',rev),('op_cagr',op),('np_cagr',np_)]:
         c = cagr(ser, 5)
         metrics.append(mk(key, 'GOOD' if c is not None and c>=0.15 else 'WATCH' if c is not None else 'NA', W))
-    metrics.append(mk('op_margin', band(sdiv(op0, v0(rev)), 0.12, 0.06), W))
-    metrics.append(mk('np_margin', band(sdiv(ni0, v0(rev)), 0.08, 0.03), W))
+    opm = sdiv(op0, v0(rev)); npm = sdiv(ni0, v0(rev))
+    if is_psx and info.get('_tv'):   # use TV single-period margins (percent->decimal) when history is absent
+        _tvr = info['_tv']
+        if opm is None and _tvr.get('operating_margin') is not None: opm = _tvr['operating_margin']/100.0
+        if npm is None and _tvr.get('net_margin') is not None:       npm = _tvr['net_margin']/100.0
+    metrics.append(mk('op_margin', band(opm, 0.12, 0.06), W))
+    metrics.append(mk('np_margin', band(npm, 0.08, 0.03), W))
 
     # ── STABILITY
     thresh = 0.25 if is_bank else 0.21
