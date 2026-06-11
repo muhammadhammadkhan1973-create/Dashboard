@@ -1,38 +1,1294 @@
 {
-  "_README": "PSX multi-year financials for the IM3 history layer. Series are NEWEST-FIRST, up to 6 fiscal years, in raw PKR (not millions). Populate each name from broker models (AKD / Topline / JS Global) or the company's annual-report 5-6yr summary. Keys map to the scorer's history schema; omit a key (or leave []) if a line item isn't available. A name needs at least 3 years of 'rev' to be used; otherwise the scorer falls back to the TV single-period reduced score. Banks add loans/deps/npl_s and the System-B inputs.",
+  "_README": "PSX multi-year financials for the IM3 history layer. Each name's arrays are NEWEST-FIRST, up to 6 fiscal years, in RAW PKR (PKR 401 billion = 401000000000), EPS in PKR/share. Leave a value null if unavailable; a name needs >=3 years of 'rev' to be used (else it falls back to the TV single-period reduced score). Source: AKD / Topline / JS Global models or the company annual-report 5-6yr summary.",
+  "_HOWTO": "1) Open the holding's annual report (5-6yr financial summary) or broker model. 2) Type the last ~5 years into the null slots, newest first. 3) Commit this file. 4) Run the Daily Dashboard Scan once. 5) That name's PSX row jumps from the reduced score to /162 with forensics. Minimum viable set per name: rev, op, np_, eps_s, cfo, fcf, td, eq0s, ta_s, ca_s, cl_s, re_s, ar_s, inv_s.",
+  "_key_map": {
+    "income_statement": "rev(revenue) cogs(cost of sales) sga(admin+selling) op(operating profit) pbt(profit before tax) tax_exp(taxation) np_(profit after tax) eps_s(EPS) int_exp(finance cost) ebitda_s(EBITDA) dep(depreciation)",
+    "balance_sheet": "ppe(fixed assets) td(total borrowings) ltd(long-term borrowings) eq0s(total equity) ta_s(total assets) ca_s(current assets) cl_s(current liabilities) re_s(unappropriated profit/retained earnings) ar_s(trade debts) ap_s(trade payables) inv_s(stock-in-trade) cash_s(cash & bank) sti_s(short-term investments)",
+    "cash_flow": "cfo(net cash from operations) fcf(CFO minus capex) ncc(net change in cash) div_paid(dividends paid) buyback issuance(usually 0)",
+    "bank_only": "loans(advances) deps(deposits) npl_s(non-performing loans) + _bank_system_b: nim casa adr npl car"
+  },
   "_status": {
-    "OGDC": "TEMPLATE / ILLUSTRATIVE — round figures shaped to OGDC's public profile, for pipeline validation ONLY. REPLACE with broker-verified numbers before trusting the score."
+    "OGDC": "TEMPLATE / ILLUSTRATIVE numbers \u2014 REPLACE with broker-verified figures before trusting the score.",
+    "PPL": "EMPTY \u2014 fill from annual report / broker model.",
+    "FFC": "EMPTY \u2014 fill from annual report / broker model.",
+    "HUBC": "EMPTY \u2014 fill from annual report / broker model.",
+    "MCB": "EMPTY (BANK) \u2014 fill standard keys + loans/deps/npl_s + _bank_system_b (NIM/CASA/ADR/NPL/CAR). Bank System-B branch not yet wired; data slot is ready for when it is."
   },
   "OGDC": {
-    "rev":      [401177969000, 360000000000, 320000000000, 261400000000, 235000000000, 230000000000],
-    "cogs":     [225000000000, 205000000000, 180000000000, 146000000000, 132000000000, 130000000000],
-    "sga":      [12000000000, 11000000000, 10000000000, 9000000000, 8500000000, 8000000000],
-    "op":       [172000000000, 195000000000, 160000000000, 115000000000, 100000000000, 95000000000],
-    "pbt":      [223000000000, 300000000000, 250000000000, 172000000000, 137000000000, 126000000000],
-    "tax_exp":  [68000000000, 90000000000, 75000000000, 52000000000, 42000000000, 38000000000],
-    "np_":      [155000000000, 210000000000, 175000000000, 120000000000, 95000000000, 88000000000],
-    "eps_s":    [36.17, 48.8, 40.7, 27.9, 22.1, 20.5],
-    "ebitda_s": [209000000000, 225000000000, 185000000000, 135000000000, 118000000000, 112000000000],
-    "int_exp":  [500000000, 500000000, 600000000, 600000000, 700000000, 700000000],
-    "dep":      [30000000000, 28000000000, 26000000000, 24000000000, 22000000000, 20000000000],
-    "ppe":      [180000000000, 175000000000, 170000000000, 165000000000, 160000000000, 155000000000],
-    "td":       [2298539000, 2500000000, 2800000000, 3000000000, 3200000000, 3500000000],
-    "ltd":      [1500000000, 1700000000, 1900000000, 2100000000, 2300000000, 2500000000],
-    "eq0s":     [1349000000000, 1230000000000, 1100000000000, 980000000000, 880000000000, 800000000000],
-    "ta_s":     [1719449057000, 1550000000000, 1400000000000, 1250000000000, 1130000000000, 1030000000000],
-    "ca_s":     [1119754469000, 1000000000000, 900000000000, 800000000000, 720000000000, 650000000000],
-    "cl_s":     [121992885000, 115000000000, 110000000000, 100000000000, 95000000000, 90000000000],
-    "re_s":     [1200000000000, 1080000000000, 960000000000, 850000000000, 760000000000, 690000000000],
-    "ar_s":     [700000000000, 620000000000, 540000000000, 460000000000, 400000000000, 360000000000],
-    "ap_s":     [60000000000, 55000000000, 50000000000, 45000000000, 42000000000, 40000000000],
-    "inv_s":    [25000000000, 23000000000, 21000000000, 19000000000, 18000000000, 17000000000],
-    "cash_s":   [57388439000, 50000000000, 45000000000, 40000000000, 35000000000, 30000000000],
-    "sti_s":    [218000000000, 190000000000, 170000000000, 150000000000, 130000000000, 110000000000],
-    "cfo":      [125000000000, 160000000000, 140000000000, 90000000000, 70000000000, 80000000000],
-    "fcf":      [125626644000, 130000000000, 110000000000, 70000000000, 55000000000, 60000000000],
-    "ncc":      [7000000000, 5000000000, 5000000000, 5000000000, 5000000000, 4000000000],
-    "div_paid": [68000000000, 92000000000, 77000000000, 53000000000, 42000000000, 39000000000],
-    "buyback":  [0, 0, 0, 0, 0, 0],
-    "issuance": [0, 0, 0, 0, 0, 0]
+    "rev": [
+      401177969000,
+      360000000000,
+      320000000000,
+      261400000000,
+      235000000000,
+      230000000000
+    ],
+    "cogs": [
+      225000000000,
+      205000000000,
+      180000000000,
+      146000000000,
+      132000000000,
+      130000000000
+    ],
+    "sga": [
+      12000000000,
+      11000000000,
+      10000000000,
+      9000000000,
+      8500000000,
+      8000000000
+    ],
+    "op": [
+      172000000000,
+      195000000000,
+      160000000000,
+      115000000000,
+      100000000000,
+      95000000000
+    ],
+    "pbt": [
+      223000000000,
+      300000000000,
+      250000000000,
+      172000000000,
+      137000000000,
+      126000000000
+    ],
+    "tax_exp": [
+      68000000000,
+      90000000000,
+      75000000000,
+      52000000000,
+      42000000000,
+      38000000000
+    ],
+    "np_": [
+      155000000000,
+      210000000000,
+      175000000000,
+      120000000000,
+      95000000000,
+      88000000000
+    ],
+    "eps_s": [
+      36.17,
+      48.8,
+      40.7,
+      27.9,
+      22.1,
+      20.5
+    ],
+    "ebitda_s": [
+      209000000000,
+      225000000000,
+      185000000000,
+      135000000000,
+      118000000000,
+      112000000000
+    ],
+    "int_exp": [
+      500000000,
+      500000000,
+      600000000,
+      600000000,
+      700000000,
+      700000000
+    ],
+    "dep": [
+      30000000000,
+      28000000000,
+      26000000000,
+      24000000000,
+      22000000000,
+      20000000000
+    ],
+    "ppe": [
+      180000000000,
+      175000000000,
+      170000000000,
+      165000000000,
+      160000000000,
+      155000000000
+    ],
+    "td": [
+      2298539000,
+      2500000000,
+      2800000000,
+      3000000000,
+      3200000000,
+      3500000000
+    ],
+    "ltd": [
+      1500000000,
+      1700000000,
+      1900000000,
+      2100000000,
+      2300000000,
+      2500000000
+    ],
+    "eq0s": [
+      1349000000000,
+      1230000000000,
+      1100000000000,
+      980000000000,
+      880000000000,
+      800000000000
+    ],
+    "ta_s": [
+      1719449057000,
+      1550000000000,
+      1400000000000,
+      1250000000000,
+      1130000000000,
+      1030000000000
+    ],
+    "ca_s": [
+      1119754469000,
+      1000000000000,
+      900000000000,
+      800000000000,
+      720000000000,
+      650000000000
+    ],
+    "cl_s": [
+      121992885000,
+      115000000000,
+      110000000000,
+      100000000000,
+      95000000000,
+      90000000000
+    ],
+    "re_s": [
+      1200000000000,
+      1080000000000,
+      960000000000,
+      850000000000,
+      760000000000,
+      690000000000
+    ],
+    "ar_s": [
+      700000000000,
+      620000000000,
+      540000000000,
+      460000000000,
+      400000000000,
+      360000000000
+    ],
+    "ap_s": [
+      60000000000,
+      55000000000,
+      50000000000,
+      45000000000,
+      42000000000,
+      40000000000
+    ],
+    "inv_s": [
+      25000000000,
+      23000000000,
+      21000000000,
+      19000000000,
+      18000000000,
+      17000000000
+    ],
+    "cash_s": [
+      57388439000,
+      50000000000,
+      45000000000,
+      40000000000,
+      35000000000,
+      30000000000
+    ],
+    "sti_s": [
+      218000000000,
+      190000000000,
+      170000000000,
+      150000000000,
+      130000000000,
+      110000000000
+    ],
+    "cfo": [
+      125000000000,
+      160000000000,
+      140000000000,
+      90000000000,
+      70000000000,
+      80000000000
+    ],
+    "fcf": [
+      125626644000,
+      130000000000,
+      110000000000,
+      70000000000,
+      55000000000,
+      60000000000
+    ],
+    "ncc": [
+      7000000000,
+      5000000000,
+      5000000000,
+      5000000000,
+      5000000000,
+      4000000000
+    ],
+    "div_paid": [
+      68000000000,
+      92000000000,
+      77000000000,
+      53000000000,
+      42000000000,
+      39000000000
+    ],
+    "buyback": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "issuance": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "PPL": {
+    "rev": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "op": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "np_": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "eps_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cogs": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sga": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "tax_exp": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "pbt": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ebitda_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "int_exp": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ppe": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "td": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ltd": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "eq0s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ta_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ca_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cl_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "re_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ar_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ap_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "inv_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cash_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sti_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cfo": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "fcf": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ncc": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "dep": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "div_paid": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "buyback": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "issuance": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "FFC": {
+    "rev": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "op": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "np_": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "eps_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cogs": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sga": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "tax_exp": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "pbt": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ebitda_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "int_exp": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ppe": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "td": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ltd": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "eq0s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ta_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ca_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cl_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "re_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ar_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ap_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "inv_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cash_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sti_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cfo": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "fcf": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ncc": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "dep": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "div_paid": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "buyback": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "issuance": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "HUBC": {
+    "rev": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "op": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "np_": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "eps_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cogs": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sga": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "tax_exp": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "pbt": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ebitda_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "int_exp": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ppe": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "td": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ltd": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "eq0s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ta_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ca_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cl_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "re_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ar_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ap_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "inv_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cash_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sti_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cfo": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "fcf": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ncc": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "dep": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "div_paid": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "buyback": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "issuance": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "MCB": {
+    "rev": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "op": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "np_": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "eps_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cogs": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sga": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "tax_exp": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "pbt": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ebitda_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "int_exp": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ppe": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "td": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ltd": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "eq0s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ta_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ca_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cl_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "re_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ar_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ap_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "inv_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cash_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "sti_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "cfo": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "fcf": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "ncc": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "dep": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "div_paid": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "buyback": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "issuance": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "loans": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "deps": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "npl_s": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "_bank_system_b": {
+      "_note": "Bank System-B ratios (per fiscal year, newest-first). Read by the bank branch once wired. NIM/CASA/ADR/CAR as PERCENT numbers (e.g. 5.2 for 5.2%); NPL = infection ratio %.",
+      "nim": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "casa": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "adr": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "npl": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "car": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
   }
 }
