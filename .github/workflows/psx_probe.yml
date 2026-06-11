@@ -1,0 +1,26 @@
+name: PSX TV Probe
+
+# Manual, on-demand probe — does NOT run on a schedule and does NOT touch daily.yml.
+# Trigger from the Actions tab: Actions -> "PSX TV Probe" -> Run workflow.
+# Then open the run, expand "Run probe", and copy the whole log back.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install requests
+
+      - name: Run probe
+        run: python psx_tv_probe.py
