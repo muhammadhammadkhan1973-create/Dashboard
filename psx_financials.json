@@ -12,7 +12,7 @@
     "PPL": "FILLED from stockanalysis.com (S&P Global Market Intelligence), FY2021-FY2025, millions->raw PKR. VERIFY against AKD/Topline before fully trusting.",
     "FFC": "FILLED from stockanalysis.com (S&P Global), FY2021-FY2025 (calendar yr), millions->raw PKR. Note: FY24 jump = FFBL consolidation. VERIFY vs broker.",
     "HUBC": "FILLED from stockanalysis.com (S&P Global, utility template), FY2021-FY2025, millions->raw PKR. Note: net income is associate-income heavy (CPHGC/Thar). VERIFY vs broker.",
-    "MCB": "STAGED (bank, guarded TV-only). Income+CashFlow = real S&P Global 5yr (FY21-25, calendar). Balance 5yr series pending (stockanalysis BS page won't render; FY24 assets/equity anchors + Q3'25 deposits/NPL stored). System-B ratios real from MCB Q3'25 release. Scorer keeps MCB TV-only until bank metric subset wired (_bank_model_ready). VERIFY vs broker."
+    "MCB": "ACTIVE (bank model). Income+CashFlow real S&P 5yr (FY21-25). Bank extras nim/adr/npl from real broker series; CASA/CAR NA (not free). Non-financial constructs (Altman/Beneish/Piotroski/FCF/EV) zero-weighted for banks by design. System-B ratios from MCB Q3'25 release. VERIFY vs broker (JS/AKD/Topline)."
   },
   "OGDC": {
     "rev": [
@@ -864,7 +864,7 @@
   },
   "MCB": {
     "_is_bank": true,
-    "_bank_model_ready": false,
+    "_bank_model_ready": true,
     "rev": [
       207591000000,
       204223000000,
@@ -943,14 +943,14 @@
       34036000000
     ],
     "ta_s": [
-      null,
+      3230000000000,
       2700000000000,
       null,
       null,
       null
     ],
     "eq0s": [
-      null,
+      234000000000,
       227200000000,
       null,
       null,
