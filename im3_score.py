@@ -1,6 +1,12 @@
 """
-IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2-sourcing).
+IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.1-sourcing).
 =================================================================
+v2.1: SEC coverage broadened — _sec_annual merges annual values across
+      synonym us-gaap concepts (modern ASC-606 revenue tag + legacy
+      Revenues/SalesRevenueNet), accepts 10-K/20-F/40-F, and applies an
+      ~annual duration guard. Pulls tech/large-caps (NVDA/AMD/AMAT-class)
+      off the Yahoo backstop and onto free SEC history.
+
 Data sourcing (the change in this version):
   * SINGLE-PERIOD ratios/valuation/margins/quality  -> TradingView america/scan
     (62 columns probe-confirmed). Fixes the dividend-units bug (TV gives a percent
@@ -29,6 +35,7 @@ Deps: requests (primary), yfinance (fallback only). Both already in daily.yml.
 
 import sys, math, time, os, json
 import requests
+from datetime import date
 
 try:
     import yfinance as yf
@@ -372,8 +379,18 @@ def _sec_cik(ticker):
             _SEC_TICKER_MAP = {}
     return _SEC_TICKER_MAP.get(ticker.upper())
 
+_ANNUAL_FORMS = ('10-K', '20-F', '40-F')   # annual filings (incl. 10-K/A; foreign 20-F/40-F)
 def _sec_annual(facts, concepts, want_per_share=False):
-    """Newest-first annual series for the first matching us-gaap concept (10-K, FY)."""
+    """Merged newest-first annual series across synonym us-gaap concepts.
+
+    Earlier-listed concept wins per fiscal year; later synonyms fill the gaps.
+    This is the fix for tech/large-caps that report only 1-2 years under the
+    modern ASC-606 revenue tag while older years live under 'Revenues' /
+    'SalesRevenueNet' — taking the first concept alone returned <3 years and
+    dropped the name to Yahoo. Annual = 10-K/20-F/40-F, fp=FY, and (for flow
+    items carrying start+end) an ~365-day period so stray YTD rows are excluded.
+    """
+    merged = {}
     for c in (concepts if isinstance(concepts, list) else [concepts]):
         node = facts.get(c)
         if not node: continue
@@ -381,15 +398,24 @@ def _sec_annual(facts, concepts, want_per_share=False):
         ukey = ('USD/shares' if want_per_share else 'USD')
         rows = units.get(ukey) or (units.get(next(iter(units), '')) if units else None)
         if not rows: continue
-        annual = {}
         for r in rows:
-            if r.get('form', '').startswith('10-K') and r.get('fp') == 'FY' and r.get('fy'):
-                fr = r.get('frame', '')
-                # accept annual frames (CYxxxx) and undated FY rows; reject quarterly frames (…Qx)
-                if fr and 'Q' in fr: continue
-                annual[int(r['fy'])] = r.get('val')
-        if annual:
-            return [annual[y] for y in sorted(annual, reverse=True)][:6]
+            form = r.get('form', '')
+            if not any(form.startswith(f) for f in _ANNUAL_FORMS): continue
+            if r.get('fp') != 'FY' or not r.get('fy'): continue
+            fr = r.get('frame', '')
+            if fr and 'Q' in fr: continue          # reject quarterly frames
+            s, e = r.get('start'), r.get('end')     # flow items: require an ~annual span
+            if s and e:
+                try:
+                    if not (300 <= (date.fromisoformat(e) - date.fromisoformat(s)).days <= 400):
+                        continue
+                except Exception:
+                    pass
+            fy = int(r['fy'])
+            if fy not in merged and r.get('val') is not None:  # preferred concept wins per fy
+                merged[fy] = r.get('val')
+    if merged:
+        return [merged[y] for y in sorted(merged, reverse=True)][:6]
     return []
 
 def sec_history(ticker):
@@ -397,14 +423,17 @@ def sec_history(ticker):
     if not cik: return None
     try:
         r = requests.get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json",
-                         headers=HDRS_SEC, timeout=30)
+                         headers=HDRS_SEC, timeout=45)
         if r.status_code != 200: return None
         facts = r.json().get('facts', {}).get('us-gaap', {})
     except Exception:
         return None
     if not facts: return None
     h = _empty_hist(); h['source'] = 'sec'
-    h['rev']    = _sec_annual(facts, ['RevenueFromContractWithCustomerExcludingAssessedTax','Revenues','SalesRevenueNet'])
+    h['rev']    = _sec_annual(facts, ['RevenueFromContractWithCustomerExcludingAssessedTax',
+                                      'RevenueFromContractWithCustomerIncludingAssessedTax',
+                                      'Revenues','SalesRevenueNet','SalesRevenueGoodsNet',
+                                      'RevenuesNetOfInterestExpense'])
     if not h['rev'] or len([x for x in h['rev'] if x]) < 3:
         return None                            # no usable revenue -> treat SEC as a miss, fall to Yahoo
     h['op']     = _sec_annual(facts, ['OperatingIncomeLoss'])
