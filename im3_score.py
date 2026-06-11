@@ -1,1058 +1,2908 @@
-"""
-IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.5-sourcing).
-=================================================================
-v2.5: PSX Tier-2 broker-history layer. psx_history() reads psx_financials.json
-      (broker-model / annual-report multi-year statements, newest-first PKR) and
-      feeds fetch_history's PSX branch. When a name is in the file (>=3yr revenue)
-      it gets FULL history -> the previously-NA multi-year metrics compute (CAGRs,
-      CFO/EPS/FCF trends, Altman-Z / Beneish-M / Piotroski-F, CROIC, CCC, DCF) and
-      the reduced PSX denominator self-expands toward 162. Names not in the file
-      fall back to the TV single-period reduced score (graceful). US path unchanged.
-      DEPLOY: commit im3_score.py + psx_financials.json to the repo ROOT. The
-      daily.yml PSX step auto-picks-up via scorer-hash change. NOTE: the OGDC entry
-      in psx_financials.json is an ILLUSTRATIVE TEMPLATE — replace with AKD/Topline/
-      JS Global / annual-report figures before the OGDC score is trusted; the
-      template validates the MACHINERY only.
-v2.4: PSX support added (US path unchanged). A "PSX:" ticker prefix routes
-      fundamentals to TradingView pakistan/scan (57/61 single-period columns
-      confirmed populated), returns empty statement history (no SEC/Yahoo PSX
-      coverage — broker layer pending), scores on a REDUCED denominator that
-      excludes the NA history metrics (same mechanic as the bank branch), and
-      uses a PKR risk-free (PAK_BOND=11.5%) for earnings-yield & DCF-EPS so PSX
-      valuation isn't judged against the US bond. Validated: OGDC 62/83 (B). Bank probe: TV exposes 1/32 System-B inputs -> PSX banks score generic-reduced; full System-B via broker.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
+<style>
+  :root {
+    --navy: #4338CA; --blue: #6366F1; --accent: #06B6D4; --light-blue: #EEF2FF;
+    --gold: #D97706; --gold-l: #FEF3C7; --green: #059669; --green-l: #D1FAE5;
+    --red: #E11D48; --red-l: #FFE4E6; --orange: #F97316; --orange-l: #FFEDD5;
+    --grey-l: #F4F4F7; --grey-d: #64748B; --white: #FFFFFF; --ink: #1E1B4B;
+    --shadow: 0 4px 16px rgba(67,56,202,0.08); --shadow-lg: 0 12px 32px rgba(30,27,75,0.12);
+    --font-head: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+    /* ── Tab 12 Gold & Metals palette ── */
+    --m-gold: #B8860B; --m-amber: #D97706; --m-bronze: #CD7F32;
+    --m-bg: #FFFBEB; --m-ink: #78350F; --m-border: #FDE68A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-body); background: #F7F7FB; color: #1F2937; line-height: 1.55; padding: 0; -webkit-font-smoothing: antialiased; }
+  .header { background: linear-gradient(120deg, var(--ink) 0%, var(--navy) 45%, var(--blue) 100%); color: white; padding: 28px 32px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+  .header::after { content:''; position:absolute; top:-40%; right:-5%; width:380px; height:380px; background: radial-gradient(circle, rgba(6,182,212,0.35), transparent 65%); pointer-events:none; }
+  .header h1 { font-family: var(--font-head); font-size: 26px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.02em; position:relative; z-index:1; }
+  .header p { font-size: 14px; opacity: 0.85; position:relative; z-index:1; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab { padding: 11px 18px; background: var(--white); border: 1px solid #E5E7EB; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--grey-d); transition: all 0.18s; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  .tab:hover { background: var(--light-blue); color: var(--navy); transform: translateY(-1px); }
+  .tab.active { background: linear-gradient(135deg, var(--navy), var(--blue)); color: white; border-color: transparent; box-shadow: 0 6px 18px rgba(99,102,241,0.35); }
+  .tab.metals-tab.active { background: linear-gradient(135deg, #78350F, #D97706); box-shadow: 0 6px 18px rgba(180,83,9,0.4); }
+  .panel { display: none; background: white; border-radius: 16px; padding: 28px; box-shadow: var(--shadow); margin-bottom: 24px; border: 1px solid #EEF0F5; }
+  .panel.active { display: block; }
+  .section-title { font-family: var(--font-head); font-size: 21px; font-weight: 700; color: var(--ink); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--light-blue); letter-spacing:-0.01em; }
+  .subsection-title { font-family: var(--font-head); font-size: 16px; font-weight: 600; color: var(--blue); margin: 20px 0 12px; }
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+  .input-group { display: flex; flex-direction: column; gap: 4px; }
+  .input-group label { font-size: 13px; font-weight: 600; color: var(--grey-d); }
+  .input-group label .desc { display: block; font-size: 11px; font-weight: 400; color: #999; margin-top: 2px; }
+  .input-group input, .input-group select { padding: 10px 12px; border: 1.5px solid #E5E7EB; border-radius: 9px; font-size: 14px; font-family: var(--font-mono); transition: all 0.18s; background:#FCFCFE; }
+  .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); background:#fff; }
+  .input-group .current-val { font-size: 11px; color: var(--blue); margin-top: 2px; }
+  .btn { padding: 12px 24px; background: linear-gradient(135deg, var(--navy), var(--blue)); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; box-shadow: 0 4px 14px rgba(99,102,241,0.3); }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(99,102,241,0.4); }
+  .btn-secondary { background: var(--grey-d); }
+  .btn-row { display: flex; gap: 12px; margin-top: 20px; }
+  .indicator-card { background: var(--grey-l); padding: 16px; border-radius: 12px; border-left: 4px solid var(--grey-d); transition: transform 0.18s; }
+  .indicator-card:hover { transform: translateY(-2px); }
+  .indicator-card.pos { border-left-color: var(--green); background: var(--green-l); }
+  .indicator-card.neg { border-left-color: var(--red); background: var(--red-l); }
+  .indicator-card.warn { border-left-color: var(--orange); background: var(--orange-l); }
+  .indicator-card.neutral { border-left-color: var(--gold); background: var(--gold-l); }
+  .indicator-card .label { font-size: 12px; font-weight: 600; color: var(--grey-d); text-transform: uppercase; letter-spacing: 0.5px; }
+  .indicator-card .value { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: var(--ink); margin: 4px 0; }
+  .indicator-card .status { font-size: 13px; font-weight: 600; }
+  .indicator-card .interp { font-size: 12px; color: var(--grey-d); margin-top: 6px; line-height: 1.4; }
+  .alert-banner { padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; border: 3px solid; box-shadow: var(--shadow); }
+  .alert-banner.green { background: var(--green-l); border-color: var(--green); }
+  .alert-banner.yellow { background: var(--gold-l); border-color: var(--gold); }
+  .alert-banner.orange { background: var(--orange-l); border-color: var(--orange); }
+  .alert-banner.red { background: var(--red-l); border-color: var(--red); }
+  .alert-banner h3 { font-size: 18px; margin-bottom: 8px; }
+  .alert-banner.green h3 { color: var(--green); }
+  .alert-banner.yellow h3 { color: var(--gold); }
+  .alert-banner.orange h3 { color: var(--orange); }
+  .alert-banner.red h3 { color: var(--red); }
+  .alert-banner p { font-size: 14px; line-height: 1.6; }
+  .alert-banner ul { margin-top: 8px; padding-left: 20px; font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
+  th { background: var(--ink); color: white; font-weight: 600; font-size: 12px; letter-spacing:0.02em; }
+  tr:nth-child(even) td { background: var(--grey-l); }
+  tr.pos td { background: var(--green-l) !important; }
+  tr.neg td { background: var(--red-l) !important; }
+  tr.warn td { background: var(--orange-l) !important; }
+  .reading-box { background: var(--light-blue); padding: 16px 20px; border-radius: 8px; border-left: 4px solid var(--blue); margin: 12px 0; font-size: 13px; line-height: 1.6; }
+  .reading-box strong { color: var(--navy); }
+  .score-bar { background: #eee; height: 28px; border-radius: 14px; overflow: hidden; position: relative; margin: 8px 0; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, var(--red) 0%, var(--orange) 40%, var(--gold) 60%, var(--green) 100%); transition: width 0.5s; }
+  .score-label { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: 700; color: white; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+  .footer { text-align: center; padding: 24px; color: var(--grey-d); font-size: 12px; }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+  .badge.pos { background: var(--green); color: white; }
+  .badge.neg { background: var(--red); color: white; }
+  .badge.warn { background: var(--orange); color: white; }
+  .badge.neutral { background: var(--gold); color: white; }
+  .historical-table { font-size: 12px; }
+  .historical-table th { background: var(--gold); color: white; }
+  .stock-sector { padding: 8px 12px; background: var(--white); border: 1px solid #ddd; border-radius: 6px; margin: 4px 0; font-size: 13px; }
+  .stock-sector.win { border-color: var(--green); background: var(--green-l); }
+  .stock-sector.lose { border-color: var(--red); background: var(--red-l); }
+  h2, h3 { font-family: var(--font-head); letter-spacing:-0.01em; }
+  .card { background:#fff; border:1px solid #EEF0F5; border-radius:14px; padding:20px 22px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .panel-title { font-family:var(--font-head); font-size:21px; font-weight:700; color:var(--ink); margin-bottom:16px; }
+  td b, .ticker { font-family: var(--font-mono); }
 
-DEPLOY: commit to the repo ROOT (next to scanner.py / index.html), overwrite.
-  - No re-run needed to validate; the scorer is verified by execution.
-  - US scoring is byte-for-byte unchanged (all PSX logic is gated by the "PSX:" prefix).
-  - PSX scores DO NOT appear automatically. They show up only after daily.yml's IM3
-    step is wired to pass "PSX:" tickers (e.g. PSX:OGDC) AND a PSX IM3 dashboard tab
-    is added. That wiring is the next build — it is not in this file.
-v2.3: ROOT-CAUSE FIX for the MU/AVGO/AMSC regression. _sec_annual now uses
-      LAST-write-wins within each concept (the restated comparative value,
-      matching proven v2.0) and preferred-concept-wins across synonyms (keeps
-      the NVDA/AMD/AMAT fix). v2.1's first-write-wins picked un-restated values
-      and broke CAGRs/margins. The v2.2 duration-guard removal was a misdiagnosis
-      (kept, harmless). 
-v2.2: removed the v2.1 annual-duration guard (300-400d).
-v2.1: SEC coverage broadened — _sec_annual merges annual values across
-      synonym us-gaap concepts (modern ASC-606 revenue tag + legacy
-      Revenues/SalesRevenueNet), accepts 10-K/20-F/40-F, and applies an
-      ~annual duration guard. Pulls tech/large-caps (NVDA/AMD/AMAT-class)
-      off the Yahoo backstop and onto free SEC history.
+  /* ══ IM3 Sub-tab ══ */
+  .exv-tab{padding:9px 18px;background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-weight:600;font-size:13px;color:var(--grey-d);transition:all .18s;margin-bottom:-2px;border-radius:0;}
+  .exv-tab:hover{color:var(--navy);}
+  .exv-tab.exv-tab-active{color:var(--navy);border-bottom-color:var(--navy);}
+  .im3-rank-card{background:#fff;border:1.5px solid #E5E7EB;border-radius:12px;padding:16px 20px;margin-bottom:10px;cursor:pointer;transition:all .18s;position:relative;}
+  .im3-rank-card:hover{border-color:var(--blue);box-shadow:0 4px 14px rgba(99,102,241,.12);transform:translateY(-1px);}
+  .im3-rank-card.grade-a{border-left:4px solid var(--green);}
+  .im3-rank-card.grade-b{border-left:4px solid var(--gold);}
+  .im3-rank-card.grade-c{border-left:4px solid var(--orange);}
+  .im3-rank-card.grade-f{border-left:4px solid var(--red);}
+  .im3-rank-card.loading{border-left:4px solid #d1d5db;opacity:.7;}
+  .im3-grade-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:13px;font-weight:700;}
+  .im3-grade-badge.a{background:var(--green-l);color:#065F46;}
+  .im3-grade-badge.b{background:var(--gold-l);color:#92400E;}
+  .im3-grade-badge.c{background:var(--orange-l);color:#9A3412;}
+  .im3-grade-badge.f{background:var(--red-l);color:#991B1B;}
+  .im3-score-bar{height:8px;border-radius:4px;background:#E5E7EB;overflow:hidden;margin:6px 0;}
+  .im3-score-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+  .im3-section-dots{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+  .im3-dot{width:10px;height:10px;border-radius:50%;display:inline-block;}
+  .im3-dot.good{background:var(--green);}
+  .im3-dot.watch{background:var(--gold);}
+  .im3-dot.bad{background:var(--red);}
+  .im3-dot.na{background:#d1d5db;}
+  .im3-metric-row{display:grid;grid-template-columns:200px 1fr 70px 40px;align-items:center;padding:7px 0;border-bottom:1px solid #f3f4f6;gap:8px;font-size:12px;}
+  .im3-metric-row:last-child{border-bottom:none;}
+  .im3-verdict-pill{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-align:center;white-space:nowrap;}
+  .im3-verdict-pill.good{background:var(--green-l);color:#065F46;}
+  .im3-verdict-pill.watch{background:var(--gold-l);color:#92400E;}
+  .im3-verdict-pill.bad{background:var(--red-l);color:#991B1B;}
+  .im3-verdict-pill.na{background:#f3f4f6;color:#9ca3af;}
+  .im3-iv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+  @media(max-width:900px){.im3-iv-grid{grid-template-columns:repeat(2,1fr);}}
+  .im3-iv-tile{background:#F8F9FE;border:1px solid #E5E7EB;border-radius:8px;padding:10px 12px;text-align:center;}
+  .im3-iv-tile .iv-label{font-size:10px;font-weight:600;color:var(--grey-d);text-transform:uppercase;letter-spacing:.04em;}
+  .im3-iv-tile .iv-val{font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--ink);margin:3px 0;}
+  .im3-iv-tile .iv-mos{font-size:11px;}
 
-Data sourcing (the change in this version):
-  * SINGLE-PERIOD ratios/valuation/margins/quality  -> TradingView america/scan
-    (62 columns probe-confirmed). Fixes the dividend-units bug (TV gives a percent
-    number -> converted to decimal) and the EV/EBITDA "bug" (TV ttm value used
-    directly), and makes every ratio reflect the LIVE price, not a stale sheet.
-  * MULTI-YEAR statements (CAGRs, trend metrics, Piotroski/Beneish/Altman, the DCF
-    series) -> FMP /stable/  ->  SEC EDGAR companyfacts  ->  Yahoo, in that order,
-    each guarded. YAHOO IS THE FINAL BACKSTOP, so coverage can never regress below
-    the prior all-Yahoo behaviour: worst case == today, best case the CAGR gap closes.
-  * Bond yield -> BOND constant (live FRED handled in the scanner; not needed here).
+  /* ══ Tab 12 Gold & Metals ══ */
+  .metals-header{background:linear-gradient(120deg,#78350F 0%,#B8860B 50%,#D97706 100%);color:white;padding:20px 24px;border-radius:14px;margin-bottom:20px;position:relative;overflow:hidden;}
+  .metals-header::after{content:'';position:absolute;top:-30%;right:-5%;width:300px;height:300px;background:radial-gradient(circle,rgba(253,224,71,0.3),transparent 65%);pointer-events:none;}
+  .metals-header h2{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:4px;position:relative;z-index:1;}
+  .metals-header p{font-size:13px;opacity:.9;position:relative;z-index:1;}
+  .metals-price-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+  @media(max-width:900px){.metals-price-bar{grid-template-columns:repeat(2,1fr);}}
+  .metal-price-tile{background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:12px;padding:14px 16px;text-align:center;}
+  .metal-price-tile .metal-name{font-size:11px;font-weight:700;color:#D97706;text-transform:uppercase;letter-spacing:.05em;}
+  .metal-price-tile .metal-val{font-family:var(--font-mono);font-size:20px;font-weight:700;color:#78350F;margin:4px 0 2px;}
+  .metal-price-tile .metal-sub{font-size:11px;color:var(--grey-d);}
+  .metals-scorecard{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+  @media(max-width:900px){.metals-scorecard{grid-template-columns:1fr;}}
+  .metals-factor-block{background:var(--white);border:1.5px solid #FDE68A;border-radius:14px;overflow:hidden;margin-bottom:4px;}
+  .metals-factor-block .block-head{background:linear-gradient(90deg,#78350F,#D97706);color:white;padding:12px 18px;font-family:var(--font-head);font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center;}
+  .metals-factor-row{display:grid;grid-template-columns:1fr auto auto;align-items:start;padding:9px 14px;border-bottom:1px solid #FEF3C7;gap:8px;font-size:12.5px;}
+  .metals-factor-row:last-child{border-bottom:none;}
+  .metals-factor-row .f-name{font-weight:600;color:var(--ink);}
+  .metals-factor-row .f-reading{font-family:var(--font-mono);font-size:11.5px;color:var(--grey-d);}
+  .f-badge{font-size:11px;font-weight:700;padding:3px 7px;border-radius:4px;text-align:center;min-width:36px;}
+  .f-badge.pos{background:#D1FAE5;color:#065F46;}
+  .f-badge.neg{background:#FEE2E2;color:#991B1B;}
+  .f-badge.neu{background:#FEF3C7;color:#92400E;}
+  .metals-gauge{background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:14px;padding:20px 24px;margin-bottom:20px;}
+  .metals-gauge-bar{height:32px;border-radius:16px;background:#FEF3C7;overflow:hidden;position:relative;margin-bottom:8px;}
+  .metals-gauge-fill{height:100%;transition:width .6s ease;border-radius:16px;}
+  .metals-gauge-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--font-mono);font-weight:700;font-size:13px;color:white;text-shadow:0 1px 3px rgba(0,0,0,.6);}
+  .metals-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  @media(max-width:900px){.metals-grid-4{grid-template-columns:repeat(2,1fr);}}
+  .metal-card{background:var(--white);border:1.5px solid #FDE68A;border-radius:12px;padding:16px;}
+  .metal-card .mc-name{font-family:var(--font-head);font-size:15px;font-weight:700;color:#D97706;margin-bottom:6px;}
+  .metal-card .mc-price{font-family:var(--font-mono);font-size:22px;font-weight:700;color:#78350F;}
+  .metal-card .mc-bias{font-size:12px;font-weight:700;padding:3px 8px;border-radius:5px;display:inline-block;margin:6px 0 4px;}
+  .metal-card .mc-detail{font-size:11.5px;color:var(--grey-d);line-height:1.5;}
+  .cot-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #FEF3C7;font-size:12.5px;flex-wrap:wrap;}
+  .cot-row:last-child{border-bottom:none;}
+  .cot-bar-wrap{flex:1;min-width:80px;background:#FEF3C7;height:14px;border-radius:7px;overflow:hidden;}
+  .cot-bar-fill{height:100%;border-radius:7px;}
+  .metals-sector-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #FEF3C7;font-size:13px;flex-wrap:wrap;}
+  .metals-sector-row:last-child{border-bottom:none;}
+  .metals-sector-row .msr-name{font-weight:600;flex:1;min-width:140px;}
+  .metals-sector-row .msr-tickers{font-family:var(--font-mono);font-size:11px;color:var(--grey-d);min-width:150px;}
+  .msr-signal{font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;white-space:nowrap;}
+  .metals-subsection{font-family:var(--font-head);font-size:15px;font-weight:700;color:#78350F;margin:20px 0 12px;padding-bottom:8px;border-bottom:2px solid #FDE68A;}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
 
-Scoring is UNCHANGED — this is a re-source, not a methodology change. Each metric keeps
-its existing threshold/verdict logic; only where the value comes from changed. The two
-deferred methodology calls (peer-relative P/E, level-vs-momentum trends) are untouched.
-Grade A>=80%. Points are absolute out of 162; each metric carries weightage (max) + earned (pts).
+<div class="header">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+    <div>
+      <h1>PSX + US Active Macro Dashboard — IM3 Framework</h1>
+      <p>Real-time regime classification, sector implications, PKR devaluation early-warning · Based on Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum</p>
+    </div>
+    <div id="liveStatus" style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:10px 14px; font-size:12px; min-width:190px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span id="liveDot" style="width:9px; height:9px; border-radius:50%; background:#9ca3af; display:inline-block;"></span>
+        <strong id="liveText">Loading live scan…</strong>
+      </div>
+      <div style="margin-top:5px; opacity:0.85;">Last scan: <span id="liveScan">—</span> · <span id="liveVer">—</span></div>
+      <div style="margin-top:6px;"><button onclick="reloadLive()" style="background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:6px; padding:3px 10px; font-size:11px; cursor:pointer;">↻ Reload live data</button></div>
+    </div>
+  </div>
+</div>
 
-Intrinsic-value engine (DCF EPS/FCF/Cash, Projected, Peter Lynch, MoS) computed in-code from
-the fetched series + live price (no Sarmaaya inputs).
+<div class="container">
 
-Usage:
-    python im3_score.py MU
-    python im3_score.py --json MU RBB MCB ...
+  <div class="tabs">
+    <button class="tab active" onclick="showPanel('input', this)">1. Input Data</button>
+    <button class="tab" onclick="showPanel('us', this)">2. US Dashboard</button>
+    <button class="tab" onclick="showPanel('pak', this)">3. Pakistan Dashboard</button>
+    <button class="tab" onclick="showPanel('devalert', this)">4. PKR Devaluation Alert</button>
+    <button class="tab" onclick="showPanel('sectors', this)">5. Sector Implications</button>
+    <button class="tab" onclick="showPanel('zone', this)">6. Allocation Zone (IM3)</button>
+    <button class="tab" onclick="showPanel('mbpsx', this)">7. PSX Multibagger</button>
+    <button class="tab" onclick="showPanel('mbus', this)">8. US Multibagger</button>
+    <button class="tab" onclick="showPanel('tce', this)">9. TCE Convergence</button>
+    <button class="tab" onclick="showPanel('explosive', this)">10. Explosive Stocks</button>
+    <button class="tab metals-tab" onclick="showPanel('metals', this)">11. Gold &amp; Metals</button>
+    <button class="tab" onclick="showPanel('etf', this)">12. ETF Overlap</button>
+    <button class="tab" onclick="showPanel('backtest', this)">13. Strategy Backtest</button>
+    <button class="tab" onclick="showPanel('profile', this)">14. Investor Profile</button>
+  </div>
 
-Deps: requests (primary), yfinance (fallback only). Both already in daily.yml.
-"""
+  <!-- PANELS 1-11: identical to v4.1 — placeholder divs maintain structure -->
+  <!-- Panel 1 -->
+  <div id="input" class="panel active">
+    <h2 class="section-title">Macro Indicator Inputs</h2>
+    <p style="color:var(--grey-d);margin-bottom:20px;font-size:14px;">Enter current readings or use defaults. Dashboard recalculates instantly.</p>
+    <h3 class="subsection-title">United States — Leading Indicators</h3>
+    <div class="grid grid-3">
+      <div class="input-group"><label>ISM Manufacturing PMI<span class="desc">Above 50 = expansion</span></label><input type="number" id="ism_mfg" value="52.7" step="0.1" oninput="recalc()"><span class="current-val">Apr 2026: 52.7</span></div>
+      <div class="input-group"><label>ISM Services PMI<span class="desc">Services = 89% of US GDP</span></label><input type="number" id="ism_svc" value="53.6" step="0.1" oninput="recalc()"><span class="current-val">Apr 2026: 53.6</span></div>
+      <div class="input-group"><label>UMCSI Headline<span class="desc">&gt;80 bullish, &lt;55 extreme</span></label><input type="number" id="umcsi" value="44.8" step="0.1" oninput="recalc()"><span class="current-val">May 2026: 44.8 (record low)</span></div>
+      <div class="input-group"><label>US 10Y Yield (%)</label><input type="number" id="us_10y" value="4.45" step="0.01" oninput="recalc()"><span class="current-val">May 2026: 4.45%</span></div>
+      <div class="input-group"><label>US 2Y Yield (%)</label><input type="number" id="us_2y" value="4.00" step="0.01" oninput="recalc()"><span class="current-val">May 2026: 4.00%</span></div>
+      <div class="input-group"><label>Fed Funds Rate (%)</label><input type="number" id="fed_rate" value="4.375" step="0.125" oninput="recalc()"><span class="current-val">May 2026: 4.25-4.50%</span></div>
+      <div class="input-group"><label>Core PCE Inflation (YoY %)</label><input type="number" id="core_pce" value="2.7" step="0.1" oninput="recalc()"><span class="current-val">Mar 2026: 2.7%</span></div>
+      <div class="input-group"><label>US GDP Growth (YoY %)</label><input type="number" id="us_gdp" value="2.1" step="0.1" oninput="recalc()"><span class="current-val">Q1 2026: +2.1%</span></div>
+      <div class="input-group"><label>DXY (US Dollar Index)<span class="desc">&gt;105 strong, &lt;98 weak</span></label><input type="number" id="dxy" value="99.5" step="0.1" oninput="recalc()"><span class="current-val">May 2026: ~99-100</span></div>
+      <div class="input-group"><label>WTI Crude ($/bbl)</label><input type="number" id="wti" value="95.0" step="0.5" oninput="recalc()"><span class="current-val">May 2026: ~$95</span></div>
+      <div class="input-group"><label>Brent Crude ($/bbl)</label><input type="number" id="brent" value="100.0" step="0.5" oninput="recalc()"><span class="current-val">May 2026: ~$100</span></div>
+      <div class="input-group"><label>US Rotary Rigs (total, EIA)</label><input type="number" id="us_oil_rigs" value="544" step="1" oninput="recalc()"><span class="current-val">EIA monthly · total oil+gas</span></div>
+      <div class="input-group"><label>US Crude Production (M bbl/d)</label><input type="number" id="us_crude_prod" value="13.57" step="0.01" oninput="recalc()"><span class="current-val">May 2026: ~13.57M b/d</span></div>
+    </div>
+    <h3 class="subsection-title">Pakistan — Seven Factors</h3>
+    <div class="grid grid-3">
+      <div class="input-group"><label>Arab Light Crude ($/bbl)</label><input type="number" id="oil_arab" value="78" step="0.5" oninput="recalc()"><span class="current-val">May 2026: $75-82/bbl</span></div>
+      <div class="input-group"><label>SBP Policy Rate (%)</label><input type="number" id="sbp_rate" value="11.50" step="0.25" oninput="recalc()"><span class="current-val">May 2026: 11.50% (+100bp Apr 27)</span></div>
+      <div class="input-group"><label>USD/PKR Spot</label><input type="number" id="usd_pkr" value="278.50" step="0.1" oninput="recalc()"><span class="current-val">May 2026: 278.50</span></div>
+      <div class="input-group"><label>Pakistan CPI YoY (%)</label><input type="number" id="pak_cpi" value="10.9" step="0.1" oninput="recalc()"><span class="current-val">Apr 2026: 10.9%</span></div>
+      <div class="input-group"><label>SBP FX Reserves (USD bn)</label><input type="number" id="sbp_reserves" value="16.4" step="0.1" oninput="recalc()"><span class="current-val">Apr 2026: $16.40bn</span></div>
+      <div class="input-group"><label>Current Account (Monthly USD M)</label><input type="number" id="pak_ca" value="120" step="1" oninput="recalc()"><span class="current-val">FY26: cumulative surplus (Feb/Mar +ve); single-mo varies</span></div>
+      <div class="input-group"><label>Fiscal Deficit (% of GDP)</label><input type="number" id="pak_fiscal" value="6.0" step="0.1" oninput="recalc()"><span class="current-val">FY26 target: 5.9%</span></div>
+      <div class="input-group"><label>REER</label><input type="number" id="reer" value="105.80" step="0.01" oninput="recalc()"><span class="current-val">Apr 2026: 105.80 (7.5-yr high)</span></div>
+      <div class="input-group"><label>NEER</label><input type="number" id="neer" value="37.89" step="0.01" oninput="recalc()"><span class="current-val">Apr 2026: 37.89</span></div>
+      <div class="input-group"><label>Remittances (Monthly USD bn)</label><input type="number" id="remittances" value="3.54" step="0.01" oninput="recalc()"><span class="current-val">Apr 2026: $3.54bn</span></div>
+      <div class="input-group"><label>Import Cover (months)</label><input type="number" id="import_cover" value="2.62" step="0.01" oninput="recalc()"><span class="current-val">Dec 2025: ~2.62 months (AHL)</span></div>
+      <div class="input-group"><label>External Debt Service (FY USD bn)</label><input type="number" id="debt_service" value="25.4" step="0.1" oninput="recalc()"><span class="current-val">FY26: ~$25.4bn (SBP)</span></div>
+      <div class="input-group"><label>IMF Program Status</label><select id="imf_status" oninput="recalc()"><option value="2" selected>On-track (disbursing)</option><option value="1">SLA reached / pending board</option><option value="0">In negotiation</option><option value="-1">Off-track / stalled</option><option value="-2">No program / exited</option></select><span class="current-val">EFF+RSF on-track; $1.3bn May 2026</span></div>
+      <div class="input-group"><label>Short-Term Ext. Debt (USD bn)</label><input type="number" id="st_debt" value="4.2" step="0.1" oninput="recalc()"><span class="current-val">~$4.2bn still due (of $25.4bn FY26, $21.2bn already repaid/rolled). EWS ratio vs reserves</span></div>
+      <div class="input-group"><label>Monthly Import Bill (USD bn)</label><input type="number" id="import_bill" value="6.0" step="0.1" oninput="recalc()"><span class="current-val">FY25 imports ~$78bn → ~$6.0bn/mo</span></div>
+      <div class="input-group"><label>Export Growth (YoY %)</label><input type="number" id="export_growth" value="3.0" step="0.1" oninput="recalc()"><span class="current-val">FY25 exports ~$40.7bn; low growth = EWS flag</span></div>
+      <div class="input-group"><label>KSE-100 Index</label><input type="number" id="kse100" value="167844" step="100" oninput="recalc()"><span class="current-val">May 22, 2026: 167,844</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="recalc()">Recalculate All</button>
+      <button class="btn btn-secondary" onclick="resetDefaults()">Reset to Defaults</button>
+    </div>
+  </div>
 
-import sys, math, time, os, json
-import requests
-from datetime import date
+  <!-- Panels 2-11 placeholders (full content from v4.1 preserved) -->
+  <div id="us" class="panel"><h2 class="section-title">United States Macro Dashboard</h2><div id="us_regime_banner" class="alert-banner"></div><h3 class="subsection-title">US Recession Watch</h3><div id="us_recession_box"></div><h3 class="subsection-title">Leading Indicators</h3><div class="grid grid-3" id="us_indicators"></div><h3 class="subsection-title">Energy Leading Indicators</h3><div id="us_energy_banner" class="reading-box"></div><div class="grid grid-3" id="us_energy_indicators"></div><h3 class="subsection-title">Yield Curve</h3><div id="yield_curve_box"></div><h3 class="subsection-title">Four Regimes Quadrant</h3><div id="us_quadrant"></div><h3 class="subsection-title">Composite Sector Recommendation</h3><div id="us_sector_rec"></div><h3 class="subsection-title">Screen Survivors — US (live scan, top 15 to TCE)</h3><table id="us_candidates_table" class="historical-table"></table></div>
+  <div id="pak" class="panel"><h2 class="section-title">Pakistan / PSX Macro Dashboard</h2><div id="pak_regime_banner" class="alert-banner"></div><div id="pak_equity_backdrop"></div><h3 class="subsection-title">Seven Factors Status Board</h3><div class="grid grid-3" id="pak_seven_factors"></div><h3 class="subsection-title">REER / NEER</h3><div id="reer_box"></div><h3 class="subsection-title">Twin Deficit</h3><div id="twin_deficit_box"></div><h3 class="subsection-title">PSX Sector Implications</h3><div id="pak_sector_rec"></div><h3 class="subsection-title">Institutional Ownership — AMC Fund Holdings (Smart Money)</h3><div id="psx_fund_ownership_box"></div><h3 class="subsection-title">Market Breadth &amp; Leaders</h3><div id="psx_market_box"></div><h3 class="subsection-title">Screen Survivors — PSX (live scan)</h3><table id="psx_candidates_table" class="historical-table"></table></div>
+  <div id="devalert" class="panel"><h2 class="section-title">PKR Devaluation Early-Warning System</h2><div id="devalert_main"></div>
+    <h3 class="subsection-title">① Distance to Crisis — Historical 4-of-5 Pattern</h3><div id="dev_distance"></div>
+    <h3 class="subsection-title">② Core Triggers (the cluster that fired before 2008/2013/2018/2022/2023)</h3><table id="dev_core"></table>
+    <h3 class="subsection-title">③ Accelerants &amp; EWS Ratios (academic crisis predictors)</h3><table id="dev_accel"></table>
+    <h3 class="subsection-title">④ Composite Risk Scoring</h3><table id="dev_components"></table>
+    <h3 class="subsection-title">⑤ KSE-100 6-Indicator Macro Panel (IM3 inverse-relationship read)</h3><div id="dev_kse6"></div>
+    <div class="reading-box" style="font-size:12px;"><strong>How to read:</strong> The 5 <b>core triggers</b> are the cluster present before every past PKR crash — when 4 of 5 fire together, devaluation historically followed within 6 months. <b>Accelerants</b> (fiscal, import bill, short-term-debt/reserves, export growth, real rate) are the academically-validated predictors that deepen risk. The <b>KSE 6-panel</b> reads the market's macro backdrop: rising oil + USD/PKR + inflation + rates + widening CAD = bearish for KSE; the reverse = bullish.</div>
+    <details style="margin-top:14px;border:1px solid #E5E7EB;border-radius:8px;">
+      <summary style="cursor:pointer;padding:10px 14px;font-weight:600;color:var(--navy);background:#FAFAFA;border-radius:8px;">Historical PKR Devaluation Episodes (2008&ndash;2023) &mdash; reference cluster</summary>
+      <div style="padding:12px;overflow-x:auto;">
+        <p style="font-size:12px;color:var(--grey-d);margin:0 0 8px;">The five past crashes the early-warning system above is calibrated against. Each followed the same 4-of-5 trigger pattern; the <b>Common Pattern</b> column is what the live triggers watch for.</p>
+        <table class="historical-table"><thead><tr><th>Factor</th><th>2008</th><th>2013</th><th>2017-18</th><th>2022</th><th>2023</th><th>Common Pattern</th></tr></thead><tbody id="history_tbody"></tbody></table>
+      </div>
+    </details>
+  </div>
+  <div id="sectors" class="panel"><h2 class="section-title">Sector &amp; Stock Implications</h2><h3 class="subsection-title">US Sectors</h3><div id="us_sectors"></div><h3 class="subsection-title">PSX Sectors</h3><div id="psx_sectors"></div><h3 class="subsection-title">Top Picks</h3><div id="top_picks"></div></div>
+  <div id="zone" class="panel"><h2 class="section-title">IM3 Allocation Zone</h2><div id="zone_banner" class="alert-banner red"><h3>CURRENT ZONE: RED — 20% Stocks / 60% Bonds / 20% Cash</h3><p><b>SBP Rate:</b> 11.50% | <b>Mean:</b> 11.01% | <b>Direction:</b> Increasing</p></div><h3 class="subsection-title">Zone Quadrant</h3><div id="zone_quadrant_box"></div><h3 class="subsection-title">SBP Rate Path</h3><div id="zone_rate_path"></div><h3 class="subsection-title">KSE-100 Monthly</h3><div id="zone_kse_table"></div><h3 class="subsection-title">Asset Allocation by Zone</h3><div id="zone_alloc_table"></div></div>
+  <div id="mbpsx" class="panel"><h2 class="section-title">PSX Multibagger Hunter</h2><div id="psx_mb_funnel"></div><div id="psx_mb_sector_table"></div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="psx_mb_rev" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="psx_mb_eps" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="psx_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROCE 5-yr avg (%)</label><input type="number" id="psx_mb_roce" value="24" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="psx_mb_de" value="0.3" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="psx_mb_ocf" value="1.1" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Sponsor %</label><input type="number" id="psx_mb_sponsor" value="45" step="1" oninput="recalc()"></div><div class="input-group"><label>Market Cap (PKR bn)</label><input type="number" id="psx_mb_mcap" value="8" step="0.5" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="psx_mb_ig" value="72" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="psx_mb_pe" value="6" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="psx_mb_wacc" value="20" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="psx_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3" selected>5-10x</option><option value="4">10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="psx_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3" selected>Cost/Switching</option><option value="4">Brand/Network</option><option value="5">Regulatory</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="psx_mb_reinv" onchange="recalc()"><option value="1">Returning all cash</option><option value="2">Limited</option><option value="3" selected>Moderate</option><option value="4">Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner-Operator</label><select id="psx_mb_owner" onchange="recalc()"><option value="1">Diluted</option><option value="2">Holding</option><option value="3" selected>Stable &gt;5yr</option><option value="4">Founder 10yr+</option><option value="5">Founder + rising</option></select></div></div><div id="psx_mb_score_box"></div><div id="psx_mb_decision_matrix"></div><div id="psx_mb_compound_box"></div><div id="psx_mb_tiers_table"></div><div id="psx_mb_live_candidates"></div><div id="psx_mb_history_table"></div><div id="psx_mb_comparison_table"></div></div>
+  <div id="mbus" class="panel"><h2 class="section-title">US Multibagger Hunter</h2><div id="us_mb_funnel"></div><div id="us_mb_sector_table"></div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="us_mb_rev" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="us_mb_eps" value="30" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="us_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROIC 5-yr avg (%)</label><input type="number" id="us_mb_roic" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="us_mb_de" value="0.2" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="us_mb_ocf" value="1.15" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Insider %</label><input type="number" id="us_mb_insider" value="15" step="0.5" oninput="recalc()"></div><div class="input-group"><label>Market Cap (USD M)</label><input type="number" id="us_mb_mcap" value="500" step="50" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="us_mb_ig" value="75" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="us_mb_pe" value="35" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="us_mb_wacc" value="10" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="us_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3">5-10x</option><option value="4" selected>10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="us_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3">Cost/Switching</option><option value="4" selected>Brand/Network</option><option value="5">Regulatory/Platform</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="us_mb_reinv" onchange="recalc()"><option value="1">Returning cash</option><option value="2">Limited</option><option value="3">Moderate</option><option value="4" selected>Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner Alignment</label><select id="us_mb_owner" onchange="recalc()"><option value="1">Founder gone</option><option value="2">Stable CEO</option><option value="3">Founder active</option><option value="4" selected>Founder 10yr+</option><option value="5">Founder + rising</option></select></div><div class="input-group"><label>Zacks Rank</label><select id="us_mb_zacks" onchange="recalc()"><option value="1">1 — Strong Buy</option><option value="2" selected>2 — Buy</option><option value="3">3 — Hold</option><option value="4">4 — Sell</option><option value="5">5 — Strong Sell</option></select></div></div><div id="us_mb_score_box"></div><div id="us_mb_decision_matrix"></div><div id="us_mb_compound_box"></div><div id="us_mb_tiers_table"></div><div id="us_mb_live_candidates"></div><div id="us_mb_history_table"></div></div>
+  <div id="tce" class="panel"><h2 class="panel-title">Trend Convergence Engine (TCE) — Live Scan</h2><div class="card" id="tceMacroBanner" style="border-left:4px solid var(--blue);"><p style="margin:0; font-size:13px; color:var(--grey-d);"><strong>9-stream convergence model.</strong> Attention (news · sponsor · insider · volume) + <b>conviction</b> (momentum · margin inflection · short-interest capital · EPS-revision · revenue-revision), with an <b>RS guardrail</b> vs SPY. HIGH needs real conviction (≥4 conviction streams) AND the guardrail to hold — pure news/volume can no longer reach HIGH. WATCH = ≥3 conviction or ≥5 total.</p><div id="tce_regime_gate" style="margin-top:8px;font-size:12px;color:var(--grey-d);"></div></div><div class="card"><h3>US TCE Results</h3><div id="tce_us_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>PSX TCE Results</h3><div id="tce_psx_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>TCE Forward-Validation — Predictions Ledger</h3><div id="tce_predictions"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div></div>
+  <div id="explosive" class="panel">
+    <h2 class="section-title">Explosive Stocks (US + PSX) — Live Scanner Feed</h2>
+    <h3 class="subsection-title">US Explosive — gated to Tab 2 Regime</h3>
+    <div id="explosive_us_macro" class="reading-box"></div>
+    <div id="explosive_us_table"><p style="color:var(--grey-d);">Waiting for scan data…</p></div>
+    <h3 class="subsection-title">PSX Explosive — gated to Tab 7 Zone</h3>
+    <div id="explosive_psx_macro" class="reading-box"></div>
+    <div id="explosive_psx_table"><p style="color:var(--grey-d);">Waiting for scan data…</p></div>
+  </div>
 
-try:
-    import yfinance as yf
-except ImportError:
-    yf = None  # Yahoo is now FALLBACK-ONLY; its absence must not kill a run TV+FMP/SEC can cover.
+  <!-- ============ PANEL 12: GOLD & METALS ============ -->
+  <div id="metals" class="panel">
+    <div class="metals-header">
+      <h2>Gold &amp; Metals — IM3 Week 12 Factor Framework</h2>
+      <p>15 auto-scored factors (6 Pakistan + 8 Global + 1 GeoPolitical) · COT positioning · Seasonality heatmap · Metal correlations · US sector implications</p>
+    </div>
 
-# ── CONSTANTS ────────────────────────────────────────────────────────────────
-BOND = 0.043  # US 10Y ~4.3%
-HDRS = {"User-Agent": "Mozilla/5.0 (im3-score)"}
-# SEC asks for a descriptive UA + contact; this works for low-volume per-ticker reads.
-HDRS_SEC = {"User-Agent": "IM3-Score research hammad.khan@airproducts.com"}
-TV_URL = "https://scanner.tradingview.com/america/scan"
-PAK_TV_URL = "https://scanner.tradingview.com/pakistan/scan"  # PSX single-period fundamentals
-PAK_BOND = 0.115  # PKR risk-free ~ SBP policy rate; used for PSX earnings-yield & DCF-EPS
-FMP_BASE = "https://financialmodelingprep.com/stable"
-FMP_KEY = os.environ.get("FMP_API_KEY", "")
+    <!-- Live Price Bar -->
+    <div class="metals-price-bar">
+      <div class="metal-price-tile"><div class="metal-name">Gold</div><div class="metal-val" id="m_gold_px">—</div><div class="metal-sub">GC=F Live</div></div>
+      <div class="metal-price-tile"><div class="metal-name">Silver</div><div class="metal-val" id="m_silver_px">—</div><div class="metal-sub">SI=F Live</div></div>
+      <div class="metal-price-tile"><div class="metal-name">Platinum</div><div class="metal-val" id="m_plat_px">—</div><div class="metal-sub">PL=F Live</div></div>
+      <div class="metal-price-tile"><div class="metal-name">Palladium</div><div class="metal-val" id="m_pall_px">—</div><div class="metal-sub">PA=F Live</div></div>
+      <div class="metal-price-tile" style="border-color:#BFDBFE;">
+        <div class="metal-name" style="color:#1D4ED8;">DXY</div>
+        <div class="metal-val" id="m_dxy_px" style="color:#1e40af;">—</div>
+        <div class="metal-sub">Dollar Index</div>
+      </div>
+    </div>
 
-WEIGHTS = {
-    'rev_cagr':5,'op_cagr':1,'op_margin':5,'np_cagr':1,'np_margin':5,
-    'tax_rate':3,'int_coverage':2,'de_ratio':5,'total_debt':3,
-    'current_ratio':5,'cfo_trend':5,'net_cash':3,'ccfo_cpat':5,
-    'nfa_turn':3,'roe':3,'eps_trend':5,'pe_ratio':5,'peg_ratio':5,
-    'earn_yield':3,'pb_ratio':3,'graham_val':3,'ps_ratio':3,
-    'div_yield':5,'ev_ebitda':3,'mos':5,'val_shareholders':5,
-    'inv_turn':3,'dro':3,'fat':3,'fcf_trend':5,'croic':5,
-    'fcf_sale':5,'fcf_cfo':3,'ccc':3,'altman_z':5,'beneish_m':5,
-    'piotroski_f':10,'roic_wacc':3,'cash_share':5,'cash_debt':5,
+    <!-- Two-column scorecards -->
+    <div class="metals-scorecard">
+      <div class="metals-factor-block">
+        <div class="block-head">
+          <span>🇵🇰 Pakistan Factors — 6 factors</span>
+          <span id="pak_subtotal_badge" style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:4px;font-size:12px;">—</span>
+        </div>
+        <div id="pak_factor_rows"></div>
+      </div>
+      <div class="metals-factor-block">
+        <div class="block-head">
+          <span>🌍 Global / Gold Factors — 8 factors</span>
+          <span id="gold_subtotal_badge" style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:4px;font-size:12px;">—</span>
+        </div>
+        <div id="gold_factor_rows"></div>
+      </div>
+    </div>
+
+    <!-- Composite Gauge -->
+    <div class="metals-gauge">
+      <div style="font-family:var(--font-head);font-size:15px;font-weight:700;color:#78350F;margin-bottom:14px;">GOLD BIAS SCORE — Composite</div>
+      <div id="metals_gauge_bar"></div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:#78350F;">
+        <span>Pakistan: <b id="m_pak_sub">—</b></span>
+        <span>Global: <b id="m_gold_sub">—</b></span>
+        <span style="margin-left:auto;">
+          <span id="m_cot_badge" style="background:#FEF3C7;padding:2px 8px;border-radius:4px;font-weight:600;font-size:12px;">COT: —</span>
+          <span id="m_seasonal_badge" style="background:#FEF3C7;padding:2px 8px;border-radius:4px;font-weight:600;font-size:12px;margin-left:6px;">Seasonal: —</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- WAVE M (M2) — Metals reading layer -->
+    <div id="metals_reading_layer"></div>
+
+    <!-- Four Metal Cards -->
+    <div class="metals-subsection">Four Metals — Bias Score &amp; Overlay</div>
+    <div class="metals-grid-4" id="metals_four_cards"></div>
+
+    <!-- COT Positioning -->
+    <div class="metals-subsection">COT Positioning Crowding Gauge</div>
+    <div class="metals-factor-block" style="margin-bottom:20px;">
+      <div class="block-head">
+        <span>📊 CFTC CMX Non-Commercial Net Positions</span>
+        <span id="cot_date_badge" style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:4px;font-size:11px;">—</span>
+      </div>
+      <div style="padding:14px 18px;">
+        <div style="font-size:11.5px;color:var(--grey-d);margin-bottom:10px;">Net/OI % — above 20% = crowded long (watch for unwind). COT is a positioning gauge, NOT a buy/sell signal. <b>Weekly report:</b> positions are snapshot each Tuesday and released the following Friday (~3:30pm ET), so the latest available report always lags a few days — the badge date is correct, not stale.</div>
+        <div id="cot_rows"></div>
+      </div>
+    </div>
+
+    <!-- Seasonality Heatmap -->
+    <div class="metals-subsection">Seasonality Heatmap — Avg Monthly % Change (Bloomberg 2004–2014)</div>
+    <div id="metals_seasonality_table" style="overflow-x:auto;margin-bottom:20px;"></div>
+
+    <!-- US Sector Implications -->
+    <div class="metals-subsection">US Sector Implications — Based on Gold Bias Score</div>
+    <div class="metals-factor-block">
+      <div class="block-head"><span>🏦 US Equity Sector Tilts</span></div>
+      <div style="padding:14px 18px;" id="metals_sector_rows"></div>
+    </div>
+
+    <div class="reading-box" style="margin-top:20px;border-left-color:#D97706;background:#FFFBEB;">
+      <strong>Source &amp; Methodology:</strong> Sarmaaya IM3 Week 11–12 lecture framework (Ammar Yaseen). Pakistan factors (Oil, Interest rates, Currency valuation, Current account, Fiscal account, Inflation, CB Reserves) score the local PKR gold price. Global factors (USD Policy Stance, QE/QT, Recession Fear, Pakistan REER, Dollar Index, IMF, Pakistan Default, GeoPolitical Situation) score the international USD gold price. Each factor = +1 Positive / 0 Neutral / −1 Negative. Score range −15 to +15. Scoring bands: ≥5 = STRONG BUY, 2–4 = BUY, 0–1 = NEUTRAL, −1 to −3 = REDUCE, &lt;−3 = AVOID. Seasonality from Bloomberg 2004–2014 averages (Sarmaaya PDFs). Metal propagation via correlation matrix (Sarmaaya Other Metals PDF slide 19): Silver × 0.7, Platinum × 0.5, Palladium × 0.7. COT data: CFTC CMX weekly (non-commercial net positions). GDX top holdings from Sarmaaya PDF slide 19 (Week 11).
+    </div>
+  </div>
+
+</div>
+
+<div id="etf" class="panel">
+  <h2 class="section-title">Smart-Money ETF Overlap — Top Consensus Stocks (top 30 Zacks #1 US-equity ETFs)</h2>
+  <div id="etf_intro"></div>
+  <div id="etf_banner" style="margin:12px 0;"></div>
+  <h3 class="panel-title" style="margin-top:18px;">Top consensus stocks</h3>
+  <div id="etf_table"></div>
+  <h3 class="panel-title" style="margin-top:18px;">Source ETFs</h3>
+  <div id="etf_compare"></div>
+</div>
+
+  <div id="backtest" class="panel">
+    <h2 class="section-title">Strategy Backtest — IG+ Methodology vs KSE-100 (2010–2021)</h2>
+    <div id="bt_intro"></div>
+    <h3 class="subsection-title">CAGR by Strategy</h3>
+    <div id="bt_cagr"></div>
+    <h3 class="subsection-title">Equity Curve — PKR 1,000,000 base</h3>
+    <div id="bt_curve"></div>
+    <h3 class="subsection-title">The Layering (each rule adds to the one above)</h3>
+    <div id="bt_layers"></div>
+    <h3 class="subsection-title">Rate-Zone Allocation Engine (backtested 40.8% CAGR)</h3>
+    <div id="bt_alloc"></div>
+  </div>
+
+  <div id="profile" class="panel">
+    <h2 class="section-title">Investor Profile — Which Tabs Serve Your Mode</h2>
+    <div id="prof_intro"></div>
+    <h3 class="subsection-title">Select your profile</h3>
+    <div id="prof_buttons"></div>
+    <div id="prof_detail" style="margin-top:14px;"></div>
+  </div>
+
+<div class="footer">
+  Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
+  Muhammad Hammad Khan | Active Macro Dashboard v5.26 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — v5.26 PSX explainer trued-up: the PSX Explosive caption + explainer now reflect the live mixed state — the broker-research history layer has LANDED for the five holdings (OGDC/PPL/FFC/HUBC score on the expanded multi-year denominator with CAGRs/Altman/Beneish/Piotroski/DCF-growth live; MCB scores on the System-B bank model, Banking Investo Genie 2.0 PSX-calibrated: NIM 4.5%, NPL ≤5%/≤8%, contextual ADR, CAR ≥11.5% SBP req, tax 45–60%), while the rest of the universe stays TV single-period reduced pending broker data; the caption now counts broker-backed names dynamically from data.json (src.hist) instead of asserting all-TV. — v5.25 PSX IM3 surfaced: the PSX Explosive table now shows the IM3 Quality column (same as US), reading the scores the daily.yml PSX step writes into explosive_psx/tce_psx/psx_candidates. PSX scores render on the reduced denominator (TV single-period; history metrics NA/excluded; PKR risk-free; banks generic-reduced pending broker System-B), with a PSX-specific explainer and per-cell tooltip. v5.24 stale-calendar fix: the US Recession Watch \u201CUpcoming high-impact US releases\u201D table now filters out events dated before the scan\u2019s as-of day (meta.last_scan_utc), so already-released prints (e.g. the Jun-10 CPI on a Jun-11 scan) no longer linger as \u201Cupcoming\u201D; only on/after-today releases show. v5.23 IM3 re-thread surfaced: the IM3 detail card now shows the data-provenance badge (fundamentals TV · history SEC/Yahoo per the re-threaded scorer), net shareholder yield, Piotroski/Altman-Z/Beneish-M, and the full intrinsic-value set — per-method (DCF·EPS, Graham, DCF·FCF, DCF·Cash) plus the scorer's blended composites (Composite, FCF-blend, Cash-blend with their own MoS), replacing the single mislabeled "Composite MoS" tile (which was DCF-EPS-only). Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&amp;P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory) + v5.17 Wave D2 labels: the three PSX analyst-conviction streams now render as readable chips on the PSX TCE table — Target (mean price-target upside %), Rec (analyst buy share %), and Fwd-EPS (forward-EPS revised up) — each pulling the analyst_detail block; PSX-only, so they show n/a on US rows + v5.19 Wave O Part 2 (metric meaning): every screen-survivor row now carries a visible plain-language “reads:” line interpreting its metrics (Rev/EPS/ROE/P/E for US, Rev/EPS/3M for PSX) in threshold terms — e.g. “P/E 52 — priced for perfection”, “ROE 92% — elite returns on capital”, “Rev +498% — explosive top-line”; and the gate thresholds are now visible in each screen caption (✓ Rev ≥15% · EPS ≥0% · ROE ≥8% for US; ✓ Rev ≥0% · EPS ≥0% for PSX) instead of hidden in column tooltips. Sector/peer + regime enrichment of the reads arrives with Wave O L1 (TV sector medians) + v5.18 Feedback-loop panel: the TCE Forward-Validation ledger now shows a per-tier scorecard (HIGH/WATCH/IGNORE: open, matured, hit-rate ≥+40%, avg fwd, avg alpha vs SPY/KSE-100, beat-market %, and HIGH/WATCH lift over the IGNORE control base rate), an earliest-maturation “first verdict ~DATE” line that reads pending until picks reach the 90-day horizon, and an open-picks table with forward return + alpha + days-to-maturity + v5.20: (1) the Target + Rec analyst-conviction chips now render on US TCE rows too (the scanner's US analyst overlay emits s11/s12 for both markets) — Fwd-EPS stays PSX-only since US uses the Yahoo EPS-rev stream; the Rec tip now reads ≥70% buy (buy70 calibration). (2) the RS-guardrail chip now reads rs_ok correctly: data.json serializes it as the string 'True'/'False' (which is truthy in JS), so a vetoed name no longer mis-shows GUARD-holds — the falsy set is coerced to match the live scorer. + v5.21 PSX institutional layer (Wave P): the Pakistan tab now renders the AMC fund-ownership smart-money overlay — top-ten holdings aggregated across 9 high-conviction equity/asset-allocation mutual funds (monthly Fund Manager Reports), with each name’s fund count, avg/max portfolio weight and a month-over-month accumulate/trim flow tag (baseline until next month’s reports land), your five holdings highlighted; a 🏦 funds badge on any screen-survivor the funds also hold; and a market breadth (advancers/decliners) + volume/value leaders strip — all from the Wave P scanner feeds (scanner v1.45–v1.48). + v5.22: the US Multibagger “Moat OR Insider Gate” card no longer shows n/a — it now reads the live SEC EDGAR Form-4 signal (the TCE s3_insider stream) as an “Insider Buying (SEC Form-4): N of 15 candidates” tally, since the TV-era screen insider gate was dropped in Wave O L1 and TradingView carries no insider field; the sector-breakdown moat/insider column is labelled an illustrative design target (the live scan applies no such per-sector gate).
+</div>
+
+<script>
+// =========================================================
+// CORE UTILITIES
+// =========================================================
+const defaults = {
+  ism_mfg:52.7,ism_svc:53.6,umcsi:44.8,us_10y:4.45,us_2y:4.00,fed_rate:4.375,
+  core_pce:2.7,us_gdp:2.1,dxy:99.5,wti:95.0,brent:100.0,us_crude_prod:13.57,us_oil_rigs:544,
+  oil_arab:78,sbp_rate:11.50,usd_pkr:278.50,pak_cpi:10.9,sbp_reserves:16.4,
+  pak_ca:-324,pak_fiscal:6.0,reer:105.80,neer:37.89,remittances:3.54,import_cover:2.4,kse100:167844
+};
+function showPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
 }
-BANK_ZERO  = ('int_coverage','current_ratio','inv_turn','dro','fat','ccc','nfa_turn',
-              'de_ratio','total_debt','op_cagr','op_margin','fcf_trend','croic',
-              'fcf_sale','fcf_cfo','cash_share','cash_debt','ev_ebitda','ps_ratio',
-              'peg_ratio','graham_val','mos','val_shareholders','piotroski_f',
-              'altman_z','beneish_m','roic_wacc')
-BANK_EXTRA = {'nim':4,'casa':3,'adr':3,'npl':5,'car':4}
-
-LABELS = {
-    'rev_cagr':'Revenue CAGR 5yr','op_cagr':'Op Profit CAGR','op_margin':'Op Margin',
-    'np_cagr':'Net Profit CAGR','np_margin':'Net Margin','tax_rate':'Tax Rate',
-    'int_coverage':'Interest Coverage','de_ratio':'D/E Ratio','total_debt':'Total Debt Trend',
-    'current_ratio':'Current Ratio','cfo_trend':'CFO Trend','net_cash':'Net Change in Cash',
-    'ccfo_cpat':'cCFO vs cPAT (5yr)','nfa_turn':'NFA Turnover','roe':'ROE',
-    'eps_trend':'EPS Trend','pe_ratio':'P/E vs Peer','peg_ratio':'PEG Ratio',
-    'earn_yield':'Earnings Yield vs Bond','pb_ratio':'P/B Ratio',
-    'graham_val':'Graham P/E x P/B','ps_ratio':'P/S Ratio','div_yield':'Dividend Yield',
-    'ev_ebitda':'EV/EBITDA','mos':'Margin of Safety (DCF EPS)',
-    'val_shareholders':'Value for Shareholders','inv_turn':'Inventory Turnover',
-    'dro':'Days Receivables','fat':'Fixed Asset Turnover','ccc':'Cash Conversion Cycle',
-    'fcf_trend':'FCF Trend','croic':'CROIC','fcf_sale':'FCF/Sale',
-    'fcf_cfo':'FCF/CFO','cash_debt':'Cash/Debt','cash_share':'Cash/Share',
-    'altman_z':'Altman Z-Score','beneish_m':'Beneish M-Score',
-    'piotroski_f':'Piotroski F-Score','roic_wacc':'ROIC vs WACC',
-    'nim':'Net Interest Margin','casa':'CASA Ratio','adr':'Advance/Deposit Ratio',
-    'npl':'NPL Ratio','car':'Capital Adequacy Ratio',
+function val(id){const el=document.getElementById(id);return el?parseFloat(el.value):NaN;}
+function resetDefaults(){for(const[k,v]of Object.entries(defaults)){const el=document.getElementById(k);if(el)el.value=v;}recalc();}
+function indicatorCard(label,value,status,statusClass,interp){
+  return`<div class="indicator-card ${statusClass}"><div class="label">${label}</div><div class="value">${value}</div><div class="status">${status}</div><div class="interp">${interp}</div></div>`;
+}
+function regimeOf(growth,inflation){
+  if(growth>0&&inflation<=2.5)return{name:'GOLDILOCKS',sectors:'Tech, Comm Services, Consumer Discretionary, Growth',class:'green'};
+  if(growth>0&&inflation>2.5) return{name:'REFLATION', sectors:'Energy, Materials, Industrials, Financials, Value',class:'yellow'};
+  if(growth<=0&&inflation<=2.5)return{name:'DISINFLATION',sectors:'Utilities, Consumer Staples, Healthcare, Long bonds',class:'orange'};
+  return{name:'STAGFLATION',sectors:'Gold, Energy (selective), Commodities, TIPS, Cash',class:'red'};
 }
 
-SECTIONS = [
-    ('Growth',    ['rev_cagr','op_cagr','op_margin','np_cagr','np_margin']),
-    ('Stability', ['tax_rate','int_coverage','de_ratio','total_debt','current_ratio',
-                   'cfo_trend','net_cash','ccfo_cpat','nfa_turn','roe']),
-    ('Valuation', ['eps_trend','pe_ratio','peg_ratio','earn_yield','pb_ratio',
-                   'graham_val','ps_ratio','div_yield','ev_ebitda','mos','val_shareholders']),
-    ('Inventory', ['inv_turn','dro','fat','ccc']),
-    ('Cash Flow', ['fcf_trend','croic','fcf_sale','fcf_cfo','cash_debt','cash_share']),
-    ('Risk',      ['altman_z','beneish_m','piotroski_f','roic_wacc']),
-    ('Bank',      ['nim','casa','adr','npl','car']),
-]
+// =========================================================
+// US DASHBOARD
+// =========================================================
+// =========================================================
+// WAVE M (M1) — MACRO READING LAYER (US). One rules table = the nucleus.
+// Each indicator carries a lens (Regime / Monetary-QE·QT / Economy), an absolute
+// band (primary), and the one-line "implies" incl. its cross-asset knock-on —
+// grounded in the narrative-vs-research comparison (Goldman/MS/PIMCO). Tunable
+// here in ONE place. v1 reads the live data.json (no scanner change).
+// =========================================================
+function _mr(state,cls,implies){return {state:state,cls:cls,implies:implies};}
+const MACRO_READS_US = [
+ {key:'fed_rate', label:'Fed Funds Rate', lens:'Monetary', unit:'%',
+  read:function(v,c){
+    var real=(!isNaN(c.core_pce))?(v-c.core_pce):null;
+    var rt=real!=null?(' Real rate '+(real>0?'+':'')+real.toFixed(1)+'% vs core PCE.'):'';
+    if(v>5)  return _mr('Very restrictive','neg','Very restrictive.'+rt+' Cuts off the table → USD bid, growth/tech headwind.');
+    if(v>=4) return _mr('Restrictive','warn','Restrictive.'+rt+' Limited room to cut.');
+    if(v>=3) return _mr('Mildly restrictive','neutral','Mildly restrictive.'+rt+' Direction (cut vs hold) sets the regime.');
+    return _mr('Accommodative','pos','Accommodative.'+rt+' Lower discount rate → tech/growth re-rate, USD softer, gold up.');
+  }},
+ {key:'us_2y', label:'2Y Treasury', lens:'Monetary · Regime', unit:'%',
+  read:function(v,c){
+    var gap=(!isNaN(c.fed_rate))?(v-c.fed_rate):null;
+    if(gap!=null&&gap>0.10)  return _mr('Above funds — hawkish','warn','2y '+gap.toFixed(2)+' above funds → market pricing FEWER/NO cuts (higher-for-longer). USD up, long-duration tech down, gold pressured.');
+    if(gap!=null&&gap<-0.25) return _mr('Below funds — cuts priced','pos','2y '+Math.abs(gap).toFixed(2)+' below funds → market pricing CUTS. Risk-on; tech/gold tailwind.');
+    return _mr('Near funds','neutral','2y ≈ funds → market balanced on the next move.');
+  }},
+ {key:'us_10y', label:'10Y Treasury', lens:'Regime', unit:'%',
+  read:function(v,c){
+    if(v>5)    return _mr('>5% compression','neg','Discount-rate shock → broad multiple compression; gold/tech down, USD up.');
+    if(v>4.5)  return _mr('Valuation headwind','warn','>4.5% → long-duration/tech de-rating; higher real yield → gold down, USD up.');
+    if(v>=3.5) return _mr('Neutral','neutral','3.5–4.5% neutral-to-mild headwind for rich multiples.');
+    return _mr('Supports multiples','pos','<3.5% supports rich multiples; tailwind for growth/tech and gold.');
+  }},
+ {key:'curve', label:'10Y–2Y Curve', lens:'Economy',
+  fmt:function(v){return (v>0?'+':'')+v.toFixed(0)+' bps';},
+  read:function(v,c){
+    if(v<0)   return _mr('INVERTED','neg','Inverted = classic recession pre-condition (regime-dependent; weight with credit). A re-inversion is a TRIPWIRE.');
+    if(v<50)  return _mr('Flat / late-cycle','warn','Positive but narrow → late-cycle, not recessionary. Watch for re-inversion, not the level.');
+    if(v<150) return _mr('Normalising','pos','Normalising/healthy slope.');
+    return _mr('Steep','pos','Steep → early-recovery signal.');
+  }},
+ {key:'core_pce', label:'Core PCE', lens:'Monetary', unit:'%',
+  read:function(v,c){
+    if(v>3)   return _mr('HOT','neg','>3% sticky → cuts constrained, hawkish bias; USD up, tech headwind.');
+    if(v>2.3) return _mr('Above target','warn','Above the 2% target → cautious Fed.');
+    return _mr('At target','pos','At/near 2% target → cut-enabling; risk-on.');
+  }},
+ {key:'cpi_yoy', label:'CPI YoY', lens:'Monetary · Economy', unit:'%',
+  read:function(v,c){
+    if(v>3)   return _mr('Above target','warn','Headline >3% keeps the Fed cautious; pairs with core PCE to block cuts.');
+    if(v>2.3) return _mr('Above target','warn','Above the 2% target.');
+    return _mr('At target','pos','Near target → cut room.');
+  }},
+ {key:'unemployment', label:'Unemployment', lens:'Economy', unit:'%',
+  read:function(v,c){
+    if(v>5)   return _mr('Recessionary','neg','>5% & rising = recessionary; Sahm-rule risk.');
+    if(v>4.5) return _mr('Softening','warn','4.5–5% softening labour.');
+    if(v>=4)  return _mr('Full employment','pos','Near full employment. Strong jobs = fewer Fed cuts ("good news is bad news" for tech).');
+    return _mr('Tight / hot','warn','<4% tight labour → wage/inflation pressure, hawkish.');
+  }},
+ {key:'umcsi', label:'Consumer Sentiment', lens:'Economy',
+  read:function(v,c){
+    var healthy=(!isNaN(c.hy_spread)&&c.hy_spread<3)&&(!isNaN(c.unemployment)&&c.unemployment<4.5);
+    var disc=healthy?' DISCOUNT — contradicted by tight credit + healthy labour (gas/politics-driven this cycle).':'';
+    if(v<50)  return _mr('Recessionary (discount)','warn','Sub-50 recessionary on its face, but'+disc);
+    if(v<70)  return _mr('Weak','warn','Weak confidence.');
+    if(v<90)  return _mr('Normal','neutral','Normal range.');
+    return _mr('Strong','pos','Strong consumer.');
+  }},
+ {key:'gdp_growth', label:'GDP Growth', lens:'Economy', unit:'%',
+  read:function(v,c){
+    if(v<0)   return _mr('Contraction','neg','Negative GDP = contraction. TRIPWIRE.');
+    if(v<1.5) return _mr('Below trend','warn','Below ~2% trend → slowing, not contracting.');
+    if(v<2.5) return _mr('Trend / soft-landing','pos','Trend growth; underwrites the "buyable correction" read.');
+    return _mr('Above trend','pos','Above-trend growth.');
+  }},
+ {key:'hy_spread', label:'HY Credit Spread', lens:'Regime', unit:'%',
+  read:function(v,c){
+    if(v>6)   return _mr('Recession-imminent','neg','>6% → credit event; risk-off, defend. STRUCTURAL.');
+    if(v>5)   return _mr('STRESS','neg','>5% credit stress → flips the tape to structural risk-off. TRIPWIRE.');
+    if(v>4.5) return _mr('Caution','warn','4.5–5% → caution; watch for widening.');
+    if(v>=3)  return _mr('Normal','neutral','3–4.5% normal/watch.');
+    return _mr('Calm / risk-on','pos','<3% credit calm → the equity drop is a CORRECTION, not structural. The key "is the story intact" test.');
+  }},
+ {key:'permits', label:'Building Permits', lens:'Economy', unit:'k',
+  read:function(v,c){
+    if(v<900)  return _mr('Recessionary','neg','<900k = recessionary (8 of last 9 recessions).');
+    if(v<1300) return _mr('Weak','warn','Weak housing; monitor a break lower.');
+    if(v<1500) return _mr('Soft','warn','Soft but not recessionary — the lone cautionary minority vs the risk-on tape (Moody\u2019s most-leading variable).');
+    return _mr('Healthy','pos','Healthy housing (~60yr avg 1.5M).');
+  }},
+ {key:'walcl_change', label:'Fed Balance Sheet (QE/QT)', lens:'Monetary',
+  fmt:function(v){return (v>0?'+':'')+v+'% 4-wk';},
+  read:function(v,c){
+    if(v>0.5)  return _mr('Expanding (QE)','pos','Balance sheet expanding → liquidity adding, risk-on; term premium down, gold up.');
+    if(v<-0.5) return _mr('Shrinking (QT)','warn','QT draining liquidity → tightening, risk-off.');
+    return _mr('Flat / neutral','neutral','Flat post-QT → liquidity headwind removed, but no new QE tailwind (QT-end \u2260 QE-restart).');
+  }},
+ {key:'dxy', label:'US Dollar Index', lens:'Regime · Monetary',
+  read:function(v,c){
+    if(v>110) return _mr('Very strong — stress','neg','>110 global stress → EM dollar-debt crises; gold/silver/commodities/EM/tech all down hard.');
+    if(v>105) return _mr('Strong','neg','>105 strong USD → gold↓, silver↓, EM equities↓, US multinational EPS↓.');
+    if(v>100) return _mr('Firm','warn','Firm USD → mild EM/tech headwind; gold/silver soft.');
+    if(v>=95) return _mr('Neutral','neutral','Neutral USD.');
+    return _mr('Weak','pos','Weak USD → EM/commodity/gold tailwind; bullish KSE-100.');
+  }},
+];
 
-# ── HELPERS (unchanged) ──────────────────────────────────────────────────────
-def sdiv(a, b):
-    try:
-        if b is not None and b != 0:
-            r = float(a) / float(b) if a is not None else None
-            return None if r is not None and math.isnan(r) else r
-    except: pass
-    return None
+function usRollup(c){
+  // The narrative's "has the story changed?" made into a live switch.
+  var trip = (!isNaN(c.hy_spread)&&c.hy_spread>5)
+          || (!isNaN(c.curve)&&c.curve<0)
+          || (!isNaN(c.gdp_growth)&&c.gdp_growth<0);
+  var regime, regimeCls;
+  if(trip){ regime='Structural risk-off — defend'; regimeCls='red'; }
+  else    { regime='Rate-driven correction / rotation — story intact'; regimeCls='yellow'; }
+  var gap=(!isNaN(c.us_2y)&&!isNaN(c.fed_rate))?(c.us_2y-c.fed_rate):NaN;
+  var mon, monCls;
+  if((!isNaN(gap)&&gap>0.1)||(!isNaN(c.core_pce)&&c.core_pce>3)){ mon='QT-leaning / higher-for-longer'; monCls='yellow'; }
+  else if(!isNaN(gap)&&gap<-0.25){ mon='Easing-biased'; monCls='green'; }
+  else { mon='Neutral'; monCls='neutral'; }
+  var econ, econCls;
+  if((!isNaN(c.gdp_growth)&&c.gdp_growth<0)||(!isNaN(c.unemployment)&&c.unemployment>5)){ econ='Contraction'; econCls='red'; }
+  else if(!isNaN(c.gdp_growth)&&c.gdp_growth<2.0){ econ='Soft, late-cycle'; econCls='yellow'; }
+  else { econ='Expansion'; econCls='green'; }
+  return {trip:trip, regime:regime, regimeCls:regimeCls, mon:mon, monCls:monCls, econ:econ, econCls:econCls};
+}
 
-def avg(lst, n=None):
-    vals = [v for v in (lst[:n] if n else lst) if v is not None]
-    return sum(vals)/len(vals) if vals else None
+function lensTile(label, verdict, cls){
+  var pal={green:['#e8f5e9','#1b5e20'],yellow:['#fff8e1','#7a5b00'],red:['#fdecea','#a32d2d'],neutral:['#eef2f7','#37474f']};
+  var c=pal[cls]||pal.neutral;
+  return '<div style="flex:1;min-width:160px;background:'+c[0]+';border-radius:8px;padding:8px 12px;">'
+    +'<div style="font-size:11px;color:'+c[1]+';opacity:.85;letter-spacing:.03em;">'+label+'</div>'
+    +'<div style="font-size:14px;font-weight:700;color:'+c[1]+';margin-top:2px;">'+verdict+'</div></div>';
+}
 
-def cagr(s, yrs=5):
-    if not s or len(s) <= yrs: return None
-    a, b = s[yrs], s[0]
-    if a is None or b is None or a <= 0 or b <= 0: return None
-    return (b/a)**(1/yrs) - 1
+function calcUS(){
+  const ism=val('ism_mfg'),svc=val('ism_svc'),umcsi=val('umcsi');
+  const y10=val('us_10y'),y2=val('us_2y'),pce=val('core_pce'),gdp=val('us_gdp'),dxy=val('dxy');
+  const wti=val('wti'),brent=val('brent'),crudeProd=val('us_crude_prod'),oilRigs=val('us_oil_rigs');
+  let html='';
+  // Manual leading indicators not in the live feed (kept; Economy lens).
+  html+=indicatorCard('ISM Manufacturing PMI',ism,ism>=50?'EXPANSION':ism>=47.5?'Mild contraction':'RECESSION SIGNAL',ism>=50?'pos':ism>=47.5?'warn':'neg','<b>Economy</b> · '+(ism>=50?'Above 50 = manufacturing growing.':'Below 50 = contraction risk.'));
+  html+=indicatorCard('ISM Services PMI',svc,svc>=50?'EXPANSION':'Contraction',svc>=50?'pos':'neg','<b>Economy</b> · '+(svc>=50?'Services (89% of US GDP) expanding.':'Services contraction = recession likely.'));
+  // --- WAVE M (M1) reading layer: each live macro tagged with lens + implication + cross-asset knock-on ---
+  const usLive=(LIVE&&LIVE.macros&&LIVE.macros.us)?LIVE.macros.us:{};
+  const mLive =(LIVE&&LIVE.macros&&LIVE.macros.metals)?LIVE.macros.metals:{};
+  const gv=function(lv,id){return (lv!=null&&!isNaN(lv))?lv:(id?val(id):NaN);};
+  const c={
+    fed_rate:gv(usLive.fed_rate,'fed_rate'),
+    core_pce:gv(usLive.core_pce,'core_pce'),
+    cpi_yoy:(usLive.cpi_yoy!=null?usLive.cpi_yoy:NaN),
+    us_10y:gv(usLive.us_10y,'us_10y'),
+    us_2y:gv(usLive.us_2y,'us_2y'),
+    unemployment:(usLive.unemployment!=null?usLive.unemployment:NaN),
+    umcsi:gv(usLive.umcsi,'umcsi'),
+    gdp_growth:(usLive.gdp_growth!=null?usLive.gdp_growth:val('us_gdp')),
+    hy_spread:(usLive.hy_spread!=null?usLive.hy_spread:NaN),
+    permits:(usLive.permits!=null?usLive.permits:NaN),
+    walcl_change:(mLive.walcl_change!=null?mLive.walcl_change:NaN),
+    dxy:gv((mLive.dxy!=null?mLive.dxy:usLive.dxy),'dxy'),
+    wti:gv(usLive.wti,'wti'), brent:gv(usLive.brent,'brent')
+  };
+  c.curve=(!isNaN(c.us_10y)&&!isNaN(c.us_2y))?((c.us_10y-c.us_2y)*100):NaN;
+  // WAVE T3 dashboard: per-card trend note from the macro-print MoM/QoQ/YoY fields
+  function t3CardTrend(key,U){
+    if(!U) return '';
+    function a(x){ return x>0?'\u25b2':x<0?'\u25bc':'\u25ac'; }
+    function pp(x){ return (x>0?'+':'')+x; }
+    if((key==='cpi_yoy'||key==='core_pce') && U[key+'_mom']!=null){ var d=U[key+'_mom']; return '<br><span style="color:#555;">Trend: YoY rate '+pp(d)+'pp MoM '+a(d)+' \u2014 '+(d>0?'accelerating':d<0?'cooling':'flat')+'</span>'; }
+    if(key==='unemployment' && U.unemployment_mom!=null){ var u=U.unemployment_mom; return '<br><span style="color:#555;">Trend: '+pp(u)+'pp MoM '+a(u)+' \u2014 '+(u>0?'rising (softening)':u<0?'falling (tightening)':'flat')+'</span>'; }
+    if(key==='gdp_growth' && U.gdp_growth_qoq!=null){ var g=U.gdp_growth_qoq; return '<br><span style="color:#555;">Trend: '+pp(g)+'pp QoQ '+a(g)+' \u2014 '+(g>0?'accelerating':g<0?'decelerating':'flat')+'</span>'; }
+    if(key==='umcsi' && U.umcsi_mom!=null){ var sv=U.umcsi_mom; return '<br><span style="color:#555;">Trend: '+pp(sv)+' MoM '+a(sv)+' \u2014 '+(sv>0?'improving':sv<0?'weakening':'flat')+'</span>'; }
+    if(key==='permits' && U.permits_mom!=null){ var x=U.permits_mom; return '<br><span style="color:#555;">Trend: '+pp(x)+'k MoM '+a(x)+'</span>'; }
+    return '';
+  }
+  MACRO_READS_US.forEach(function(it){
+    var v=c[it.key];
+    if(v==null||isNaN(v)){ html+=indicatorCard(it.label,'\u2014','no live data','neutral','<b>'+it.lens+'</b> · awaiting scan.'); return; }
+    var r=it.read(v,c);
+    var disp=it.fmt?it.fmt(v):(v+(it.unit||''));
+    html+=indicatorCard(it.label,disp,r.state,r.cls,'<b>'+it.lens+'</b> · '+r.implies+t3CardTrend(it.key,usLive));
+  });
+  document.getElementById('us_indicators').innerHTML=html;
+  const spread=(!isNaN(c.curve))?c.curve:((y10-y2)*100);   // bps, for yield_curve_box + generateUSRec
+  const fomc=usLive.fomc||null;
+  let eHtml='';
+  eHtml+=indicatorCard('WTI Crude','$'+wti+'/bbl',wti>=90?'HIGH — net positive':wti>=65?'MID — balanced':'LOW — drilling stress',wti>=90?'pos':wti>=65?'neutral':'warn',wti>=90?'Elevated WTI lifts shale margins. Bullish Energy (XLE).':'Mid-band manageable.');
+  eHtml+=indicatorCard('US Crude Production',crudeProd+'M b/d',crudeProd>=13.5?'NEAR RECORD':crudeProd>=12.5?'Strong':'Declining',crudeProd>=12.5?'pos':'warn',crudeProd>=13.5?'Near all-time highs. Structural export surplus.':'Watch production trend.');
+  eHtml+=indicatorCard('US Rotary Rigs (total)',oilRigs+' rigs',oilRigs>=700?'High activity':oilRigs>=560?'Steady':'Subdued',oilRigs>=560?'pos':'warn','Total US oil+gas rotary rigs (EIA, monthly). <b>Why it is here:</b> a leading supply gauge — rigs drilling now become production in 6–12 months, so falling rigs tighten future crude supply (bullish oil, supports the &ldquo;Arab&nbsp;Light&nbsp;&gt;$60 = overweight E&amp;P&rdquo; tilt and your XOM·CVX·COP·EOG), while rising rigs add supply. Shale efficiency means high output on fewer rigs, so read the <i>trend</i>, not just the level.');
+  document.getElementById('us_energy_indicators').innerHTML=eHtml;
+  document.getElementById('us_energy_banner').innerHTML='<strong>Net-Exporter Lens:</strong> US net petroleum exporter since 2020. Oil is now a partial hedge, not a pure cost. Lead weight on production trend (forward supply), not price alone.';
+  (function(){var U=(LIVE&&LIVE.macros&&LIVE.macros.us)?LIVE.macros.us:{};
+    if(U.wti_wow==null&&U.brent_wow==null)return;
+    function a(x){return x>0?'\u25b2':x<0?'\u25bc':'\u25ac';}function pp(x){return (x>0?'+':'')+x;}
+    var w=U.wti_wow,b=U.brent_wow,bias=(w!=null?w:0)+(b!=null?b:0);
+    var read=bias>1?'rising \u2014 supports the Arab-Light>$60 overweight-E&P tilt (XOM\u00b7CVX\u00b7COP\u00b7EOG)':bias<-1?'falling \u2014 eases the E&P tilt; watch shale margins':'flat';
+    document.getElementById('us_energy_banner').innerHTML += '<div style="font-size:11.5px;color:#555;margin-top:6px;border-top:1px solid #eee;padding-top:5px;"><b>Oil momentum (WoW):</b> WTI '+(U.wti!=null?'$'+U.wti:'')+(w!=null?' '+pp(w)+' '+a(w):'')+(U.brent!=null?' \u00b7 Brent $'+U.brent:'')+(b!=null?' '+pp(b)+' '+a(b):'')+' \u2014 '+read+' (Wave T3).</div>';
+  })();
+  const regime=regimeOf(gdp,pce);
+  const RU=usRollup(c);
+  const tripColor=RU.trip?'#c0392b':'#BF8F00';
+  const curveTxt=isNaN(c.curve)?'\u2014':((c.curve>0?'+':'')+c.curve.toFixed(0)+'bps');
+  let usBanner='<h3>US Market Regime</h3>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px;">'
+      +lensTile('Regime',RU.regime,RU.regimeCls)
+      +lensTile('Monetary · QE/QT',RU.mon,RU.monCls)
+      +lensTile('Economy',RU.econ,RU.econCls)
+    +'</div>'
+    +'<div style="font-size:12px;color:var(--grey-d);margin:0 0 8px;"><b>Growth/inflation quadrant:</b> '+regime.name+' \u2014 favored sectors: '+regime.sectors+'</div>'
+    +'<div class="reading-box" style="border-left:4px solid '+tripColor+';">'
+      +'<b>'+(RU.trip?'\u26A0 Structural-break tripwire TRIPPED':'Structural-break tripwire: clear')+'</b> — flips to risk-off if '
+      +'HY OAS &gt;5% (now '+(isNaN(c.hy_spread)?'\u2014':c.hy_spread+'%')+') OR 2s10s re-inverts (now '+curveTxt+') OR GDP &lt;0 (now '+(isNaN(c.gdp_growth)?'\u2014':c.gdp_growth+'%')+'). '
+      +(RU.trip?'One or more breached — treat weakness as structural; defend.':'None breached — read tech/AI weakness as a rate-driven correction: lean energy / value / quality, size down rate-sensitive growth.')
+    +'</div>';
+  if(fomc&&fomc.title){
+    const when=fomc.date?(fomc.date+(fomc.days_ago!=null?(' \u00b7 '+fomc.days_ago+'d ago'):'')):'';
+    usBanner+='<div style="font-size:11px;color:var(--grey-d);margin-top:6px;"><b>Latest FOMC:</b> '+when+' \u2014 '+(fomc.link?('<a href="'+fomc.link+'" target="_blank" rel="noopener">'+fomc.title+'</a>'):fomc.title)+'</div>';
+  }
+  document.getElementById('us_regime_banner').className='alert-banner '+RU.regimeCls;
+  document.getElementById('us_regime_banner').innerHTML=usBanner;
+  (function(){ var b=document.getElementById('us_regime_banner'); if(!b||!LIVE||!LIVE.macros||!LIVE.macros.us)return; var U=LIVE.macros.us;
+    function arr(w){ return w==null?'':(w>0?' \u25b2':w<0?' \u25bc':' \u25ac'); }
+    if(U.us_10y_wow==null && U.hy_spread_wow==null) return;
+    var drift='Regime drift (WoW): 10y '+(U.us_10y!=null?U.us_10y+'%':'')+arr(U.us_10y_wow)+(U.us_2s10s!=null?' \u00b7 2s10s '+U.us_2s10s+arr((U.us_10y_wow||0)-(U.us_2y_wow||0)):'')+(U.hy_spread!=null?' \u00b7 HY '+U.hy_spread+arr(U.hy_spread_wow):'');
+    b.innerHTML += '<div style="font-size:11px;color:#555;margin-top:6px;border-top:1px solid #eee;padding-top:5px;">'+drift+' \u2014 yields \u25b2 tightening drift / \u25bc easing; HY \u25b2 stress building</div>';
+  })();
+  (function(){ var b=document.getElementById('us_regime_banner'); if(!b||!LIVE||!LIVE.macros||!LIVE.macros.us)return; var U=LIVE.macros.us;
+    // WAVE T3: macro momentum vs prior RELEASE (MoM on the YoY inflation rate, MoM on labor, QoQ on growth)
+    if(U.cpi_yoy_mom==null && U.core_pce_mom==null && U.unemployment_mom==null && U.gdp_growth_qoq==null) return;
+    function sg(x){ return x>0?'\u25b2':x<0?'\u25bc':'\u25ac'; }
+    function pp(x){ return (x>0?'+':'')+x; }
+    var parts=[];
+    var ci=U.cpi_yoy_mom, pc=U.core_pce_mom;
+    if(ci!=null||pc!=null){ var iv=(ci!=null?ci:0)+(pc!=null?pc:0); parts.push('inflation '+(iv>0.05?'accelerating':iv<-0.05?'cooling':'steady')+' (CPI YoY '+(ci!=null?pp(ci)+'pp '+sg(ci):'\u2014')+(pc!=null?' \u00b7 core PCE '+pp(pc)+'pp '+sg(pc):'')+')'); }
+    if(U.unemployment_mom!=null){ var um=U.unemployment_mom; parts.push('labor '+(um>0?'softening':um<0?'tightening':'steady')+' (unemp '+pp(um)+'pp '+sg(um)+')'); }
+    if(U.gdp_growth_qoq!=null){ var gq=U.gdp_growth_qoq; parts.push('growth '+(gq>0?'re-accelerating':gq<0?'decelerating':'flat')+' (GDP '+pp(gq)+'pp QoQ '+sg(gq)+')'); }
+    if(!parts.length) return;
+    b.innerHTML += '<div style="font-size:11px;color:#555;margin-top:5px;border-top:1px solid #eee;padding-top:5px;"><b>Macro momentum (vs prior release):</b> '+parts.join(' \u00b7 ')+' \u2014 the direction the prints are moving, independent of their level (Wave T3).</div>';
+  })();
+  document.getElementById('yield_curve_box').innerHTML=`<div class="reading-box"><strong>10Y-2Y Spread: ${(spread>0?'+':'')+spread.toFixed(0)} bps</strong> — ${spread>30?'Normal curve, expansion expected.':spread>-30?'Flat, transition zone.':'Inverted, recession signal.'}</div>`;
+  document.getElementById('us_quadrant').innerHTML=quadrant(gdp>0?'Positive':'Negative',pce>2.5?'High':'Low',regime.name);
+  document.getElementById('us_sector_rec').innerHTML=generateUSRec(ism,svc,umcsi,spread,pce,gdp,dxy);
+  (function(){var Z=(LIVE&&LIVE.zacks_sectors)?LIVE.zacks_sectors:null; if(!Z)return;
+    var rows=[];Object.keys(Z).forEach(function(k){if(k.charAt(0)==='_')return;var v=Z[k];if(v&&typeof v==='object'&&v.pct_top_chg!=null)rows.push([k,v.pct_top_chg]);});
+    if(!rows.length)return;
+    rows.sort(function(p,q){return q[1]-p[1];});
+    function a(x){return x>0?'\u25b2':x<0?'\u25bc':'\u25ac';}function pp(x){return (x>0?'+':'')+x;}
+    var inn=rows.filter(function(r){return r[1]>0;}).slice(0,3).map(function(r){return r[0]+' '+pp(r[1])+'pp '+a(r[1]);});
+    var outg=rows.filter(function(r){return r[1]<0;}).slice(-3).map(function(r){return r[0]+' '+pp(r[1])+'pp '+a(r[1]);});
+    var html='<div class="reading-box" style="margin-top:10px;"><b>Sector rotation (Zacks #1/#2 breadth vs prior scrape):</b> '
+      +(inn.length?'<span style="color:#047857;">rotating IN \u2014 '+inn.join(', ')+'</span>':'')
+      +(inn.length&&outg.length?' \u00b7 ':'')
+      +(outg.length?'<span style="color:#b91c1c;">rotating OUT \u2014 '+outg.join(', ')+'</span>':'')
+      +' <span style="color:var(--grey-d);">\u2014 where Zacks rank momentum is concentrating (Wave T3).</span></div>';
+    document.getElementById('us_sector_rec').innerHTML += html;
+  })();
+}
+function quadrant(growth,inflation,currentRegime){
+  const cells=[{name:'GOLDILOCKS',g:'Positive',i:'Low',color:'#FFF2CC'},{name:'REFLATION',g:'Positive',i:'High',color:'#C6EFCE'},{name:'DISINFLATION',g:'Negative',i:'Low',color:'#FFC7CE'},{name:'STAGFLATION',g:'Negative',i:'High',color:'#FCE4D6'}];
+  let html='<table style="text-align:center;"><tr><th></th><th>LOW INFLATION</th><th>HIGH INFLATION</th></tr>';
+  ['Positive','Negative'].forEach(g=>{
+    html+=`<tr><th>${g.toUpperCase()} GROWTH</th>`;
+    ['Low','High'].forEach(i=>{
+      const cell=cells.find(c=>c.g===g&&c.i===i);
+      const isActive=cell.name===currentRegime;
+      html+=`<td style="background:${isActive?'#1F3864':cell.color};color:${isActive?'white':'black'};font-weight:${isActive?'700':'500'};padding:18px;${isActive?'box-shadow:0 0 0 3px #BF8F00;':''}">${cell.name}${isActive?' ★':''}</td>`;
+    });
+    html+='</tr>';
+  });
+  return html+'</table>';
+}
+function generateUSRec(ism,svc,umcsi,spread,pce,gdp,dxy){
+  const sectors=[
+    {name:'Information Technology',bullish:ism>=50&&spread>=-30&&umcsi>=50,bearish:ism<48,holdings:'TSM, NVDA, ANET, MU, TER (Tier A)'},
+    {name:'Communication Services',bullish:gdp>0&&pce<3,bearish:pce>3.5||gdp<0,holdings:'META (CORE)'},
+    {name:'Energy',bullish:pce>2.5,bearish:false,holdings:'macro qualified'},
+    {name:'Health Care',bullish:umcsi<55||pce>3,bearish:false,holdings:'LLY (CORE), CI, NVO; WELL'},
+    {name:'Consumer Discretionary',bullish:umcsi>70&&gdp>2,bearish:umcsi<55,holdings:'(AVOID — UMCSI bearish)'},
+    {name:'Consumer Staples',bullish:umcsi<50,bearish:ism>55,holdings:'(AVOID — COT negative)'},
+  ];
+  let html='<div class="grid grid-2">';
+  sectors.forEach(s=>{let cls='neutral',label='NEUTRAL';if(s.bullish){cls='pos';label='BULLISH';}else if(s.bearish){cls='neg';label='BEARISH';}html+=`<div class="indicator-card ${cls}"><div class="label">${s.name}</div><div class="status">${label}</div><div class="interp">${s.holdings}</div></div>`;});
+  return html+'</div>';
+}
 
-def trend(s3, s5, hi=True):
-    if s3 is None or s5 is None: return 'NA'
-    return 'GOOD' if (s3 > s5 if hi else s3 < s5) else 'WATCH'
+// =========================================================
+// PAKISTAN DASHBOARD
+// =========================================================
+// WAVE M (M3) — PSX three-lens rollup (Regime / Economy / Devaluation), research Part-C verdicts.
+function psxRollup(){
+  var P=(LIVE&&LIVE.macros&&LIVE.macros.psx)?LIVE.macros.psx:{};
+  var sbp =(P.sbp_rate!=null)?P.sbp_rate:val('sbp_rate');
+  var cpi =(P.pak_cpi!=null)?P.pak_cpi:val('pak_cpi');
+  var reer=(P.reer!=null)?P.reer:val('reer');
+  var ic  =val('import_cover');   // months of import cover
+  var imf =val('imf_status');     // >=2 on-track
+  var regime,regimeCls;
+  if(sbp>=11){ regime='Defensive-but-constructive (barbell) \u2014 banks over leveraged cyclicals; constructive on the next cut'; regimeCls='yellow'; }
+  else if(sbp>=9){ regime='Neutral / transitional'; regimeCls='neutral'; }
+  else { regime='Constructive / risk-on \u2014 cyclicals can lead'; regimeCls='green'; }
+  var econ,econCls;
+  if(cpi>7){ econ='Stabilizing under tight policy \u2014 CPI '+cpi+'% above the 5\u20137% target, easing paused'; econCls='yellow'; }
+  else if(cpi>=5){ econ='In-target inflation ('+cpi+'%) \u2014 easing room building'; econCls='green'; }
+  else { econ='Disinflation ('+cpi+'%) \u2014 strong cut room'; econCls='green'; }
+  var deval,devalCls;
+  var over=(reer!=null&&reer>103), thin=(ic!=null&&ic<2.5), imfBad=(imf!=null&&imf<1);
+  if(over||thin||imfBad){
+    var bits=[]; if(over)bits.push('REER '+reer.toFixed(0)+' overvalued \u2192 gradual-depreciation risk'); if(thin)bits.push('reserves <2.5mo cover'); if(imfBad)bits.push('IMF off-track');
+    deval='Flagged \u2014 '+bits.join(' \u00b7 '); devalCls=(thin||imfBad)?'red':'yellow';
+  } else { deval='Contained \u2014 IMF on-track, PKR managed, reserves adequate'; devalCls='green'; }
+  return {regime:regime,regimeCls:regimeCls,econ:econ,econCls:econCls,deval:deval,devalCls:devalCls,sbp:sbp,defensive:(sbp>=11)};
+}
 
-def band(v, g, w, hi=True):
-    if v is None: return 'NA'
-    if hi:  return 'GOOD' if v >= g else ('WATCH' if v >= w else 'BAD')
-    else:   return 'GOOD' if v <= g else ('WATCH' if v <= w else 'BAD')
+function calcPAK(){
+  const oil=val('oil_arab'),sbp=val('sbp_rate'),pkr=val('usd_pkr'),cpi=val('pak_cpi');
+  const res=val('sbp_reserves'),ca=val('pak_ca'),fis=val('pak_fiscal'),reer=val('reer'),neer=val('neer');
+  let html='';
+  html+=indicatorCard('Arab Light Crude','$'+oil+'/bbl',oil>90?'HIGH — Import pressure':oil>80?'Elevated':oil>70?'Mid-range':'Low — Relief',oil>90?'neg':oil>80?'warn':oil>70?'neutral':'pos',oil>90?'Import bill rises. CAD widens.':oil<70?'Import relief possible.':'Manageable range.');
+  const realRate=sbp-cpi;
+  html+=indicatorCard('SBP Policy Rate',sbp+'%',sbp>18?'Very tight':sbp>=11?'Tight':'Accommodative',sbp>18?'warn':sbp>=11?realRate>0?'pos':'warn':'neutral',(realRate>0?'Real rate +'+realRate.toFixed(1)+'% positive.':'Real rate '+realRate.toFixed(1)+'% negative.')+' Banks benefit from NIM expansion.');
+  html+=indicatorCard('USD/PKR Spot',pkr,'Stable','pos','Range-bound. PKR 8-month winning streak.');
+  html+=indicatorCard('Pakistan CPI YoY',cpi+'%',cpi>15?'CRITICAL':cpi>10?'High':cpi>6?'Moderate':'Low',cpi>15?'neg':cpi>10?'warn':cpi>6?'neutral':'pos',cpi>10?'Defensive yield favored (FFC, HINOON).':cpi<6?'Rate cut window.':'Above target but manageable.');
+  html+=indicatorCard('SBP FX Reserves','$'+res+'bn',res<6?'CRITICAL':res<12?'Below adequate':res<20?'Adequate':'Strong',res<6?'neg':res<12?'warn':'pos',res<6?'Below 2 months cover. Devaluation risk.':res<12?'Sub-IMF target.':'Above IMF 3-month target.');
+  html+=indicatorCard('Current Account','$'+ca+'M/mo',ca>200?'SURPLUS':ca>-200?'Balanced':ca>-800?'Mild deficit':'LARGE DEFICIT',ca>200?'pos':ca>-200?'neutral':ca>-800?'warn':'neg',ca>200?'FX inflows. Reserves building.':ca<-800?'Major FX pressure.':'Watch trend.');
+  html+=indicatorCard('Fiscal Deficit',fis+'% GDP',fis>7?'STRESSED':fis>5?'High':'Manageable',fis>7?'neg':fis>5?'warn':'pos',fis>5?'Watch IMF program compliance.':'Within target.');
+  html+=indicatorCard('REER',reer,reer>110?'EXTREME OVERVALUATIOn':reer>105?'Overvalued (danger zone)':reer>100?'Mildly overvalued':reer>95?'Near fair value':'UNDERVALUED',reer>110?'neg':reer>105?'warn':reer>100?'neutral':'pos',reer>105?'PKR strong in real terms. Exports facing headwind.':reer<95?'Strong export tailwind.':'Near balance.');
+  const kse=val('kse100'),rem=val('remittances');
+  html+=indicatorCard('KSE-100 Index',isNaN(kse)?'—':kse.toLocaleString(),'Live close','neutral','Updated from live scan when data.json loads; editable manually.');
+  html+=indicatorCard('Remittances','$'+(isNaN(rem)?'—':rem)+'bn/mo',rem>=3?'Strong inflow':rem>=2.5?'Adequate':'Weak',rem>=3?'pos':rem>=2.5?'neutral':'warn','Monthly worker remittances — key FX support for PKR.');
+  document.getElementById('pak_seven_factors').innerHTML=html;
+  // ── KSE Macro Backdrop (equity-impact score of the 7 factors; +1 bullish / -1 bearish for the market) ──
+  const eb=[
+    {n:'Oil (Arab Light)', v:'$'+oil, s:oil>90?-1:oil>70?0:1, why:oil>90?'import bill/inflation drag':oil<70?'import relief':'mid-range'},
+    {n:'SBP Rate',         v:sbp+'%', s:sbp>13?-1:sbp>=9?0:1, why:sbp>13?'tight money, high discount rate':sbp<9?'easing supports multiples':'restrictive but stable'},
+    {n:'Currency (REER)',  v:reer,    s:reer>108?-1:reer>=95?0:1, why:reer>108?'PKR overvalued, export headwind':reer<95?'undervalued, export tailwind':'near fair value'},
+    {n:'Current Account',  v:'$'+ca+'M', s:ca>200?1:ca>-800?0:-1, why:ca>200?'surplus, FX inflows':ca<-800?'large deficit, FX pressure':'manageable'},
+    {n:'Fiscal Deficit',   v:fis+'%', s:fis>7?-1:fis>=5?0:1, why:fis>7?'fiscal stress':fis<5?'consolidation':'on-target'},
+    {n:'Inflation (CPI)',  v:cpi+'%', s:cpi>10?-1:cpi>6?0:1, why:cpi>10?'margin/rate-hike pressure':cpi<6?'rate-cut window':'above target'},
+    {n:'FX Reserves',      v:'$'+res+'bn', s:res>16?1:res>=8?0:-1, why:res<8?'thin cover, PKR risk':res>16?'strong buffer':'adequate'}
+  ];
+  const ebTotal=eb.reduce((a,f)=>a+f.s,0);
+  const ebVerdict=ebTotal>=3?{t:'BULLISH backdrop',c:'pos'}:ebTotal<=-3?{t:'BEARISH backdrop',c:'neg'}:{t:'NEUTRAL / MIXED',c:'warn'};
+  const ebColor=c=>c==='pos'?'#10B981':c==='neg'?'#EF4444':'#9CA3AF';
+  let ebHtml='<div style="border:1px solid #E5E7EB;border-radius:8px;padding:12px;margin:10px 0;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+    +'<b style="color:var(--navy);">KSE-100 Macro Backdrop</b>'
+    +'<span style="font-weight:700;padding:3px 12px;border-radius:6px;color:#fff;background:'+ebColor(ebVerdict.c)+';">'+ebVerdict.t+' ('+(ebTotal>=0?'+':'')+ebTotal+' / 7)</span></div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:4px;">'
+    +eb.map(f=>{const col=f.s>0?'#D1FAE5':f.s<0?'#FEE2E2':'#F3F4F6';const fg=f.s>0?'#065F46':f.s<0?'#991B1B':'#6B7280';const sign=f.s>0?'+1':f.s<0?'-1':'0';
+      return '<span title="'+f.why+'" style="flex:1 1 130px;min-width:120px;background:'+col+';color:'+fg+';border-radius:6px;padding:5px 8px;font-size:11px;">'
+        +'<b>'+f.n+'</b> <span style="float:right;font-weight:700;">'+sign+'</span><br><span style="opacity:.8;">'+f.v+' · '+f.why+'</span></span>';}).join('')
+    +'</div><div style="font-size:10.5px;color:var(--grey-d);margin-top:8px;">Equity-impact read (distinct from the gold scorecard in the Metals tab, which scores the same factors for local gold demand). Each factor +1 bullish / −1 bearish for the KSE-100; uses live macros when available, else manual inputs above.</div></div>';
+  document.getElementById('pak_equity_backdrop').innerHTML=ebHtml;
+  const pak_growth=3.7;
+  let actualName=cpi>12&&pak_growth<3?'STAGFLATION':cpi>10?'REFLATION':cpi>6?'GOLDILOCKS (mild)':'DISINFLATION';
+  let regClass=actualName.includes('STAGFLATION')?'red':actualName.includes('REFLATION')?'yellow':actualName.includes('GOLDILOCKS')?'green':'orange';
+  document.getElementById('pak_regime_banner').className='alert-banner '+regClass;
+  const RP=psxRollup();
+  document.getElementById('pak_regime_banner').innerHTML='<h3>Pakistan / PSX Regime</h3>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px;">'
+      +lensTile('Regime',RP.regime,RP.regimeCls)
+      +lensTile('Economy',RP.econ,RP.econCls)
+      +lensTile('Devaluation',RP.deval,RP.devalCls)
+    +'</div>'
+    +`<div style="font-size:12px;color:var(--grey-d);"><b>Quadrant:</b> ${actualName} \u00b7 GDP +3.7% (est) \u00b7 Inflation ${cpi}% \u00b7 <b>Sector implication:</b> ${cpi>10?'Defensive yield (FFC, HINOON) + Banks (UBL \u2014 NIM expansion).':'Cyclicals can lead if rates cut.'}</div>`;
+  document.getElementById('reer_box').innerHTML=`<div class="reading-box"><strong>REER ${reer} | NEER ${neer}</strong><p style="margin-top:8px;">${reer>105?'Significant overvaluation — near 7.5-year high. SYS/HINOON growing despite headwind = quality test.':reer>100?'Mildly overvalued. Monitor monthly.':'Near fair value.'}</p></div>`;
+  const ca_pct=(ca*12)/35000*100;
+  const twin=Math.abs(ca_pct)+fis;
+  document.getElementById('twin_deficit_box').innerHTML=`<div class="indicator-card ${twin>14?'neg':twin>10?'warn':twin>6?'neutral':'pos'}"><div class="label">Twin Deficit (CA + Fiscal)</div><div class="value">${twin.toFixed(1)}% of GDP</div><div class="status">CA ${ca_pct.toFixed(2)}% + Fiscal ${fis}%</div><div class="interp">${twin>14?'SEVERE — devaluation zone.':twin>10?'HIGH — monitor closely.':'Manageable.'}</div></div>`;
+  const sbpV=val('sbp_rate'),cpiV=val('pak_cpi'),oilV=val('oil_arab'),reerV=val('reer');
+  let psxHtml='<div class="grid grid-2">';
+  [{name:'Banks (UBL,MCB)',bullish:sbpV>11,bearish:sbpV<7,note:'NIM expansion. UBL Tier A.'},{name:'E&P (OGDC,PPL)',bullish:oilV>75,bearish:oilV<65,note:'USD-linked pricing.'},{name:'Fertilizer (FFC)',bullish:true,bearish:false,note:'Defensive yield. FFC Tier A.'},{name:'IT Exporters (SYS)',bullish:reerV<100,bearish:reerV>110,note:'USD revenue hedge.'},{name:'Pharma (HINOON)',bullish:true,bearish:false,note:'Defensive. HINOON Tier A.'},{name:'Cement',bullish:sbpV<9,bearish:sbpV>12,note:'Rate-sensitive headwind.'}].forEach(s=>{let cls2='neutral',label='NEUTRAL';if(s.bullish){cls2='pos';label='POSITIVE';}else if(s.bearish){cls2='neg';label='NEGATIVE';}psxHtml+=`<div class="indicator-card ${cls2}"><div class="label">${s.name}</div><div class="status">${label}</div><div class="interp">${s.note}</div></div>`;});
+  document.getElementById('pak_sector_rec').innerHTML=psxHtml+'</div>';
+}
 
-def pts(verdict, max_p):
-    return {'GOOD': max_p, 'WATCH': round(max_p*0.6), 'BAD': round(max_p*0.2)}.get(verdict, 0)
+// =========================================================
+// DEVALUATION ALERT
+// =========================================================
+function calcDevAlert(){
+  // ---- inputs ----
+  const oil=val('oil_arab'),sbp=val('sbp_rate'),cpi=val('pak_cpi');
+  const res=val('sbp_reserves'),ca=val('pak_ca'),fis=val('pak_fiscal'),reer=val('reer'),ic=val('import_cover');
+  const dsv=val('debt_service'),imf=val('imf_status'),stdebt=val('st_debt'),impbill=val('import_bill'),expg=val('export_growth'),rem=val('remittances');
+  const realRate=sbp-cpi;
+  const stToRes = res>0 ? stdebt/res : 99;        // EWS key ratio: short-term ext debt ÷ reserves
 
-def mk(key, verdict, W):
-    mp = W.get(key, 0)
-    return {'key': key, 'verdict': verdict, 'pts': pts(verdict, mp), 'max': mp}
+  // ================= ① 5 CORE TRIGGERS (historical pattern) =================
+  // Each is the pre-crisis condition seen before 2008/2013/2018/2022/2023.
+  const core = [
+    {k:'Reserves < 2.5mo import cover', fire: ic<2.5,   now:ic.toFixed(2)+' mo',
+     note: ic<2.5?'Below crisis line':'Above safe line'},
+    {k:'Current account deficit widening', fire: ca<-200, now:'$'+ca+'M',
+     note: ca>=0?'Surplus — safe':ca<-1000?'Wide deficit':'Mild deficit'},
+    {k:'REER > 100 (PKR overvalued)', fire: reer>100, now:reer.toFixed(1),
+     note: reer>105?'Strongly overvalued':reer>100?'Overvalued':'Fair/undervalued'},
+    {k:'External debt service heavy', fire: (stToRes>1.0), now:'ST/Res '+stToRes.toFixed(2)+'x ($'+stdebt+'bn due vs $'+res+'bn)',
+     note: stToRes>1.0?'ST debt exceeds reserves (2018 pattern)':stToRes>0.5?'Manageable vs reserves':'Comfortably rollable'},
+    {k:'IMF program off-track', fire: imf<1, now: imf>=2?'On-track':imf==1?'SLA/pending':imf==0?'Negotiating':imf==-1?'Off-track':'No program',
+     note: imf<1?'No active disbursing program':'Active IMF support'},
+  ];
+  const fireCount = core.filter(c=>c.fire).length;
 
-def safe_nfat(rev, ppe):
-    out = []
-    for i in range(min(len(rev), len(ppe))):
-        p0 = ppe[i]; p1 = ppe[i+1] if i+1 < len(ppe) else ppe[i]; r = rev[i]
-        if p0 is not None and p1 is not None and r is not None:
-            ap = (p0+p1)/2
-            out.append(sdiv(r, ap) if ap else None)
-        else: out.append(None)
-    return out
+  // ================= ④ COMPOSITE SCORE (richer 0-100 weighting) =================
+  let scores={reserves:0,ca:0,reer:0,inflation:0,fiscal:0,oil:0,realRate:0,stdebt:0};
+  if(ic<1.5)scores.reserves=100;else if(ic<2)scores.reserves=85;else if(ic<2.5)scores.reserves=60;else if(ic<3)scores.reserves=35;else if(ic<4)scores.reserves=15;
+  if(ca<-1500)scores.ca=100;else if(ca<-1000)scores.ca=85;else if(ca<-500)scores.ca=60;else if(ca<0)scores.ca=35;else if(ca<500)scores.ca=10;
+  if(reer>110)scores.reer=100;else if(reer>107)scores.reer=85;else if(reer>105)scores.reer=65;else if(reer>102)scores.reer=40;else if(reer>100)scores.reer=20;
+  if(cpi>20)scores.inflation=100;else if(cpi>15)scores.inflation=80;else if(cpi>12)scores.inflation=60;else if(cpi>10)scores.inflation=45;else if(cpi>8)scores.inflation=25;
+  if(fis>8)scores.fiscal=100;else if(fis>7)scores.fiscal=75;else if(fis>6)scores.fiscal=50;else if(fis>5)scores.fiscal=25;
+  if(oil>110)scores.oil=100;else if(oil>90)scores.oil=70;else if(oil>80)scores.oil=45;else if(oil>70)scores.oil=20;
+  if(realRate<-10)scores.realRate=100;else if(realRate<-5)scores.realRate=75;else if(realRate<-2)scores.realRate=50;else if(realRate<0)scores.realRate=25;
+  if(stToRes>1.5)scores.stdebt=100;else if(stToRes>1.2)scores.stdebt=80;else if(stToRes>1.0)scores.stdebt=60;else if(stToRes>0.8)scores.stdebt=40;else if(stToRes>0.6)scores.stdebt=20;
+  // weights (sum 1.0): reserves .22, ca .18, reer .15, st-debt/res .12, inflation .12, fiscal .09, oil .07, realRate .05
+  const composite=scores.reserves*0.22+scores.ca*0.18+scores.reer*0.15+scores.stdebt*0.12+scores.inflation*0.12+scores.fiscal*0.09+scores.oil*0.07+scores.realRate*0.05;
 
-def piotroski_f(ni, cfo, roa0, roa1, cfo_ta, d_lev, d_gm, d_at):
-    s = 0
-    checks = [
-        (ni,    lambda v: v > 0),
-        (cfo,   lambda v: v > 0),
-        ((roa0,roa1), lambda v: v[0] is not None and v[1] is not None and v[0] > v[1]),
-        ((cfo_ta,roa0), lambda v: v[0] is not None and v[1] is not None and v[0] > v[1]),
-        (d_lev, lambda v: v <= 0),
-        (d_gm,  lambda v: v >= 0),
-        (d_at,  lambda v: v >= 0),
-    ]
-    for val, fn in checks:
-        try:
-            if val is not None and fn(val): s += 1
-        except: pass
-    return s
+  // banner from composite AND core-trigger count (historical 4-of-5 dominates)
+  let bClass,bTitle,bText;
+  if(fireCount>=4||composite>=70){bClass='red';bTitle='🚨 RED ALERT — DEVALUATION RISK CRITICAL';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers firing — at/above the historical devaluation threshold.';}
+  else if(fireCount===3||composite>=50){bClass='orange';bTitle='⚠️ ORANGE WARNING — Elevated Risk';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers. One more trigger = historical danger zone.';}
+  else if(fireCount===2||composite>=30){bClass='yellow';bTitle='⚡ YELLOW CAUTION — Building Risk';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers. Structurally watchful, not pre-crisis.';}
+  else{bClass='green';bTitle='✅ GREEN — PKR Stability';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers. Far from the historical crash cluster.';}
+  document.getElementById('devalert_main').innerHTML=`<div class="alert-banner ${bClass}"><h3>${bTitle}</h3><p>${bText}</p></div><div class="indicator-card neutral" style="margin-top:16px;"><div class="label">Composite Devaluation Risk</div><div class="score-bar" style="height:36px;"><div class="score-fill" style="width:${composite}%"></div><div class="score-label">${composite.toFixed(0)}/100</div></div></div>`;
 
-def beneish_m(r0,r1,ar0,ar1,gp0,gp1,ta0,ta1,pp0,pp1,sg0,sg1,dp0,dp1,ni,cfo,lt0,lt1):
-    try:
-        if any(v is None or v == 0 for v in [r0,r1,ta0,ta1]): return None
-        if ni is None or cfo is None: return None
-        dsri = ((ar0 or 0)/r0) / ((ar1 or 0.001)/r1)
-        gmi  = ((gp1 or 0)/r1) / ((gp0 or 0.001)/r0) if gp0 and gp1 else None
-        aqi  = (1-(((ar0 or 0)+(pp0 or 0))/ta0)) / (1-(((ar1 or 0)+(pp1 or 0))/ta1))
-        sgi  = r0/r1
-        depi = ((dp1 or 0)/((pp1 or 0)+(dp1 or 0.001))) / ((dp0 or 0.001)/((pp0 or 0)+(dp0 or 0.001))) if dp0 and dp1 and pp0 and pp1 else None
-        sgai = ((sg0 or 0)/r0) / ((sg1 or 0.001)/r1)
-        lvgi = ((lt0 or 0)/ta0) / ((lt1 or 0.001)/ta1)
-        tata = (ni-cfo)/ta0
-        coefs = [(0.920,dsri),(0.528,gmi),(0.404,aqi),(0.892,sgi),
-                 (0.115,depi),(0.172,sgai),(4.679,lvgi),(-0.327,tata)]
-        score = -4.84
-        for c, v in coefs:
-            if v is None: return None
-            score += c*v
-        return score
-    except: return None
+  // ================= ① DISTANCE TO CRISIS =================
+  const dist = 4 - fireCount;   // triggers remaining to hit historical 4-of-5
+  let distMsg, distColor;
+  if(fireCount>=4){distMsg='AT the historical devaluation cluster (4+ of 5). Every past PKR crash had this.';distColor='#C00000';}
+  else if(fireCount===3){distMsg='ONE trigger away from the 4-of-5 crash cluster. High alert.';distColor='#C55A11';}
+  else if(fireCount===2){distMsg=dist+' triggers away from the historical cluster. Watchful but stable.';distColor='#BF8F00';}
+  else{distMsg=dist+' triggers away from the historical crash cluster. Risk is FAR, not near.';distColor='#548235';}
+  document.getElementById('dev_distance').innerHTML=`<div class="reading-box" style="border-left:5px solid ${distColor};"><div style="font-size:22px;font-weight:800;color:${distColor};">${fireCount} / 5 core triggers firing</div><div style="margin-top:6px;font-weight:600;">${distMsg}</div><div style="margin-top:6px;font-size:12px;color:var(--grey-d);">Distance to historical devaluation threshold: <b>${dist>0?dist+' more trigger'+(dist>1?'s':''):'reached'}</b>. Pattern basis: 2008, 2013, 2018, 2022, 2023 each had ≥4 of these firing within 6 months prior.</div></div>`;
 
-def altman_z(wc,re,ebit,eq,debt,ta):
-    if any(v is None for v in [wc,re,ebit,eq,debt,ta]): return None
-    if ta <= 0 or debt <= 0: return None
-    return 6.56*(wc/ta)+3.26*(re/ta)+6.72*(ebit/ta)+1.05*(eq/debt)
+  (function(){var P=(LIVE&&LIVE.macros&&LIVE.macros.psx)?LIVE.macros.psx:{};
+    if(P.sbp_reserves_mom==null&&P.usd_pkr_mom==null&&P.sbp_reserves_wow==null&&P.usd_pkr_wow==null)return;
+    function a(x){return x>0?'\u25b2':x<0?'\u25bc':'\u25ac';}function pp(x){return (x>0?'+':'')+x;}
+    var rv=(P.sbp_reserves_mom!=null?P.sbp_reserves_mom:P.sbp_reserves_wow);
+    var fx=(P.usd_pkr_mom!=null?P.usd_pkr_mom:P.usd_pkr_wow);
+    var parts=[];
+    if(rv!=null)parts.push('reserves '+pp(rv)+' '+a(rv)+(rv<0?' (drawing down \u2014 stress)':rv>0?' (rebuilding)':' (flat)'));
+    if(fx!=null)parts.push('USD/PKR '+pp(fx)+' '+a(fx)+(fx>0?' (PKR weakening)':fx<0?' (PKR firming)':' (flat)'));
+    if(!parts.length)return;
+    var stress=((rv!=null&&rv<0)?1:0)+((fx!=null&&fx>0)?1:0);
+    var col=stress>=2?'#b91c1c':stress===1?'#c55a11':'#047857';
+    var el=document.getElementById('dev_distance'); if(el) el.innerHTML += '<div class="reading-box" style="border-left:5px solid '+col+';margin-top:10px;"><b>Devaluation slope (trajectory, not level):</b> '+parts.join(' \u00b7 ')+' \u2014 '+(stress>=2?'both moving the wrong way \u2014 pressure building':stress===1?'one side deteriorating \u2014 watch':'trajectory stable')+'. The slope is the alert, not the level (Wave T3).</div>';
+  })();
 
-def dcf_eps(eps, g_pct, bond=BOND):
-    if eps is None or not bond: return None
-    g = max(0.03, min(0.25, (g_pct or 5)/100))
-    return eps * (8.5+2*g) * 4.4 / bond
+  // ================= ② CORE TRIGGER TABLE =================
+  let ct='<thead><tr><th>Core Trigger</th><th>Current</th><th>Status</th><th>Read</th></tr></thead><tbody>';
+  core.forEach(c=>{ct+=`<tr class="${c.fire?'neg':'pos'}"><td><b>${c.k}</b></td><td>${c.now}</td><td style="font-weight:700;color:${c.fire?'#C00000':'#548235'};">${c.fire?'🔴 FIRING':'🟢 clear'}</td><td>${c.note}</td></tr>`;});
+  document.getElementById('dev_core').innerHTML=ct+'</tbody>';
 
-def graham_iv(eps, bvps):
-    if eps and bvps and eps > 0 and bvps > 0:
-        return math.sqrt(22.5*eps*bvps)
-    return None
+  // ================= ③ ACCELERANTS & EWS RATIOS =================
+  const tradeBal = (rem*1) ;  // remittances monthly (USD bn) as inflow proxy
+  const accel = [
+    {k:'Short-term ext. debt ÷ reserves', v:stToRes.toFixed(2)+'x', bad:stToRes>1.0, warn:stToRes>0.8,
+     note:'EWS textbook ratio. >1.0x = can\'t roll debt without burning reserves (2018 pattern).'},
+    {k:'Fiscal deficit (% GDP)', v:fis.toFixed(1)+'%', bad:fis>6.5, warn:fis>5.5,
+     note:'2018 crash had 6.6%. Twin-deficit pressure on PKR.'},
+    {k:'Monthly import bill', v:'$'+impbill.toFixed(1)+'bn', bad:impbill>7, warn:impbill>6,
+     note:'Oil-driven import surge widens CAD; the 2022 fuel-import shock channel.'},
+    {k:'Export growth (YoY)', v:expg.toFixed(1)+'%', bad:expg<0, warn:expg<3,
+     note:'Low/negative export growth is a top EWS predictor (weak inflow side).'},
+    {k:'Remittances (monthly)', v:'$'+rem.toFixed(2)+'bn', bad:rem<2.5, warn:rem<3,
+     note:'Pakistan\'s #1 FX defense. ~$41bn/yr expected FY26; falling = danger.'},
+    {k:'Real interest rate', v:realRate.toFixed(1)+'%', bad:realRate<-2, warn:realRate<0,
+     note:'Negative real rates drive capital flight & dollarization.'},
+    {k:'Inflation (CPI YoY)', v:cpi.toFixed(1)+'%', bad:cpi>12, warn:cpi>10,
+     note:'Drives REER overvaluation; the accelerant, not the trigger.'},
+  ];
+  let at='<thead><tr><th>Accelerant / EWS Ratio</th><th>Value</th><th>Status</th><th>Why it matters</th></tr></thead><tbody>';
+  accel.forEach(r=>{const cls=r.bad?'neg':r.warn?'warn':'pos';const lab=r.bad?'🔴 stress':r.warn?'🟡 watch':'🟢 ok';at+=`<tr class="${cls}"><td><b>${r.k}</b></td><td>${r.v}</td><td style="font-weight:700;">${lab}</td><td style="font-size:11.5px;">${r.note}</td></tr>`;});
+  document.getElementById('dev_accel').innerHTML=at+'</tbody>';
 
-def peter_lynch(peg, eg, eps):
-    if peg is None or eps is None: return None
-    return peg * max(0.05, min(0.20, (eg or 5)/100)) * eps
+  // ================= ④ COMPOSITE COMPONENT TABLE =================
+  let tbl='<thead><tr><th>Component</th><th>Value</th><th>Score</th><th>Weight</th><th>Contribution</th></tr></thead><tbody>';
+  [{name:'FX Reserves',value:ic.toFixed(2)+' mo',score:scores.reserves,weight:22},
+   {name:'Current Account',value:'$'+ca+'M',score:scores.ca,weight:18},
+   {name:'REER',value:reer.toFixed(1),score:scores.reer,weight:15},
+   {name:'ST-Debt / Reserves',value:stToRes.toFixed(2)+'x',score:scores.stdebt,weight:12},
+   {name:'Inflation',value:cpi.toFixed(1)+'%',score:scores.inflation,weight:12},
+   {name:'Fiscal Deficit',value:fis.toFixed(1)+'%',score:scores.fiscal,weight:9},
+   {name:'Oil Price',value:'$'+oil,score:scores.oil,weight:7},
+   {name:'Real Rate',value:realRate.toFixed(1)+'%',score:scores.realRate,weight:5}
+  ].forEach(r=>{const cls=r.score>=70?'neg':r.score>=50?'warn':r.score>=30?'neutral':'pos';tbl+=`<tr class="${cls}"><td><b>${r.name}</b></td><td>${r.value}</td><td>${r.score}/100</td><td>${r.weight}%</td><td>${(r.score*r.weight/100).toFixed(1)}</td></tr>`;});
+  document.getElementById('dev_components').innerHTML=tbl+'</tbody>';
 
-def dcf_2stage(base_ps, g_pct, n=10, r=0.12, g_term=0.04):
-    """2-stage DCF on a per-share cash measure: n-year explicit growth stage discounted at
-    r, then a Gordon terminal at g_term. Growth clamped 5-20% per the IM3 sheet note."""
-    if not base_ps or base_ps <= 0: return None
-    g = max(0.05, min(0.20, (g_pct or 5)/100))
-    if r <= g_term: return None
-    pv = 0.0; cf = base_ps
-    for t in range(1, n+1):
-        cf *= (1+g); pv += cf/(1+r)**t
-    tv = cf*(1+g_term)/(r-g_term)
-    return pv + tv/(1+r)**n
+  // ================= ⑤ KSE-100 6-INDICATOR MACRO PANEL =================
+  const kse=val('kse100'), usdpkr=val('usd_pkr')||278.2;
+  // inverse-relationship read: each panel BEARISH/NEUTRAL/BULLISH for KSE
+  const p = [
+    {n:'KSE-100 Index', v:kse?kse.toLocaleString():'—', read:'Reference level', cls:'neutral'},
+    {n:'USD/PKR', v:usdpkr.toFixed(2), read: usdpkr>285?'PKR weakening → BEARISH':usdpkr>280?'Mild pressure → NEUTRAL':'Stable → BULLISH', cls: usdpkr>285?'neg':usdpkr>280?'neutral':'pos'},
+    {n:'Crude (Arab Light)', v:'$'+oil, read: oil>85?'High → import bill → BEARISH':oil<70?'Low → relief → BULLISH':'Mid-range → NEUTRAL', cls: oil>85?'neg':oil<70?'pos':'neutral'},
+    {n:'Inflation (CPI YoY)', v:cpi.toFixed(1)+'%', read: cpi>10?'High → real-return squeeze → BEARISH':cpi<7?'Tame → BULLISH':'Moderate → NEUTRAL', cls: cpi>10?'neg':cpi<7?'pos':'neutral'},
+    {n:'Interest Rate (SBP)', v:sbp.toFixed(2)+'%', read: sbp>=11?'High → hurdle rate → BEARISH (ex-Banks)':sbp<8?'Low → BULLISH':'Mid → NEUTRAL', cls: sbp>=11?'neg':sbp<8?'pos':'neutral'},
+    {n:'Current Account', v:'$'+ca+'M', read: ca<-200?'Deficit → FX pressure → BEARISH':ca>200?'Surplus → BULLISH':'Balanced → NEUTRAL', cls: ca<-200?'neg':ca>200?'pos':'neutral'},
+  ];
+  const negs=p.filter(x=>x.cls==='neg').length, poss=p.filter(x=>x.cls==='pos').length;
+  let verdict, vcolor;
+  if(negs>=4){verdict='BEARISH COMPOSITE';vcolor='#C00000';}
+  else if(negs>=3){verdict='MIXED-BEARISH';vcolor='#C55A11';}
+  else if(poss>=4){verdict='BULLISH COMPOSITE';vcolor='#548235';}
+  else{verdict='MIXED / NEUTRAL';vcolor='#BF8F00';}
+  let k6='<table><thead><tr><th>Panel</th><th>Current</th><th>Inverse-Relationship Read</th></tr></thead><tbody>';
+  p.forEach(x=>{k6+=`<tr class="${x.cls}"><td><b>${x.n}</b></td><td>${x.v}</td><td>${x.read}</td></tr>`;});
+  k6+='</tbody></table>';
+  k6+=`<div class="reading-box" style="margin-top:10px;border-left:5px solid ${vcolor};"><b style="color:${vcolor};">KSE-100 Macro Verdict: ${verdict}</b> — ${negs} bearish / ${poss} bullish of 6 panels. Reading rule: rising oil + USD/PKR + inflation + rates + widening CAD = bearish for KSE; the reverse = bullish. Use as the top-of-funnel PSX go/no-go.</div>`;
+  document.getElementById('dev_kse6').innerHTML=k6;
+}
 
-# ── DATA LAYER 1: TRADINGVIEW single-period fields ───────────────────────────
-TV_FIELDS = [
-    'description','sector','industry','market_cap_basic','close','currency',
-    'price_earnings_ttm','price_book_ratio','price_sales_ratio','enterprise_value_ebitda_ttm',
-    'gross_margin','operating_margin','net_margin','pre_tax_margin_ttm',
-    'return_on_equity','return_on_invested_capital','return_on_assets',
-    'debt_to_equity','current_ratio','quick_ratio',
-    'dividends_yield','dividend_payout_ratio_ttm','dividends_per_share_fq',
-    'total_debt','total_revenue_ttm','free_cash_flow_ttm','free_cash_flow_margin_ttm',
-    'cash_n_short_term_invest_fq','ebitda_ttm','ebit_ttm',
-    'earnings_per_share_diluted_ttm','earnings_per_share_basic_ttm','earnings_per_share_forecast_next_fq',
-    'total_revenue_yoy_growth_ttm','earnings_per_share_diluted_yoy_growth_ttm',
-    'beta_1_year','total_shares_outstanding_fundamental','interest_coverage',
-    'total_current_assets_fq','total_current_liabilities_fq','total_assets_fq',
-]
-_TV_EXCHANGES = ['NASDAQ', 'NYSE', 'AMEX']
+// =========================================================
+// SECTORS, ZONE, MULTIBAGGER — stubs that render core content
+// =========================================================
+function calcHist(){
+  const rows = [
+    {factor:'Trigger',           y2008:'Global Financial Crisis — commodity shock',  y2013:'Balance of payments crisis',           y2017:'Political uncertainty + CAD widening',   y2022:'Post-COVID import surge + political crisis', y2023:'IMF program delays + reserve depletion',  pattern:'External shock or domestic policy gap'},
+    {factor:'USD/PKR Move',      y2008:'60→80 (+33%)',  y2013:'98→110 (+12%)',  y2017:'105→124 (+18%)',  y2022:'180→240 (+33%)',  y2023:'240→307 (+28%)',  pattern:'20–35% devaluation per episode'},
+    {factor:'FX Reserves',       y2008:'$8B → $3B',     y2013:'$6B → $3B',      y2017:'$16B → $7B',      y2022:'$16B → $4B',      y2023:'$4B → $3B',       pattern:'Reserves fall below $4B before IMF'},
+    {factor:'Current Account',   y2008:'-8% of GDP',    y2013:'-1% of GDP',     y2017:'-4% of GDP',      y2022:'-4.6% of GDP',    y2023:'-0.5% of GDP',    pattern:'CAD widens → pressures PKR'},
+    {factor:'Inflation Peak',    y2008:'25% YoY',       y2013:'9% YoY',         y2017:'6% YoY',           y2022:'48% YoY',         y2023:'38% YoY',         pattern:'Inflation lags devaluation by 3–6 months'},
+    {factor:'SBP Rate Peak',     y2008:'15%',           y2013:'10%',            y2017:'7%',               y2022:'22%',             y2023:'22%',             pattern:'Rate hikes follow devaluation'},
+    {factor:'IMF Program',       y2008:'SBA $7.6B',     y2013:'EFF $6.7B',      y2017:'No program',       y2022:'EFF $6B revival',  y2023:'SBA $3B',         pattern:'IMF bailout follows every major episode'},
+    {factor:'KSE-100 Reaction',  y2008:'-50% peak-trough', y2013:'+40% in 12m', y2017:'-20% then +60%',  y2022:'-35% then +60%',  y2023:'-20% then +80%',  pattern:'Market falls then rallies post-stabilisation'},
+    {factor:'Duration',          y2008:'18 months',     y2013:'12 months',      y2017:'24 months',        y2022:'18 months',       y2023:'12 months',       pattern:'12–24 months per full cycle'},
+    {factor:'Gold (PKR terms)',  y2008:'+80%',          y2013:'+15%',           y2017:'+25%',             y2022:'+60%',            y2023:'+45%',            pattern:'Gold outperforms in PKR terms every episode'},
+  ];
 
-def _tv_post(symbol, columns, url=TV_URL):
-    body = {"symbols": {"tickers": [symbol]}, "columns": columns}
-    try:
-        r = requests.post(url, json=body, headers=HDRS, timeout=20)
-        if r.status_code != 200: return None
-        data = r.json().get("data") or []
-        return (data[0].get("d") or []) if data else None
-    except Exception:
-        return None
+  const tbody = document.getElementById('history_tbody');
+  if(!tbody) return;
+  
+  const cols = ['factor','y2008','y2013','y2017','y2022','y2023','pattern'];
+  tbody.innerHTML = rows.map((r,i) => {
+    const bg = i%2===0 ? 'background:#fafafa;' : '';
+    return '<tr style="' + bg + '">' + 
+      cols.map((c,ci) => {
+        const isFirst = ci===0;
+        const isLast = ci===6;
+        const style = isFirst ? 'font-weight:600;color:var(--navy);padding:8px 12px;' 
+                    : isLast  ? 'background:#FFF3CD;font-style:italic;padding:8px 12px;color:#856404;'
+                    : 'padding:8px 12px;color:var(--ink);';
+        return '<td style="' + style + 'border-bottom:1px solid #eee;">' + r[c] + '</td>';
+      }).join('') + '</tr>';
+  }).join('');
+}
 
-def tv_fetch(ticker):
-    """One scan row -> {field: value}. PSX:* routes to pakistan/scan; else america/scan
-    across the exchange prefixes. {} on miss."""
-    tk = ticker.upper()
-    if tk.startswith("PSX:"):
-        d = _tv_post(tk, ['name'] + TV_FIELDS, url=PAK_TV_URL)
-        if d and len(d) == len(TV_FIELDS) + 1:
-            return dict(zip(TV_FIELDS, d[1:]))
-        return {}
-    for ex in _TV_EXCHANGES:
-        d = _tv_post(f"{ex}:{tk}", ['name'] + TV_FIELDS)
-        if d and len(d) == len(TV_FIELDS) + 1:
-            return dict(zip(TV_FIELDS, d[1:]))
-    d = _tv_post(tk, ['name'] + TV_FIELDS)  # bare fallback
-    if d and len(d) == len(TV_FIELDS) + 1:
-        return dict(zip(TV_FIELDS, d[1:]))
-    return {}
+function calcSectors() {
+  // ===== US SECTORS — IQS+Zacks+COT engine (live), graceful fallback to macro regime =====
+  const ism = val('ism_mfg'), umcsi = val('umcsi'), pce = val('core_pce'), gdp = val('us_gdp');
+  const Z  = (LIVE && LIVE.zacks_sectors) ? LIVE.zacks_sectors : null;
+  const CF = (LIVE && LIVE.cot_futures)   ? LIVE.cot_futures   : null;
+  // ===== Macro-regime top layer (Layer 1 of 3). Decision 1: growth axis = yield-curve slope; ISM optional refinement. =====
+  const ycSlope = (val('us_10y') - val('us_2y'));            // leading growth signal per the deck (normal/steepening = expansion, inverted = recession)
+  const growthAxis = (isNaN(ycSlope)?0:(ycSlope>0?1:-1)) + (isNaN(ism)?0:(ism>=50?0.4:-0.4));
+  const usReg = regimeOf(growthAxis, pce);
+  const REGIME_FAVORED = {
+    'GOLDILOCKS':   ['Information Technology','Communication Services','Consumer Discretionary','Financials','Industrials','Materials'],
+    'REFLATION':    ['Energy','Materials','Industrials','Financials','Consumer Discretionary'],
+    'DISINFLATION': ['Utilities','Consumer Staples','Health Care','Real Estate'],
+    'STAGFLATION':  ['Energy','Consumer Staples','Utilities','Communication Services'],
+  };
+  const favored = new Set(REGIME_FAVORED[usReg.name] || []);
+  const regBanner = `<div class="reading-box" style="margin-bottom:10px;border-left:4px solid var(--navy);"><strong>Macro regime: ${usReg.name}</strong> — growth axis = yield-curve slope ${(isNaN(ycSlope)?'n/a':((ycSlope>0?'+':'')+(ycSlope*100).toFixed(0)+'bps'))}${isNaN(ism)?'':' + ISM '+ism}, inflation = core PCE ${pce}%. <b>Regime-favored:</b> ${[...favored].join(', ')||'—'}. <span style="color:var(--grey-d);">Layer 1 of 3 (regime → Zacks #1/#2 → COT).</span></div>`;
+  const holdings = {
+    'Information Technology':'TSM, NVDA, ANET, MU, TER, WDC, DELL, STX',
+    'Communication Services':'META (CORE)',
+    'Energy':'XOM, CVX, COP, EOG',
+    'Health Care':'LLY (CORE), CI, NVO; WELL',
+    'Real Estate':'WELL, O',
+    'Utilities':'VST, BE WATCH',
+    'Consumer Discretionary':'(rate-sensitive)',
+    'Consumer Staples':'WMT, KO, GIS, PG',
+    'Financials':'JPM, BAC',
+    'Industrials':'CAT, ETN, RTX',
+    'Materials':'macro qualified',
+  };
+  // COT signal mapping → which contract gates which sector (per IQS+Zacks Engine tab)
+  function cotFor(sector){
+    if(!CF) return null;
+    const sp=CF['SP500'], nd=CF['NASDAQ'], cr=CF['Crude'], ty=CF['10yr'];
+    if(sector==='Energy' && cr) return cr;
+    if(sector==='Information Technology' && nd) return nd;
+    if(sector==='Financials' && ty) return ty;
+    return sp || null;  // SP500 broad-market gate for all other sectors
+  }
+  let usHtml;
+  if (Z) {
+    // Live Zacks + COT qualification
+    // Two distinct signal colours: ZACKS = indigo column, COT = green/red per COT Reference legend.
+    const Z_BG='#EEF0FF', Z_HEAD='#4F46E5', COT_HEAD='#0F766E';
+    usHtml = `<table><thead><tr>
+      <th>GICS Sector</th>
+      <th style="background:var(--navy);color:#fff;">🎯 Regime fit</th>
+      <th style="background:${Z_HEAD};color:#fff;">📊 Zacks #1/#2</th>
+      <th style="background:${COT_HEAD};color:#fff;">🟢🔴 COT (longs vs shorts)</th>
+      <th>Status</th><th>Our Holdings</th></tr></thead><tbody>`;
+    const order = ['Health Care','Energy','Industrials','Consumer Staples','Financials','Information Technology','Utilities','Materials','Communication Services','Consumer Discretionary','Real Estate'];
+    order.forEach(sec => {
+      const z = Z[sec] || {top:0,total:0,pct_top:0,rank1:0,rank2:0};
+      const pct = z.pct_top || 0;
+      const cot = cotFor(sec);
+      const cotBull = cot ? cot.net > 0 : null;
+      // Status bands (IQS): high #1/#2 share + bullish COT = STRONG ADD
+      const regFav = favored.has(sec);
+      let status, cls;
+      if (pct >= 35 && cotBull) { status='🔥 STRONG ADD'; cls='pos'; }
+      else if (pct >= 25 || cotBull) { status='✅ ADD'; cls='pos'; }
+      else if (pct >= 12 && cotBull !== false) { status='⬛ HOLD'; cls='warn'; }
+      else if (pct < 8 && cotBull === false) { status='❌ AVOID'; cls='neg'; }
+      else { status='⚠️ REDUCE'; cls='warn'; }
+      // Regime modulation (Layer 1): favored lifts a borderline sector; out-of-favor tempers a hot one
+      if (regFav && cls!=='pos' && (pct>=12 || cotBull)) { status='✅ ADD (regime-favored)'; cls='pos'; }
+      else if (!regFav && status==='🔥 STRONG ADD') { status='✅ ADD ⚠ counter-regime'; cls='warn'; }
+      const regCell = regFav
+        ? '<span style="font-weight:700;color:#1F3864;">🎯 Favored</span>'
+        : '<span style="color:var(--grey-d);">➖ Neutral</span>';
+      // ZACKS cell — indigo column tint; share text shaded by strength
+      const zColor = pct>=35?'#3730A3':pct>=20?'#4F46E5':pct>0?'#6366F1':'#9CA3AF';
+      const zCell = z.total
+        ? `<span style="font-weight:700;color:${zColor};">${z.top}/${z.total} (${pct}%)</span><div style="font-size:10px;color:#6366F1;">#1:${z.rank1} · #2:${z.rank2}</div>`
+        : '<span style="color:var(--grey-d);">—</span>';
+      // COT cell — GREEN if net>0 (more longs / bullish), RED if net<0 (more shorts / bearish) per COT Reference
+      let cotCell;
+      if (cot) {
+        const cc = cotBull ? '#059669' : '#DC2626';
+        const cbg = cotBull ? '#ECFDF5' : '#FEF2F2';
+        cotCell = `<span style="font-weight:700;color:${cc};background:${cbg};padding:1px 6px;border-radius:4px;">${cotBull?'🟢':'🔴'} ${cot.signal}</span>`
+          + `<div style="font-size:10px;color:var(--grey-d);">L <b style="color:#059669;">${(cot.long||0).toLocaleString()}</b> / S <b style="color:#DC2626;">${(cot.short||0).toLocaleString()}</b></div>`;
+      } else {
+        cotCell = '<span style="color:var(--grey-d);">—</span>';
+      }
+      usHtml += `<tr class="${cls}"><td><b>${sec}</b></td><td>${regCell}</td><td style="background:${Z_BG};">${zCell}</td><td>${cotCell}</td><td><b>${status}</b></td><td>${holdings[sec]||''}</td></tr>`;
+    });
+    usHtml += '</tbody></table>';
+    const cotDate = CF && (CF.SP500||CF.Crude||{}).date;
+    usHtml += `<div class="reading-box" style="margin-top:10px;font-size:11px;"><span style="color:#4F46E5;font-weight:700;">■ Zacks</span> = % of sector\'s stocks ranked #1/#2 (indigo). <span style="color:#0F766E;font-weight:700;">■ COT</span> = CFTC longs-vs-shorts: <span style="color:#059669;font-weight:700;">🟢 net long = bullish, proceed</span> / <span style="color:#DC2626;font-weight:700;">🔴 net short = bearish, halt</span>. SP500 gates the broad market; Crude→Energy, 10yr→Financials, NASDAQ→Tech.${cotDate?' COT as of '+cotDate+'.':''}</div>`;
+  } else {
+    // Fallback: original macro-regime reads (never blank if scanner blocks absent)
+    usHtml = '<table><thead><tr><th>GICS Sector</th><th>ETF</th><th>Regime Read</th><th>Our Holdings</th></tr></thead><tbody>';
+    const usSectors = [
+      ['Information Technology','IYW', ism>=50&&pce<3.5?'BUY':'HOLD', holdings['Information Technology']],
+      ['Communication Services','IYZ', gdp>0?'BUY':'HOLD', holdings['Communication Services']],
+      ['Energy','IYE/XLE', pce>2.5?'BUY':'HOLD', holdings['Energy']],
+      ['Health Care','IYH', umcsi<60?'BUY (defensive)':'HOLD', holdings['Health Care']],
+      ['Real Estate','IYR', val('us_10y')<5?'BUY':'HOLD', holdings['Real Estate']],
+      ['Utilities','IDU', val('us_10y')<5&&pce<3?'BUY':'HOLD', holdings['Utilities']],
+      ['Consumer Discretionary','IYC', umcsi>65?'BUY':'AVOID', holdings['Consumer Discretionary']],
+      ['Consumer Staples','IYK', umcsi<55?'BUY':'AVOID', holdings['Consumer Staples']],
+      ['Financials','IYF', val('us_10y')-val('us_2y')>0?'BUY':'HOLD', holdings['Financials']],
+      ['Industrials','IYJ', ism>=50?'BUY':'HOLD', holdings['Industrials']],
+      ['Materials','IYM', pce>2.5?'BUY':'HOLD', holdings['Materials']],
+    ];
+    usSectors.forEach(s=>{let cls=s[2].includes('BUY')?'pos':(s[2].includes('AVOID')?'neg':'warn');usHtml+=`<tr class="${cls}"><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td></tr>`;});
+    usHtml += '</tbody></table><div class="reading-box" style="margin-top:10px;font-size:11px;">Macro-regime fallback (Zacks/COT scan data not loaded). Live qualification appears after the next scan writes zacks_sectors + cot_futures.</div>';
+  }
+  document.getElementById('us_sectors').innerHTML = regBanner + usHtml;
 
-def _tv_to_info(tv, ticker):
-    """Adapt the TV row to the yfinance `info` keys the scorer reads, with unit fixes."""
-    if not tv: return {}
-    close = tv.get('close')
-    pb    = tv.get('price_book_ratio')
-    roe   = tv.get('return_on_equity')          # TV percent (39.82) -> decimal
-    de    = tv.get('debt_to_equity')            # TV already decimal ratio (0.149)
-    dy    = tv.get('dividends_yield')           # TV percent number (0.0555) -> decimal
-    return {
-        'longName': tv.get('description') or ticker,
-        'shortName': tv.get('description') or ticker,
-        'sector': tv.get('sector') or '—',
-        'industry': tv.get('industry') or '',
-        'currentPrice': close,
-        'regularMarketPrice': close,
-        'marketCap': tv.get('market_cap_basic'),
-        'sharesOutstanding': tv.get('total_shares_outstanding_fundamental'),
-        'trailingEps': tv.get('earnings_per_share_diluted_ttm') or tv.get('earnings_per_share_basic_ttm'),
-        'trailingPE': tv.get('price_earnings_ttm'),
-        'forwardPE': None,                       # TV exposes no clean ANNUAL forward PE -> pe_ratio uses the 25 default (peer-relative is the pending methodology upgrade)
-        'pegRatio': None,                        # derived downstream as PE / avg-EPS-growth
-        'priceToBook': pb,
-        'priceToSalesTrailing12Months': tv.get('price_sales_ratio'),
-        'dividendYield': (dy/100.0) if dy is not None else None,   # FIX: percent -> decimal (0.0555% -> 0.000555 -> WATCH, never GOOD)
-        'enterpriseToEbitda': tv.get('enterprise_value_ebitda_ttm'),  # FIX: live ttm value used directly
-        'returnOnEquity': (roe/100.0) if roe is not None else None,
-        'returnOnInvestedCapital': tv.get('return_on_invested_capital'),
-        'debtToEquity': de,                      # already decimal; the scorer's >10 guard won't trigger
-        'currentRatio': tv.get('current_ratio'),
-        'beta': tv.get('beta_1_year'),
-        'bookValue': sdiv(close, pb),            # bvps = price / (price/book)
-        'effectiveTaxRate': None,                # from history
-        'interestCoverage': tv.get('interest_coverage'),  # often None on TV -> computed from history
-        'netInterestMargin': None, 'casaRatio': None,
-        'capitalAdequacyRatio': None, 'tier1CapitalRatio': None,
-        '_tv': tv,
+  // ===== PSX SECTORS — macro-driven (no Zacks coverage), original 11 =====
+  const sbp = val('sbp_rate'), cpi = val('pak_cpi'), oil = val('oil_arab'), reer = val('reer');
+  let psxHtml = '<table><thead><tr><th>PSX Sector</th><th>GICS Map</th><th>Macro Signal</th><th>Our Holdings</th></tr></thead><tbody>';
+  const psxSectors = [
+    ['Commercial Banks','40 Financials', sbp>11?'BUY (NIM ↑)':'HOLD','UBL Tier A'],
+    ['E&P (Oil & Gas)','10 Energy', oil>75?'BUY':'HOLD','OGDC, PPL, MARI watch'],
+    ['Fertilizer','15 Materials','BUY (defensive)','FFC Tier A'],
+    ['Pharma','35 Health Care','BUY (defensive)','HINOON Tier A; SEARL Tier B'],
+    ['Tech/IT','45 Information Technology', reer<105?'BUY':'HOLD','SYS Tier A'],
+    ['Cement','15 Materials', sbp<9?'BUY':'AVOID','no Tier A'],
+    ['Refinery','10 Energy', oil>70&&oil<90?'HOLD':'AVOID','ATRL/NRL watch'],
+    ['OMC','10 Energy','HOLD','PSO watch (volume-driven)'],
+    ['Power','55 Utilities','AVOID','circular debt — EXCLUDED'],
+    ['Auto','25 Consumer Discretionary', sbp<10?'BUY':'AVOID','rate-sensitive — EXCLUDED'],
+    ['Textile','25 Consumer Discretionary', reer<95?'BUY':'AVOID','energy + FX — EXCLUDED'],
+  ];
+  psxSectors.forEach(s=>{let cls=s[2].includes('BUY')?'pos':(s[2].includes('AVOID')?'neg':'warn');psxHtml+=`<tr class="${cls}"><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td></tr>`;});
+  psxHtml += '</tbody></table>';
+  // ===== PSX rate-zone top layer (Decision 1 PSX side: SBP rate zone drives red/green sector tilt) =====
+  const psxZone = sbp>=11 ? {name:'RED ZONE (high/tight rates)', fav:'Banks, Oil/E&P, Fertilizer, Utility, Power', cls:'neg'}
+                : sbp>=9  ? {name:'YELLOW ZONE (transition)',    fav:'Banks + selective cyclicals', cls:'warn'}
+                :           {name:'GREEN ZONE (low/easing rates)', fav:'Cement, IT, Auto, Engineering, Textile', cls:'pos'};
+  const psxRegBanner = `<div class="reading-box" style="margin-bottom:10px;border-left:4px solid var(--navy);"><strong>PSX rate zone: ${psxZone.name}</strong> — SBP ${sbp}%. <b>Zone-favored sectors:</b> ${psxZone.fav}.</div>`;
+  document.getElementById('psx_sectors').innerHTML = psxRegBanner + psxHtml;
+
+  // ===== Top picks (original) =====
+  let topHtml = '<table><thead><tr><th>Ticker</th><th>Sector</th><th>Tier</th><th>Sarmaaya</th><th>IG %</th><th>MoS</th><th>ROIC-WACC</th><th>Position</th></tr></thead><tbody>';
+  const picks = [
+    ['TSM','US Tech','A','9/9','90.7%','+6.1%','+22-25 EXCEPTIONAL','5-7% CORE'],
+    ['LLY','US Health','A','9/9','86.4%','+11.2%','+21-25 EXCEPTIONAL','4-6% CORE'],
+    ['ANET','US Tech','A','9/9','82.7%','+10.4%','+18-22 EXCEPTIONAL','3-4%'],
+    ['META','US Comm Svc','A','7/9','82.7%','+6.5%','+18-20 EXCEPTIONAL','4-5%'],
+    ['NVDA','US Tech','B','9/9','80.2%','+2.9%','+29-39 EXCEPTIONAL','2-3%'],
+    ['MU','US Tech (Cyclic)','A','7/9','79.0%','+19.3%','+4-9 MARGINAL (cycle)','4-6% TACTICAL'],
+    ['UBL','PSX Bank','A','7/9','79.0%','+23.7%','+4-6 MODERATE','4-5%'],
+    ['FFC','PSX Fertilizer','A','7/9','85.8%','+21.3%','+4-8 MODERATE','4-5%'],
+    ['SYS','PSX Tech','A','9/9','82.1%','+17.2%','+4-8 MODERATE','3-4%'],
+    ['HINOON','PSX Pharma','A','9/9','80.9%','+14.1%','+6-10 MODERATE→STRONG','2-3%'],
+  ];
+  picks.forEach(p=>{topHtml+=`<tr class="pos"><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td><td>${p[4]}</td><td>${p[5]}</td><td>${p[6]}</td><td>${p[7]}</td></tr>`;});
+  topHtml += '</tbody></table>';
+  document.getElementById('top_picks').innerHTML = topHtml;
+}
+const SBP_MEAN=11.01;        // long-term policy-rate mean (Ammar Yaseen Excel)
+const SBP_PREV_RATE=10.50;    // policy rate prior to the latest MPC move (Apr 27 2026 hike)
+function calcZone(){
+  const cells=[{name:'DARK GREEN',rr:'Lesser',dir:'Decreasing',w:1.0,alloc:'100% Stocks / 0% Bonds / 0% Cash',color:'#006100',tc:'#FFFFFF'},{name:'LIGHT GREEN',rr:'Greater',dir:'Decreasing',w:0.8,alloc:'80% Stocks / 15% Bonds / 5% Cash',color:'#92D050',tc:'#000000'},{name:'YELLOW',rr:'Lesser',dir:'Increasing',w:0.6,alloc:'60% Stocks / 30% Bonds / 10% Cash',color:'#FFFF00',tc:'#000000'},{name:'RED',rr:'Greater',dir:'Increasing',w:0.2,alloc:'20% Stocks / 60% Bonds / 20% Cash',color:'#FF0000',tc:'#FFFFFF'}];
+  // Reactive: derive zone from the live/entered SBP rate vs mean + direction vs previous policy rate.
+  const sbp=val('sbp_rate');
+  const rr = (sbp>=SBP_MEAN) ? 'Greater' : 'Lesser';
+  const dir = (sbp>SBP_PREV_RATE) ? 'Increasing' : (sbp<SBP_PREV_RATE) ? 'Decreasing' : 'Increasing';
+  const active = cells.find(c=>c.rr===rr&&c.dir===dir) || cells[3];
+  const curr = active.name;
+  let qHtml='<table style="text-align:center;"><tr><th></th><th>DECREASING</th><th>INCREASING</th></tr>';
+  ['Lesser','Greater'].forEach(rrx=>{qHtml+=`<tr><th>${rrx.toUpperCase()} THAN MEAN (11.01%)</th>`;['Decreasing','Increasing'].forEach(dirx=>{const cell=cells.find(c=>c.rr===rrx&&c.dir===dirx);const isActive=cell.name===curr;qHtml+=`<td style="background:${cell.color};color:${cell.tc};padding:20px;font-weight:700;${isActive?'box-shadow:0 0 0 4px #BF8F00;':''}">${cell.name} (${cell.w})<br><small>${cell.alloc}</small>${isActive?'<br><b>★ YOU ARE HERE</b>':''}</td>`;});qHtml+='</tr>';});
+  document.getElementById('zone_quadrant_box').innerHTML=qHtml+'</table>';
+  // Dynamic banner (was a frozen RED string in the HTML)
+  const zb=document.getElementById('zone_banner');
+  if(zb){const zcls=curr==='DARK GREEN'||curr==='LIGHT GREEN'?'green':curr==='YELLOW'?'yellow':'red';zb.className='alert-banner '+zcls;zb.innerHTML=`<h3>CURRENT ZONE: ${curr} — ${active.alloc}</h3><p><b>SBP Rate:</b> ${sbp.toFixed(2)}% | <b>Mean:</b> ${SBP_MEAN}% | <b>Direction:</b> ${dir} (vs prior ${SBP_PREV_RATE}%)</p>`;}
+  (function(){
+    var rp=(LIVE&&Array.isArray(LIVE.rate_path)&&LIVE.rate_path.length)?LIVE.rate_path:null;
+    if(rp){
+      var seq=rp.map(function(p){return (typeof p.rate==='number'?p.rate.toFixed(2):p.rate)+'% ('+p.date+(p.action&&p.action!=='HOLD'?', '+p.action:'')+')';}).join(' → ');
+      document.getElementById('zone_rate_path').innerHTML='<div class="reading-box">Live SBP MPC path (from scan): '+seq+'. Current entered rate <strong>'+sbp.toFixed(2)+'%</strong> → <strong>'+curr+' zone</strong>.</div>';
+    } else {
+      document.getElementById('zone_rate_path').innerHTML='<div class="reading-box">Embedded MPC path (authoritative record, edit in code on each decision): 11.00% (Sep-Oct 2025) → 10.50% (Dec cut) → 11.50% (Apr 27 2026 hike). Current entered rate <strong>'+sbp.toFixed(2)+'%</strong> → <strong>'+curr+' zone</strong>.</div>';
+    }
+  })();
+  document.getElementById('zone_kse_table').innerHTML='<div class="reading-box">KSE-100 monthly (reference): Sep 163,848 → Dec 174,054 → Mar 148,743 → May 167,844.</div>';
+  (function(){var U=(LIVE&&LIVE.macros&&LIVE.macros.us)?LIVE.macros.us:{};var P=(LIVE&&LIVE.macros&&LIVE.macros.psx)?LIVE.macros.psx:{};
+    function a(x){return x>0?'\u25b2':x<0?'\u25bc':'\u25ac';}function pp(x){return (x>0?'+':'')+x;}
+    var rp=document.getElementById('zone_rate_path');
+    if(rp&&(U.us_10y_wow!=null||U.us_2s10s!=null)){
+      var y=U.us_10y_wow,s10=U.us_2s10s;
+      var read=(y!=null&&y>0)?'global rates repricing UP \u2014 keeps the defensive tilt (RED-zone bias holds)':(y!=null&&y<0)?'global rates easing \u2014 a sustained move would migrate the zone toward risk-on':'rate path stable';
+      rp.insertAdjacentHTML('beforeend','<div class="reading-box" style="margin-top:8px;font-size:11.5px;"><b>Rate-path repricing:</b> US 10y'+(U.us_10y!=null?' '+U.us_10y+'%':'')+(y!=null?' '+pp(y)+' '+a(y)+' WoW':'')+(s10!=null?' \u00b7 2s10s '+s10:'')+' \u2014 '+read+'. SBP sets the PKR zone; the US path sets the global cost-of-capital backdrop (Wave T3).</div>');
+    }
+    var kt=document.getElementById('zone_kse_table');
+    if(kt&&(P.kse100_wow!=null||P.kse100_mom!=null)){
+      kt.insertAdjacentHTML('beforeend','<div class="reading-box" style="margin-top:8px;font-size:11.5px;"><b>KSE-100 trend (live):</b> '+(P.kse100!=null?Number(P.kse100).toLocaleString():'')+(P.kse100_wow!=null?' \u00b7 '+pp(P.kse100_wow)+' DoD '+a(P.kse100_wow):'')+(P.kse100_mom!=null?' \u00b7 '+pp(P.kse100_mom)+' WoW '+a(P.kse100_mom):'')+' (Wave T3).</div>');
+    }
+  })();
+  const favSectors=(curr==='DARK GREEN'||curr==='LIGHT GREEN')
+    ? 'Cyclicals lead — Cement, IT, Auto, Engineering, Textile'
+    : 'Defensives lead — Banks, Oil/E&P, Fertilizer, Power, Utilities';
+  document.getElementById('zone_alloc_table').innerHTML=`<div class="reading-box">${curr} zone (Weight ${active.w}): <strong>${active.alloc}</strong> for Risk HIGH profile.<br><strong>Sector rotation:</strong> ${favSectors}. <span style="color:var(--grey-d);">(Tab 6 has the live sector board.)</span></div>`;
+}
+function scoreMultibagger(inp,market){
+  // V2: quantitative factors (85) + PEG valuation (in the 85) + soft capped at 15, plus HARD GATES.
+  const m1=Math.min(12,Math.max(0,(inp.rev/25)*12));
+  const m2=Math.min(14,Math.max(0,(inp.eps/35)*14));
+  const m3=Math.min(9,Math.max(0,(inp.roe/30)*9));
+  const m4=Math.min(10,Math.max(0,(inp.roce/30)*10));
+  const m5=Math.min(6,Math.max(0,6-inp.de*4.5));
+  const m6=inp.ocf<0.7?0:Math.min(8,((inp.ocf-0.7)/0.5)*8);
+  const m7=market==='psx'?Math.min(7,Math.max(0,(inp.sponsor/50)*7)):Math.min(7,Math.max(0,(inp.sponsor/25)*7));
+  const m8=market==='psx'?(inp.mcap<5?7:inp.mcap<30?6:inp.mcap<100?3:0):(inp.mcap<300?7:inp.mcap<2000?6:inp.mcap<10000?3:0);
+  // NEW M9: PEG entry-valuation (12). PEG = P/E ÷ EPS growth. <1 cheap vs growth; >3 overpaying.
+  let peg=null,m9=0;
+  if(inp.eps>0&&inp.pe>0){ peg=inp.pe/inp.eps; m9=peg<=1.0?12:peg<=1.5?9:peg<=2.0?6:peg<=3.0?3:0; }
+  // Soft / qualitative — CAPPED at 15 so opinion can't manufacture a pass.
+  const s_tam=(inp.tam/5)*5,s_moat=(inp.moat/5)*5,s_reinv=(inp.reinv/5)*3,s_owner=(inp.owner/5)*2;
+  const softRaw=s_tam+s_moat+s_reinv+s_owner;
+  const soft=Math.min(15,softRaw);
+  const total=m1+m2+m3+m4+m5+m6+m7+m8+m9+soft;
+  // HARD GATES — cap the BAND (rank), not the score.
+  const wacc=(inp.wacc!=null&&!isNaN(inp.wacc)&&inp.wacc>0)?inp.wacc:(market==='psx'?20:10);
+  const gates=[
+    {name:'Growth engine running', passed:(inp.rev>0||inp.eps>0), ceil:(inp.rev>0||inp.eps>0)?3:0, note:'No revenue AND no EPS growth = no compounding engine → REJECT.'},
+    {name:'EPS growing (>0)', passed:inp.eps>0, ceil:inp.eps>0?3:1, note:'Mayer: the earnings engine must run. EPS≤0 caps at WATCH.'},
+    {name:'ROIC > WACC ('+wacc+'%)', passed:inp.roce>wacc, ceil:inp.roce>wacc?3:1, note:'Reinvestment must create value. ROIC<WACC caps at WATCH.'},
+    {name:'Earnings cash-backed (OCF/NI ≥0.5)', passed:inp.ocf>=0.5, ceil:inp.ocf>=0.5?3:1, note:'Earnings not backed by cash = quality flag. Caps at WATCH.'},
+  ];
+  const rawRank=total>=80?3:total>=65?2:total>=50?1:0;
+  const ceiling=Math.min.apply(null,gates.map(g=>g.ceil));
+  const finalRank=Math.min(rawRank,ceiling);
+  const gated=finalRank<rawRank;
+  const subscores=[{key:'M1 Rev CAGR',pts:m1,max:12},{key:'M2 EPS CAGR',pts:m2,max:14},{key:'M3 ROE',pts:m3,max:9},{key:'M4 ROCE/ROIC',pts:m4,max:10},{key:'M5 D/E',pts:m5,max:6},{key:'M6 OCF/NI',pts:m6,max:8},{key:'M7 Sponsor/Insider',pts:m7,max:7},{key:'M8 Market Cap',pts:m8,max:7},{key:'M9 Valuation (PEG'+(peg?' '+peg.toFixed(2):' —')+')',pts:m9,max:12},{key:'Soft (TAM/Moat/Reinvest/Owner, capped)',pts:soft,max:15}];
+  return{total,subscores,peg,gates,rawRank,finalRank,gated};
+}
+function renderMbScoreBox(score){
+  const bands=['NOT A MULTIBAGGER','WATCH LIST','STRONG CANDIDATE','HIGH-CONVICTION MULTIBAGGER CANDIDATE'];
+  const colors=['var(--red)','var(--gold)','#92D050','var(--green)'];
+  const band=bands[score.finalRank], color=colors[score.finalRank];
+  let html=`<div class="score-bar"><div class="score-fill" style="width:${score.total}%;"></div><div class="score-label">${score.total.toFixed(1)}/100</div></div>`;
+  html+=`<div style="background:${color};color:white;padding:12px 18px;border-radius:8px;margin:10px 0;text-align:center;font-weight:700;">${band}</div>`;
+  if(score.gated){ const rawNames=['NOT','WATCH','STRONG','HIGH-CONVICTION']; html+=`<div style="background:#FFF1F2;border-left:4px solid #C00000;padding:10px 14px;border-radius:6px;margin-bottom:10px;font-size:12px;"><b style="color:#991B1B;">⚠ Gated down from ${rawNames[score.rawRank]}</b> — raw score ${score.total.toFixed(1)} qualified higher, but a hard gate failed (see below). This is the discipline check: a high additive score can't override a fatal flaw.</div>`; }
+  // Gates panel
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">';
+  score.gates.forEach(g=>{const c=g.passed?'#065F46':'#991B1B';const bg=g.passed?'#ECFDF5':'#FEF2F2';html+=`<div style="background:${bg};border-radius:6px;padding:8px 10px;font-size:11.5px;"><div style="font-weight:700;color:${c};">${g.passed?'✓':'✗'} ${g.name}</div><div style="color:var(--grey-d);margin-top:2px;">${g.note}</div></div>`;});
+  html+='</div>';
+  html+='<table><thead><tr><th>Criterion</th><th>Points</th><th>Max</th></tr></thead><tbody>';
+  score.subscores.forEach(s=>{html+=`<tr><td><b>${s.key}</b></td><td>${s.pts.toFixed(1)}</td><td>${s.max}</td></tr>`;});
+  html+='</tbody></table>';
+  return html;
+}
+
+// =========================================================
+// MULTIBAGGER HELPER FUNCTIONS
+// =========================================================
+function renderCompoundCalc(cagr, initialAmount, currency) {
+  const periods = [1, 3, 5, 7, 10, 12, 15, 20];
+  let html = '<table><thead><tr><th>Years Held</th><th>Portfolio Value</th><th>Multiple</th><th>Cumulative Gain</th></tr></thead><tbody>';
+  periods.forEach(y => {
+    const fv = initialAmount * Math.pow(1 + cagr/100, y);
+    const mult = fv / initialAmount;
+    const formatted = currency + ' ' + (fv >= 1e9 ? (fv/1e9).toFixed(2) + 'bn' : fv >= 1e6 ? (fv/1e6).toFixed(2) + 'M' : fv.toLocaleString(undefined, {maximumFractionDigits: 0}));
+    const cls = mult >= 10 ? 'pos' : (mult >= 5 ? 'warn' : '');
+    html += '<tr class="' + cls + '"><td><b>' + y + '</b></td><td>' + formatted + '</td><td>' + mult.toFixed(2) + 'x</td><td>' + ((mult - 1) * 100).toFixed(0) + '%</td></tr>';
+  });
+  html += '</tbody></table>';
+  html += '<p style="margin-top:10px; font-size:13px; color:var(--grey-d);"><strong>Coffee Can (Mayer):</strong> Median 100-bagger had 3-4 drawdowns of 50%+ during its run. Hold through drawdowns if fundamentals intact.</p>';
+  return html;
+}
+function renderFunnel(funnel, market) {
+  const total = funnel[0][1];
+  const sectorsCount = market === 'psx' ? 37 : 11;
+  const final_count = funnel[funnel.length - 1][1];
+  const moatRow = funnel.find(f => f[0].toLowerCase().includes('moat') || f[0].toLowerCase().includes('insider'));
+  const moatCount = moatRow ? moatRow[1] : 'n/a';
+  // US: feed the third card from SEC EDGAR Form-4 (the live insider signal). The TV-era screen insider gate was dropped in Wave O L1; PSX has no Form-4, so it keeps the funnel-stage lookup.
+  let insLabel='Moat OR Insider Gate', insVal=(typeof moatCount==='number'?moatCount.toLocaleString():moatCount), insStatus='Passed quality check', insCls='warn';
+  if(market==='us' && typeof LIVE!=='undefined' && LIVE && Array.isArray(LIVE.tce_us)){
+    const scr=LIVE.tce_us.filter(c=>c && c.src==='screen');
+    if(scr.length){
+      const fired=scr.filter(c=>c.streams && c.streams.s3_insider===1);
+      insLabel='Insider Buying (SEC Form-4)'; insVal=fired.length;
+      insStatus=fired.length+' of '+scr.length+' candidates \u00b7 EDGAR'; insCls=fired.length>0?'pos':'neutral';
+    }
+  }
+  let html = '<div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:16px;">';
+  html += '<div class="indicator-card neutral"><div class="label">Total Stocks Screened</div><div class="value">' + total.toLocaleString() + '</div><div class="status">' + (market === 'psx' ? 'PSX listings' : 'NYSE+NASDAQ+AMEX') + '</div></div>';
+  html += '<div class="indicator-card neutral"><div class="label">Sectors Covered</div><div class="value">' + sectorsCount + '</div><div class="status">' + (market === 'psx' ? 'PSX sectors' : 'GICS sectors') + '</div></div>';
+  html += '<div class="indicator-card ' + insCls + '"><div class="label">' + insLabel + '</div><div class="value">' + insVal + '</div><div class="status">' + insStatus + '</div></div>';
+  html += '<div class="indicator-card pos"><div class="label">Final Candidates</div><div class="value">' + final_count + '</div><div class="status">Shortlist in Section 4</div></div>';
+  html += '</div>';
+  html += '<table><thead><tr><th>Stage</th><th>Filter Applied</th><th style="text-align:right;">Stocks Remaining</th><th style="text-align:right;">% of Universe</th></tr></thead><tbody>';
+  funnel.forEach(function(f, i) {
+    const pct = ((f[1] / total) * 100).toFixed(1);
+    const isMoat = f[0].toLowerCase().includes('moat') || f[0].toLowerCase().includes('insider');
+    const isFinal = i === funnel.length - 1;
+    const cls = isFinal ? 'pos' : (isMoat ? 'warn' : '');
+    html += '<tr class="' + cls + '"><td><b>' + f[0] + '</b></td><td>' + f[2] + '</td><td style="text-align:right; font-weight:700;">' + f[1].toLocaleString() + '</td><td style="text-align:right;">' + pct + '%</td></tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+function renderSectorBreakdown(sectors, market) {
+  let html = '<table style="font-size:12px;"><thead><tr><th>Sector</th><th style="text-align:right;">Total Listed</th><th style="text-align:right;">Sweet Spot</th><th style="text-align:right;">+ Growth</th><th style="text-align:right;">+ Moat/Insider</th><th style="text-align:right;">Final</th></tr></thead><tbody>';
+  let totals = [0, 0, 0, 0, 0];
+  sectors.forEach(function(s) {
+    const cls = s[5] > 0 ? 'pos' : '';
+    html += '<tr class="' + cls + '"><td><b>' + s[0] + '</b></td>';
+    for (let i = 1; i <= 5; i++) { const v = s[i]; totals[i-1] += v; html += '<td style="text-align:right;' + (i===5 && v>0 ? 'font-weight:700; color:var(--green);' : '') + '">' + v + '</td>'; }
+    html += '</tr>';
+  });
+  html += '<tr style="border-top:2px solid var(--navy); font-weight:700; background:var(--light-blue);"><td><b>TOTAL</b></td>';
+  totals.forEach(function(t) { html += '<td style="text-align:right;">' + t.toLocaleString() + '</td>'; });
+  html += '</tr></tbody></table>';
+  const gateNote = market === 'psx' ? 'sponsor holding >=40% AND insider buying disclosed in latest quarterly filing' : 'insider buying via SEC Form 4 in the past 90 days';
+  html += '<p style="margin-top:8px; font-size:12px; color:var(--grey-d);"><strong>Moat / Insider Gate:</strong> A stock passes if it has EITHER (a) a clear identifiable moat, OR (b) ' + gateNote + '. <em>Illustrative design target \u2014 the live scan applies no per-sector moat/insider gate; the live insider read is the SEC Form-4 tally in the funnel card above (US), computed on the scanned candidates.</em></p>';
+  return html;
+}
+function renderDecisionMatrix(mbScore, igScore, market, zacks, finalRank) {
+  // If a gated finalRank is supplied, band by it so the matrix agrees with the score box.
+  const mbBand = (finalRank!=null) ? (finalRank>=3?'high':finalRank>=2?'mid':'low') : (mbScore >= 80 ? 'high' : (mbScore >= 65 ? 'mid' : 'low'));
+  const igBand = igScore >= 75 ? 'high' : (igScore >= 60 ? 'mid' : 'low');
+  const matrix = {
+    'high-high': {verdict: 'BOTH VALIDATED', cls: 'green',  desc: 'High potential + strong financials. Initiate when macro permits.'},
+    'high-mid':  {verdict: 'HIGH POTENTIAL, VERIFY',       cls: 'yellow', desc: 'Strong potential but moderate financials. Verify OCF/NI before initiation.'},
+    'high-low':  {verdict: 'SPECULATIVE',                   cls: 'orange', desc: "Mayer trap: high-potential with weak financials. Small position only."},
+    'mid-high':  {verdict: 'QUALITY COMPOUNDER',            cls: 'yellow', desc: 'Strong financials but limited multibagger optionality. See Explosive Stocks track.'},
+    'mid-mid':   {verdict: 'WATCH LIST',                    cls: 'gold',   desc: 'Both moderate. Monitor quarterly for improvements.'},
+    'mid-low':   {verdict: 'REJECT',                        cls: 'red',    desc: 'Weak financials, average potential. Pass.'},
+    'low-high':  {verdict: 'NOT A MULTIBAGGER',             cls: 'yellow', desc: 'Strong financials, no growth runway. Quality compounder / dividend play.'},
+    'low-mid':   {verdict: 'REJECT',                        cls: 'red',    desc: 'Below conviction threshold on both dimensions. Pass.'},
+    'low-low':   {verdict: 'REJECT',                        cls: 'red',    desc: 'Fails on both dimensions. Pass.'},
+  };
+  const key = mbBand + '-' + igBand;
+  const result = matrix[key];
+  const colors = {green: '#006100', yellow: '#92D050', gold: '#BF8F00', orange: '#ED7D31', red: '#C00000'};
+  const bg = colors[result.cls];
+  const textColor = ['green', 'orange', 'red'].includes(result.cls) ? '#FFFFFF' : '#000000';
+  let html = '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">';
+  html += '<div style="background:var(--light-blue); padding:18px; border-radius:8px; border-left:5px solid var(--blue);"><div style="font-size:11px; color:var(--grey-d); text-transform:uppercase; font-weight:700;">Multibagger Score</div><div style="font-size:32px; font-weight:700; color:var(--navy); margin:6px 0;">' + mbScore.toFixed(1) + ' / 100</div><div style="font-size:12px; color:var(--grey-d);">Band: <b>' + mbBand.toUpperCase() + '</b></div></div>';
+  html += '<div style="background:#FFF2CC; padding:18px; border-radius:8px; border-left:5px solid var(--gold);"><div style="font-size:11px; color:var(--grey-d); text-transform:uppercase; font-weight:700;">IG Score</div><div style="font-size:32px; font-weight:700; color:var(--navy); margin:6px 0;">' + igScore + ' / 100</div><div style="font-size:12px; color:var(--grey-d);">Band: <b>' + igBand.toUpperCase() + '</b></div></div>';
+  html += '</div>';
+  if (market === 'us' && zacks) {
+    const zacksColors = {1: '#006100', 2: '#92D050', 3: '#FFFF00', 4: '#ED7D31', 5: '#C00000'};
+    const zacksText = {1: 'Strong Buy', 2: 'Buy', 3: 'Hold', 4: 'Sell', 5: 'Strong Sell'};
+    const zt = ['', '#FFFFFF', '#000000', '#000000', '#FFFFFF', '#FFFFFF'][zacks];
+    html += '<div style="background:' + zacksColors[zacks] + '; color:' + zt + '; padding:14px 18px; border-radius:8px; margin-bottom:16px; text-align:center; font-weight:700;">Zacks Rank: ' + zacks + ' - ' + zacksText[zacks] + ' <span style="font-weight:400; font-size:12px;">(informational only)</span></div>';
+  }
+  html += '<div style="background:' + bg + '; color:' + textColor + '; padding:20px 24px; border-radius:8px; text-align:center; box-shadow:var(--shadow);"><div style="font-size:18px; font-weight:700; margin-bottom:8px;">' + result.verdict + '</div><div style="font-size:13px; line-height:1.5; font-weight:400;">' + result.desc + '</div></div>';
+  return html;
+}
+
+function calcMbPsx(){
+  const inp={rev:val('psx_mb_rev'),eps:val('psx_mb_eps'),roe:val('psx_mb_roe'),roce:val('psx_mb_roce'),de:val('psx_mb_de'),ocf:val('psx_mb_ocf'),sponsor:val('psx_mb_sponsor'),mcap:val('psx_mb_mcap'),tam:parseInt(document.getElementById('psx_mb_tam').value),moat:parseInt(document.getElementById('psx_mb_moat').value),reinv:parseInt(document.getElementById('psx_mb_reinv').value),owner:parseInt(document.getElementById('psx_mb_owner').value),pe:val('psx_mb_pe'),wacc:val('psx_mb_wacc')};
+  const score=scoreMultibagger(inp,'psx');
+  document.getElementById('psx_mb_score_box').innerHTML=renderMbScoreBox(score);
+  document.getElementById('psx_mb_compound_box').innerHTML=renderCompoundCalc(inp.eps,1000000,'PKR');
+  const psxFunnel=(LIVE&&Array.isArray(LIVE.psx_funnel)&&LIVE.psx_funnel.length)?LIVE.psx_funnel:[
+    ['PSX Total Listed Companies',561,'Source: PSX official listings count May 2026'],
+    ['Outside KSE-30 (excl. large caps)',480,'Removed KSE-30 large caps (already in Explosive Stocks track)'],
+    ['Sweet Spot Tier (PKR 5-30bn market cap)',150,'Multibagger market cap range — informal PSX small-cap'],
+    ['+ Growth Filter (Fwd Earnings Growth >20%)',30,'Forecast earnings growth >=20% per Simply Wall St + PSX broker reports'],
+    ['+ Moat OR Insider Gate (CRITICAL)',18,'Clear moat (brand/network/cost/switching/regulatory) OR sponsor holding >=40% with recent insider buying'],
+    ['+ Multibagger Fit Assessment',10,'Manual qualitative review -> Final candidate shortlist below'],
+  ];
+  document.getElementById('psx_mb_funnel').innerHTML=renderFunnel(psxFunnel,'psx');
+  const psxSectors=[
+    ['Cement',20,10,5,4,2],['Banks',22,6,2,2,0],['Power / Utilities',18,12,3,2,1],
+    ['Fertilizer',7,2,1,1,0],['Textile',55,30,3,1,0],['Technology / IT',10,5,3,2,1],
+    ['Pharma',12,6,2,1,0],['E&P (Oil & Gas)',5,1,1,1,0],['OMC',5,2,1,1,0],
+    ['Auto Assemblers',8,3,2,2,1],['Auto Parts',15,10,2,1,0],['Cable & Electrical',10,6,1,1,0],
+    ['Engineering / Steel',14,8,3,3,1],['Glass / Ceramics',5,3,2,2,1],['Paper & Board',10,7,1,0,0],
+    ['Refinery',5,1,1,1,0],['Packaging',6,4,3,3,2],['Food / Beverage',20,8,2,1,1],
+    ['Sugar',30,15,0,0,0],['Insurance',15,5,1,0,0],['Transport / Logistics',8,3,2,2,1],
+    ['Chemicals',18,8,2,1,0],['Real Estate / REIT',6,2,1,1,0],['Modarabas',25,10,0,0,0],
+    ['Closed-End Mutual Funds',15,8,0,0,0],['Miscellaneous (12 other sectors)',197,11,1,0,0],
+  ];
+  document.getElementById('psx_mb_sector_table').innerHTML=renderSectorBreakdown(psxSectors,'psx');
+  const igScore=val('psx_mb_ig');
+  document.getElementById('psx_mb_decision_matrix').innerHTML=renderDecisionMatrix(score.total,igScore,'psx',null,score.finalRank);
+  const tiers=[
+    ['Pure micro-cap zone','< PKR 5bn','Highest 50-100x potential, highest failure rate, smallest positions'],
+    ['Sweet spot','PKR 5bn - 30bn','Mayer-equivalent median for PSX. Best risk-adjusted multibagger zone.'],
+    ['Late-stage multibagger','PKR 30bn - 100bn','5-10x potential remaining. Add to existing winners here.'],
+    ['Reject — refer to Explosive Stocks track','> PKR 100bn','Already large-cap by PSX informal convention. Treat as quality compounder.'],
+  ];
+  let tHtml='<table><thead><tr><th>Tier</th><th>Market Cap Range</th><th>Profile</th></tr></thead><tbody>';
+  tiers.forEach((t,i)=>{const cls=i===0?'pos':i===1?'pos':i===2?'warn':'neg';tHtml+=`<tr class="${cls}"><td><b>${t[0]}</b></td><td>${t[1]}</td><td>${t[2]}</td></tr>`;});
+  tHtml+='</tbody></table>';
+  document.getElementById('psx_mb_tiers_table').innerHTML=tHtml;
+  const live=[
+    ['MUGHAL','Mughal Iron & Steel','Steel',26.3,71.4,123.4,73,45.1,0,'Sweet spot','HIGH-CONVICTION','High growth + 73% broker upside. Steel demand from infra revival. Active in re-roll mill expansion.'],
+    ['ECOP','EcoPack Limited','Packaging',1.9,39.2,80.3,105,7.3,5.1,'Pure micro-cap','HIGH-CONVICTION','PKR 1.9bn micro-cap. 105% broker upside. PET preform niche. Highest 50-100x optionality if execution holds.'],
+    ['PIBTL','Pakistan Intl Bulk Terminal','Transport',29.8,16.7,33.0,98,30.1,0,'Sweet spot','HIGH-CONVICTION','Karachi port coal terminal monopoly. 98% broker upside, 30%+ revenue growth from coal volumes.'],
+    ['GHGL','Ghani Glass','Glass/Materials',35.0,35.0,65.9,88,11.9,5.7,'Late-stage','STRONG','Float glass duopoly. 88% upside per AHL. Defensive moat + dividend yield combo.'],
+    ['PABC','Pak Aluminum Beverage Cans','Packaging',35.1,97.1,124.0,28,6.9,0,'Late-stage','STRONG','Beverage can duopoly. Already a 10x past multibagger (2018-24). 28% remaining target upside.'],
+    ['ACPL','Attock Cement','Cement',36.5,265.6,337.3,27,27.6,3.0,'Late-stage','STRONG','27% upside + 27.6% growth. Cement demand revival on infra spending.'],
+    ['NCPL','Nishat Chunian Power','Utilities',27.4,74.5,38.0,-49,0,9.4,'Sweet spot','WATCH','9.4% dividend yield but broker target BELOW current price. Hold for income only; not a growth multibagger.'],
+    ['SYM','Symmetry Group','Software (IT)',2.9,10.3,null,null,-23.8,0.5,'Pure micro-cap','WATCH','PKR 2.9bn micro-cap IT play. Negative recent return. Watch quarterly results before commit.'],
+    ['IML','Ismail Industries','Food/Snacks',2.7,27.1,null,null,null,0,'Pure micro-cap','WATCH','PKR 2.7bn snacks brand (Bisconni). 69.6% 1Y return — may already be running. Verify TTM growth + sponsor.'],
+    ['SAZEW','Sazgar Engineering Works','Auto (3W+EV)',null,null,null,null,null,null,'Sweet spot','STRONG','3-wheeler + Haval SUV assembler. 7 broker picks for 2026. Verify current price + market cap.'],
+  ];
+  let liveHtml='<table style="font-size:12px;"><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Mkt Cap (PKR bn)</th><th>Price</th><th>Target</th><th>Upside</th><th>Growth Fwd</th><th>Yield</th><th>Tier</th><th>Status</th><th>Thesis</th></tr></thead><tbody>';
+  live.forEach(s=>{const cls=s[10]==='HIGH-CONVICTION'?'pos':(s[10]==='STRONG'?'warn':'');const fmt=v=>v===null?'—':(typeof v==='number'?v.toLocaleString():v);const upcls=s[6]&&s[6]>50?'style="background:#C6EFCE; font-weight:700;"':(s[6]&&s[6]>25?'style="background:#FFEB9C;"':(s[6]&&s[6]<0?'style="background:#FFC7CE;"':''));liveHtml+=`<tr class="${cls}"><td><b>${s[0]}</b></td><td>${s[1]}</td><td>${s[2]}</td><td>${fmt(s[3])}</td><td>${fmt(s[4])}</td><td>${fmt(s[5])}</td><td ${upcls}>${s[6]===null?'—':s[6]+'%'}</td><td>${s[7]===null?'—':s[7]+'%'}</td><td>${s[8]===null?'—':s[8]+'%'}</td><td>${s[9]}</td><td><b>${s[10]}</b></td><td>${s[11]}</td></tr>`;});
+  liveHtml+='</tbody></table>';
+  liveHtml+='<p style="margin-top:10px; font-size:12px; color:var(--grey-d);"><strong>Notes:</strong> Upside % = Broker target vs current price. Growth Fwd = Simply Wall St forecasted earnings growth. Verify EACH candidate via Sarmaaya 6/9 + sponsor holding + annual report before any position initiation. Macro reads RED zone — limit new initiations to 20% of equity allocation per Tab 7.</p>';
+  document.getElementById('psx_mb_live_candidates').innerHTML=liveHtml;
+  const hist=[
+    ['SYS (Systems Limited)','2017-2024','~25x','Tech IT exports','Founder still chairman (Aezaz Hussain)','IT export boom + Visionet acquisition + reinvest at 25%+ ROCE'],
+    ['PABC (PAK Aluminum Beverage Cans)','2018-2024','~10x','Packaging','Niche beverage can monopoly in Pakistan','Coca-Cola/Pepsi capacity expansion + duopoly pricing power'],
+    ['SRVI (Service Industries)','2019-2023','~8x','Footwear export','Family-owned, export pivot','PKR weakness 2021-22 boosted dollar revenue; brand portfolio'],
+    ['EPCL (Engro Polymer)','2020-2022','~10x','Specialty Chemicals (PVC)','Engro group sponsor','PVC cycle peak + capacity expansion + import substitution'],
+    ['AIRLINK (Air Link Communication)','2022-2024','~5x','Tech distribution','Distribution monopoly for smartphone brands','Smartphone penetration + mobile manufacturing'],
+  ];
+  let hHtml='<table><thead><tr><th>Stock</th><th>Run Period</th><th>Multiple</th><th>Sector</th><th>Key Signal</th><th>Engine</th></tr></thead><tbody>';
+  hist.forEach(h=>{hHtml+=`<tr class="pos"><td><b>${h[0]}</b></td><td>${h[1]}</td><td><b>${h[2]}</b></td><td>${h[3]}</td><td>${h[4]}</td><td>${h[5]}</td></tr>`;});
+  hHtml+='</tbody></table>';
+  document.getElementById('psx_mb_history_table').innerHTML=hHtml;
+  const cmp=[
+    ['Goal','Asymmetric upside via 10x+ over 10-15 years','Quality compounders at reasonable price'],
+    ['Sarmaaya gate','6/9 acceptable (C3, C5 exempted for growth phase)','9/9 required (strict)'],
+    ['Valuation method','PEG <1.5 OR single-method DCF','7-method IV triangulation + 15% MoS'],
+    ['Margin of Safety','0% acceptable if growth + moat strong','>15% required'],
+    ['Holding period','10-20 years coffee-can','1-3 years actively managed'],
+    ['Position size','0.5-3% per name','4-7% per name'],
+    ['Capital allocation','20% of equity sleeve','80% of equity sleeve'],
+    ['Market cap target','<PKR 30bn (small/micro)','All market caps eligible'],
+    ['Macro filter','Tab 7 — relaxed action threshold','Tab 7 — strict action threshold'],
+  ];
+  let cHtml='<table><thead><tr><th>Dimension</th><th>Multibagger Track</th><th>Explosive Stocks Track</th></tr></thead><tbody>';
+  cmp.forEach(c=>{cHtml+=`<tr><td><b>${c[0]}</b></td><td>${c[1]}</td><td>${c[2]}</td></tr>`;});
+  cHtml+='</tbody></table>';
+  document.getElementById('psx_mb_comparison_table').innerHTML=cHtml;
+}
+function calcMbUs(){
+  const inp={rev:val('us_mb_rev'),eps:val('us_mb_eps'),roe:val('us_mb_roe'),roce:val('us_mb_roic'),de:val('us_mb_de'),ocf:val('us_mb_ocf'),sponsor:val('us_mb_insider'),mcap:val('us_mb_mcap'),tam:parseInt(document.getElementById('us_mb_tam').value),moat:parseInt(document.getElementById('us_mb_moat').value),reinv:parseInt(document.getElementById('us_mb_reinv').value),owner:parseInt(document.getElementById('us_mb_owner').value),pe:val('us_mb_pe'),wacc:val('us_mb_wacc')};
+  const score=scoreMultibagger(inp,'us');
+  document.getElementById('us_mb_score_box').innerHTML=renderMbScoreBox(score);
+  document.getElementById('us_mb_compound_box').innerHTML=renderCompoundCalc(inp.eps,10000,'USD');
+  const usFunnel=(LIVE&&Array.isArray(LIVE.us_funnel)&&LIVE.us_funnel.length)?LIVE.us_funnel:[
+    ['NYSE + NASDAQ + AMEX Listed Equities',5800,'Total US-listed common stocks across 3 exchanges (incl. ADRs)'],
+    ['US-domiciled investable (Russell 3000)',3000,'Removes ADRs, OTC, ultra-illiquid. Russell 3000 = 98% of US equity market cap.'],
+    ['Small-cap zone (Russell 2000: $300M-$2bn)',2000,'Per FINRA / Russell 2000 small-cap definition'],
+    ['+ Zacks Rank 1 or 2 (earnings revisions)',400,'Top ~20% by earnings revision momentum. Informational filter only — not a hard gate.'],
+    ['+ Revenue Growth >15% YoY',150,'Multibagger profile: growth engine must be running'],
+    ['+ Moat OR Insider Buying Gate (CRITICAL)',50,'Clear moat (brand/network/cost/switching/regulatory) OR insider Form 4 buying past 90 days'],
+    ['+ Multibagger Fit Assessment',8,'Manual qualitative review -> Final candidate shortlist below'],
+  ];
+  document.getElementById('us_mb_funnel').innerHTML=renderFunnel(usFunnel,'us');
+  const usSectors=[
+    ['Information Technology',950,280,60,18,1],['Health Care',820,340,45,10,2],['Industrials',700,260,25,8,2],
+    ['Consumer Discretionary',600,240,20,5,1],['Financials',750,330,15,4,1],['Consumer Staples',200,60,5,1,0],
+    ['Energy',250,85,8,2,0],['Materials',220,90,7,1,0],['Real Estate',250,140,5,0,0],
+    ['Communication Services',180,60,8,1,1],['Utilities',150,35,2,0,0],['ADRs / Foreign Listings',730,80,0,0,0],
+  ];
+  document.getElementById('us_mb_sector_table').innerHTML=renderSectorBreakdown(usSectors,'us');
+  const igScore=val('us_mb_ig');
+  const zacks=parseInt(document.getElementById('us_mb_zacks').value);
+  document.getElementById('us_mb_decision_matrix').innerHTML=renderDecisionMatrix(score.total,igScore,'us',zacks,score.finalRank);
+  const tiers=[
+    ['Nano-cap','< $50M','Highest 100-bagger potential, highest liquidity risk'],
+    ['Micro-cap zone','$50M - $300M',"Mayer's historical 100-bagger zone (median $500M in 2014 dollars)"],
+    ['Small-cap sweet spot','$300M - $2bn','FINRA/Russell 2000 small-cap. Highest historical multibagger hit rate.'],
+    ['Mid-cap','$2bn - $10bn','Late-stage multibagger zone. 5-10x potential remaining.'],
+    ['Large-cap — refer to Explosive Stocks track','> $10bn','Multibagger potential largely capped. Quality compounder territory.'],
+  ];
+  let tHtml='<table><thead><tr><th>Tier</th><th>Market Cap Range (USD)</th><th>Profile</th></tr></thead><tbody>';
+  tiers.forEach((t,i)=>{const cls=i===0?'warn':i<=2?'pos':i===3?'warn':'neg';tHtml+='<tr class="'+cls+'"><td><b>'+t[0]+'</b></td><td>'+t[1]+'</td><td>'+t[2]+'</td></tr>';});
+  tHtml+='</tbody></table>';
+  document.getElementById('us_mb_tiers_table').innerHTML=tHtml;
+  const live=[
+    ['PLPC','Preformed Line Products','Power/Comm Infra',420,90,21,'Significant insider ownership',2,'Small-cap sweet spot','HIGH-CONVICTION','Energy + comms infrastructure. Profitable, clean balance sheet. Q3 rev +21% YoY. Family-controlled. Motley Fool small-cap AI pick.'],
+    ['MGNI','Magnite','AdTech',1900,13,15,'Mixed insider activity',2,'Small-cap sweet spot','STRONG','CTV ad-tech leader. Connected TV programmatic growth tailwind. Motley Fool 2026 small-cap recommendation.'],
+    ['SG','Sweetgreen','Fast Casual Dining',1200,11,18,'Founder still active',3,'Small-cap sweet spot','STRONG','Founder-led fast casual. Automated kitchen rollout. Motley Fool 2026 pick. Negative FCF currently — speculative but high optionality.'],
+    ['TOI','The Oncology Institute','Healthcare',1240,12,41,'Insider buying Mar-Apr 2026',2,'Small-cap sweet spot','STRONG','Q1 2026 revenue +41% YoY ($147M vs $104M). Healthcare services growth. Not yet profitable — verify path to FCF.'],
+    ['INMD','InMode','Med Devices',2100,null,5,'Buyback program 10% of float',3,'Mid-cap (late stage)','WATCH','77.8% gross margin specialty med devices. Earnings forecast -0.6% next 3yrs = headwind. Cheap valuation but limited growth.'],
+    ['TRS','TriMas Corporation','Packaging/Industrial',null,null,10,'Insider buying',3,'Sweet spot','WATCH','Q1 rev +10.4% YoY. Activist-driven restructuring. Insider conviction. Cyclical.'],
+    ['ADV','Advantage Solutions','Consumer Services',1350,null,0,'Insider purchase Mar 2026',4,'Small-cap sweet spot','WATCH','Brand/retail services. Q4 2025 net loss $161M. Debt restructure in progress. Speculative turnaround.'],
+    ['PKBK','Parke Bancorp','Community Bank',180,null,33,'Insider buying',2,'Micro-cap','WATCH','NJ community bank. Q1 NII +33% YoY ($22M vs $16M). 50% net income margin. Insider conviction. Pure micro-cap.'],
+  ];
+  let liveHtml='<table style="font-size:12px;"><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th>Mkt Cap ($M)</th><th>Price</th><th>Rev Growth</th><th>Insider Signal</th><th>Zacks</th><th>Tier</th><th>Status</th><th>Thesis</th></tr></thead><tbody>';
+  live.forEach(s=>{const cls=s[9]==='HIGH-CONVICTION'?'pos':(s[9]==='STRONG'?'warn':'');const fmt=v=>v===null?'—':(typeof v==='number'?'$'+v.toLocaleString():v);const growthCls=s[5]&&s[5]>20?'style="background:#C6EFCE; font-weight:700;"':(s[5]&&s[5]>10?'style="background:#FFEB9C;"':'');const zacksBg={1:'#006100',2:'#92D050',3:'#FFFF00',4:'#ED7D31',5:'#C00000'}[s[7]]||'#CCCCCC';const zacksText=[1,4,5].includes(s[7])?'#FFFFFF':'#000000';liveHtml+='<tr class="'+cls+'"><td><b>'+s[0]+'</b></td><td>'+s[1]+'</td><td>'+s[2]+'</td><td>'+(s[3]===null?'—':'$'+s[3]+'M')+'</td><td>'+fmt(s[4])+'</td><td '+growthCls+'>'+(s[5]===null?'—':s[5]+'%')+'</td><td>'+s[6]+'</td><td style="background:'+zacksBg+'; color:'+zacksText+'; font-weight:700; text-align:center;">'+s[7]+'</td><td>'+s[8]+'</td><td><b>'+s[9]+'</b></td><td>'+s[10]+'</td></tr>';});
+  liveHtml+='</tbody></table>';
+  liveHtml+='<p style="margin-top:10px; font-size:12px; color:var(--grey-d);"><strong>Notes:</strong> Zacks Rank 1=Strong Buy, 2=Buy, 3=Hold, 4=Sell, 5=Strong Sell. Rev Growth = most recent quarterly YoY. Insider Signal = SEC Form 4 filings activity. Verify via 10-K / 10-Q + insider ownership % on SEC EDGAR before initiation.</p>';
+  document.getElementById('us_mb_live_candidates').innerHTML=liveHtml;
+  const hist=[
+    ['NVDA','2015-2025','~70x','Semiconductors','Founder-CEO Jensen Huang','AI inference monopoly + CUDA moat + datacenter compute demand'],
+    ['MELI (MercadoLibre)','2016-2024','~15x','E-commerce LatAm','Founder-CEO Marcos Galperin','LatAm e-commerce + fintech (Mercado Pago) cross-sell'],
+    ['AXON','2019-2024','~12x','Defense Tech','Founder Rick Smith still active','Tasers + body cameras + cloud platform recurring revenue'],
+    ['ENPH','2019-2022','~30x','Solar microinverters','Founder-CTO Raghu Belur active','Residential solar boom + IRA tax credits + product cycle'],
+    ['TPL (Texas Pacific Land)','2018-2024','~7x','Permian Basin land','Insider-driven board, low float','Shale oil royalty + water rights monopoly in Permian'],
+    ['ANET (Arista) pre-2019','2014-2019','~5x','Data center networking','Founder + Ken Duda 10%+ insider','Cloud datacenter switching displacement of Cisco'],
+    ['MSCI','2010-2020','~12x','Index/ESG data','Spin-off from MS, capital-light platform','Index licensing fees + ESG data subscriptions'],
+  ];
+  let hHtml='<table><thead><tr><th>Stock</th><th>Run Period</th><th>Multiple</th><th>Sector</th><th>Key Signal</th><th>Engine</th></tr></thead><tbody>';
+  hist.forEach(h=>{hHtml+='<tr class="pos"><td><b>'+h[0]+'</b></td><td>'+h[1]+'</td><td><b>'+h[2]+'</b></td><td>'+h[3]+'</td><td>'+h[4]+'</td><td>'+h[5]+'</td></tr>';});
+  hHtml+='</tbody></table>';
+  document.getElementById('us_mb_history_table').innerHTML=hHtml;
+}
+// =========================================================
+// TCE + EXPLOSIVE
+// =========================================================
+function explosiveVerdictClass(v){if(!v)return'neutral';const u=v.toUpperCase();if(u.startsWith('EXPLOSIVE'))return'pos';if(u.startsWith('FINANCIAL'))return'warn';if(u.startsWith('QUALITY-GROWTH')||u.startsWith('INFLECTION'))return'warn';if(u.startsWith('NOT EXPLOSIVE'))return'neg';return'neutral';}
+function sigDot(s){const c=s===true?'#10b981':s===false?'#ef4444':'#d1d5db';return`<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${c};"></span>`;}
+
+function usMacroVerdict(){
+  var U=(LIVE&&LIVE.macros&&LIVE.macros.us)?LIVE.macros.us:{};
+  var c={fed_rate:U.fed_rate,core_pce:U.core_pce,us_10y:U.us_10y,us_2y:U.us_2y,unemployment:U.unemployment,gdp_growth:U.gdp_growth,hy_spread:U.hy_spread};
+  c.curve=(U.us_10y!=null&&U.us_2y!=null)?((U.us_10y-U.us_2y)*100):NaN;
+  return usRollup(c);
+}
+function explosiveMacroBanner(market){
+  if(market==='us'){
+    var V=usMacroVerdict();
+    return '<strong>Macro gate (US):</strong> Regime \u2014 '+V.regime+' \u00b7 Monetary \u2014 '+V.mon+' \u00b7 Economy \u2014 '+V.econ+'. '
+      +(V.trip
+        ? '\u26A0 Structural-break tripwire TRIPPED \u2014 treat explosive names as risk-off; defend.'
+        : 'Tripwire clear \u2192 weakness is a rate-driven correction, not structural. Higher-for-longer favors sizing DOWN rate-sensitive/long-duration growth and leaning energy / value / quality. Sized to US regime, never the PSX zone.');
+  }
+  var RP=psxRollup();
+  return '<strong>Macro gate (PSX):</strong> Regime \u2014 '+RP.regime+' \u00b7 Devaluation \u2014 '+RP.deval+'. '
+    +(RP.defensive
+      ? 'SBP \u226511% = DEFENSIVE: overweight banks, underweight leveraged cyclicals. Treat explosive PSX candidates as watchlist until the rate cycle turns.'
+      : 'Rate cycle easing \u2192 leveraged cyclicals can lead; explosive PSX candidates carry more weight.');
+}
+function calcExplosive(){
+  document.getElementById('explosive_us_macro').innerHTML=explosiveMacroBanner('us');
+  document.getElementById('explosive_psx_macro').innerHTML=explosiveMacroBanner('psx');
+  var __tg=document.getElementById('tce_regime_gate');
+  if(__tg){var __V=usMacroVerdict(),__P=psxRollup();__tg.innerHTML='<strong>Regime gate:</strong> US \u2014 '+__V.regime+(__V.trip?' \u26A0 tripwire TRIPPED':'')+' \u00b7 PSX \u2014 '+__P.regime+'. Read TCE convergence within this regime.';}
+  renderExplosiveTable('explosive_us_table',(LIVE&&Array.isArray(LIVE.explosive_us))?LIVE.explosive_us:[],'us');
+  renderExplosiveTable('explosive_psx_table',(LIVE&&Array.isArray(LIVE.explosive_psx))?LIVE.explosive_psx:[],'psx');
+  // Load IM3 scores from data.json into im3Scores (no API call needed)
+  if (LIVE && Array.isArray(LIVE.explosive_us)) {
+    LIVE.explosive_us.forEach(r => {
+      if (r.im3 && !r.im3.error) im3Scores[r.ticker] = r.im3;
+    });
+  }
+  // Also load IM3 scores for TCE stocks
+  if (LIVE && Array.isArray(LIVE.tce_us)) {
+    LIVE.tce_us.forEach(r => {
+      if (r.im3 && !r.im3.error) im3Scores[r.ticker] = r.im3;
+    });
+  }
+  // PSX IM3 scores (written by the daily.yml PSX step into the PSX record arrays)
+  ['explosive_psx','tce_psx','psx_candidates'].forEach(function(key){
+    if (LIVE && Array.isArray(LIVE[key])) {
+      LIVE[key].forEach(r => { if (r.im3 && !r.im3.error) im3Scores[r.ticker] = r.im3; });
+    }
+  });
+  // Re-render cells that now have scores from data.json
+  if (Object.keys(im3Scores).length > 0) {
+    Object.keys(im3Scores).forEach(ticker => im3RefreshRow(ticker));
+  }
+}
+// =========================================================
+// IM3 162-POINT QUALITY FILTER — inline layer on Explosive + TCE tables
+// Claude API scores each ticker live. Results persist in storage.
+// No new tabs, no new panels — IM3 column added to existing tables.
+// =========================================================
+const IM3_STORAGE_KEY = 'im3_scores_v3';
+let im3Scores = {};
+let im3Busy   = {};   // { ticker: true } while in-flight
+
+async function im3LoadStored() {
+  try {
+    if (!window.storage) return;
+    const r = await window.storage.get(IM3_STORAGE_KEY);
+    if (r && r.value) {
+      const stored = JSON.parse(r.value);
+      // Skip any errored records — treat as unscored so user can retry
+      im3Scores = {};
+      Object.entries(stored).forEach(([k,v]) => { if (!v.error) im3Scores[k] = v; });
+    }
+  } catch(e){ im3Scores={}; }
+}
+async function im3SaveStored() {
+  try { if (window.storage) await window.storage.set(IM3_STORAGE_KEY, JSON.stringify(im3Scores)); } catch(e){}
+}
+
+// Refresh a single row's IM3 cell without re-rendering the whole table
+function im3RefreshRow(ticker) {
+  document.querySelectorAll(`[data-im3-cell="${ticker}"]`).forEach(cell => {
+    cell.innerHTML = im3CellHTML(ticker);
+  });
+  // Refresh detail row if open
+  ['', '-tce'].forEach(suffix => {
+    const dr = document.getElementById(`im3-detail-${ticker}${suffix}`);
+    if (dr && !dr.classList.contains('im3-detail-closed')) {
+      dr.innerHTML = im3DetailHTML(ticker);
+    }
+  });
+}
+
+// Mini IM3 cell for the table column
+function im3CellHTML(ticker) {
+  const r = im3Scores[ticker];
+  const busy = im3Busy[ticker];
+  if (busy) return `<span style="color:var(--grey-d);font-size:11px;font-family:var(--font-mono);">⏳ scoring…</span>`;
+
+  // Unscored OR previously errored → pending next scan (scores come from GitHub Actions)
+  if (!r || r.error) {
+    return `<span style="color:#9ca3af;font-size:11px;">Pending next scan</span>`;
+  }
+
+  const gc = r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f';
+  const fc = r.pct>=75?'#059669':r.pct>=60?'#D97706':r.pct>=50?'#F97316':'#E11D48';
+  return `<div style="min-width:110px;cursor:pointer;" onclick="im3ToggleDetail('${ticker}')">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span class="im3-grade-badge ${gc}" style="padding:2px 7px;font-size:11px;">Grade ${r.grade}</span>
+      <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;" title="${r.is_bank?'Bank — scored on bank-applicable factors only (System B), NA excluded':r.is_psx?'PSX — TV single-period; reduced denominator (history metrics NA, broker layer pending)':'Scored on all 162 points'}">${r.score}/${r.max||162}</span>
+      ${r.is_bank?'<span style="font-size:9px;background:#EEF2FF;color:var(--navy);padding:1px 4px;border-radius:3px;font-weight:700;">BANK</span>':''}
+    </div>
+    <div class="im3-score-bar" style="margin-top:4px;height:5px;">
+      <div class="im3-score-fill" style="width:${r.pct}%;background:${fc};"></div>
+    </div>
+    <div style="font-size:10px;color:var(--grey-d);margin-top:2px;">${r.pct}% · click to expand</div>
+  </div>`;
+}
+
+// Toggle detail row open/closed
+function im3ToggleDetail(ticker) {
+  const dr = document.getElementById(`im3-detail-${ticker}`);
+  if (!dr) return;
+  const closed = dr.classList.contains('im3-detail-closed');
+  if (closed) {
+    dr.classList.remove('im3-detail-closed');
+    dr.style.display = '';
+    dr.innerHTML = im3DetailHTML(ticker);
+    dr.scrollIntoView({behavior:'smooth', block:'nearest'});
+  } else {
+    dr.classList.add('im3-detail-closed');
+    dr.style.display = 'none';
+  }
+}
+
+// Full detail HTML for the expandable row
+function im3DetailHTML(ticker) {
+  const r = im3Scores[ticker];
+  if (!r || r.error) return `<td colspan="20"><div style="padding:12px;color:var(--red);">Error: ${r?.error||'No data'}</div></td>`;
+
+  // Map the flat 45-metric array back into the 6 IM3 sections (+ bank block).
+  const IM3_SECTIONS = [
+    {label:'📈 Growth',          keys:['rev_cagr','op_cagr','np_cagr','op_margin','np_margin','tax_rate','roe','eps_trend']},
+    {label:'🏗 Stability',       keys:['int_coverage','de_ratio','total_debt','current_ratio','cfo_trend','net_cash','ccfo_cpat','nfa_turn']},
+    {label:'💰 Valuation',       keys:['pe_ratio','peg_ratio','earn_yield','pb_ratio','graham_val','ps_ratio','div_yield','ev_ebitda','mos','val_shareholders']},
+    {label:'📦 Inventory',       keys:['inv_turn','dro','fat','ccc']},
+    {label:'💵 Cash Flow',       keys:['fcf_trend','croic','fcf_sale','fcf_cfo','cash_debt','cash_share']},
+    {label:'🛡 Risk & Capital',  keys:['altman_z','beneish_m','piotroski_f','roic_wacc']},
+    {label:'🏦 Bank Metrics',    keys:['nim','casa','adr','npl','car']},
+  ];
+  const IM3_LABELS = {
+    rev_cagr:'Revenue CAGR',op_cagr:'Operating CAGR',np_cagr:'Net Profit CAGR',op_margin:'Operating Margin',np_margin:'Net Margin',tax_rate:'Tax Rate',roe:'ROE',eps_trend:'EPS Trend',
+    int_coverage:'Interest Coverage',de_ratio:'D/E Ratio',total_debt:'Total Debt',current_ratio:'Current Ratio',cfo_trend:'CFO Trend',net_cash:'Net Cash',ccfo_cpat:'CFO/PAT',nfa_turn:'Fixed-Asset Turn',
+    pe_ratio:'P/E',peg_ratio:'PEG',earn_yield:'Earnings Yield',pb_ratio:'P/B',graham_val:'Graham Value',ps_ratio:'P/S',div_yield:'Dividend Yield',ev_ebitda:'EV/EBITDA',mos:'Margin of Safety',val_shareholders:'Value to Shareholders',
+    inv_turn:'Inventory Turn',dro:'Days Receivable',fat:'Fixed-Asset Turn',ccc:'Cash Conversion Cycle',
+    fcf_trend:'FCF Trend',croic:'CROIC',fcf_sale:'FCF/Sales',fcf_cfo:'FCF/CFO',cash_debt:'Cash/Debt',cash_share:'Cash/Share',
+    altman_z:'Altman Z',beneish_m:'Beneish M',piotroski_f:'Piotroski F',roic_wacc:'ROIC vs WACC',
+    nim:'NIM',casa:'CASA',adr:'ADR',npl:'NPL',car:'CAR',
+  };
+  const _m = Array.isArray(r.metrics) ? r.metrics : [];
+  const _byKey = {}; _m.forEach(m => { _byKey[m.key] = m; });
+  // Derive strengths/concerns from metrics when the scorer didn't supply them.
+  const _strengths = (r.top_strengths && r.top_strengths.length) ? r.top_strengths
+    : _m.filter(m=>m.verdict==='GOOD'&&m.max>0).sort((a,b)=>b.max-a.max).slice(0,4).map(m=>IM3_LABELS[m.key]||m.key);
+  const _concerns = (r.top_concerns && r.top_concerns.length) ? r.top_concerns
+    : _m.filter(m=>m.verdict==='BAD'&&m.max>0).sort((a,b)=>b.max-a.max).slice(0,4).map(m=>IM3_LABELS[m.key]||m.key);
+  const _gradeText = r.grade==='FAIL' ? 'F' : r.grade;
+
+  let html = `<td colspan="20" style="padding:0;background:#F8F9FE;">
+    <div style="padding:20px 24px;border-top:2px solid var(--navy);">
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+      <div>
+        <span style="font-family:var(--font-head);font-size:16px;font-weight:700;">${ticker} — IM3 Quality Score</span>
+        ${r.is_bank?'<span style="background:#EEF2FF;color:var(--navy);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:8px;">🏦 BANK SCORING</span>':''}
+        <span class="im3-grade-badge ${r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f'}" style="margin-left:8px;">${r.score}/${r.max||162} · ${r.pct}% · Grade ${_gradeText}</span>
+      </div>
+      <button onclick="im3ToggleDetail('${ticker}')" style="background:none;border:1px solid #e5e7eb;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;color:var(--grey-d);">✕ Close</button>
+    </div>
+
+    <!-- Strengths / Concerns -->
+    ${(_strengths.length||_concerns.length) ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div style="background:var(--green-l);border-radius:8px;padding:12px 14px;">
+        <div style="font-weight:700;color:#065F46;font-size:11px;margin-bottom:6px;">TOP STRENGTHS</div>
+        ${_strengths.map(s=>`<div style="font-size:11px;color:#065F46;margin-bottom:3px;">✓ ${s}</div>`).join('')}
+      </div>
+      <div style="background:var(--red-l);border-radius:8px;padding:12px 14px;">
+        <div style="font-weight:700;color:#991B1B;font-size:11px;margin-bottom:6px;">TOP CONCERNS</div>
+        ${_concerns.map(s=>`<div style="font-size:11px;color:#991B1B;margin-bottom:3px;">✗ ${s}</div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    <!-- Sections grid -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+    ${IM3_SECTIONS.map(sec => {
+      const mets = sec.keys.map(k=>_byKey[k]).filter(m=>m && m.max>0);
+      if (!mets.length) return '';
+      const sscore = mets.reduce((a,m)=>a+(m.pts||0),0);
+      const smax   = mets.reduce((a,m)=>a+(m.max||0),0);
+      const sp = smax>0?Math.round(sscore/smax*100):0;
+      const sc = sp>=75?'#065F46':sp>=50?'#92400E':'#991B1B';
+      const sb = sp>=75?'#f0fdf4':sp>=50?'#fffbeb':'#fff1f2';
+      return `<div style="background:${sb};border-radius:8px;padding:12px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-weight:700;font-size:12px;color:${sc};">${sec.label}</div>
+          <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:${sc};">${sscore}/${smax}</div>
+        </div>
+        ${mets.map(m=>{
+          const vc=m.verdict==='GOOD'?'good':m.verdict==='WATCH'?'watch':m.verdict==='BAD'?'bad':'na';
+          return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:4px;align-items:center;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:11px;">
+            <div style="font-weight:500;">${IM3_LABELS[m.key]||m.key}</div>
+            <div><span class="im3-verdict-pill ${vc}">${m.verdict}</span></div>
+            <div style="font-family:var(--font-mono);font-weight:700;text-align:right;color:${m.pts===m.max?'var(--green)':m.pts===0?'#9ca3af':'var(--gold)'};">${m.pts}/${m.max}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }).join('')}
+    </div>
+
+    <!-- Provenance · shareholder yield · Peter-Lynch ratio -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;font-size:11px;">
+      ${r.src?`<span style="background:#EEF2FF;color:var(--navy);padding:2px 8px;border-radius:4px;font-weight:700;" title="fundamentals = single-period ratios/valuation source; history = multi-year statements source">DATA · fundamentals ${(r.src.fund||'—').toUpperCase()} · history ${(r.src.hist||'—').toUpperCase()}</span>`:''}
+      ${r.shareholder_yield_pct!=null?`<span style="background:#F8F9FE;border:1px solid #E5E7EB;color:var(--grey-d);padding:2px 8px;border-radius:4px;">Net shareholder yield <strong style="color:var(--ink);">${r.shareholder_yield_pct.toFixed(2)}%</strong></span>`:''}
+      ${(r.iv&&r.iv.peter_lynch!=null)?`<span style="background:#F8F9FE;border:1px solid #E5E7EB;color:var(--grey-d);padding:2px 8px;border-radius:4px;" title="Peter Lynch PEG-fair-value ratio (≈1 = fairly priced on growth)">Peter-Lynch ratio <strong style="color:var(--ink);">${r.iv.peter_lynch.toFixed(2)}</strong></span>`:''}
+      ${(r.piotroski!=null||r.altman_z!=null||r.beneish_m!=null)?`<span style="background:#F8F9FE;border:1px solid #E5E7EB;color:var(--grey-d);padding:2px 8px;border-radius:4px;">${r.piotroski!=null?'Piotroski '+r.piotroski+'/9':''}${r.altman_z!=null?' · Altman-Z '+r.altman_z:''}${r.beneish_m!=null?' · Beneish-M '+r.beneish_m:''}</span>`:''}
+    </div>
+
+    <!-- Intrinsic Values -->
+    ${r.iv?`<div style="margin-bottom:14px;">
+      <div style="font-weight:700;font-size:12px;color:var(--navy);margin-bottom:8px;">📐 Intrinsic Value vs Live Price ${r.price?'<span style="font-family:var(--font-mono);color:var(--grey-d);">($'+r.price.toFixed(2)+')</span>':''}</div>
+      <div style="font-size:10px;color:var(--grey-d);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Per-method intrinsic (each vs live price)</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        ${[{k:'dcf_eps',l:'DCF · EPS'},{k:'graham',l:'Graham √22.5'},{k:'dcf_fcf',l:'DCF · FCF'},{k:'dcf_cash',l:'DCF · Cash'}].map(iv=>{
+          const v=r.iv[iv.k]; const p=r.price||0;
+          const mos=v&&p?((v-p)/v*100):null;
+          const mc=mos===null?'#9ca3af':mos>=25?'#065F46':mos>=0?'#92400E':'#991B1B';
+          return `<div class="im3-iv-tile">
+            <div class="iv-label">${iv.l}</div>
+            <div class="iv-val">${v?'$'+v.toFixed(2):'—'}</div>
+            <div class="iv-mos" style="color:${mc};">${mos!==null?'MoS '+mos.toFixed(1)+'%':'—'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="font-size:10px;color:var(--grey-d);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Blended intrinsic (the scorer's composites)</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        ${[{k:'composite',l:'Composite',mk:null},{k:'intrinsic_fcf',l:'FCF-blend',mk:'mos_fcf_pct'},{k:'intrinsic_cash',l:'Cash-blend',mk:'mos_cash_pct'}].map(iv=>{
+          const v=r.iv[iv.k]; const p=r.price||0;
+          const mos = (iv.mk!=null) ? r.iv[iv.mk] : (v&&p?((v-p)/v*100):null);
+          const mc=(mos==null)?'#9ca3af':mos>=25?'#065F46':mos>=0?'#92400E':'#991B1B';
+          return `<div class="im3-iv-tile" style="border-color:var(--navy);">
+            <div class="iv-label">${iv.l}</div>
+            <div class="iv-val">${v?'$'+v.toFixed(2):'—'}</div>
+            <div class="iv-mos" style="color:${mc};">${mos!=null?'MoS '+mos.toFixed(1)+'%':'—'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="font-size:10px;color:var(--grey-d);margin-top:8px;line-height:1.5;">
+        DCF·EPS extrapolates trailing EPS growth and can overstate value for hyper-growth names; <strong>Graham</strong> and <strong>DCF·FCF/Cash</strong> are the conservative cross-checks. The Valuation-section <strong>Margin of Safety</strong> metric scores off these intrinsics — a wide spread between EPS and FCF/Cash reads signals growth priced aggressively.
+      </div>
+    </div>`:''}
+
+    ${r.data_note?`<div style="background:#f8f9fe;border-left:3px solid var(--blue);padding:8px 12px;border-radius:0 6px 6px 0;font-size:11px;color:var(--grey-d);"><strong>Data note:</strong> ${r.data_note}</div>`:''}
+    </div>
+  </td>`;
+  return html;
+}
+
+// ─────────────────────────────────────────────────────────
+// EXPLOSIVE TABLE — adds IM3 column + Score All button
+// ─────────────────────────────────────────────────────────
+function renderExplosiveTable(elId, rows, market) {
+  const el = document.getElementById(elId); if (!el) return;
+  if (!rows||rows.length===0) {
+    el.innerHTML=`<p style="color:var(--grey-d);">${market==='psx'?'PSX fundamentals not available from public API — verify in IM3 workbook.':'Waiting for scan data…'}</p>`;
+    return;
+  }
+  const scored=rows.filter(r=>r.verdict!=='INSUFFICIENT DATA');
+  const insuff=rows.filter(r=>r.verdict==='INSUFFICIENT DATA');
+  const counts={
+    explosive: rows.filter(r=>r.verdict&&r.verdict.startsWith('EXPLOSIVE')).length,
+    quality:   rows.filter(r=>r.verdict&&r.verdict.startsWith('QUALITY-GROWTH')).length,
+    financial: rows.filter(r=>r.verdict&&r.verdict.startsWith('FINANCIAL')).length,
+    not:       rows.filter(r=>r.verdict==='NOT EXPLOSIVE').length,
+    insuff:    insuff.length
+  };
+
+  let html=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:600;align-items:center;">`;
+  if(counts.explosive) html+=`<span style="background:var(--green-l);color:var(--green);padding:4px 10px;border-radius:6px;">🚀 ${counts.explosive} EXPLOSIVE</span>`;
+  if(counts.quality)   html+=`<span style="background:var(--orange-l);color:var(--orange);padding:4px 10px;border-radius:6px;">📈 ${counts.quality} QUALITY-GROWTH</span>`;
+  if(counts.financial) html+=`<span style="background:#EEF2FF;color:var(--navy);padding:4px 10px;border-radius:6px;">🏦 ${counts.financial} FINANCIAL → bank model (System B)</span>`;
+  if(counts.not)       html+=`<span style="background:var(--red-l);color:var(--red);padding:4px 10px;border-radius:6px;">✗ ${counts.not} NOT EXPLOSIVE</span>`;
+  if(counts.insuff)    html+=`<span style="background:#F3F4F6;color:#6B7280;padding:4px 10px;border-radius:6px;">◌ ${counts.insuff} INSUFFICIENT DATA</span>`;
+  if(market==='us') {
+    const scoredCount = rows.filter(r => r.im3 && !r.im3.error).length;
+    const explosiveCount = counts.explosive;
+    if (scoredCount > 0) {
+      html += `<span style="margin-left:auto;font-size:12px;color:var(--navy);font-weight:600;padding:5px 14px;background:#EEF2FF;border-radius:7px;">🧮 IM3 scored ${scoredCount}/${explosiveCount} — auto-updated by scanner</span>`;
+    }
+    html += `<div style="width:100%;margin-top:8px;padding:8px 12px;background:#F8F7FF;border-left:3px solid var(--blue);border-radius:4px;font-size:11px;color:var(--grey-d);line-height:1.7;">
+      <strong style="color:var(--navy);">IM3 Quality Score</strong> — Investo Genie 162-point framework across 40 metrics in 6 sections:
+      <strong>Growth</strong> (revenue/profit CAGR, margins) ·
+      <strong>Stability</strong> (D/E, CFO trend, interest coverage) ·
+      <strong>Valuation</strong> (P/E, P/B, PEG, EV/EBITDA, margin of safety) ·
+      <strong>Inventory</strong> (turnover, receivables, CCC) ·
+      <strong>Cash Flow</strong> (FCF trend, CROIC, cash/debt) ·
+      <strong>Risk</strong> (Altman Z, Beneish M, Piotroski F, ROIC vs WACC) ·
+      Banks scored separately (NIM, CASA, ADR, NPL, CAR replace N/A metrics).
+      <strong>Grade A ≥75% · B ≥60% · C ≥50% · FAIL &lt;50%</strong> — click any score to expand all 40 metrics.
+    </div>`;
+  }
+  if(market==='psx') {
+    const scoredCount = rows.filter(r => r.im3 && !r.im3.error).length;
+    const brokerCount = rows.filter(r => r.im3 && r.im3.src && r.im3.src.hist === 'psx-broker').length;
+    if (scoredCount > 0) {
+      const psxCap = brokerCount > 0
+        ? `🧮 IM3 scored ${scoredCount} — ${brokerCount} on broker history (expanded denom), rest TV single-period`
+        : `🧮 IM3 scored ${scoredCount} — TV single-period (reduced denom)`;
+      html += `<span style="margin-left:auto;font-size:12px;color:var(--navy);font-weight:600;padding:5px 14px;background:#EEF2FF;border-radius:7px;">${psxCap}</span>`;
+    }
+    html += `<div style="width:100%;margin-top:8px;padding:8px 12px;background:#F8F7FF;border-left:3px solid var(--blue);border-radius:4px;font-size:11px;color:var(--grey-d);line-height:1.7;">
+      <strong style="color:var(--navy);">IM3 Quality Score — PSX.</strong> Names with broker-research financials (your holdings) now score on the <strong>expanded multi-year denominator</strong>: non-banks (OGDC, PPL, FFC, HUBC) compute CAGRs, Altman/Beneish/Piotroski and DCF-growth from real annual statements; the bank (MCB) scores on the <strong>System-B bank model</strong> (NIM/CASA/ADR/NPL/CAR), Banking Investo Genie 2.0 PSX-calibrated (NIM 4.5%, NPL ≤5%/≤8%, contextual ADR, CAR ≥11.5% SBP req, tax 45–60%). The rest of the universe still scores on TradingView single-period fundamentals against a <strong>reduced denominator</strong> — multi-year metrics show NA and are excluded — pending broker data. Earnings-yield &amp; DCF use the PKR risk-free (≈11.5%). CASA/CAR remain NA until broker disclosure lands. <strong>Click any score to expand the metrics.</strong>
+    </div>`;
+  }
+  html+='</div>';
+
+  const showIM3 = (market==='us' || market==='psx');
+  html+=`<table style="font-size:12px;"><thead><tr>
+    <th>Ticker</th><th>Name</th><th>Sector</th><th>Rev Gr</th><th>EPS Gr</th><th>EPS/Rev</th>
+    <th>A</th><th>B</th><th>Verdict</th>
+    ${showIM3?`<th style="background:#312E81;min-width:130px;line-height:1.4;">
+      IM3 Quality
+      <div style="font-size:9px;font-weight:400;margin-top:3px;">
+        <span style="background:#D1FAE5;color:#065F46;padding:1px 4px;border-radius:3px;">A≥75%</span>
+        <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
+        <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
+        <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
+        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 (banks: bank-applicable max, System B)</div>
+      </div>
+    </th>`:''}
+  </tr></thead><tbody>`;
+
+  [...scored,...insuff].forEach(r=>{
+    const cls=explosiveVerdictClass(r.verdict);
+    const em=v=>(v===null||v===undefined)?'—':v;
+    const pct=v=>(v===null||v===undefined)?'—':(v+'%');
+    let _ratioVal=r.eps_rev_ratio;
+    if(_ratioVal===null||_ratioVal===undefined){ _ratioVal=(r.eps_growth!=null&&r.rev_growth!=null&&r.rev_growth!=0)?(r.eps_growth/r.rev_growth):(r.op_np_ratio!=null?r.op_np_ratio:null); }
+    const ratio=(_ratioVal===null||_ratioVal===undefined||isNaN(_ratioVal))?'—':Number(_ratioVal).toFixed(2);
+    const tk=r.ticker||'';
+
+    // Main data row
+    html+=`<tr class="${cls}">
+      <td><b>${em(tk)}</b></td>
+      <td>${em(r.name)}</td>
+      <td>${em(r.sector)}</td>
+      <td>${pct(r.rev_growth)}</td>
+      <td>${pct(r.eps_growth)}</td>
+      <td>${ratio}</td>
+      <td style="text-align:center;">${sigDot(r.signal_a)}</td>
+      <td style="text-align:center;">${sigDot(r.signal_b)}</td>
+      <td><b>${em(r.verdict)}</b></td>
+      ${showIM3?`<td data-im3-cell="${tk}"
+          data-im3-ticker="${tk}"
+          data-im3-name="${(r.name||tk).replace(/"/g,'')}"
+          data-im3-sector="${(r.sector||'').replace(/"/g,'')}"
+          style="background:#EEF2FF;">${im3CellHTML(tk)}</td>`:''}
+    </tr>`;
+
+    // Hidden detail row — expands when IM3 score is clicked
+    html+=`<tr id="im3-detail-${tk}" class="im3-detail-closed" style="display:none;"></tr>`;
+  });
+
+  html+='</tbody></table>';
+  el.innerHTML = html;
+
+  // Wire Score buttons (for any already-scored cells that need data-attrs)
+  el.querySelectorAll('[data-im3-ticker]').forEach(cell => {
+    const tk2 = cell.dataset.im3Ticker;
+    if (tk2) {
+      cell.querySelector('button[onclick]')?.setAttribute(
+        'onclick', `im3ScoreOne('${tk2}','${(cell.dataset.im3Name||tk2).replace(/'/g,"\\'")}','${(cell.dataset.im3Sector||'').replace(/'/g,"\\'")}')` );
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────
+// TCE TABLE — adds IM3 column + Score All button
+// ─────────────────────────────────────────────────────────
+function renderTceTable(elId, rows, market) {
+  const el=document.getElementById(elId); if(!el)return;
+  if(!rows||rows.length===0){
+    el.innerHTML=`<p style="color:var(--grey-d);">${market==='psx'?'PSX TCE: sparser signals normal (revisions/short-interest thin on PSX).':'No US TCE in latest scan.'}</p>`;
+    return;
+  }
+  const STREAM_LABELS={s1_news:'News',s2_sponsor:'Sponsor',s3_insider:'Insider',s5_volume:'Volume',s6_momentum:'Mom',s7_margin:'Margin',s8_capital:'Capital',s9_eps_rev:'EPS-rev',s10_rev_rev:'Rev-rev',s9_eps_revision:'Fwd-EPS',s11_target_upside:'Target',s12_recommendation:'Rec'};
+  const SDEF=[
+    {bk:'s1_news',     lbl:'News',    us:false, cv:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Google News articles, last 14d (fires ≥3)'},
+    {bk:'s2_sponsor',  lbl:'Sponsor', us:false, cv:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Heavy coverage — same news count (fires ≥8)'},
+    {bk:'s3_insider',  lbl:'Insider', us:true,  cv:false, val:s=>(s.s3_insider_count!=null?s.s3_insider_count:'·'), tip:'SEC Form 4 filings, last 90d (fires ≥2, US only)'},
+    {bk:'s5_volume',   lbl:'Vol',     us:false, cv:false, val:s=>(s.s5_volume_ratio!=null?(s.s5_volume_ratio+'×'):'·'), tip:'20d vs 40d volume (fires >1.3×)'},
+    {bk:'s6_momentum', lbl:'Mom',     us:false, cv:true,  val:s=>(s.s6_momentum_pct!=null?((s.s6_momentum_pct>0?'+':'')+s.s6_momentum_pct+'%'):'·'), tip:'3-month price momentum (fires ≥+15%) — CONVICTION'},
+    {bk:'s7_margin',   lbl:'Margin',  us:false, cv:true,  val:s=>(s.s7_margin_spread_pct!=null?((s.s7_margin_spread_pct>0?'+':'')+s.s7_margin_spread_pct+'pt'):'·'), tip:'Earnings outgrowing revenue = margin inflection — CONVICTION'},
+    {bk:'s8_capital',  lbl:'Capital', us:false, cv:true,  val:s=>(s.s8_capital_short_pct!=null?(s.s8_capital_short_pct+'%'):'·'), tip:'Short interest % of float (fires ≥8%) — squeeze fuel / CONVICTION'},
+    {bk:'s9_eps_rev',  lbl:'EPS-rev', us:false, cv:true,  val:s=>(s.s9_eps_rev_net!=null?((s.s9_eps_rev_net>0?'+':'')+s.s9_eps_rev_net):'·'), tip:'EPS estimate raises minus cuts, 30d (fires net>0) — CONVICTION'},
+    {bk:'s10_rev_rev', lbl:'Rev-rev', us:false, cv:true,  val:s=>(s.s10_rev_rev_pct!=null?((s.s10_rev_rev_pct>0?'+':'')+s.s10_rev_rev_pct+'%'):'·'), tip:'Revenue estimate revision vs last run — builds over runs — CONVICTION'},
+    {bk:'s11_target_upside',  lbl:'Target',  us:false, cv:true, val:s=>((s.analyst_detail&&s.analyst_detail.target_upside_pct!=null)?((s.analyst_detail.target_upside_pct>0?'+':'')+s.analyst_detail.target_upside_pct+'%'):'·'), tip:'Analyst mean price-target upside vs current price (fires ≥+15%; FactSet consensus via TradingView, US + PSX) — CONVICTION'},
+    {bk:'s12_recommendation', lbl:'Rec',     us:false, cv:true, val:s=>((s.analyst_detail&&s.analyst_detail.buy_ratio!=null)?(Math.round(s.analyst_detail.buy_ratio*100)+'%'):'·'), tip:'Analyst buy share of all recommendations (fires ≥70% buy; FactSet via TradingView, US + PSX) — CONVICTION'},
+    {bk:'s9_eps_revision',    lbl:'Fwd-EPS', us:false, px:true, cv:true, val:s=>((s.analyst_detail&&s.analyst_detail.fwd_eps!=null)?(''+s.analyst_detail.fwd_eps):'·'), tip:'Forward EPS estimate revised UP ≥2% run-over-run (FactSet via TradingView, PSX-only — US uses the Yahoo EPS-rev stream instead; needs a prior run to compare) — CONVICTION'}
+  ];
+  function streamCellsHTML(streams, mkt){
+    if(!streams||typeof streams!=='object'||Array.isArray(streams)){
+      const arr=Array.isArray(streams)?streams:[];
+      return arr.map(k=>STREAM_LABELS[k]||k).join(' · ')||'—';
+    }
+    const isPsx=mkt==='psx';
+    let chips=SDEF.map(d=>{
+      const na=(isPsx&&d.us)||(!isPsx&&d.px);
+      const fired=!na&&streams[d.bk]===1;
+      const val=na?'—':d.val(streams);
+      const bg=fired?'#D1FAE5':(na?'#FAFAFA':'#F3F4F6');
+      const fg=fired?'#065F46':(na?'#CBD5E1':'#9CA3AF');
+      const bd=fired?'#6EE7B7':(d.cv?'#C7D2FE':'#E5E7EB');
+      const tip=na?(d.lbl+': '+(d.px?'PSX-only analyst stream, n/a for US':'US-only stream, n/a for PSX')):(d.tip+(fired?' — FIRED':' — not fired'));
+      return '<span title="'+tip+'" style="display:inline-flex;flex-direction:column;align-items:center;min-width:40px;padding:2px 4px;border-radius:5px;background:'+bg+';color:'+fg+';border:1px solid '+bd+(d.cv?';border-bottom:2px solid #6366F1':'')+';">'
+        +'<span style="font-size:8.5px;font-weight:600;letter-spacing:.2px;">'+d.lbl+'</span>'
+        +'<span style="font-size:10px;font-weight:700;">'+val+'</span></span>';
+    }).join('');
+    // rs_ok is serialized in data.json as a STRING ('True'/'False') — 'False' is truthy in JS, so a
+    // naive !==false read shows GUARD-holds for a name the scorer actually vetoed. Coerce the falsy set
+    // (matches the live scorer's real-bool semantics); undefined/'True'/true -> holds.
+    const _rs=streams.rs_ok;
+    const rsok=!(_rs===false||_rs==='False'||_rs==='false'||_rs===0||_rs==='0'||_rs==='None'||_rs===null);
+    const rsv=(streams.rs_vs_spy!=null)?((streams.rs_vs_spy>0?'+':'')+streams.rs_vs_spy+'pt'):'·';
+    const gbg=rsok?'#EEF2FF':'#FEE2E2', gfg=rsok?'#3730A3':'#991B1B', gbd=rsok?'#A5B4FC':'#FCA5A5';
+    const gtip='RS guardrail vs SPY (6mo): '+(rsok?'holds — HIGH allowed':'LAGS — caps a 4+ name to WATCH')+'. Not counted in the score.';
+    chips+='<span title="'+gtip+'" style="display:inline-flex;flex-direction:column;align-items:center;min-width:44px;padding:2px 4px;border-radius:5px;background:'+gbg+';color:'+gfg+';border:1px dashed '+gbd+';margin-left:4px;">'
+      +'<span style="font-size:8.5px;font-weight:700;letter-spacing:.2px;">GUARD</span>'
+      +'<span style="font-size:10px;font-weight:700;">'+(rsok?rsv:'veto')+'</span></span>';
+    return '<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">'+chips+'</div>';
+  }
+  const high=rows.filter(r=>(r.tier||'').toUpperCase()==='HIGH');
+  const watch=rows.filter(r=>(r.tier||'').toUpperCase()==='WATCH');
+  const ignore=rows.filter(r=>(r.tier||'').toUpperCase()==='IGNORE');
+
+  let html=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:600;align-items:center;">`;
+  if(high.length)   html+=`<span style="background:var(--green-l);color:var(--green);padding:4px 10px;border-radius:6px;">🔥 ${high.length} HIGH</span>`;
+  if(watch.length)  html+=`<span style="background:var(--orange-l);color:var(--orange);padding:4px 10px;border-radius:6px;">👀 ${watch.length} WATCH</span>`;
+  if(ignore.length) html+=`<span style="background:#F3F4F6;color:#6B7280;padding:4px 10px;border-radius:6px;">— ${ignore.length} IGNORE</span>`;
+  if(market==='us' && high.length) html+=`<span style="margin-left:auto;font-size:11px;color:var(--grey-d);">IM3 scores auto-updated by scanner</span>`;
+  html+='</div>';
+
+  const showIM3T = (market==='us');
+  html+=`<table style="font-size:12px;"><thead><tr>
+    <th>Ticker</th><th>Name</th><th title="streams fired, of 9">Score</th><th title="conviction streams fired, of 5: momentum, margin, capital, EPS-rev, rev-rev — these drive HIGH">Conv</th><th style="min-width:300px;">Streams &mdash; fired &amp; live value (indigo underline = conviction; dashed = RS guardrail)</th><th>Tier</th>
+    ${showIM3T?`<th style="background:#312E81;min-width:130px;line-height:1.4;">
+      IM3 Quality
+      <div style="font-size:9px;font-weight:400;margin-top:3px;">
+        <span style="background:#D1FAE5;color:#065F46;padding:1px 4px;border-radius:3px;">A≥75%</span>
+        <span style="background:#FEF3C7;color:#92400E;padding:1px 4px;border-radius:3px;">B≥60%</span>
+        <span style="background:#FFEDD5;color:#9A3412;padding:1px 4px;border-radius:3px;">C≥50%</span>
+        <span style="background:#FEE2E2;color:#991B1B;padding:1px 4px;border-radius:3px;">FAIL&lt;50%</span>
+        <div style="opacity:0.75;margin-top:2px;">45 metrics · /162 (banks: bank-applicable max, System B)</div>
+      </div>
+    </th>`:''}
+  </tr></thead><tbody>`;
+
+  [...high,...watch,...ignore].forEach(r=>{
+    const tier=(r.tier||'').toUpperCase();
+    const cls=tier==='HIGH'?'pos':tier==='WATCH'?'warn':'';
+    const tk=r.ticker||'';
+
+    html+=`<tr class="${cls}">
+      <td><b>${tk||'—'}</b></td>
+      <td>${r.name||'—'}</td>
+      <td style="text-align:center;font-weight:700;">${(r.tce_score!=null?r.tce_score:(r.streams&&r.streams.total!=null?r.streams.total:(r.score!=null?r.score:'—')))}</td>
+      <td style="text-align:center;font-weight:700;color:#4338CA;">${(r.conviction!=null?r.conviction:'\u2014')}</td>
+      <td>${streamCellsHTML(r.streams, market)}</td>
+      <td><b style="color:${tier==='HIGH'?'var(--green)':tier==='WATCH'?'var(--orange)':'var(--grey-d)'};">${r.tier||'—'}</b></td>
+      ${showIM3T?`<td data-im3-cell="${tk}"
+          data-im3-ticker="${tk}"
+          data-im3-name="${(r.name||tk).replace(/"/g,'')}"
+          data-im3-sector="${(r.sector||'').replace(/"/g,'')}"
+          style="background:#EEF2FF;">${im3CellHTML(tk)}</td>`:''}
+    </tr>`;
+    html+=`<tr id="im3-detail-${tk}-tce" class="im3-detail-closed" style="display:none;"></tr>`;
+  });
+
+  html+='</tbody></table>';
+  el.innerHTML = html;
+}
+
+// Load stored scores on page ready (so previously scored tickers show immediately)
+
+
+// Load stored IM3 scores on page init so previously scored tickers show immediately
+(async function(){
+  await im3LoadStored();
+  // Re-render all IM3 cells that now have stored scores
+  if (Object.keys(im3Scores).length > 0) {
+    Object.keys(im3Scores).forEach(ticker => im3RefreshRow(ticker));
+  }
+})();
+
+// =========================================================
+// TAB 12 — GOLD & METALS
+// =========================================================
+const METALS_SEASONAL = {
+  Gold:      {Jan:3.15, Feb:1.94, Mar:-0.95,Apr:1.60, May:-1.09,Jun:-0.54,Jul:1.46, Aug:2.45, Sep:2.03, Oct:0.31, Nov:4.05, Dec:-0.67},
+  Silver:    {Jan:3.78, Feb:2.33, Mar:-1.14,Apr:1.92, May:-1.31,Jun:-0.65,Jul:1.75, Aug:2.94, Sep:2.44, Oct:0.37, Nov:4.86, Dec:-0.80},
+  Platinum:  {Jan:6.35, Feb:4.37, Mar:-0.24,Apr:1.10, May:-0.48,Jun:-0.95,Jul:0.06, Aug:0.60, Sep:-3.08,Oct:-1.42,Nov:2.57, Dec:-0.05},
+  Palladium: {Jan:3.97, Feb:5.27, Mar:2.47, Apr:3.11, May:-2.21,Jun:-2.14,Jul:3.00, Aug:-1.46,Sep:-3.37,Oct:4.43, Nov:3.46, Dec:2.70},
+};
+const METALS_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CURRENT_MONTH = METALS_MONTHS[new Date().getMonth()];
+const GDX_HOLDINGS = 'GG 14%, ABX 13%, NEM 8%, SLW 6%, FNV 5%';
+let safe_lgPkr = null;
+
+function metalsBiasColor(score){
+  if(score>=5)  return{bg:'#065F46',text:'white',label:'STRONG BUY'};
+  if(score>=2)  return{bg:'#059669',text:'white',label:'BUY / OVERWEIGHT'};
+  if(score>=0)  return{bg:'#D97706',text:'white',label:'HOLD / NEUTRAL'};
+  if(score>=-3) return{bg:'#B45309',text:'white',label:'REDUCE / UNDERWEIGHT'};
+  return          {bg:'#7C2D12', text:'white',label:'AVOID / SELL'};
+}
+
+function calcMetals(){
+  const M  = (LIVE&&LIVE.macros&&LIVE.macros.metals)  ? LIVE.macros.metals  : {};
+  const US = (LIVE&&LIVE.macros&&LIVE.macros.us)      ? LIVE.macros.us      : {};
+  const PSX= (LIVE&&LIVE.macros&&LIVE.macros.psx)     ? LIVE.macros.psx     : {};
+
+  // Live prices
+  const goldPx  = M.gold_px      || null;
+  const silvPx  = M.silver_px    || null;
+  const platPx  = M.platinum_px  || null;
+  const pallPx  = M.palladium_px || null;
+  const dxy     = M.dxy          || val('dxy')  || null;
+  const gsRatio = (goldPx&&silvPx) ? (goldPx/silvPx) : (M.gs_ratio||null);
+  const fmt = (v,dec=0) => v ? '$'+v.toLocaleString(undefined,{maximumFractionDigits:dec}) : '—';
+  document.getElementById('m_gold_px').textContent  = fmt(goldPx);
+  document.getElementById('m_silver_px').textContent = fmt(silvPx,2);
+  document.getElementById('m_plat_px').textContent  = fmt(platPx);
+  document.getElementById('m_pall_px').textContent  = fmt(pallPx);
+  document.getElementById('m_dxy_px').textContent   = dxy ? dxy.toFixed(1) : '—';
+
+  // Macro inputs — live from scanner or fallback to Tab 1
+  const wti      = US.wti        || val('wti');
+  const sbp      = PSX.sbp_rate  || val('sbp_rate');
+  const usdpkr   = PSX.usd_pkr   || val('usd_pkr');
+  const pakCpi   = PSX.pak_cpi   || val('pak_cpi');
+  const sbpRes   = PSX.sbp_reserves || val('sbp_reserves');
+  const pakCa    = PSX.pak_ca    != null ? PSX.pak_ca    : val('pak_ca');
+  const pakFis   = PSX.pak_fiscal!= null ? PSX.pak_fiscal: val('pak_fiscal');
+  const reer     = PSX.reer      || val('reer');
+  const fedRate  = US.fed_rate   || val('fed_rate');
+  const hySpread = US.hy_spread  || 2.7;
+  const gdpGrowth= US.gdp_growth || val('us_gdp');
+  const walcl    = M.walcl_change!= null ? M.walcl_change : null;
+  const imfScore = M.imf_score   != null ? M.imf_score    : -1;
+  const defScore = M.default_score!=null ? M.default_score: -1;
+  const geoScore = M.geo_score   != null ? M.geo_score    :  0;
+  const us10y    = US.us_10y     || val('us_10y');
+  const cpiYoy   = US.cpi_yoy   || val('core_pce');
+
+  // ── PAKISTAN FACTORS ─────────────────────────────────────
+  const pakFactors = [
+    {name:'Oil (Arab Light)',    reading:'$'+wti+'/bbl',
+     score:wti>90?-1:wti>70?0:+1,
+     reason:wti>90?'High oil → import pressure → caps local gold':wti>70?'Mid-range':'Low oil → relief for PKR'},
+    {name:'Interest Rates (SBP)',reading:sbp+'%',
+     score:sbp>8?-1:+1,
+     reason:sbp>8?'Tight money caps local gold demand':sbp<8?'Low rates support gold':'Neutral'},
+    {name:'Currency Valuation',  reading:usdpkr+' PKR',
+     score:(()=>{const lg=safe_lgPkr||usdpkr;return usdpkr<(lg*0.995)?-1:usdpkr>(lg*1.005)?+1:0;})(),
+     reason:'PKR strengthening caps local gold; weakening boosts it'},
+    {name:'Current Account',     reading:pakCa+'M/mo',
+     score:pakCa>200?-1:pakCa>-500?0:+1,
+     reason:pakCa>200?'Surplus → PKR strong → bearish':pakCa<-500?'Large deficit → PKR pressure → bullish':'Manageable deficit'},
+    {name:'Fiscal Account',      reading:pakFis+'% GDP',
+     score:pakFis<5?-1:pakFis<6.5?0:+1,
+     reason:pakFis>=6.5?'High stress → debasement risk → bullish gold':pakFis<5?'Consolidation → bearish':'On-target'},
+    {name:'Inflation (Pak CPI)', reading:pakCpi+'%',
+     score:pakCpi>10?+1:pakCpi>6?0:-1,
+     reason:pakCpi>10?'High inflation → hedge bid → bullish':pakCpi<6?'Low → bearish':'Moderate'},
+    {name:'Central Bank Reserves',reading:'$'+sbpRes+'bn',
+     score:sbpRes>16?-1:sbpRes>8?0:+1,
+     reason:sbpRes>16?'Strong reserves → PKR stable → bearish local gold':sbpRes<8?'Low reserves → bullish':'Adequate'},
+  ];
+
+  // ── GLOBAL FACTORS ────────────────────────────────────────
+  const goldFactors = [
+    {name:'USD Policy Stance',    reading:fedRate+'%',
+     score:fedRate>4.5?-1:fedRate<3?+1:0,
+     reason:fedRate>4.5?'Hawkish → bearish gold':fedRate<3?'Dovish cuts → bullish':'Neutral hold'},
+    {name:'QE or QT',             reading:walcl!=null?(walcl>0.5?'Expanding BS':walcl<-0.5?'Shrinking BS':'Neutral'):'QT ended / neutral',
+     score:walcl!=null?(walcl>0.5?+1:walcl<-0.5?-1:0):0,
+     reason:'QE = bullish; QT = bearish; neutral = 0 (Fed WALCL from FRED)'},
+    {name:'Recession Fear',        reading:'HY '+hySpread+'%',
+     score:(hySpread>5||gdpGrowth<0)?+1:hySpread<3?-1:0,
+     reason:'High HY spread / negative GDP → safe-haven bid → bullish gold'},
+    {name:'Pakistan REER',         reading:reer.toFixed(1),
+     score:reer>103?-1:reer<100?+1:0,
+     reason:reer>103?'PKR overvalued → caps local gold':reer<100?'Undervalued → bullish':'Near fair value'},
+    {name:'Dollar Index (DXY)',    reading:dxy?dxy.toFixed(1):'—',
+     score:dxy?(dxy>103?-1:dxy<98?+1:0):0,
+     reason:'DXY >103 strong USD → bearish gold; <98 weak USD → bullish. (Source: Yahoo DX-Y.NYB)'},
+    {name:'IMF (Pakistan)',        reading:imfScore===-1?'On-track':imfScore===+1?'Stress/exit':'Neutral',
+     score:imfScore,
+     reason:'On-track IMF → PKR stable → bearish local gold; stress/exit → bullish'},
+    {name:'Pakistan Default Risk', reading:defScore===-1?'Falling/stable':defScore===+1?'Rising':'Neutral',
+     score:defScore,
+     reason:'Falling default risk → PKR stable → bearish local gold (Source: Google News RSS)'},
+    {name:'GeoPolitical Situation',reading:geoScore===+1?'Active conflict/tension':geoScore===-1?'Calm':'Moderate',
+     score:geoScore,
+     reason:'Conflict/safe-haven demand → bullish gold (Source: Google News RSS)'},
+  ];
+
+  const pakTotal  = pakFactors.reduce((s,f)=>s+f.score,0);
+  const goldTotal = goldFactors.reduce((s,f)=>s+f.score,0);
+  const totalScore = pakTotal+goldTotal;
+  const bias = metalsBiasColor(totalScore);
+
+  // Render factor rows
+  function renderFactorRows(factors,containerId){
+    const el=document.getElementById(containerId);if(!el)return;
+    el.innerHTML=factors.map(f=>{
+      const cls=f.score>0?'pos':f.score<0?'neg':'neu';
+      const lbl=f.score>0?'+1':f.score<0?'−1':'0';
+      return`<div class="metals-factor-row"><div><div class="f-name">${f.name}</div><div class="f-reading">${f.reading}</div></div><div style="font-size:11px;color:var(--grey-d);max-width:160px;line-height:1.3;">${f.reason}</div><div class="f-badge ${cls}">${lbl}</div></div>`;
+    }).join('');
+  }
+  renderFactorRows(pakFactors,'pak_factor_rows');
+  renderFactorRows(goldFactors,'gold_factor_rows');
+
+  const pBadge=document.getElementById('pak_subtotal_badge');
+  const gBadge=document.getElementById('gold_subtotal_badge');
+  if(pBadge)pBadge.textContent=(pakTotal>=0?'+':'')+pakTotal+' / 6';
+  if(gBadge)gBadge.textContent=(goldTotal>=0?'+':'')+goldTotal+' / 8';
+
+  // Composite gauge
+  const gaugeEl=document.getElementById('metals_gauge_bar');
+  if(gaugeEl){
+    const pct=Math.max(0,Math.min(100,((totalScore+15)/30)*100));
+    const gc=totalScore>=5?'#059669':totalScore>=2?'#10b981':totalScore>=0?'#D97706':totalScore>=-3?'#B45309':'#7C2D12';
+    gaugeEl.innerHTML=`<div style="margin-bottom:8px;font-size:14px;font-weight:700;color:${bias.bg};">GOLD BIAS: ${totalScore>=0?'+':''}${totalScore} / 15 &nbsp;→&nbsp; ${bias.label}</div><div class="metals-gauge-bar"><div class="metals-gauge-fill" style="width:${pct}%;background:${gc};"></div><div class="metals-gauge-label">${totalScore>=0?'+':''}${totalScore} / 15</div></div>`;
+  }
+  const mPakSub=document.getElementById('m_pak_sub');  if(mPakSub)mPakSub.textContent=(pakTotal>=0?'+':'')+pakTotal;
+  const mGoldSub=document.getElementById('m_gold_sub');if(mGoldSub)mGoldSub.textContent=(goldTotal>=0?'+':'')+goldTotal;
+
+  // ── WAVE M (M6) — two-layer metals buy/sell engine: STRATEGIC (macro, months) + TACTICAL (timing, weeks) → net long/short, all 5 metals (research factor taxonomy). Graceful "awaiting feed" until M5/scanner feeds land; auto-upgrades as fields appear. ──
+  (function(){
+    var el=document.getElementById('metals_reading_layer'); if(!el) return;
+    var col={pos:['#e8f5e9','#1b5e20'],neu:['#eef2f7','#37474f'],warn:['#fff8e1','#7a5b00'],neg:['#fdecea','#a32d2d']};
+    var corePce=(US.core_pce!=null)?US.core_pce:cpiYoy;
+    var dfii=(M.dfii10!=null)?M.dfii10:null;
+    var ry=(dfii!=null)?dfii:((us10y!=null&&corePce!=null)?(us10y-corePce):null);
+    var ryTrue=(dfii!=null);
+    var be=(US.breakeven_10y!=null)?US.breakeven_10y:(M.breakeven_10y!=null?M.breakeven_10y:null);
+    var cb=(M.cb_gold_net!=null)?M.cb_gold_net:null;
+    var gvz=(M.gvz!=null)?M.gvz:null;
+    var pmi=(M.china_pmi!=null)?M.china_pmi:null;
+    var agDef=(M.silver_deficit!=null)?M.silver_deficit:null;
+    var ptDef=(M.platinum_deficit!=null)?M.platinum_deficit:null;
+    var pdBal=(M.palladium_balance!=null)?M.palladium_balance:null;
+    var cuBal=(M.copper_balance!=null)?M.copper_balance:null;
+    var gs=gsRatio;
+    var goldPx=(M.gold_px!=null)?M.gold_px:null, ptPx=(M.platinum_px!=null)?M.platinum_px:null;
+    var gPt=(goldPx!=null&&ptPx!=null&&ptPx>0)?(goldPx/ptPx):null;
+    var riskOff=(hySpread!=null&&hySpread>5)||(gdpGrowth!=null&&gdpGrowth<0);
+    var riskOn=(hySpread!=null&&hySpread<3)&&(gdpGrowth!=null&&gdpGrowth>=0);
+    function dirNudge(wow,upGood){ if(wow==null||wow===0)return 0; return ((wow>0)===upGood)?1:-1; }
+    function clampV(v){ return v>2?2:(v<-2?-2:v); }
+    function trendArrow(wow){ if(wow==null||wow===0)return ''; return ' '+(wow>0?'\u25b2+':'\u25bc')+wow+' WoW'; }
+    var rv=(ry==null)?null:(ry>2?-2:ry>1?-1:ry>=0?1:2);
+    var rvD=(rv==null)?null:clampV(rv+dirNudge(M.dfii10_wow,false));
+    var dv=(dxy==null)?null:(dxy>105?-2:dxy>100?-1:dxy>=95?0:1);
+    var dvD=(dv==null)?null:clampV(dv+dirNudge(M.dxy_wow,false));
+    function cotVote(pct,pctile,wow){ var base; if(pctile!=null){base=pctile>80?-1:pctile<20?1:0;} else if(pct==null){return null;} else {base=pct>40?-1:pct<0?1:0;} if(wow!=null){ if(base<0)return wow>0?-2:(wow<0?0:base); if(base>0)return wow<0?2:(wow>0?0:base); } return base; }
+    function cotArrow(wow){ if(wow==null)return ''; var a=wow>0?'\u25b2':(wow<0?'\u25bc':'\u25ac'); return ' ('+a+(wow>0?'+':'')+wow+' WoW)'; }
+    function acc(){return {S:[],T:[],aw:[]};}
+    function pS(a,v,t){ if(v==null)a.aw.push(t); else a.S.push({v:v,t:t}); }
+    function pT(a,v,t){ if(v==null)a.aw.push(t); else a.T.push({v:v,t:t}); }
+    function sum(arr){var s=0;for(var i=0;i<arr.length;i++)s+=arr[i].v;return s;}
+    function vWord(s){ if(s>=3)return['LONG','pos']; if(s>=1)return['LONG (lean)','pos']; if(s===0)return['NEUTRAL','neu']; if(s>=-2)return['CAUTIOUS','warn']; return['SHORT','neg']; }
+    function netStance(sS,tS,hasS,hasT){
+      if(!hasS&&!hasT) return ['NO DATA','neu'];
+      if(hasS&&sS>=2&&tS<=-2) return ['NEUTRAL (macro+, stretched)','neu'];
+      if(hasS&&sS<=-2&&tS>=2) return ['NEUTRAL (macro-, washed-out)','neu'];
+      return vWord(sS+tS);
+    }
+    function driverTxt(a){return a.S.concat(a.T).map(function(x){return x.t;}).slice(0,6).join(', ');}
+    function cleanT(t){return String(t).replace(/[\u25b2\u25bc\u25ac]\+?[0-9.\-]+ WoW/g,'').replace(/\s*\([^)]*\)/g,'').replace(/\s+/g,' ').trim();}
+    function whyTxt(a,N){
+      var lab=N[0];
+      var all=a.S.concat(a.T).filter(function(x){return x.v!=null&&x.v!==0;});
+      if(!all.length) return (a.S.length||a.T.length)?'all live inputs are neutral right now.':'no live inputs yet \u2014 awaiting the feeds below.';
+      var neg=all.filter(function(x){return x.v<0;}).sort(function(p,q){return p.v-q.v;});
+      var pos=all.filter(function(x){return x.v>0;}).sort(function(p,q){return q.v-p.v;});
+      if(/SHORT|CAUTIOUS/.test(lab)){
+        var ps=neg.slice(0,2).map(function(x){return cleanT(x.t);}).filter(Boolean);
+        return ps.length?(ps.join(' and ')+' are the dominant headwinds'+(pos.length?'; the supports are not strong enough to offset them':'')+'.'):'';
+      }
+      if(/LONG/.test(lab)){
+        var ls=pos.slice(0,2).map(function(x){return cleanT(x.t);}).filter(Boolean);
+        return ls.length?(ls.join(' and ')+' carry the bull case.'):'';
+      }
+      var tn=neg.length?cleanT(neg[0].t):null, tp=pos.length?cleanT(pos[0].t):null;
+      return (tn&&tp)?(tn+' offsets '+tp+' \u2014 wait for one side to break.'):'mixed \u2014 no clear edge.';
     }
 
-# ── DATA LAYER 2: multi-year statements  FMP-stable -> SEC -> Yahoo ───────────
-# Uniform history dict the scorer consumes. Series are newest-first, up to 6 entries.
-_HKEYS = ['rev','op','np_','eps_s','cogs','sga','tax_exp','pbt','ebitda_s','int_exp','nii',
-          'ppe','td','ltd','eq0s','ta_s','ca_s','cl_s','re_s','ar_s','ap_s','inv_s','cash_s',
-          'sti_s','loans','deps','npl_s','cfo','fcf','ncc','dep','div_paid','buyback','issuance']
+    // GOLD (~70% strategic)
+    var g=acc();
+    pS(g, rvD, 'real yield '+(ry!=null?ry.toFixed(1)+'%':'')+(ryTrue?' (TIPS)':' (proxy)')+(rv!=null?(rv<0?' headwind':' support'):'')+trendArrow(M.dfii10_wow));
+    pS(g, dvD, 'DXY '+(dxy!=null?dxy.toFixed(0):'')+trendArrow(M.dxy_wow));
+    if(cb!=null) pS(g, cb>30?1:cb<0?-1:0, 'CB buying '+cb+'t'); else g.S.push({v:1,t:'CB-buying floor (static \u2014 awaiting WGC)'});
+    if(be!=null) pS(g, clampV((be>2.5?1:be<1.5?-1:0)+dirNudge(M.breakeven_10y_wow,true)), 'breakeven '+be+'%'+trendArrow(M.breakeven_10y_wow)); else g.aw.push('breakeven (T10YIE)');
+    pT(g, cotVote(M.cot_gold_pct,M.cot_gold_pctile,M.cot_gold_pct_wow), 'COT gold'+cotArrow(M.cot_gold_pct_wow));
+    if(hySpread!=null) pT(g, hySpread>5?2:hySpread>4.5?1:0, hySpread>4.5?'safe-haven bid':'credit calm (no haven bid)');
+    if(gvz!=null) pT(g, 0, 'GVZ '+gvz+trendArrow(M.gvz_wow)); else g.aw.push('GVZ (gold-VIX)');
+    g.aw.push('technicals (50/200-DMA, RSI)'); g.aw.push('ETF flows'); g.aw.push('miner divergence');
+    var gN=netStance(sum(g.S),sum(g.T),g.S.length>0,g.T.length>0);
 
-def _empty_hist():
-    h = {k: [] for k in _HKEYS}; h['source'] = 'none'; return h
+    // SILVER (~50/50)
+    var ag=acc();
+    pS(ag, rvD, 'real yield (tracks gold)'+trendArrow(M.dfii10_wow));
+    pS(ag, dvD, 'DXY'+trendArrow(M.dxy_wow));
+    if(agDef!=null) pS(ag, agDef>0?1:-1, 'supply '+(agDef>0?'deficit':'surplus')+' '+Math.abs(agDef)+'Moz'); else ag.aw.push('supply deficit (Silver Institute)');
+    if(pmi!=null) pS(ag, pmi>50?1:-1, 'China PMI '+pmi); else pS(ag, riskOff?-1:riskOn?1:0, 'industrial '+(riskOff?'drag':riskOn?'bid':'neutral')+' (risk proxy)');
+    if(gs!=null) pT(ag, gs>90?2:gs>80?1:gs>=60?0:-1, 'G:S '+gs.toFixed(0)+(gs>80?' silver cheap':gs<60?' silver rich':' fair'));
+    pT(ag, cotVote(M.cot_silver_pct,M.cot_silver_pctile,M.cot_silver_pct_wow), 'COT silver'+cotArrow(M.cot_silver_pct_wow));
+    ag.aw.push('SLV flows'); ag.aw.push('technicals');
+    var agN=netStance(sum(ag.S),sum(ag.T),ag.S.length>0,ag.T.length>0);
 
-def _flist(rows, field, n=6):
-    out = []
-    for r in (rows or [])[:n]:
-        v = r.get(field)
-        try: out.append(float(v) if v is not None else None)
-        except Exception: out.append(None)
-    return out
+    // COPPER (~55/45, Dr. Copper)
+    var cu=acc();
+    if(pmi!=null) pS(cu, pmi>50?1:-1, 'China PMI '+pmi); else cu.aw.push('China PMI');
+    if(cuBal!=null) pS(cu, cuBal<0?1:-1, 'ICSG '+(cuBal<0?'deficit':'surplus')); else cu.aw.push('ICSG balance');
+    pS(cu, dv, 'DXY');
+    pT(cu, cotVote(M.cot_copper_pct,M.cot_copper_pctile,M.cot_copper_pct_wow), 'COT copper'+cotArrow(M.cot_copper_pct_wow));
+    cu.aw.push('LME/SHFE inventories'); cu.aw.push('technicals');
+    var cuN=netStance(sum(cu.S),sum(cu.T),cu.S.length>0,cu.T.length>0);
 
-# --- FMP /stable/ ---
-def _fmp_get(endpoint, ticker):
-    if not FMP_KEY: return None
-    try:
-        url = f"{FMP_BASE}/{endpoint}?symbol={ticker}&limit=6&apikey={FMP_KEY}"
-        r = requests.get(url, headers=HDRS, timeout=25)
-        if r.status_code != 200: return None
-        js = r.json()
-        rows = js if isinstance(js, list) else None
-        if not rows or not isinstance(rows[0], dict): return None
-        # newest-first
-        rows.sort(key=lambda d: str(d.get('date') or d.get('fiscalYear') or ''), reverse=True)
-        return rows
-    except Exception:
-        return None
+    // PLATINUM (~65/35, supply-deficit / substitution)
+    var pt=acc();
+    if(ptDef!=null) pS(pt, ptDef>0?2:-1, 'WPIC '+(ptDef>0?'deficit':'surplus')+' '+Math.abs(ptDef)+'koz'); else pt.aw.push('WPIC deficit');
+    pS(pt, dv, 'DXY');
+    pt.aw.push('auto-catalyst / Pt-Pd substitution');
+    if(M.cot_platinum_pct!=null) pT(pt, cotVote(M.cot_platinum_pct,M.cot_platinum_pctile,M.cot_platinum_pct_wow), 'COT platinum'+cotArrow(M.cot_platinum_pct_wow)); else pt.aw.push('COT platinum');
+    if(gPt!=null) pT(pt, gPt>2.2?1:gPt<1.3?-1:0, 'gold:Pt '+gPt.toFixed(2)); else pt.aw.push('gold:Pt ratio');
+    var ptN=netStance(sum(pt.S),sum(pt.T),pt.S.length>0,pt.T.length>0);
 
-def fmp_history(ticker):
-    inc = _fmp_get('income-statement', ticker)
-    bal = _fmp_get('balance-sheet-statement', ticker)
-    cfs = _fmp_get('cash-flow-statement', ticker)
-    if not inc or len(inc) < 3:            # require a usable income series, else this source failed
-        return None
-    h = _empty_hist(); h['source'] = 'fmp'
-    h['rev']     = _flist(inc, 'revenue')
-    h['op']      = _flist(inc, 'operatingIncome')
-    h['np_']     = _flist(inc, 'netIncome')
-    h['eps_s']   = _flist(inc, 'epsDiluted') or _flist(inc, 'eps')
-    h['cogs']    = _flist(inc, 'costOfRevenue')
-    h['sga']     = _flist(inc, 'sellingGeneralAndAdministrativeExpenses') or _flist(inc, 'generalAndAdministrativeExpenses')
-    h['tax_exp'] = _flist(inc, 'incomeTaxExpense')
-    h['pbt']     = _flist(inc, 'incomeBeforeTax')
-    h['ebitda_s']= _flist(inc, 'ebitda')
-    h['int_exp'] = _flist(inc, 'interestExpense')
-    h['dep']     = _flist(inc, 'depreciationAndAmortization') or _flist(cfs, 'depreciationAndAmortization')
-    if bal:
-        h['ppe']  = _flist(bal, 'propertyPlantEquipmentNet')
-        h['td']   = _flist(bal, 'totalDebt') or _flist(bal, 'longTermDebt')
-        h['ltd']  = _flist(bal, 'longTermDebt')
-        h['eq0s'] = _flist(bal, 'totalStockholdersEquity') or _flist(bal, 'totalEquity')
-        h['ta_s'] = _flist(bal, 'totalAssets')
-        h['ca_s'] = _flist(bal, 'totalCurrentAssets')
-        h['cl_s'] = _flist(bal, 'totalCurrentLiabilities')
-        h['re_s'] = _flist(bal, 'retainedEarnings')
-        h['ar_s'] = _flist(bal, 'netReceivables') or _flist(bal, 'accountsReceivables')
-        h['ap_s'] = _flist(bal, 'accountPayables') or _flist(bal, 'accountsPayables')
-        h['inv_s']= _flist(bal, 'inventory')
-        h['cash_s']= _flist(bal, 'cashAndCashEquivalents')
-        h['sti_s']= _flist(bal, 'shortTermInvestments')
-    if cfs:
-        h['cfo']  = _flist(cfs, 'operatingCashFlow') or _flist(cfs, 'netCashProvidedByOperatingActivities')
-        h['fcf']  = _flist(cfs, 'freeCashFlow')
-        h['ncc']  = _flist(cfs, 'netChangeInCash')
-        h['div_paid'] = [abs(v) if v is not None else None for v in _flist(cfs, 'dividendsPaid') or _flist(cfs, 'commonDividendsPaid')]
-        h['buyback']  = [abs(v) if v is not None else None for v in _flist(cfs, 'commonStockRepurchased') or _flist(cfs, 'netStockRepurchase')]
-        h['issuance'] = [abs(v) if v is not None else None for v in _flist(cfs, 'commonStockIssued') or _flist(cfs, 'netStockIssuance')]
-    return h
+    // PALLADIUM (~40/60 tactical-tilt, auto/EV + squeeze)
+    var pd=acc();
+    if(pdBal!=null) pS(pd, pdBal<0?1:-1, 'balance '+(pdBal<0?'deficit':'surplus')); else pd.aw.push('supply balance');
+    pd.S.push({v:-1,t:'secular EV headwind (auto-catalyst demand fading)'});
+    if(M.cot_palladium_pct!=null) pT(pd, cotVote(M.cot_palladium_pct,M.cot_palladium_pctile,M.cot_palladium_pct_wow), 'COT palladium (squeeze-prone)'+cotArrow(M.cot_palladium_pct_wow)); else pd.aw.push('COT palladium');
+    var pdN=netStance(sum(pd.S),sum(pd.T),pd.S.length>0,pd.T.length>0);
 
-# --- SEC EDGAR companyfacts ---
-_SEC_TICKER_MAP = None
-def _sec_cik(ticker):
-    global _SEC_TICKER_MAP
-    if _SEC_TICKER_MAP is None:
-        try:
-            r = requests.get("https://www.sec.gov/files/company_tickers.json", headers=HDRS_SEC, timeout=25)
-            j = r.json() if r.status_code == 200 else {}
-            _SEC_TICKER_MAP = {row['ticker'].upper(): str(row['cik_str']).zfill(10) for row in j.values()}
-        except Exception:
-            _SEC_TICKER_MAP = {}
-    return _SEC_TICKER_MAP.get(ticker.upper())
-
-_ANNUAL_FORMS = ('10-K', '20-F', '40-F')   # annual filings (incl. 10-K/A; foreign 20-F/40-F)
-def _sec_annual(facts, concepts, want_per_share=False):
-    """Merged newest-first annual series across synonym us-gaap concepts.
-
-    Earlier-listed concept wins per fiscal year; later synonyms fill the gaps.
-    This is the fix for tech/large-caps that report only 1-2 years under the
-    modern ASC-606 revenue tag while older years live under 'Revenues' /
-    'SalesRevenueNet' — taking the first concept alone returned <3 years and
-    dropped the name to Yahoo. Annual = 10-K/20-F/40-F, fp=FY, and (for flow
-    items carrying start+end) an ~365-day period so stray YTD rows are excluded.
-    """
-    merged = {}
-    for c in (concepts if isinstance(concepts, list) else [concepts]):
-        node = facts.get(c)
-        if not node: continue
-        units = node.get('units', {})
-        ukey = ('USD/shares' if want_per_share else 'USD')
-        rows = units.get(ukey) or (units.get(next(iter(units), '')) if units else None)
-        if not rows: continue
-        this_concept = {}
-        for r in rows:
-            form = r.get('form', '')
-            if not any(form.startswith(f) for f in _ANNUAL_FORMS): continue
-            if r.get('fp') != 'FY' or not r.get('fy'): continue
-            fr = r.get('frame', '')
-            if fr and 'Q' in fr: continue          # reject quarterly frames
-            if r.get('val') is None: continue
-            # LAST-write-wins within a concept: companyfacts lists each fiscal
-            # year first as originally filed, then as a restated comparative in
-            # later 10-Ks — the later (restated) value is the one to keep. This
-            # matches the proven v2.0 behaviour; v2.1's first-write-wins picked
-            # the un-restated value and broke MU/AVGO/AMSC CAGRs & margins.
-            this_concept[int(r['fy'])] = r.get('val')
-        for fy, val in this_concept.items():
-            if fy not in merged:                   # preferred concept wins ACROSS concepts; synonyms fill gaps
-                merged[fy] = val
-    if merged:
-        return [merged[y] for y in sorted(merged, reverse=True)][:6]
-    return []
-
-def sec_history(ticker):
-    cik = _sec_cik(ticker)
-    if not cik: return None
-    try:
-        r = requests.get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json",
-                         headers=HDRS_SEC, timeout=45)
-        if r.status_code != 200: return None
-        facts = r.json().get('facts', {}).get('us-gaap', {})
-    except Exception:
-        return None
-    if not facts: return None
-    h = _empty_hist(); h['source'] = 'sec'
-    h['rev']    = _sec_annual(facts, ['RevenueFromContractWithCustomerExcludingAssessedTax',
-                                      'RevenueFromContractWithCustomerIncludingAssessedTax',
-                                      'Revenues','SalesRevenueNet','SalesRevenueGoodsNet',
-                                      'RevenuesNetOfInterestExpense'])
-    if not h['rev'] or len([x for x in h['rev'] if x]) < 3:
-        return None                            # no usable revenue -> treat SEC as a miss, fall to Yahoo
-    h['op']     = _sec_annual(facts, ['OperatingIncomeLoss'])
-    h['np_']    = _sec_annual(facts, ['NetIncomeLoss','ProfitLoss'])
-    h['eps_s']  = _sec_annual(facts, ['EarningsPerShareDiluted','EarningsPerShareBasicAndDiluted'], want_per_share=True)
-    h['cogs']   = _sec_annual(facts, ['CostOfRevenue','CostOfGoodsAndServicesSold'])
-    h['sga']    = _sec_annual(facts, ['SellingGeneralAndAdministrativeExpense','GeneralAndAdministrativeExpense'])
-    h['tax_exp']= _sec_annual(facts, ['IncomeTaxExpenseBenefit'])
-    h['pbt']    = _sec_annual(facts, ['IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest',
-                                      'IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments'])
-    h['int_exp']= _sec_annual(facts, ['InterestExpense','InterestExpenseDebt'])
-    h['dep']    = _sec_annual(facts, ['DepreciationDepletionAndAmortization','DepreciationAmortizationAndAccretionNet','DepreciationAndAmortization'])
-    h['ppe']    = _sec_annual(facts, ['PropertyPlantAndEquipmentNet'])
-    h['td']     = _sec_annual(facts, ['LongTermDebtNoncurrent','LongTermDebt','DebtLongtermAndShorttermCombinedAmount'])
-    h['ltd']    = _sec_annual(facts, ['LongTermDebtNoncurrent','LongTermDebt'])
-    h['eq0s']   = _sec_annual(facts, ['StockholdersEquity','StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'])
-    h['ta_s']   = _sec_annual(facts, ['Assets'])
-    h['ca_s']   = _sec_annual(facts, ['AssetsCurrent'])
-    h['cl_s']   = _sec_annual(facts, ['LiabilitiesCurrent'])
-    h['re_s']   = _sec_annual(facts, ['RetainedEarningsAccumulatedDeficit'])
-    h['ar_s']   = _sec_annual(facts, ['AccountsReceivableNetCurrent'])
-    h['ap_s']   = _sec_annual(facts, ['AccountsPayableCurrent'])
-    h['inv_s']  = _sec_annual(facts, ['InventoryNet'])
-    h['cash_s'] = _sec_annual(facts, ['CashAndCashEquivalentsAtCarryingValue'])
-    h['sti_s']  = _sec_annual(facts, ['ShortTermInvestments'])
-    h['cfo']    = _sec_annual(facts, ['NetCashProvidedByUsedInOperatingActivities','NetCashProvidedByUsedInOperatingActivitiesContinuingOperations'])
-    capex       = _sec_annual(facts, ['PaymentsToAcquirePropertyPlantAndEquipment'])
-    if h['cfo'] and capex:
-        h['fcf'] = [(h['cfo'][i] - capex[i]) if i < len(capex) and h['cfo'][i] is not None and capex[i] is not None else None
-                    for i in range(len(h['cfo']))]
-    h['div_paid'] = [abs(v) if v is not None else None for v in _sec_annual(facts, ['PaymentsOfDividendsCommonStock','PaymentsOfDividends'])]
-    h['buyback']  = [abs(v) if v is not None else None for v in _sec_annual(facts, ['PaymentsForRepurchaseOfCommonStock'])]
-    h['issuance'] = [abs(v) if v is not None else None for v in _sec_annual(facts, ['ProceedsFromIssuanceOfCommonStock'])]
-    # EBITDA not a us-gaap tag -> approximate op + dep so peter-lynch growth has a base
-    if h['op'] and h['dep']:
-        h['ebitda_s'] = [(h['op'][i] + (h['dep'][i] or 0)) if h['op'][i] is not None else None for i in range(len(h['op']))]
-    return h
-
-# --- Yahoo (FINAL BACKSTOP) ---
-def _gs(df, keys, n=6):
-    if df is None or df.empty: return []
-    for k in (keys if isinstance(keys, list) else [keys]):
-        for idx in df.index:
-            if k.lower() in str(idx).lower():
-                vals = []
-                for v in df.loc[idx].values[:n]:
-                    try:
-                        fv = float(v); vals.append(None if math.isnan(fv) else fv)
-                    except: vals.append(None)
-                if any(v is not None for v in vals): return vals
-    return []
-
-def yahoo_history(ticker):
-    if yf is None: return _empty_hist()
-    try:    t = yf.Ticker(ticker)
-    except: return _empty_hist()
-    def gd(attr):
-        try:
-            df = getattr(t, attr)
-            if df is not None and not df.empty:
-                df = df.copy(); df.index = df.index.astype(str).str.lower().str.strip(); return df
-        except: pass
-        return None
-    inc, bal, cf = gd('income_stmt'), gd('balance_sheet'), gd('cashflow')
-    h = _empty_hist(); h['source'] = 'yahoo'
-    h['rev']    = _gs(inc,['total revenue','totalrevenue','revenue'])
-    h['op']     = _gs(inc,['operating income','ebit','operatingincome'])
-    h['np_']    = _gs(inc,['net income','netincome'])
-    h['eps_s']  = _gs(inc,['diluted eps','basic eps','eps diluted'])
-    h['cogs']   = _gs(inc,['cost of revenue','cost of goods sold','costofrevenue'])
-    h['sga']    = _gs(inc,['selling general administrative','sga','operatingexpenses'])
-    h['tax_exp']= _gs(inc,['tax provision','income tax expense','incometaxexpense'])
-    h['pbt']    = _gs(inc,['pretax income','income before tax','incomebeforetax'])
-    h['ebitda_s']= _gs(inc,['ebitda','normalized ebitda'])
-    h['int_exp']= _gs(inc,['interest expense','interestexpense'])
-    h['nii']    = _gs(inc,['net interest income','netinterestincome'])
-    h['ppe']    = _gs(bal,['net ppe','property plant equipment net','netppe','property plant and equipment'])
-    h['td']     = _gs(bal,['long term debt','total debt','longtermdebt','totaldebt'])
-    h['ltd']    = _gs(bal,['long term debt','longtermdebt'])
-    h['eq0s']   = _gs(bal,['stockholders equity','total stockholders equity','stockholdersequity'])
-    h['ta_s']   = _gs(bal,['total assets','totalassets'])
-    h['ca_s']   = _gs(bal,['current assets','total current assets','currentassets'])
-    h['cl_s']   = _gs(bal,['current liabilities','total current liabilities','currentliabilities'])
-    h['re_s']   = _gs(bal,['retained earnings','retainedearnings'])
-    h['ar_s']   = _gs(bal,['accounts receivable','net receivables','accountsreceivable'])
-    h['ap_s']   = _gs(bal,['accounts payable','accountspayable'])
-    h['inv_s']  = _gs(bal,['inventory','inventories'])
-    h['cash_s'] = _gs(bal,['cash and cash equivalents','cash','cashandcashequivalents'])
-    h['sti_s']  = _gs(bal,['short term investments','other short term investments'])
-    h['loans']  = _gs(bal,['net loans','loans','totalloans'])
-    h['deps']   = _gs(bal,['total deposits','deposits','totaldeposits'])
-    h['npl_s']  = _gs(bal,['nonperforming loans','allowance for loan losses','allowanceforloanlosses'])
-    h['cfo']    = _gs(cf,['operating cash flow','total cash from operating activities','cashfromoperations','operatingcashflow'])
-    h['fcf']    = _gs(cf,['free cash flow','freecashflow'])
-    h['ncc']    = _gs(cf,['changes in cash','net change in cash','netchangeincash'])
-    h['dep']    = _gs(cf,['depreciation','depreciation and amortization','depreciationandamortization'])
-    h['div_paid']= [abs(v) if v is not None else None for v in _gs(cf,['common stock dividend paid','cash dividends paid','dividends paid'])]
-    h['buyback'] = [abs(v) if v is not None else None for v in _gs(cf,['repurchase of capital stock','common stock payments'])]
-    h['issuance']= [abs(v) if v is not None else None for v in _gs(cf,['issuance of capital stock','common stock issuance'])]
-    return h
-
-def psx_history(ticker):
-    """Tier-2 PSX history layer. Reads multi-year statements from psx_financials.json
-    (broker-model / annual-report sourced, newest-first PKR series) and returns the
-    _HKEYS history dict. Returns None if the name isn't in the file or has < 3 years of
-    revenue, so unlisted names fall back to the TV single-period reduced score. With a
-    history present, the previously-NA multi-year metrics (CAGRs, CFO/EPS/FCF trends,
-    Altman-Z / Beneish-M / Piotroski-F, CROIC, CCC, DCF-FCF/Cash) compute, and the
-    reduced PSX denominator self-expands toward the full 162 as NA shrinks."""
-    sym = ticker.upper().split(':')[-1]
-    try:
-        store = json.load(open('psx_financials.json'))
-    except Exception:
-        return None
-    rec = store.get(sym)
-    if not isinstance(rec, dict):
-        return None
-    # Bank guard: a bank-tagged record must NOT be scored on the non-bank metric
-    # engine (Altman-Z, current ratio, cash-conversion cycle, inventory/receivable
-    # turns, gross margin are meaningless for a bank). Until the bank metric subset
-    # is wired (reads _bank_system_b: NIM/CASA/ADR/NPL/CAR), a bank stays on the
-    # TV single-period reduced score. Setting _bank_model_ready:true activates it.
-    if rec.get('_is_bank') and not rec.get('_bank_model_ready'):
-        return None
-    h = _empty_hist()
-    for k in _HKEYS:
-        v = rec.get(k)
-        if isinstance(v, list):
-            out = []
-            for x in v:
-                try: out.append(float(x) if x is not None else None)
-                except Exception: out.append(None)
-            h[k] = out
-    if len([x for x in h.get('rev', []) if x]) < 3:
-        return None
-    h['source'] = 'psx-broker'
-    return h
-
-def fetch_history(ticker, log=True):
-    """FMP-stable -> SEC -> Yahoo, first usable wins. Yahoo is the guaranteed backstop.
-    PSX:* has no free statement source (SEC/Yahoo do not cover PSX). Tier-2: psx_history
-    reads psx_financials.json (broker / annual-report) -> full history when present;
-    otherwise empty -> multi-year metrics go NA and the reduced PSX denominator excludes
-    them (TV single-period reduced score)."""
-    if ticker.upper().startswith("PSX:"):
-        h = psx_history(ticker)
-        if h:
-            if log and not _json_mode: print("    history source: psx-broker (psx_financials.json)", flush=True)
-            return h
-        h = _empty_hist(); h['source'] = 'psx-tv-only'
-        if log and not _json_mode: print("    history source: psx-tv-only (no broker financials for this name yet)", flush=True)
-        return h
-    for fn in (fmp_history, sec_history):
-        try:
-            h = fn(ticker)
-        except Exception:
-            h = None
-        if h and h.get('rev') and len([x for x in h['rev'] if x]) >= 3:
-            if log and not _json_mode: print(f"    history source: {h['source']}", flush=True)
-            return h
-    h = yahoo_history(ticker)
-    if log and not _json_mode: print(f"    history source: {h.get('source')}", flush=True)
-    return h
-
-# ── MAIN SCORER ──────────────────────────────────────────────────────────────
-_json_mode = False
-
-def score_ticker(ticker):
-    if not _json_mode:
-        print(f"  Fetching {ticker}...", flush=True)
-
-    is_psx = ticker.upper().startswith("PSX:")
-    eff_bond = PAK_BOND if is_psx else BOND
-    bare = ticker.upper().split(":")[-1]   # strip PSX: for force-list checks
-
-    tv = tv_fetch(ticker)
-    info = _tv_to_info(tv, ticker)
-    if not info:  # TV miss -> Yahoo info backstop so behaviour can't regress
-        if yf is not None:
-            try: info = yf.Ticker(ticker).info or {}
-            except: info = {}
-        else: info = {}
-
-    H = fetch_history(ticker)
-
-    rev, op, np_, eps_s = H['rev'], H['op'], H['np_'], H['eps_s']
-    if not eps_s and info.get('trailingEps'): eps_s = [info['trailingEps']]
-    cogs, sga, tax_exp, pbt = H['cogs'], H['sga'], H['tax_exp'], H['pbt']
-    ebitda_s, int_exp, nii  = H['ebitda_s'], H['int_exp'], H['nii']
-    ppe, td, ltd, eq0s      = H['ppe'], H['td'], H['ltd'], H['eq0s']
-    ta_s, ca_s, cl_s, re_s  = H['ta_s'], H['ca_s'], H['cl_s'], H['re_s']
-    ar_s, ap_s, inv_s       = H['ar_s'], H['ap_s'], H['inv_s']
-    cash_s, sti_s           = H['cash_s'], H['sti_s']
-    loans, deps, npl_s      = H['loans'], H['deps'], H['npl_s']
-    cfo, fcf, ncc, dep      = H['cfo'], H['fcf'], H['ncc'], H['dep']
-    div_paid, buyback, issuance = H['div_paid'], H['buyback'], H['issuance']
-
-    # Bank detection
-    sec = (info.get('sector','') + ' ' + info.get('industry','')).lower()
-    BANK_INDUSTRIES = ('banks—regional','banks—diversified','savings institutions',
-                       'banks - regional','banks - diversified','savings institution',
-                       'thrift','bancorp','bancshares','bancshare','banks')
-    NONBANK_OVERRIDE = ('software','technology','biotech','pharmaceutical',
-                        'lending','marketplace','business development',
-                        'asset management','investment','insurance','reit',
-                        'capital corp','lending tree')
-    is_bank = (any(k in sec for k in BANK_INDUSTRIES)
-               and not any(k in sec for k in NONBANK_OVERRIDE))
-    FORCE_NONBANK = ('TREE','SSSS','AVAH','VITL','PAYS','WGS')
-    FORCE_BANK    = ('RBB','MCB','LOB','AROW','WSBF','BWB','EGBN','BWFG','NBN',
-                     'SFST','PGC','BMRC','NFBK','PCB','KRNY','WTBA','BCML',
-                     'PDLB','FSBC','CHMG','ALRS')
-    if bare in FORCE_NONBANK: is_bank = False
-    if bare in FORCE_BANK:    is_bank = True
-    # PSX banks use Banking Investo Genie 2.0 calibration (Sarmaaya Week-6 / SBP bands):
-    # NIM 4.5%, NPL <=5%/<=8%, CAR >=11.5% (SBP req), tax 45-60% (statutory ~54%),
-    # ADR contextual (low/moderate good when T-bills attractive, >70% bad). US banks
-    # keep the generic System-B (US-tuned) bands.
-    psx_bank = is_bank and is_psx
-
-    W = dict(WEIGHTS)
-    if is_bank:
-        for k in BANK_ZERO: W[k] = 0
-        W.update(BANK_EXTRA)
-
-    price  = info.get('currentPrice') or info.get('regularMarketPrice')
-    shares = info.get('sharesOutstanding')
-    mktcap = info.get('marketCap')
-
-    # ── derived scalars (None-safe)
-    def v0(s): return s[0] if s else None
-    def v1(s): return s[1] if len(s) > 1 else None
-    td0=v0(td); eq00=v0(eq0s); ta0=v0(ta_s); ta1=v1(ta_s)
-    ca0=v0(ca_s); cl0=v0(cl_s); re0=v0(re_s); op0=v0(op)
-    ni0=v0(np_); cfo0=v0(cfo); fcf0=v0(fcf); eps0=v0(eps_s) or info.get('trailingEps')
-    tc0 = (v0(cash_s) or 0) + (v0(sti_s) or 0) if cash_s or sti_s else info.get('_tv',{}).get('cash_n_short_term_invest_fq')
-    tax_r = sdiv(v0(tax_exp), v0(pbt)) or info.get('effectiveTaxRate')
-
-    ic = None
-    if td0 is not None or eq00 is not None:
-        ic_val = (td0 or 0) + (eq00 or 0) - (tc0 or 0)
-        ic = ic_val if ic_val != 0 else None
-
-    nfat = safe_nfat(rev, ppe)
-
-    def egrates(s):
-        out = []
-        for i in range(min(4, len(s)-1)):
-            a,b = s[i], s[i+1]
-            if a and b and b != 0: out.append((a-b)/abs(b)*100)
-        return out
-
-    avg_eg  = avg(egrates(eps_s))   or 5.0
-    avg_eg2 = avg(egrates(ebitda_s)) or 5.0
-
-    metrics = []
-
-    # ── GROWTH
-    for key, ser in [('rev_cagr',rev),('op_cagr',op),('np_cagr',np_)]:
-        c = cagr(ser, 5)
-        metrics.append(mk(key, 'GOOD' if c is not None and c>=0.15 else 'WATCH' if c is not None else 'NA', W))
-    opm = sdiv(op0, v0(rev)); npm = sdiv(ni0, v0(rev))
-    if is_psx and info.get('_tv'):   # use TV single-period margins (percent->decimal) when history is absent
-        _tvr = info['_tv']
-        if opm is None and _tvr.get('operating_margin') is not None: opm = _tvr['operating_margin']/100.0
-        if npm is None and _tvr.get('net_margin') is not None:       npm = _tvr['net_margin']/100.0
-    metrics.append(mk('op_margin', band(opm, 0.12, 0.06), W))
-    metrics.append(mk('np_margin', band(npm, 0.08, 0.03), W))
-
-    # ── STABILITY
-    if psx_bank:
-        # Pakistan bank statutory ~54%; 45-60% healthy, far-below flags aggressive planning.
-        tax_v = ('GOOD'  if tax_r and 0.45 <= tax_r <= 0.60 else
-                 'WATCH' if tax_r and (0.35 <= tax_r < 0.45 or 0.60 < tax_r <= 0.65) else
-                 'BAD'   if tax_r else 'NA')
-        metrics.append(mk('tax_rate', tax_v, W))
-    else:
-        thresh = 0.25 if is_bank else 0.21
-        metrics.append(mk('tax_rate', 'GOOD' if tax_r and tax_r>=thresh else 'WATCH' if tax_r else 'NA', W))
-    int_cov = info.get('interestCoverage') or sdiv(op0, abs(v0(int_exp)) if v0(int_exp) else None)
-    metrics.append(mk('int_coverage', 'NA' if is_bank else band(int_cov, 5.0, 2.0), W))
-    de = info.get('debtToEquity')
-    if de: de = de/100 if de > 10 else de
-    metrics.append(mk('de_ratio', 'GOOD' if de is not None and de<0.5 else 'WATCH' if de is not None and de<1.0 else 'BAD' if de is not None else 'NA', W))
-    metrics.append(mk('total_debt', trend(avg(td,3), avg(td,5), hi=False), W))
-    cr = info.get('currentRatio')
-    metrics.append(mk('current_ratio', 'NA' if is_bank else ('GOOD' if cr and cr>=1.5 else 'WATCH' if cr and cr>=1.0 else 'BAD' if cr else 'NA'), W))
-    metrics.append(mk('cfo_trend', trend(avg(cfo,3), avg(cfo,5)), W))
-    ncc0=v0(ncc); ncc1=v1(ncc)
-    metrics.append(mk('net_cash', 'GOOD' if ncc0 and ncc1 and ncc0>ncc1 else 'WATCH' if ncc0 and ncc0>0 else 'BAD' if ncc0 is not None else 'NA', W))
-    cum_cfo = sum(v for v in cfo[:6] if v); cum_np = sum(v for v in np_[:6] if v)
-    metrics.append(mk('ccfo_cpat', 'GOOD' if cum_cfo and cum_np and cum_cfo>cum_np else 'WATCH' if cum_cfo and cum_np else 'NA', W))
-    metrics.append(mk('nfa_turn', trend(avg(nfat,3), avg(nfat,5)), W))
-    metrics.append(mk('roe', band(info.get('returnOnEquity'), 0.20, 0.10), W))
-
-    # ── VALUATION
-    metrics.append(mk('eps_trend', trend(avg(eps_s,3), avg(eps_s,5)), W))
-    pe = info.get('trailingPE') or info.get('forwardPE')
-    fpe = info.get('forwardPE') or 25
-    metrics.append(mk('pe_ratio', 'GOOD' if pe and pe>0 and pe<=fpe*1.1 else 'WATCH' if pe and pe>0 and pe<=fpe*1.3 else 'BAD' if pe and pe>0 else 'NA', W))
-    # PEG: TV exposes none and Yahoo is demoted -> standard definition PE / avg-EPS-growth.
-    peg = info.get('pegRatio') or (sdiv(pe, avg_eg) if pe and avg_eg and avg_eg>0 else None)
-    metrics.append(mk('peg_ratio', 'GOOD' if peg and peg<1.0 else 'WATCH' if peg and peg<=1.5 else 'BAD' if peg else 'NA', W))
-    ey = sdiv(1, pe)
-    metrics.append(mk('earn_yield', 'GOOD' if ey and ey>eff_bond else 'BAD' if ey else 'NA', W))
-    pb = info.get('priceToBook')
-    metrics.append(mk('pb_ratio', 'GOOD' if pb and pb<1.5 else 'WATCH' if pb and pb<3.0 else 'BAD' if pb else 'NA', W))
-    gv = (pe*pb) if pe and pb else None
-    metrics.append(mk('graham_val', 'GOOD' if gv and gv<22.5 else 'BAD' if gv else 'NA', W))
-    ps = info.get('priceToSalesTrailing12Months')
-    metrics.append(mk('ps_ratio', 'GOOD' if ps and ps<1.5 else 'WATCH' if ps and ps<3.0 else 'BAD' if ps else 'NA', W))
-    dy = info.get('dividendYield')
-    metrics.append(mk('div_yield', 'GOOD' if dy and dy>=0.04 else 'WATCH' if dy else 'NA', W))
-    ev_eb = info.get('enterpriseToEbitda')
-    metrics.append(mk('ev_ebitda', 'GOOD' if ev_eb and ev_eb<10 else 'WATCH' if ev_eb and ev_eb<15 else 'BAD' if ev_eb else 'NA', W))
-
-    iv_eps_v = dcf_eps(eps0, avg_eg, bond=eff_bond)
-    mos = sdiv((iv_eps_v-price), iv_eps_v) if iv_eps_v and price else None
-    metrics.append(mk('mos', 'GOOD' if mos and mos>=0.25 else 'WATCH' if mos and mos>=0 else 'BAD' if mos is not None else 'NA', W))
-
-    # ── VALUE FOR SHAREHOLDERS = net shareholder yield (div + net buyback)/mktcap, else EPS-momentum proxy
-    vsh_verdict = None
-    nsy = None
-    if mktcap and (v0(div_paid) is not None or v0(buyback) is not None):
-        ret_cash = (v0(div_paid) or 0) + max(0.0, (v0(buyback) or 0) - (v0(issuance) or 0))
-        nsy = sdiv(ret_cash, mktcap)
-        if nsy is not None:
-            vsh_verdict = 'GOOD' if nsy >= 0.05 else 'WATCH' if nsy >= 0.02 else 'BAD'
-    if vsh_verdict is None:
-        vsh_verdict = trend(avg(eps_s,3), avg(eps_s,5))   # fallback proxy
-    metrics.append(mk('val_shareholders', vsh_verdict, W))
-
-    # ── INVENTORY
-    if is_bank:
-        for k in ('inv_turn','dro','fat','ccc'): metrics.append(mk(k,'NA',W))
-    else:
-        it = safe_nfat(rev, inv_s)
-        metrics.append(mk('inv_turn', trend(avg(it,3), avg(it,5)), W))
-        dro = [sdiv(ar_s[i] if i<len(ar_s) else None, rev[i])*365
-               if rev and i<len(rev) and rev[i] and sdiv(ar_s[i] if i<len(ar_s) else None, rev[i]) is not None
-               else None for i in range(min(len(rev),6))]
-        metrics.append(mk('dro', trend(avg(dro,3), avg(dro,5), hi=False), W))
-        metrics.append(mk('fat', trend(avg(nfat,3), avg(nfat,5)), W))
-        base = cogs if cogs else rev
-        dsi = [sdiv(inv_s[i] if i<len(inv_s) else None, base[i] if i<len(base) and base[i] else None)*365
-               if sdiv(inv_s[i] if i<len(inv_s) else None, base[i] if i<len(base) and base[i] else None) is not None
-               else None for i in range(min(len(rev),6))]
-        dpo = [sdiv(ap_s[i] if i<len(ap_s) else None, base[i] if i<len(base) and base[i] else None)*365
-               if sdiv(ap_s[i] if i<len(ap_s) else None, base[i] if i<len(base) and base[i] else None) is not None
-               else None for i in range(min(len(rev),6))]
-        ccc_s = [(dro[i] or 0)+(dsi[i] or 0)-(dpo[i] or 0)
-                 if i<len(dro) and i<len(dsi) and i<len(dpo)
-                 and dro[i] is not None and dsi[i] is not None and dpo[i] is not None
-                 else None for i in range(min(len(rev),6))]
-        metrics.append(mk('ccc', trend(avg(ccc_s,3), avg(ccc_s,5), hi=False), W))
-
-    # ── CASHFLOW
-    metrics.append(mk('fcf_trend', trend(avg(fcf,3), avg(fcf,5)), W))
-    croic_v = sdiv(fcf0, ic)
-    metrics.append(mk('croic', 'GOOD' if croic_v and croic_v>0.15 else 'WATCH' if croic_v and croic_v>0.05 else 'BAD' if croic_v is not None else 'NA', W))
-    fcf_m = sdiv(fcf0, v0(rev))
-    metrics.append(mk('fcf_sale', 'GOOD' if fcf_m and fcf_m>0.20 else 'WATCH' if fcf_m and fcf_m>0.08 else 'BAD' if fcf_m is not None else 'NA', W))
-    fcf_cfo_s = [sdiv(fcf[i], cfo[i]) for i in range(min(len(fcf),len(cfo),6)) if cfo and i<len(cfo) and cfo[i]]
-    metrics.append(mk('fcf_cfo', trend(avg(fcf_cfo_s,3), avg(fcf_cfo_s,5)), W))
-    cd = sdiv(tc0, td0)
-    metrics.append(mk('cash_debt', 'GOOD' if cd and cd>1.0 else 'WATCH' if cd and cd>0.3 else 'BAD' if cd is not None else 'NA', W))
-    cps = sdiv(tc0, shares)
-    metrics.append(mk('cash_share', 'GOOD' if cps and price and cps>price*0.1 else 'WATCH' if cps else 'NA', W))
-
-    # ── RISK
-    wc = (ca0-cl0) if ca0 is not None and cl0 is not None else None
-    az = altman_z(wc, re0, op0, eq00, td0, ta0)
-    metrics.append(mk('altman_z', 'GOOD' if az and az>2.6 else 'WATCH' if az and az>1.1 else 'BAD' if az is not None else 'NA', W))
-
-    gp_s = [((rev[i] or 0)-(cogs[i] if cogs and i<len(cogs) else 0)) for i in range(len(rev)) if rev[i] is not None] if rev else []
-    bm = beneish_m(
-        v0(rev),v1(rev), v0(ar_s) or 0,v1(ar_s) or 0,
-        v0(gp_s) or 0,gp_s[1] if len(gp_s)>1 else 0,
-        ta0,ta1, v0(ppe) or 0,v1(ppe) or 0,
-        v0(sga) or 0,v1(sga) or 0, v0(dep) or 0,v1(dep) or 0,
-        ni0,cfo0, v0(ltd) or 0,v1(ltd) or 0)
-    metrics.append(mk('beneish_m', 'GOOD' if bm and bm<-2.22 else 'WATCH' if bm and bm<-1.78 else 'BAD' if bm is not None else 'NA', W))
-
-    roa0_v  = sdiv(ni0, ta0);  roa1_v = sdiv(v1(np_), ta1)
-    cfo_ta  = sdiv(cfo0, ta0)
-    lt0 = (v0(ltd) or td0); lt1 = (v1(ltd) or v1(td))
-    d_lev_a = sdiv(lt0, ta0); d_lev_b = sdiv(lt1, ta1)
-    d_lev = (d_lev_a - d_lev_b) if d_lev_a is not None and d_lev_b is not None else None
-    gm0 = sdiv((v0(rev) or 0)-(v0(cogs) or 0), v0(rev)) if rev else None
-    gm1 = sdiv((v1(rev) or 0)-(v1(cogs) or 0), v1(rev)) if len(rev)>1 else None
-    at0 = sdiv(v0(rev), ta0) if rev else None; at1 = sdiv(v1(rev), ta1) if len(rev)>1 else None
-    pf  = piotroski_f(ni0, cfo0, roa0_v, roa1_v, cfo_ta, d_lev,
-                      (gm0-gm1) if gm0 is not None and gm1 is not None else None,
-                      (at0-at1) if at0 is not None and at1 is not None else None)
-    metrics.append(mk('piotroski_f', 'GOOD' if pf>=6 else 'WATCH' if pf>=3 else 'BAD', W))
-
-    beta  = info.get('beta')
-    ke    = eff_bond + (beta or 1.0)*0.055
-    v_tot = (td0 or 0) + (eq00 or 0)
-    wacc  = ((eq00 or 0)/v_tot*ke + (td0 or 0)/v_tot*0.06*(1-(tax_r or 0.21))) if v_tot else ke
-    nopat = (op0*(1-(tax_r or 0.21))) if op0 else None
-    roic  = sdiv(nopat, ic)
-    metrics.append(mk('roic_wacc', 'GOOD' if roic is not None and roic>wacc else 'WATCH' if roic is not None else 'NA', W))
-
-    # ── BANK EXTRAS
-    if is_bank:
-        nim_v = sdiv(v0(nii), ta0) or info.get('netInterestMargin')
-        nim_vd = band(nim_v, 0.045, 0.035) if psx_bank else band(nim_v, 0.04, 0.03)
-        metrics.append({'key':'nim','verdict':nim_vd,'pts':pts(nim_vd,4),'max':4})
-        casa_v = info.get('casaRatio')
-        cv = band(casa_v,0.80,0.70) if casa_v else 'NA'
-        metrics.append({'key':'casa','verdict':cv,'pts':pts(cv,3),'max':3})
-        adr_v = sdiv(v0(loans), v0(deps))
-        if psx_bank:
-            # Contextual (Banking IG 2.0 / SBP): when T-bills attractive (high-rate regime),
-            # prudent banks park in govt paper -> low/moderate ADR is GOOD, very high is the risk.
-            av = 'GOOD' if adr_v and adr_v<=0.60 else 'WATCH' if adr_v and adr_v<=0.70 else 'BAD' if adr_v else 'NA'
-        else:
-            av = 'GOOD' if adr_v and 0.40<=adr_v<=0.60 else 'WATCH' if adr_v and (0.30<=adr_v<0.40 or 0.60<adr_v<=0.70) else 'BAD' if adr_v else 'NA'
-        metrics.append({'key':'adr','verdict':av,'pts':pts(av,3),'max':3})
-        npl_v = sdiv(v0(npl_s), v0(loans))
-        if psx_bank:
-            nv = band(npl_v,0.05,0.08,hi=False) if npl_v else 'NA'   # PSX structurally higher
-        else:
-            nv = band(npl_v,0.03,0.05,hi=False) if npl_v else 'NA'
-        metrics.append({'key':'npl','verdict':nv,'pts':pts(nv,5),'max':5})
-        car_v = info.get('capitalAdequacyRatio') or info.get('tier1CapitalRatio')
-        if car_v and car_v > 1: car_v = car_v/100
-        cv2 = ((band(car_v,0.13,0.115) if psx_bank else band(car_v,0.18,0.15)) if car_v else 'NA')  # SBP req 11.5%
-        metrics.append({'key':'car','verdict':cv2,'pts':pts(cv2,4),'max':4})
-        bank_inputs = {'nii': v0(nii), 'total_assets': ta0, 'gross_loans': v0(loans),
-                       'deposits': v0(deps), 'npl_found': npl_v is not None,
-                       'casa_found': casa_v is not None, 'car_found': car_v is not None}
-    else:
-        bank_inputs = None
-
-    # ── INTRINSIC VALUES (in-code engine; no Sarmaaya inputs)
-    bvps    = info.get('bookValue')
-    iv_eps  = dcf_eps(eps0, avg_eg, bond=eff_bond)
-    iv_gr   = graham_iv(eps0, bvps)
-    iv_pl   = peter_lynch(peg, avg_eg2, eps0)
-    fcf_ps      = sdiv(fcf0, shares)
-    cash_ps     = sdiv(tc0,  shares)
-    g_fcf       = avg(egrates(fcf))    or 5.0
-    g_cash      = avg(egrates(cash_s)) or 5.0
-    avg6_fcf_ps = sdiv(avg(fcf),    shares)
-    avg6_cash_ps= sdiv(avg(cash_s), shares)
-    iv_dcf_fcf  = dcf_2stage(fcf_ps,      g_fcf)
-    iv_dcf_cash = dcf_2stage(cash_ps,     g_cash)
-    iv_proj_fcf = dcf_2stage(avg6_fcf_ps, g_fcf)
-    iv_proj_cash= dcf_2stage(avg6_cash_ps,g_cash)
-    def _mos(v): return sdiv((v-price), v)*100 if v and price else None
-    iv_fcf_val  = avg([v for v in [iv_dcf_fcf, iv_eps, iv_proj_fcf, iv_pl] if v and v>0])
-    iv_cash_val = avg([v for v in [iv_dcf_cash,iv_eps, iv_proj_cash,iv_pl] if v and v>0])
-    iv_fcf_mos  = _mos(iv_fcf_val)
-    iv_cash_mos = _mos(iv_cash_val)
-    ivs     = [v for v in [iv_eps,iv_gr,iv_pl,iv_dcf_fcf,iv_dcf_cash] if v and v > 0]
-    iv_comp = avg(ivs)
-    mos_pct = _mos(iv_eps)
-
-    if is_bank or is_psx:
-        # Reduced denominator: NA metrics (e.g. PSX multi-year history not yet sourced,
-        # or bank-zeroed lines) are excluded from the max rather than scored as zero,
-        # so a name isn't penalised for data the engine cannot yet see.
-        applicable = [x for x in metrics if W.get(x['key'], 0) > 0]
-        total   = sum(pts(x['verdict'], W.get(x['key'], 0)) for x in applicable)
-        max_s   = sum(W.get(x['key'], 0) for x in applicable if x['verdict'] != 'NA')
-        n_meas  = sum(1 for x in applicable if x['verdict'] != 'NA')
-        pct     = round(total / max_s * 100, 1) if max_s else 0.0
-        bank_coverage = round(n_meas / len(applicable), 2) if applicable else 0
-        max_out = max_s
-    else:
-        total = sum(x['pts'] for x in metrics)
-        pct   = round(total/162*100, 1)
-        bank_coverage = None
-        max_out = 162
-    grade = 'A' if pct>=80 else 'B' if pct>=60 else 'C' if pct>=50 else 'FAIL'
-
-    return {
-        'ticker': ticker, 'name': info.get('longName') or info.get('shortName') or ticker,
-        'sector': info.get('sector','—'), 'is_bank': is_bank, 'is_psx': is_psx, 'price': price,
-        'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics, 'max': max_out,
-        'bank_coverage': bank_coverage, 'bank_inputs': bank_inputs,
-        'src': {'fund': info.get('_tv') and 'tv' or 'yahoo', 'hist': H.get('source')},
-        'piotroski': pf, 'altman_z': round(az,2) if az else None,
-        'beneish_m': round(bm,2) if bm else None,
-        'shareholder_yield_pct': round(nsy*100,2) if nsy is not None else None,
-        'iv': {
-            'dcf_eps':       round(iv_eps,2)       if iv_eps       else None,
-            'dcf_fcf':       round(iv_dcf_fcf,2)   if iv_dcf_fcf   else None,
-            'dcf_cash':      round(iv_dcf_cash,2)  if iv_dcf_cash  else None,
-            'proj_fcf':      round(iv_proj_fcf,2)  if iv_proj_fcf  else None,
-            'proj_cash':     round(iv_proj_cash,2) if iv_proj_cash else None,
-            'graham':        round(iv_gr,2)        if iv_gr        else None,
-            'peter_lynch':   round(iv_pl,2)        if iv_pl        else None,
-            'intrinsic_fcf': round(iv_fcf_val,2)   if iv_fcf_val   else None,
-            'intrinsic_cash':round(iv_cash_val,2)  if iv_cash_val  else None,
-            'composite':     round(iv_comp,2)      if iv_comp      else None,
-            'mos_pct':       round(mos_pct,1)      if mos_pct is not None else None,
-            'mos_fcf_pct':   round(iv_fcf_mos,1)   if iv_fcf_mos  is not None else None,
-            'mos_cash_pct':  round(iv_cash_mos,1)  if iv_cash_mos is not None else None,
-        },
+    function badge(w){var c=col[w[1]];return '<span style="background:'+c[0]+';color:'+c[1]+';border-radius:5px;padding:2px 9px;font-size:12px;font-weight:800;white-space:nowrap;">'+w[0]+'</span>';}
+    function rowM(metal,a,N){
+      var sS=sum(a.S),tS=sum(a.T);
+      return '<div style="padding:7px 0;border-bottom:1px solid #f0f0f0;">'
+        +'<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;">'
+          +'<span style="min-width:96px;font-weight:800;color:var(--navy);">'+metal+'</span>'
+          +badge(N)
+          +'<span style="font-size:11.5px;color:var(--grey-d);">strategic '+(sS>0?'+':'')+sS+' \u00b7 tactical '+(tS>0?'+':'')+tS+'</span>'
+        +'</div>'
+        +'<div style="font-size:11.5px;margin-top:3px;"><b style="color:'+col[N[1]][1]+';">Why '+N[0]+':</b> <span style="color:var(--grey-d);">'+whyTxt(a,N)+'</span></div>'
+        +'<div style="font-size:11px;color:#9aa0a6;margin-top:3px;"><b>drivers:</b> '+(driverTxt(a)||'\u2014')+'</div>'
+        +(a.aw.length?'<div style="font-size:10.5px;color:#9aa0a6;margin-top:2px;"><b>awaiting feed:</b> '+a.aw.join(', ')+'</div>':'')
+      +'</div>';
     }
+    el.innerHTML='<div class="reading-box" style="margin-bottom:14px;">'
+      +'<div style="font-weight:700;color:var(--navy);margin-bottom:2px;">Metals buy/sell engine <span style="font-weight:400;font-size:11px;color:var(--grey-d);">\u2014 two layers: STRATEGIC (macro, months) + TACTICAL (timing, weeks) \u2192 net stance</span></div>'
+      +'<div style="font-size:10.5px;color:#9aa0a6;margin-bottom:6px;">Real yield: '+(ryTrue?'live TIPS (DFII10)':'proxy = 10y \u2212 core PCE until the DFII10 feed lands')+' \u00b7 COT: '+(M.cot_gold_pctile!=null?'156-wk percentile':(M.cot_gold_pct_wow!=null?'net-%-OI + WoW direction (Wave T1)':'net-%-OI proxy until M5 history'))+(M.dfii10_wow!=null?' \u00b7 rates/USD: WoW direction (Wave T2)':'')+'.</div>'
+      +rowM('GOLD',g,gN)+rowM('SILVER',ag,agN)+rowM('COPPER',cu,cuN)+rowM('PLATINUM',pt,ptN)+rowM('PALLADIUM',pd,pdN)
+      +'<div style="font-size:10.5px;color:var(--grey-d);margin-top:6px;">Net = both layers combined: strong macro + supportive timing \u2192 LONG/SHORT; strong macro + opposing positioning extreme \u2192 NEUTRAL (wait for the extreme to clear). Thresholds tunable. G:S bands &lt;60/60\u201380/80\u2013100/100+.</div>'
+      +'</div>';
+  })();
 
-# ── DISPLAY ──────────────────────────────────────────────────────────────────
-SYM = {'GOOD':'[OK]','WATCH':'[~~]','BAD':'[!!]','NA':'[--]'}
+  // COT badge
+  const cotPct=M.cot_gold_pct!=null?M.cot_gold_pct:null;
+  const cotBadge=document.getElementById('m_cot_badge');
+  if(cotBadge){
+    if(cotPct!=null){
+      cotBadge.textContent='COT Gold: '+cotPct+'% OI '+(cotPct>20?'⚠ Crowded':'OK');
+      cotBadge.style.background=cotPct>20?'#FEE2E2':'#D1FAE5';
+      cotBadge.style.color=cotPct>20?'#991B1B':'#065F46';
+    }else{cotBadge.textContent='COT: awaiting scan';}
+  }
 
-def print_result(r):
-    fill = int(r['pct']/100*40); bar = '#'*fill + '-'*(40-fill)
-    print(); print('='*65)
-    print(f"  {r['ticker']}  {r['name']}")
-    print(f"  {r['sector']}" + ('  [BANK]' if r['is_bank'] else '') + f"   (src: {r['src']['fund']}/{r['src']['hist']})")
-    if r['price']: print(f"  Price: ${r['price']}")
-    print('='*65)
-    print(f"  SCORE : {r['score']} / {r['max']}  ({r['pct']}%)")
-    print(f"  GRADE : {r['grade']}  [{bar}]")
-    if r['altman_z']:  print(f"  Altman Z   : {r['altman_z']}")
-    if r['beneish_m']: print(f"  Beneish M  : {r['beneish_m']}")
-    print(f"  Piotroski F: {r['piotroski']} / 7")
-    if r.get('shareholder_yield_pct') is not None: print(f"  Shareholder yield: {r['shareholder_yield_pct']}%")
-    iv = r['iv']; print(); print('  INTRINSIC VALUES:')
-    if iv['dcf_eps']:    print(f"    DCF EPS     : ${iv['dcf_eps']}")
-    if iv['peter_lynch']:print(f"    Peter Lynch : ${iv['peter_lynch']}")
-    if iv['composite']:  print(f"    Composite   : ${iv['composite']}")
-    if iv['mos_pct'] is not None:
-        lbl = 'SAFE' if iv['mos_pct']>=25 else 'SLIM' if iv['mos_pct']>=0 else 'OVERVALUED'
-        print(f"    MoS         : {iv['mos_pct']}%  [{lbl}]")
-    mdict = {mx['key']: mx for mx in r['metrics']}
-    for sec_name, keys in SECTIONS:
-        if sec_name == 'Bank' and not r['is_bank']: continue
-        sec_m = [mdict[k] for k in keys if k in mdict]
-        if not sec_m: continue
-        sp = sum(x['pts'] for x in sec_m); sm = sum(x['max'] for x in sec_m)
-        print(); print(f"  -- {sec_name}  {sp}/{sm} --")
-        for mx in sec_m:
-            print(f"    {SYM.get(mx['verdict'],'[--]')}  {LABELS.get(mx['key'], mx['key']):<38}  {mx['pts']:2}/{mx['max']:2}")
-    print(); print('='*65)
+  // Seasonal badge
+  const sBadge=document.getElementById('m_seasonal_badge');
+  if(sBadge){
+    const sv=METALS_SEASONAL.Gold[CURRENT_MONTH];
+    sBadge.textContent='Seasonal ('+CURRENT_MONTH+'): '+(sv>=0?'+':'')+sv.toFixed(2)+'%';
+    sBadge.style.background=sv>1?'#D1FAE5':sv<-1?'#FEE2E2':'#FEF3C7';
+    sBadge.style.color=sv>1?'#065F46':sv<-1?'#991B1B':'#92400E';
+  }
 
-# ── ENTRY POINT ──────────────────────────────────────────────────────────────
-def main():
-    import json as _json
-    args = sys.argv[1:]
-    json_mode = '--json' in args
-    args = [a for a in args if a != '--json']
-    global _json_mode
-    _json_mode = json_mode
-    if not args:
-        if json_mode: print('[]'); return
-        print('\nIM3 162-Point Stock Scorer (re-threaded: TV + FMP/SEC/Yahoo)')
-        print('Usage: python im3_score.py MU   |   python im3_score.py --json MU RBB ...')
-        inp = input('Enter ticker(s): ').strip().upper()
-        args = inp.split()
-    tickers = [a.upper() for a in args if not a.startswith('--')]
-    if not json_mode:
-        print(f"\nScoring: {', '.join(tickers)}\n")
-    results = []
-    for tk in tickers:
-        try:
-            r = score_ticker(tk)
-            results.append(r)
-            if not json_mode: print_result(r)
-        except Exception as e:
-            if json_mode: results.append({'ticker': tk, 'error': str(e)})
-            else:
-                import traceback; traceback.print_exc(); print(f"\n  ERROR {tk}: {e}")
-        if len(tickers) > 1 and not json_mode: time.sleep(1)
-    if json_mode:
-        print(_json.dumps(results, default=str)); return
-    if len(results) > 1:
-        print('\nSUMMARY')
-        print(f"{'#':<4}{'Ticker':<8}{'Score':<10}{'%':<8}{'Grade':<7}{'Bank':<6}MoS%")
-        print('-'*50)
-        for i, r in enumerate(sorted(results, key=lambda x: x.get('pct',0), reverse=True), 1):
-            if r.get('error'): continue
-            mos = r['iv']['mos_pct']
-            print(f"{i:<4}{r['ticker']:<8}{r['score']:<10}{r['pct']:<8}{r['grade']:<7}{'Y' if r['is_bank'] else '':<6}{str(mos)+'%' if mos is not None else '—'}")
-        print()
+  // Four metal cards
+  const metalCards=document.getElementById('metals_four_cards');
+  if(metalCards){
+    const metals4=[
+      {name:'GOLD',    px:goldPx, corr:1.0, score:totalScore,
+       detail:`G:S Ratio: ${gsRatio?gsRatio.toFixed(1):'—'}<br>Seasonal (${CURRENT_MONTH}): ${METALS_SEASONAL.Gold[CURRENT_MONTH].toFixed(2)}%<br>GDX top: ${GDX_HOLDINGS}`},
+      {name:'SILVER',  px:silvPx, corr:0.7, score:Math.round(totalScore*0.7),
+       detail:`54% industrial demand<br>G:S = ${gsRatio?gsRatio.toFixed(1):'—'}${gsRatio>85?' ← structurally cheap vs gold':''}<br>Seasonal (${CURRENT_MONTH}): ${METALS_SEASONAL.Silver[CURRENT_MONTH].toFixed(2)}%`},
+      {name:'PLATINUM',px:platPx, corr:0.5, score:Math.round(totalScore*0.5),
+       detail:`66% auto-catalysts<br>76% supply: South Africa<br>Structural deficit 727k oz/yr<br>Seasonal (${CURRENT_MONTH}): ${METALS_SEASONAL.Platinum[CURRENT_MONTH].toFixed(2)}%`},
+      {name:'PALLADIUM',px:pallPx,corr:0.7, score:Math.round(totalScore*0.7),
+       detail:`72% auto-catalysts<br>42% supply: Russia (sanction risk)<br>38% supply: S. Africa<br>Seasonal (${CURRENT_MONTH}): ${METALS_SEASONAL.Palladium[CURRENT_MONTH].toFixed(2)}%`},
+    ];
+    metalCards.innerHTML=metals4.map(m=>{
+      const b=metalsBiasColor(m.score);
+      const px=m.px?'$'+m.px.toLocaleString(undefined,{maximumFractionDigits:m.name==='SILVER'?2:0}):'—';
+      return`<div class="metal-card"><div class="mc-name">${m.name}</div><div class="mc-price">${px}</div><div class="mc-bias" style="background:${b.bg};color:${b.text};">${m.score>=0?'+':''}${m.score} — ${b.label}</div><div class="mc-detail">${m.detail}</div></div>`;
+    }).join('');
+  }
 
-if __name__ == '__main__':
-    main()
+  // COT rows
+  const cotRows=document.getElementById('cot_rows');
+  if(cotRows){
+    const cotDate=document.getElementById('cot_date_badge');
+    if(cotDate&&M.cot_date)cotDate.textContent='As of '+M.cot_date;
+    const cotMetals=[
+      {name:'Gold',  net:M.cot_gold_net,  oi:M.cot_gold_oi,  pct:M.cot_gold_pct,  lng:M.cot_gold_long,  sht:M.cot_gold_short,  lpct:M.cot_gold_long_pct,  spct:M.cot_gold_short_pct},
+      {name:'Silver',net:M.cot_silver_net,oi:M.cot_silver_oi,pct:M.cot_silver_pct,lng:M.cot_silver_long,sht:M.cot_silver_short,lpct:M.cot_silver_long_pct,spct:M.cot_silver_short_pct},
+      {name:'Copper',net:M.cot_copper_net,oi:M.cot_copper_oi,pct:M.cot_copper_pct,lng:M.cot_copper_long,sht:M.cot_copper_short,lpct:M.cot_copper_long_pct,spct:M.cot_copper_short_pct},
+    ];
+    cotRows.innerHTML=cotMetals.map(c=>{
+      if(c.pct==null)return`<div class="cot-row"><span style="font-weight:600;min-width:60px;">${c.name}</span><span style="color:var(--grey-d);">Awaiting scan data</span></div>`;
+      const pct=c.pct,crowded=pct>20,color=crowded?'#EF4444':'#10B981';
+      // Long-vs-short split bar (shows when scanner provides the legs)
+      let lsBar='';
+      if(c.lng!=null&&c.sht!=null){
+        const tot=c.lng+c.sht||1, lw=Math.round(c.lng/tot*100), sw=100-lw;
+        lsBar=`<div style="display:flex;align-items:center;gap:6px;min-width:230px;">`
+          +`<span style="font-family:var(--font-mono);font-size:10.5px;color:#10B981;min-width:84px;">L ${c.lng.toLocaleString()}${c.lpct!=null?' ('+c.lpct.toFixed(1)+'%)':''}</span>`
+          +`<div style="flex:1;height:10px;border-radius:5px;overflow:hidden;display:flex;min-width:60px;background:#1f2937;">`
+          +`<div style="width:${lw}%;background:#10B981;"></div><div style="width:${sw}%;background:#EF4444;"></div></div>`
+          +`<span style="font-family:var(--font-mono);font-size:10.5px;color:#EF4444;min-width:84px;">S ${c.sht.toLocaleString()}${c.spct!=null?' ('+c.spct.toFixed(1)+'%)':''}</span></div>`;
+      } else {
+        lsBar=`<span style="font-size:10.5px;color:var(--grey-d);min-width:230px;">long/short split on next scan</span>`;
+      }
+      return`<div class="cot-row"><span style="font-weight:600;min-width:60px;">${c.name}</span><span style="font-family:var(--font-mono);min-width:100px;">${c.net?c.net.toLocaleString():'—'} net</span>${lsBar}<div class="cot-bar-wrap"><div class="cot-bar-fill" style="width:${Math.min(100,Math.abs(pct)*2)}%;background:${color};"></div></div><span style="font-family:var(--font-mono);min-width:50px;">${pct.toFixed(1)}%</span><span style="font-weight:700;color:${color};min-width:70px;">${crowded?'⚠ CROWDED':'OK'}</span></div>`;
+    }).join('');
+  }
+
+  // Seasonality table
+  const stEl=document.getElementById('metals_seasonality_table');
+  if(stEl){
+    let tbl='<table style="font-size:11.5px;min-width:900px;"><thead><tr>';
+    tbl+='<th style="background:#78350F;color:white;text-align:left;padding:7px 10px;">Metal</th>';
+    METALS_MONTHS.forEach(m=>{
+      const isCurr=m===CURRENT_MONTH;
+      tbl+=`<th style="background:${isCurr?'#B8860B':'#78350F'};color:white;padding:7px 6px;text-align:center;${isCurr?'box-shadow:inset 0 -3px 0 #FDE68A;':''}">${m}</th>`;
+    });
+    tbl+='</tr></thead><tbody>';
+    ['Gold','Silver','Platinum','Palladium'].forEach(metal=>{
+      tbl+=`<tr><td style="font-weight:700;padding:6px 10px;background:#FFFBEB;color:#D97706;">${metal}</td>`;
+      METALS_MONTHS.forEach(m=>{
+        const v=METALS_SEASONAL[metal][m];
+        const isCurr=m===CURRENT_MONTH;
+        const bg=v>2?'#D1FAE5':v>0?'#ECFDF5':v>-1?'#FEF3C7':v>-2?'#FEE2E2':'#FCA5A5';
+        const col=v>0?'#065F46':v<0?'#991B1B':'#92400E';
+        tbl+=`<td style="text-align:center;padding:5px 4px;background:${bg};color:${col};font-weight:600;border:${isCurr?'2px solid #B8860B':'1px solid #FEF3C7'};">${v>=0?'+':''}${v.toFixed(2)}</td>`;
+      });
+      tbl+='</tr>';
+    });
+    tbl+='</tbody></table>';
+    tbl+=`<p style="margin-top:6px;font-size:11px;color:var(--grey-d);">Highlighted column = current month (${CURRENT_MONTH}). Source: Bloomberg 2004–2014 averages (Sarmaaya PDFs). Values = average % monthly price change.</p>`;
+    stEl.innerHTML=tbl;
+  }
+
+  // US Sector Implications
+  const sectorEl=document.getElementById('metals_sector_rows');
+  if(sectorEl){
+    const sectors=[
+      {name:'Gold Miners / GDX',tickers:'GDX, NEM, GOLD, AEM, FNV',
+       signal:totalScore>=2?'OVERWEIGHT':totalScore>=0?'NEUTRAL':totalScore>=-3?'UNDERWEIGHT':'AVOID',
+       color:totalScore>=2?'#059669':totalScore>=0?'#D97706':totalScore>=-3?'#B45309':'#7C2D12',
+       note:totalScore>=2?'Gold bias positive — miners leverage 2-3×':totalScore<-3?'Gold negative — miners amplify downside':'Neutral gold environment'},
+      {name:'Silver Producers',tickers:'SLW (Wheaton Precious), PAAS, AG',
+       signal:Math.round(totalScore*0.7)>=2?'OVERWEIGHT':Math.round(totalScore*0.7)>=0?'NEUTRAL':'UNDERWEIGHT',
+       color:Math.round(totalScore*0.7)>=2?'#059669':Math.round(totalScore*0.7)>=0?'#D97706':'#B45309',
+       note:`Silver bias ${Math.round(totalScore*0.7)} (Gold × 0.7). G:S = ${gsRatio?gsRatio.toFixed(1):'—'} ${gsRatio>85?'— silver structurally cheap vs gold':''}`},
+      {name:'Copper / Materials',tickers:'FCX, SCCO, BHP, RIO',
+       signal:'NEUTRAL',color:'#D97706',
+       note:'Copper driven by industrial cycle (GDP, EM demand), independent of gold framework.'},
+      {name:'Gold ETFs (Physical)',tickers:'GLD, IAU, PHYS',
+       signal:totalScore>=2?'BUY':totalScore>=0?'HOLD':'REDUCE',
+       color:totalScore>=2?'#059669':totalScore>=0?'#D97706':'#B45309',
+       note:`Direct gold exposure. COT ${cotPct!=null?cotPct.toFixed(1)+'% OI':'—'} ${cotPct>20?'⚠ crowded — near-term unwind risk even with positive bias':'— positioning OK'}`},
+      {name:'Platinum Group Metals',tickers:'PPLT (platinum), PALL (palladium)',
+       signal:Math.round(totalScore*0.5)>=2?'OVERWEIGHT':Math.round(totalScore*0.5)>=0?'NEUTRAL':'UNDERWEIGHT',
+       color:Math.round(totalScore*0.5)>=2?'#059669':Math.round(totalScore*0.5)>=0?'#D97706':'#B45309',
+       note:`Pt bias ${Math.round(totalScore*0.5)} / Pd bias ${Math.round(totalScore*0.7)}. Auto-catalyst demand. EV long-term risk.`},
+    ];
+    sectorEl.innerHTML=sectors.map(s=>`<div class="metals-sector-row"><div class="msr-name">${s.name}</div><div class="msr-tickers">${s.tickers}</div><span class="msr-signal" style="background:${s.color};color:white;">${s.signal}</span><span style="font-size:11.5px;color:var(--grey-d);flex:2;">${s.note}</span></div>`).join('');
+  }
+}
+
+// =========================================================
+// LIVE DATA LOADER
+// =========================================================
+/* __IM3_API_KEY_PLACEHOLDER__ */
+let LIVE = null;
+function setLiveStatus(state,scan,ver){
+  const dot=document.getElementById('liveDot'),txt=document.getElementById('liveText');
+  if(state==='ok'){dot.style.background='#10b981';txt.textContent='Live scan loaded';}
+  else if(state==='stale'){dot.style.background='#f59e0b';txt.textContent='Live scan (older)';}
+  else if(state==='none'){dot.style.background='#ef4444';txt.textContent='No scan data yet';}
+  else{dot.style.background='#9ca3af';txt.textContent='Loading live scan…';}
+  if(scan)document.getElementById('liveScan').textContent=scan;
+  if(ver)document.getElementById('liveVer').textContent=ver;
+}
+function injectLiveMacros(){
+  // Push scanner values from data.json into the Tab-1 inputs so Tabs 2/3/4/6/7 reflect the live scan.
+  // Only fields the scanner actually provides are overwritten; everything else stays manual.
+  if(!LIVE||!LIVE.macros) return;
+  const M=LIVE.macros, U=M.us||{}, P=M.psx||{}, T=M.metals||{};
+  const set=(id,v)=>{ if(v===null||v===undefined||isNaN(v)) return; const el=document.getElementById(id); if(el) el.value=v; };
+  set('kse100',P.kse100); set('sbp_rate',P.sbp_rate); set('usd_pkr',P.usd_pkr); set('sbp_reserves',P.sbp_reserves);
+  set('wti',U.wti); set('brent',U.brent); set('fed_rate',U.fed_rate); set('core_pce',U.core_pce);
+  set('us_10y',U.us_10y); set('us_2y',U.us_2y); set('umcsi',U.umcsi); set('us_gdp',U.gdp_growth);
+  set('dxy',T.dxy!=null?T.dxy:U.dxy);
+}
+function renderTcePredictions(elId, pred){
+  const el=document.getElementById(elId); if(!el) return;
+  if(!pred||!Array.isArray(pred.predictions)||pred.predictions.length===0){
+    el.innerHTML='<p style="color:var(--grey-d);">No TCE predictions logged yet — they accumulate as the scanner runs.</p>'; return;
+  }
+  const preds=pred.predictions, s=pred.summary||{}, hz=(s.horizon_days||90), win=(s.winner_thresh||40);
+  const pctP=function(v){return v==null?'\u2014':((v>0?'+':'')+v+'%');};
+  const rate=function(v){return v==null?'\u2014':(Math.round(v*100)+'%');};
+  const liftFmt=function(v){return v==null?'\u2014':(v+'\u00d7');};
+  const totalMatured=['HIGH','WATCH','IGNORE'].reduce(function(a,t){return a+((s[t]&&s[t].matured)||0);},0);
+  const openP=preds.filter(function(p){return !p.resolved && (p.days_open||0)<hz;});
+  let earliest=null;
+  openP.forEach(function(p){ if(p.date){ var d=new Date(p.date+'T00:00:00'); if(!earliest||d<earliest) earliest=d; }});
+  let verdict;
+  if(totalMatured>0){
+    verdict='<strong>'+totalMatured+' matured</strong> \u2014 the scorecard below is live.';
+  } else if(earliest){
+    var mature=new Date(earliest.getTime()+hz*86400000);
+    var daysOut=Math.max(0,Math.ceil((mature-new Date())/86400000));
+    verdict='First verdict <strong>~'+mature.toISOString().slice(0,10)+'</strong> ('+daysOut+'d out) \u2014 hit-rate, alpha and lift are <em>pending until picks reach the '+hz+'-day horizon</em>.';
+  } else {
+    verdict='Picks mature at '+hz+'d; the scorecard populates then.';
+  }
+  const openCount=function(t){return preds.filter(function(p){return p.tier===t && !p.resolved && (p.days_open||0)<hz;}).length;};
+  const scRow=function(t){
+    var x=s[t]||{}, m=x.matured||0, pend=(m===0);
+    var c=function(v){return pend?'<span style="color:#b0b0b0;">pending</span>':v;};
+    var tc=t==='HIGH'?'var(--green)':t==='WATCH'?'var(--orange)':'var(--grey-d)';
+    return '<tr>'
+      +'<td style="font-weight:700;color:'+tc+';">'+t+'</td>'
+      +'<td style="text-align:right;">'+openCount(t)+'</td>'
+      +'<td style="text-align:right;">'+m+'</td>'
+      +'<td style="text-align:right;">'+c(rate(x.hit_rate))+'</td>'
+      +'<td style="text-align:right;">'+c(pctP(x.avg_fwd_pct))+'</td>'
+      +'<td style="text-align:right;">'+c(pctP(x.avg_alpha_pct))+'</td>'
+      +'<td style="text-align:right;">'+c(rate(x.beat_bench_rate))+'</td>'
+      +'<td style="text-align:right;">'+(t==='IGNORE'?'<span style="color:var(--grey-d);">base</span>':c(liftFmt(x.lift_vs_ignore)))+'</td>'
+      +'</tr>';
+  };
+  const open=openP.slice().sort(function(a,b){return (b.fwd_ret_pct||0)-(a.fwd_ret_pct||0);}).slice(0,20);
+  const detail=open.map(function(p){
+    var fr=(p.fwd_ret_pct||0), al=p.alpha_pct;
+    var fc=fr>0?'#0a7d2c':fr<0?'#c0392b':'var(--grey-d)';
+    var ac=(al==null)?'var(--grey-d)':al>0?'#0a7d2c':al<0?'#c0392b':'var(--grey-d)';
+    var tcol=p.tier==='HIGH'?'var(--green)':p.tier==='WATCH'?'var(--orange)':'var(--grey-d)';
+    var dleft=Math.max(0,hz-(p.days_open||0));
+    return '<tr><td style="font-weight:600;">'+p.ticker+'</td>'
+      +'<td style="color:'+tcol+';font-weight:600;">'+(p.tier||'')+'</td>'
+      +'<td>'+(p.market||'')+'</td><td>'+(p.date||'')+'</td>'
+      +'<td style="text-align:right;">'+(p.days_open||0)+'d</td>'
+      +'<td style="text-align:right;color:var(--grey-d);">'+dleft+'d</td>'
+      +'<td style="text-align:right;color:'+fc+';">'+pctP(fr)+'</td>'
+      +'<td style="text-align:right;color:'+ac+';">'+(al==null?'\u2014':pctP(al))+'</td></tr>';
+  }).join('');
+  el.innerHTML=
+    '<p style="margin:0 0 6px;font-size:13px;color:var(--grey-d);"><strong>Forward-validation ledger.</strong> '
+    +'Every HIGH/WATCH/IGNORE pick is logged with its entry price + benchmark, re-priced each run (even after it leaves the scan pool), and frozen at the '+hz+'-day horizon. A \u201Cwin\u201D = forward return \u2265+'+win+'%; alpha = return minus its market (SPY for US, KSE-100 for PSX); IGNORE is the control arm, so HIGH/WATCH lift = their hit-rate \u00f7 the IGNORE base rate. This is the test of whether convergence actually predicts \u2014 not just whether the engine is well-built.</p>'
+    +'<p style="margin:0 0 10px;font-size:13px;">Logged <strong>'+(s.total_logged||preds.length)+'</strong> \u00b7 open <strong>'+(s.open!=null?s.open:openP.length)+'</strong> \u00b7 matured <strong>'+totalMatured+'</strong>. '+verdict+'</p>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;"><thead>'
+    +'<tr style="text-align:left;border-bottom:2px solid #ccc;"><th>Tier</th><th style="text-align:right;">Open</th><th style="text-align:right;">Matured</th>'
+    +'<th style="text-align:right;">Hit \u2265+'+win+'%</th><th style="text-align:right;">Avg fwd</th><th style="text-align:right;">Avg alpha</th><th style="text-align:right;">Beat mkt</th><th style="text-align:right;">Lift vs IGN</th></tr></thead>'
+    +'<tbody>'+scRow('HIGH')+scRow('WATCH')+scRow('IGNORE')+'</tbody></table>'
+    +'<p style="margin:0 0 4px;font-size:12px;color:var(--grey-d);">Open picks (top 20 by forward return):</p>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead>'
+    +'<tr style="text-align:left;border-bottom:1px solid #ccc;"><th>Ticker</th><th>Tier</th><th>Mkt</th><th>Logged</th>'
+    +'<th style="text-align:right;">Open</th><th style="text-align:right;">To mature</th><th style="text-align:right;">Fwd</th><th style="text-align:right;">Alpha</th></tr></thead>'
+    +'<tbody>'+detail+'</tbody></table>';
+}
+function renderRecession(rec){
+  var el=document.getElementById('us_recession_box'); if(!el) return;
+  if(!rec||!rec.risk){el.innerHTML='<div class="reading-box">No recession data yet \u2014 populates from the scan (FRED recession series + ForexFactory calendar).</div>';return;}
+  var col=rec.risk==='HIGH'?'#c0392b':rec.risk==='ELEVATED'?'#c55a11':'#0a7d2c';
+  var s=rec.signals||{};
+  // ---- explained signal cards (screenshot-3 style) instead of bare Signal/Latest rows ----
+  function card(o,opt){
+    var v=(o&&o.value!=null)?o.value:null;
+    var cls=(v==null)?'neutral':opt.status(v);
+    var valTxt=(v==null)?'\u2014':(opt.fmt?opt.fmt(v):v);
+    var dateTxt=(o&&o.date)?' <span style="font-size:10px;color:var(--grey-d);font-family:var(--font-sans);">as of '+o.date+'</span>':'';
+    var statusTxt=(v==null)?'No data':opt.statusLabel(v);
+    var meaning=(v==null)?'\u2014':opt.meaning(v);
+    return '<div class="indicator-card '+cls+'">'
+      +'<div class="label">'+opt.name+'</div>'
+      +'<div class="value">'+valTxt+dateTxt+'</div>'
+      +'<div class="status">'+statusTxt+'</div>'
+      +'<div class="interp"><b>'+opt.cat+'</b> \u00b7 '+meaning+'<br><span style="opacity:.82;"><b>What it is:</b> '+opt.what+'</span></div>'
+      +'</div>';
+  }
+  var cards=[
+    card(s.sahm,{name:'Sahm Rule',cat:'Recession trigger',
+      status:function(v){return v>=0.5?'neg':v>=0.3?'warn':'pos';},
+      statusLabel:function(v){return v>=0.5?'TRIGGERED':v>=0.3?'Approaching':'No signal';},
+      meaning:function(v){return Number(v).toFixed(2)+' vs the 0.50 trigger '+(v>=0.5?'\u2014 recession signal firing':'\u2014 well below the line');},
+      what:'Fires when the 3-month-average unemployment rate rises 0.5pp above its lowest point of the prior 12 months \u2014 one of the most reliable real-time recession-start signals.'}),
+    card(s.yc_2y,{name:'10y-2y Spread',cat:'Yield curve',fmt:function(v){return v+'%';},
+      status:function(v){return v<0?'neg':v<0.2?'warn':'pos';},
+      statusLabel:function(v){return v<0?'Inverted':v<0.2?'Flat':'Normal';},
+      meaning:function(v){return (v<0?'inverted \u2014 a classic recession warning':'positive \u2014 the curve is not inverted (healthy)');},
+      what:'10-year minus 2-year Treasury yield. A negative (inverted) curve has preceded most US recessions by 6-18 months.'}),
+    card(s.yc_3m,{name:'10y-3m Spread',cat:'Yield curve',fmt:function(v){return v+'%';},
+      status:function(v){return v<0?'neg':v<0.2?'warn':'pos';},
+      statusLabel:function(v){return v<0?'Inverted':v<0.2?'Flat':'Normal';},
+      meaning:function(v){return (v<0?'inverted \u2014 the Fed\u2019s preferred recession signal is flashing':'positive \u2014 no inversion');},
+      what:'10-year minus 3-month Treasury yield \u2014 the Fed\u2019s preferred curve measure; inversion here is the single strongest recession predictor.'}),
+    card(s.recession_prob,{name:'Recession Probability',cat:'NY Fed model',fmt:function(v){return v+'%';},
+      status:function(v){return v>=50?'neg':v>=25?'warn':'pos';},
+      statusLabel:function(v){return v>=50?'High':v>=25?'Elevated':'Low';},
+      meaning:function(v){return v+'% model-implied chance of recession within 12 months';},
+      what:'NY Fed model: probability of recession 12 months ahead, derived from the yield curve.'}),
+    card(s.gdpnow,{name:'GDPNow',cat:'Growth nowcast',fmt:function(v){return (v>0?'+':'')+v+'%';},
+      status:function(v){return v<0?'neg':v<1?'warn':'pos';},
+      statusLabel:function(v){return v<0?'Contracting':v<1?'Soft':'Solid';},
+      meaning:function(v){return 'real GDP tracking '+(v>0?'+':'')+v+'% this quarter';},
+      what:'Atlanta Fed real-time estimate of current-quarter GDP growth, updated as data arrives.'}),
+    card(s.claims,{name:'Initial Jobless Claims',cat:'Labor market',fmt:function(v){return Number(v).toLocaleString();},
+      status:function(v){return v>=400000?'neg':v>=300000?'warn':'pos';},
+      statusLabel:function(v){return v>=400000?'Stress':v>=300000?'Rising':'Low';},
+      meaning:function(v){return Number(v).toLocaleString()+' weekly claims \u2014 '+(v>=300000?'labor market softening':'labor market firm');},
+      what:'Weekly new unemployment filings. A sustained climb above ~300k is an early sign of labor-market deterioration.'})
+  ].join('');
+  var trig=(rec.triggers&&rec.triggers.length)?('<ul style="margin:6px 0 0 18px;">'+rec.triggers.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul>'):'<span style="color:var(--grey-d);">No triggers firing.</span>';
+  // ---- upcoming releases: readable ET date + why-it-matters ----
+  function fmtDate(d){
+    if(!d) return '';
+    var m=String(d).match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/);
+    if(!m) return d;
+    var Y=+m[1],Mo=+m[2],D=+m[3];
+    var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var wd=days[new Date(Y,Mo-1,D).getDay()];
+    var out=wd+' '+mons[Mo-1]+' '+D;
+    if(m[4]!=null){var h=+m[4],mi=+m[5],ap=h>=12?'PM':'AM',h12=((h+11)%12)+1;out+=', '+h12+':'+(mi<10?'0':'')+mi+' '+ap+' ET';}
+    return out;
+  }
+  function whyEvent(title){
+    var t=String(title||'').toLowerCase();
+    if(t.indexOf('core cpi')>-1||t.indexOf('core pce')>-1) return 'Core inflation \u2014 the Fed\u2019s key gauge. Hotter than forecast \u2192 cuts delayed \u2192 USD up, long-duration tech & gold pressured.';
+    if(t.indexOf('cpi')>-1||t.indexOf('ppi')>-1||t.indexOf('inflation')>-1) return 'Inflation print. Above forecast keeps the Fed cautious (fewer cuts); below forecast opens the door to easing \u2192 risk-on.';
+    if(t.indexOf('unemployment')>-1||t.indexOf('claims')>-1||t.indexOf('payroll')>-1||t.indexOf('jobs')>-1||t.indexOf('nonfarm')>-1) return 'Labor data. Strong = "good news is bad news" (fewer cuts); weak lifts recession-watch but raises cut odds.';
+    if(t.indexOf('sentiment')>-1||t.indexOf('confidence')>-1) return 'Consumer sentiment \u2014 leads spending. A drop signals demand softening ahead.';
+    if(t.indexOf('gdp')>-1) return 'Growth print \u2014 feeds the soft-landing-vs-recession debate that drives the regime read.';
+    if(t.indexOf('fomc')>-1||t.indexOf('fed funds')>-1||t.indexOf('rate decision')>-1) return 'Fed decision/communication \u2014 sets the rate path that drives the whole regime banner.';
+    return 'Moves rate-cut odds and the risk regime depending on the surprise vs forecast.';
+  }
+  var cal=(rec.calendar||[]);
+  // Drop stale past events: show only releases dated on/after the scan's as-of day.
+  // (The feed (faireconomy) returns a window that includes the prior day; without this
+  //  filter, already-released prints like the Jun-10 CPI linger under "Upcoming".)
+  var asof=((typeof LIVE!=='undefined'&&LIVE&&LIVE.meta&&LIVE.meta.last_scan_utc)?LIVE.meta.last_scan_utc:'').slice(0,10);
+  if(!asof){try{asof=new Date().toISOString().slice(0,10);}catch(e){asof='';}}
+  var calUpcoming=asof?cal.filter(function(c){return String(c.date||'').slice(0,10)>=asof;}):cal;
+  var calRows=calUpcoming.length?calUpcoming.map(function(c){
+      var ic=String(c.impact||'').toLowerCase()==='high'?'#c0392b':'#c55a11';
+      return '<tr><td style="white-space:nowrap;">'+fmtDate(c.date)+'</td>'
+        +'<td><span style="color:'+ic+';font-weight:600;">'+(c.impact||'')+'</span></td>'
+        +'<td><b>'+(c.title||'')+'</b><div style="font-size:11px;color:var(--grey-d);line-height:1.4;margin-top:2px;">'+whyEvent(c.title)+'</div></td>'
+        +'<td style="text-align:right;">'+(c.forecast||'\u2014')+'</td><td style="text-align:right;">'+(c.previous||'\u2014')+'</td></tr>';
+    }).join(''):'<tr><td colspan="5" style="color:var(--grey-d);">No upcoming high-impact US releases in the feed.</td></tr>';
+  el.innerHTML='<div class="alert-banner" style="background:'+col+';color:#fff;"><h3 style="margin:0;">RECESSION RISK: '+rec.risk+' <span style="font-weight:400;">(score '+(rec.score!=null?rec.score:'\u2014')+'/100)</span></h3></div>'
+    +'<div class="grid grid-3" style="margin-top:12px;">'+cards+'</div>'
+    +'<div style="margin-top:14px;"><strong>Triggers</strong> '+trig+'<div style="font-size:11px;color:var(--grey-d);margin-top:6px;">Forecast/previous from ForexFactory; realized values from FRED. Source: '+(rec.source||'FRED + faireconomy')+'.</div></div>'
+    +'<h3 class="subsection-title">Upcoming high-impact US releases</h3>'
+    +'<table class="historical-table"><thead><tr><th>Date (ET)</th><th>Impact</th><th>Event &mdash; why it matters</th><th style="text-align:right;">Forecast</th><th style="text-align:right;">Previous</th></tr></thead><tbody>'+calRows+'</tbody></table>';
+}
+
+function renderPsxFundOwnership(){
+  var el=document.getElementById('psx_fund_ownership_box'); if(!el) return;
+  var fo=(typeof LIVE!=='undefined'&&LIVE&&LIVE.psx_fund_ownership)?LIVE.psx_fund_ownership:null;
+  if(!fo||!fo.by_ticker||!Object.keys(fo.by_ticker).length){el.innerHTML='<p style="color:var(--grey-d);font-size:12px;">No fund-ownership data yet — populates from the AMC Fund Manager Report overlay.</p>';return;}
+  var HOLD={OGDC:1,PPL:1,MCB:1,FFC:1,HUBC:1};
+  var meta=fo.meta||{};
+  var rows=Object.keys(fo.by_ticker).map(function(tk){var o=fo.by_ticker[tk]||{};return {tk:tk,funds:+o.funds||0,avg:+o.avg_weight||0,mx:+o.max_weight||0,flow:o.flow||''};});
+  rows.sort(function(a,b){return (b.funds-a.funds)||(b.avg-a.avg);});
+  function flowPill(f){
+    var m={ACCUMULATING:['#D1FAE5','#065F46','▲ accumulating'],TRIMMING:['#FEE2E2','#991B1B','▼ trimming'],NEW:['#DBEAFE','#1E40AF','● new'],EXITED:['#F3F4F6','#6B7280','○ exited'],STABLE:['#F3F4F6','#6B7280','— stable']};
+    if(!f||f==='BASELINE') return '<span style="color:#9ca3af;font-size:10px;">baseline</span>';
+    var c=m[f]||['#F3F4F6','#6B7280',f];
+    return '<span style="background:'+c[0]+';color:'+c[1]+';padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap;">'+c[2]+'</span>';
+  }
+  var cap='<caption style="caption-side:top;text-align:left;font-size:11px;color:var(--grey-d);line-height:1.45;padding:0 0 8px;">PSX <b>smart-money overlay</b> — top-ten holdings aggregated across '+(meta.funds_scanned||9)+' high-conviction equity / asset-allocation mutual funds (monthly AMC Fund Manager Reports). <b>Funds</b> = how many hold the name; <b>Avg / Max %</b> = average and most-concentrated portfolio weight; <b>Flow</b> = month-over-month change (shows “baseline” until next month’s reports land). ★ = your holdings. More funds + rising flow = institutional conviction.</caption>';
+  var head='<thead><tr><th>Ticker</th><th style="text-align:right;">Funds</th><th style="text-align:right;">Avg %</th><th style="text-align:right;" title="Most concentrated single-fund weight">Max %</th><th>Flow</th></tr></thead>';
+  var body=rows.map(function(r){
+    var hl=HOLD[r.tk]?' style="background:#FEF9C3;"':'';
+    var star=HOLD[r.tk]?' ★':'';
+    return '<tr'+hl+'><td><strong>'+r.tk+'</strong>'+star+'</td><td style="text-align:right;">'+r.funds+'</td><td style="text-align:right;">'+r.avg.toFixed(2)+'</td><td style="text-align:right;">'+r.mx.toFixed(2)+'</td><td>'+flowPill(r.flow)+'</td></tr>';
+  }).join('');
+  el.innerHTML='<table class="historical-table">'+cap+head+'<tbody>'+body+'</tbody></table>';
+}
+function renderPsxMarket(){
+  var el=document.getElementById('psx_market_box'); if(!el) return;
+  var pm=(typeof LIVE!=='undefined'&&LIVE&&LIVE.psx_market)?LIVE.psx_market:null;
+  if(!pm||!pm.breadth){el.innerHTML='<p style="color:var(--grey-d);font-size:12px;">No market-breadth data yet — populates from the TradingView scan.</p>';return;}
+  var b=pm.breadth||{};var adv=+b.advancers||0,dec=+b.decliners||0,unch=+b.unchanged||0,tot=(adv+dec+unch)||1;
+  var aw=(adv/tot*100),dw=(dec/tot*100),uw=(unch/tot*100);
+  var bar='<div style="display:flex;height:18px;border-radius:5px;overflow:hidden;font-size:10px;font-weight:700;color:#fff;margin:5px 0 2px;">'
+    +'<div style="width:'+aw.toFixed(1)+'%;background:#047857;display:flex;align-items:center;justify-content:center;" title="Advancers">'+(aw>8?adv:'')+'</div>'
+    +'<div style="width:'+uw.toFixed(1)+'%;background:#9ca3af;display:flex;align-items:center;justify-content:center;" title="Unchanged">'+(uw>8?unch:'')+'</div>'
+    +'<div style="width:'+dw.toFixed(1)+'%;background:#b91c1c;display:flex;align-items:center;justify-content:center;" title="Decliners">'+(dw>8?dec:'')+'</div></div>';
+  var tone=adv>dec?'#047857':adv<dec?'#b91c1c':'#6B7280';
+  var word=adv>dec?'advancing (risk-on)':adv<dec?'declining (risk-off)':'mixed';
+  var breadthBox='<div style="font-size:12px;color:var(--grey-d);">Breadth over the top-'+tot+' names by market cap: <b style="color:'+tone+';">'+adv+' up · '+dec+' down · '+unch+' flat</b> — <b style="color:'+tone+';">'+word+'</b>.</div>'+bar;
+  function commas(v){v=+v;if(isNaN(v))return '—';return v.toLocaleString('en-US');}
+  function mn(v){v=+v;if(isNaN(v))return '—';return v.toFixed(1);}
+  function leaderTbl(title,arr,valKey,valLabel,fmtv){
+    if(!Array.isArray(arr)||!arr.length) return '';
+    var rws=arr.slice(0,10).map(function(x){
+      var ch=+x.change_pct;var cc=ch>0?'#047857':ch<0?'#b91c1c':'#6B7280';
+      return '<tr><td><strong>'+(x.ticker||'')+'</strong></td><td style="text-align:right;">'+fmtv(x[valKey])+'</td><td style="text-align:right;">'+(isNaN(+x.price)?'—':(+x.price).toFixed(2))+'</td><td style="text-align:right;color:'+cc+';font-weight:600;">'+(isNaN(ch)?'—':((ch>0?'+':'')+ch.toFixed(2)+'%'))+'</td></tr>';
+    }).join('');
+    return '<div style="flex:1;min-width:240px;"><h4 style="margin:10px 0 4px;font-size:12px;">'+title+'</h4><table class="historical-table"><thead><tr><th>Ticker</th><th style="text-align:right;">'+valLabel+'</th><th style="text-align:right;">Price</th><th style="text-align:right;">Chg</th></tr></thead><tbody>'+rws+'</tbody></table></div>';
+  }
+  var leaders='<div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:6px;">'
+    +leaderTbl('Volume Leaders (shares)',pm.volume_leaders,'volume','Volume',commas)
+    +leaderTbl('Value Leaders (PKR mn traded)',pm.value_leaders,'value_mn','Value mn',mn)
+    +'</div>';
+  el.innerHTML=breadthBox+leaders;
+}
+
+function renderCandidates(elId, rows, market){
+  var el=document.getElementById(elId); if(!el) return;
+  var isUs=(market==='us');
+  var cap=isUs
+    ? 'Live screen survivors \u2014 names that cleared every gate (non-financials: revenue growth \u2265 15%; financials: ROE \u2265 8% + EPS not deteriorating). Top 15 pass to TCE. The columns ARE the gate metrics (green \u2713 = passed that gate). <b>Status</b> is a rank tier: HIGH-CONVICTION = top 3 by screen rank, STRONG = #4\u20138, WATCH = the rest \u2014 a position in the ranking, not a separate quality verdict (a name can rank top-3 on revenue yet still show a red EPS/ROE gate). <b>Gate legend:</b> \u2713 Rev \u226515% \u00b7 EPS \u22650% \u00b7 ROE \u22658% (financials gate on ROE; revenue bypassed for banks).'
+    : 'Live screen survivors from the TradingView Pakistan scanner \u2014 <b>discovered candidates, not your holdings</b> (OGDC / PPL / MCB / FFC / HUBC are scored separately). Columns are the growth gates. <b>Status</b> is a rank tier (HIGH-CONVICTION = top 3, STRONG = #4\u20138, WATCH = rest). <b>Gate legend:</b> \u2713 Rev \u22650% \u00b7 EPS \u22650%.';
+  var capHtml='<caption style="caption-side:top;text-align:left;font-size:11px;color:var(--grey-d);line-height:1.45;padding:0 0 8px;">'+cap+'</caption>';
+  if(!Array.isArray(rows)||!rows.length){el.innerHTML=capHtml+'<tbody><tr><td style="color:var(--grey-d);padding:8px;">No live screen survivors in data.json yet \u2014 they populate from the scan.</td></tr></tbody>';return;}
+  var fmt=function(v,d){return (v===null||v===undefined||isNaN(v))?'\u2014':Number(v).toFixed(d===undefined?1:d);};
+  function tierPill(st){
+    var s=String(st||'');
+    var c=s.indexOf('HIGH')>-1?['#D1FAE5','#065F46']:s.indexOf('STRONG')>-1?['#E0E7FF','#3730A3']:['#F3F4F6','#6B7280'];
+    return '<span style="background:'+c[0]+';color:'+c[1]+';padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700;white-space:nowrap;">'+(s||'\u2014')+'</span>';
+  }
+  function gate(v,ok){
+    if(v===null||v===undefined||isNaN(v)) return '<td style="text-align:right;color:#9ca3af;">\u2014</td>';
+    var c=ok?'#047857':'#b91c1c';
+    return '<td style="text-align:right;color:'+c+';font-weight:600;">'+Number(v).toFixed(1)+(ok?' \u2713':'')+'</td>';
+  }
+  var head=isUs
+    ? '<tr><th>Ticker</th><th>Name</th><th>Sector</th><th style="text-align:right;">Mkt Cap $M</th><th style="text-align:right;" title="Gate: \u2265 15% revenue growth (non-financials)">Rev %</th><th style="text-align:right;" title="Gate: EPS not deteriorating (\u2265 0%)">EPS %</th><th style="text-align:right;" title="Gate: \u2265 8% ROE (primary gate for financials)">ROE %</th><th style="text-align:right;">P/E</th><th style="text-align:right;" title="Higher insider ownership = conviction">Insider %</th><th>Status</th></tr>'
+    : '<tr><th>Ticker</th><th>Name</th><th>Sector</th><th style="text-align:right;">Price</th><th style="text-align:right;">Rev %</th><th style="text-align:right;">EPS %</th><th style="text-align:right;">3M %</th><th style="text-align:right;" title="AMC funds holding this name (PSX smart-money overlay)">Funds</th><th>Status</th></tr>';
+  function pctn(v){return (v>0?'+':'')+Number(v).toFixed(0)+'%';}
+  function reads(r){
+    var out=[];
+    var rg=Number(r.rev_growth);
+    if(!isNaN(rg)) out.push(rg>=100?'Rev '+pctn(rg)+' \u2014 explosive top-line':rg>=15?'Rev '+pctn(rg)+' \u2014 strong growth':rg>=0?'Rev '+pctn(rg)+' \u2014 modest growth':'Rev '+pctn(rg)+' \u2014 shrinking top-line');
+    var eg=Number(r.eps_growth);
+    if(!isNaN(eg)) out.push(eg>=50?'EPS '+pctn(eg)+' \u2014 earnings surging':eg>=0?'EPS '+pctn(eg)+' \u2014 earnings growing':'EPS '+pctn(eg)+' \u2014 earnings falling');
+    if(isUs){
+      var roe=Number(r.roe);
+      if(!isNaN(roe)) out.push(roe>=20?'ROE '+roe.toFixed(0)+'% \u2014 elite returns on capital':roe>=10?'ROE '+roe.toFixed(0)+'% \u2014 solid':roe>=0?'ROE '+roe.toFixed(0)+'% \u2014 thin':'ROE '+roe.toFixed(0)+'% \u2014 negative');
+      var pe=Number(r.pe);
+      if(!isNaN(pe)&&pe>0) out.push(pe<=12?'P/E '+pe.toFixed(0)+' \u2014 cheap (under ~12yr of earnings)':pe<=20?'P/E '+pe.toFixed(0)+' \u2014 reasonable':pe<=30?'P/E '+pe.toFixed(0)+' \u2014 full':pe<=40?'P/E '+pe.toFixed(0)+' \u2014 expensive':'P/E '+pe.toFixed(0)+' \u2014 priced for perfection');
+    } else {
+      var p3=Number(r.perf_3m);
+      if(!isNaN(p3)) out.push(p3>=50?'3M '+pctn(p3)+' \u2014 strong momentum':p3>=0?'3M '+pctn(p3)+' \u2014 positive momentum':'3M '+pctn(p3)+' \u2014 negative momentum');
+    }
+    return out.length?out.join(' \u00b7 '):'no scored metrics';
+  }
+  function fundCell(r){
+    var o=r.fund_ownership;
+    if(!o||!(+o.funds)) return '<td style="text-align:right;color:#9ca3af;">—</td>';
+    var fl=o.flow;var tag=(fl==='ACCUMULATING')?' ▲':(fl==='TRIMMING')?' ▼':'';
+    var tip=(+o.funds)+' funds · avg '+(+o.avg_weight).toFixed(2)+'% · max '+(+o.max_weight).toFixed(2)+'%'+((fl&&fl!=='BASELINE')?' · '+fl:'');
+    return '<td style="text-align:right;" title="'+tip+'">🏦 '+(+o.funds)+' · '+(+o.avg_weight).toFixed(1)+'%'+tag+'</td>';
+  }
+  var ncols=isUs?10:9;
+  var body=rows.map(function(r){
+    var isFin=/financ|bank|insur/i.test((r.sector||'')+' '+(r.industry||''));
+    var rd='<tr><td colspan="'+ncols+'" style="padding:1px 6px 9px;font-size:11px;color:var(--grey-d);font-style:italic;border:none;">reads: '+reads(r)+'</td></tr>';
+    if(isUs){
+      var revOk=isFin?true:(Number(r.rev_growth)>=15);
+      var epsOk=(Number(r.eps_growth)>=0);
+      var roeOk=(Number(r.roe)>=8);
+      return '<tr><td><strong>'+(r.ticker||'')+'</strong></td><td>'+(r.name||'')+'</td><td>'+(r.sector||'')+'</td>'
+        +'<td style="text-align:right;">'+fmt(r.market_cap_m,0)+'</td>'
+        +gate(r.rev_growth,revOk)+gate(r.eps_growth,epsOk)+gate(r.roe,roeOk)
+        +'<td style="text-align:right;">'+fmt(r.pe)+'</td><td style="text-align:right;">'+fmt(r.insider_pct)+'</td><td>'+tierPill(r.status)+'</td></tr>'+rd;
+    }
+    return '<tr><td><strong>'+(r.ticker||'')+'</strong></td><td>'+(r.name||'')+'</td><td>'+(r.sector||'')+'</td>'
+      +'<td style="text-align:right;">'+fmt(r.price,2)+'</td>'
+      +gate(r.rev_growth,(Number(r.rev_growth)>=0))+gate(r.eps_growth,(Number(r.eps_growth)>=0))
+      +'<td style="text-align:right;">'+fmt(r.perf_3m)+'</td>'+fundCell(r)+'<td>'+tierPill(r.status)+'</td></tr>'+rd;
+  }).join('');
+  el.innerHTML=capHtml+'<thead>'+head+'</thead><tbody>'+body+'</tbody>';
+  if(market==='psx'){ try{renderPsxFundOwnership();}catch(e){if(window.console)console.warn('psx fund-own render',e);} try{renderPsxMarket();}catch(e){if(window.console)console.warn('psx market render',e);} }
+}
+function applyLive(){
+  if(LIVE&&LIVE.macros&&LIVE.macros.psx&&LIVE.macros.psx.usd_pkr){safe_lgPkr=LIVE.macros.psx.usd_pkr;}
+  injectLiveMacros();
+  if(LIVE){
+    renderTceTable('tce_us_table',LIVE.tce_us,'us');
+    renderTceTable('tce_psx_table',LIVE.tce_psx,'psx');
+    renderTcePredictions('tce_predictions',LIVE.tce_predictions);
+  }
+  recalc();
+  calcUS();
+  calcPAK();
+  calcDevAlert();
+  calcHist();
+  calcSectors();
+  calcZone();
+  calcMbPsx();
+  calcMbUs();
+  calcExplosive();
+  calcMetals();
+  calcETF();
+  calcBacktest();
+  renderCandidates('us_candidates_table',(LIVE&&Array.isArray(LIVE.us_candidates))?LIVE.us_candidates:[],'us');
+  renderCandidates('psx_candidates_table',(LIVE&&Array.isArray(LIVE.psx_candidates))?LIVE.psx_candidates:[],'psx');
+  renderRecession((LIVE&&LIVE.recession)?LIVE.recession:null);
+  renderProfiles();
+}
+async function loadLiveData(){
+  setLiveStatus('loading');
+  try{
+    const resp=await fetch('./data.json?_='+Date.now());
+    if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const _txt=await resp.text();
+    // Older scans wrote NaN/Infinity (invalid JSON); sanitize value-position tokens to null so JSON.parse succeeds.
+    LIVE=JSON.parse(_txt.replace(/([:\[,]\s*)(-?Infinity|NaN)\b/g,'$1null'));
+    const meta=LIVE.meta||{};
+    const scan=meta.last_scan_utc
+      ? (function(){try{return new Date(meta.last_scan_utc).toLocaleString('en-GB',{timeZone:'Asia/Dubai',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' GST';}catch(e){return meta.last_scan_utc;}})()
+      : '—';
+    const ver=meta.scan_version||'—';
+    let isStale=false;
+    if(meta.last_scan_utc){const ageH=(Date.now()-new Date(meta.last_scan_utc).getTime())/3.6e6;if(ageH>48)isStale=true;}
+    setLiveStatus(isStale?'stale':'ok',scan,ver);
+    applyLive();
+  }catch(e){
+    LIVE=null;setLiveStatus('none','—','—');calcExplosive();calcMetals();
+  }
+}
+function reloadLive(){loadLiveData();}
+
+// =========================================================
+// MASTER RECALC + INIT
+// =========================================================
+function calcETF(){
+  const E=(LIVE&&LIVE.etf_overlap)?LIVE.etf_overlap:null;
+  const intro=document.getElementById('etf_intro');
+  if(intro) intro.innerHTML='<div class="reading-box">Takes your <b>top 30 best-performing Zacks Rank #1 US-equity ETFs</b> (by 1-yr return), pulls their holdings, and aggregates by stock to surface the names these funds <b>collectively concentrate in</b>. <b>Alloc %</b> is the mirror-able weight across the consensus names; conviction blends position weight + how many of the 30 ETFs hold it, boosted when the stock is itself Zacks #1/#2. Holdings refresh weekly.</div>';
+  const bn=document.getElementById('etf_banner'), tb=document.getElementById('etf_table'), cp=document.getElementById('etf_compare');
+  if(!E){
+    if(bn) bn.innerHTML='<div class="alert-banner orange"><h3>Awaiting first weekly ETF-holdings scan</h3><p>Populates after the next scan fetches the 30 ETFs\u2019 holdings on GitHub Actions.</p></div>';
+    if(tb) tb.innerHTML=''; if(cp) cp.innerHTML=''; return;
+  }
+  const asof=E._scraped_utc?new Date(E._scraped_utc).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'\u2014';
+  const got=(E.etfs_with_holdings!=null)?E.etfs_with_holdings:0;
+  const hasStocks=E.stocks&&E.stocks.length;
+  if(bn){
+    bn.innerHTML = hasStocks
+      ? '<div class="alert-banner green"><h3>'+(E.etfs_scanned||30)+' top Zacks #1 US-equity ETFs \u2192 top '+E.stocks.length+' consensus stocks</h3><p>'+got+' of '+(E.etfs_scanned||30)+' ETFs returned holdings. As of '+asof+'. Alloc % = where these funds collectively put their money, normalized across the names shown.</p></div>'
+      : '<div class="alert-banner orange"><h3>Holdings not returned this run ('+got+' of '+(E.etfs_scanned||30)+')</h3><p>The source ETFs and their returns are shown below, but the consensus-stock overlap needs holdings data. Check the <b>[diag]</b> lines in the scan log to see what the holdings source returned, then we adjust the fetch.</p></div>';
+  }
+  if(tb){
+    if(hasStocks){
+      let t='<table><thead><tr><th>#</th><th>Stock</th><th>ETFs holding</th><th>Alloc %</th><th>Agg weight</th><th>Zacks #1/2</th><th>Conviction</th><th>Found in</th></tr></thead><tbody>';
+      E.stocks.forEach(function(r,i){
+        var z=r.zacks_confirmed?'<span style="color:#15803d;font-weight:700;">\u2713</span>':'<span style="color:#9ca3af;">\u2014</span>';
+        t+='<tr><td>'+(i+1)+'</td><td><b>'+r.ticker+'</b></td><td style="text-align:center;">'+r.etf_count+'</td><td style="text-align:right;font-weight:700;">'+(r.alloc_pct!=null?r.alloc_pct+'%':'\u2014')+'</td><td style="text-align:right;">'+r.agg_weight+'%</td><td style="text-align:center;">'+z+'</td><td style="text-align:right;">'+r.conviction+'</td><td style="font-size:11px;color:var(--grey-d);">'+((r.in_etfs||[]).join(', '))+'</td></tr>';
+      });
+      tb.innerHTML=t+'</tbody></table>';
+    } else { tb.innerHTML='<div class="reading-box" style="color:var(--grey-d);">Consensus stocks will appear here once holdings are fetched.</div>'; }
+  }
+  var src=(E.source_etfs||[]);
+  if(cp){
+    if(!src.length){ cp.innerHTML=''; }
+    else if(typeof src[0]==='string'){
+      cp.innerHTML='<div class="reading-box"><b>Source ETFs ('+src.length+'):</b> '+src.join(', ')+'</div>';
+    } else {
+      var pct=function(v){return (v==null||v==='')?'\u2014':(v+'%');};
+      var st='<table><thead><tr><th>#</th><th>ETF</th><th>Name</th><th>YTD</th><th>1Y</th><th>3Y</th><th>Expense Ratio</th></tr></thead><tbody>';
+      src.forEach(function(e,i){
+        st+='<tr><td>'+(i+1)+'</td><td><b>'+e.ticker+'</b></td><td style="font-size:12px;">'+(e.name||'')+'</td><td style="text-align:right;">'+pct(e.ytd)+'</td><td style="text-align:right;font-weight:600;">'+pct(e.y1)+'</td><td style="text-align:right;">'+pct(e.y3)+'</td><td style="text-align:right;">'+(e.expense==null?'\u2014':(typeof e.expense==='number'?e.expense.toFixed(2):e.expense)+'%')+'</td></tr>';
+      });
+      cp.innerHTML=st+'</tbody></table>';
+    }
+  }
+}
+
+// ===================== STRATEGY BACKTEST (Sarmaaya 2010–2021, real deck data) =====================
+const BT_YEARS=[2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021];
+const BT_SERIES={
+  'KSE-100':{cagr:15.46,color:'#9CA3AF',curve:[1000000,1284189,1418070,2159754,3048357,3535113,3889938,4776489,4306982,3487064,3534086,4862012]},
+  'Strategy 4 (winner)':{cagr:44.54,color:'#10B981',curve:[1000000,1351260,2155489,4281654,7738188,12771915,15423091,21136519,19508795,18764881,23179086,57543933]},
+  'Strategy 5':{cagr:42.71,color:'#3B82F6',curve:[1000000,1351260,2155489,4123297,7355449,11677150,13460410,18953514,16946917,16300693,20135229,49987313]}
+};
+const BT_TABLE=[
+  {n:'KSE-100 (benchmark)',rule:'Buy & hold the index',cagr:15.46,final:4862012},
+  {n:'Strategy 1',rule:'Top 10% by Scoring Model, equal-weight, yearly rebalance',cagr:27.13,final:14015939},
+  {n:'Strategy 2',rule:'+ Red-Zone sector tilt (Banks, Oil, Fertilizer, Utility, Chemicals)',cagr:29.24,final:16805777},
+  {n:'Strategy 3',rule:'+ Lowest-Price / high-beta 5-stock sleeve, re-picked quarterly',cagr:38.98,final:37367064},
+  {n:'Strategy 4',rule:'+ Scoring Model × Intrinsic-Value (FCF) combination',cagr:44.54,final:57543933,win:true},
+  {n:'Strategy 5',rule:'+ Scoring Model × Intrinsic-Value (Cash) combination',cagr:42.71,final:49987313}
+];
+const BT_ALLOC=[{zone:'Dark Green',hi:'0 / 100 / 0',lo:'15 / 70 / 15'},{zone:'Light Green',hi:'10 / 80 / 10',lo:'25 / 50 / 25'},{zone:'Yellow',hi:'20 / 60 / 20',lo:'30 / 40 / 30'},{zone:'Red',hi:'40 / 20 / 40',lo:'50 / 0 / 50'}];
+function calcBacktest(){
+  if(!document.getElementById('bt_cagr'))return;
+  document.getElementById('bt_intro').innerHTML='<div style="background:#F0FDF4;border-left:3px solid #10B981;border-radius:4px;padding:10px 14px;font-size:12.5px;color:var(--grey-d);line-height:1.7;">Your IG+ methodology backtested vs the KSE-100, 2010–2021 (PKR 1,000,000 base). The point is <b>layering</b>: each rule stacks on the one above, compounding from <b>27.1%</b> (scoring alone) to <b>44.5%</b> CAGR (winner) vs the index\'s <b>15.5%</b>. Source: Sarmaaya Strategies deck (yearly picks listed there — reproducible).</div>';
+  const maxC=Math.max(...BT_TABLE.map(s=>s.cagr));
+  let c='<table><thead><tr><th>Strategy</th><th>Rule added</th><th style="text-align:right;">2021 value</th><th style="text-align:right;">CAGR</th><th>vs peak</th></tr></thead><tbody>';
+  BT_TABLE.forEach(s=>{const w=(s.cagr/maxC*100).toFixed(0);const col=s.win?'#10B981':s.n.startsWith('KSE')?'#9CA3AF':'#3B82F6';
+    c+='<tr'+(s.win?' style="background:#F0FDF4;"':'')+'><td><b>'+s.n+'</b>'+(s.win?' 🏆':'')+'</td><td style="font-size:11px;">'+s.rule+'</td><td style="text-align:right;">'+s.final.toLocaleString()+'</td><td style="text-align:right;font-weight:700;">'+s.cagr.toFixed(2)+'%</td><td><div style="background:#F3F4F6;border-radius:3px;height:13px;min-width:70px;"><div style="background:'+col+';height:13px;border-radius:3px;width:'+w+'%;"></div></div></td></tr>';});
+  document.getElementById('bt_cagr').innerHTML=c+'</tbody></table>';
+  const W=720,H=240,pad=46,all=[];Object.values(BT_SERIES).forEach(s=>all.push(...s.curve));
+  const maxV=Math.max(...all),minV=Math.min(...all),x=i=>pad+(i/(BT_YEARS.length-1))*(W-pad-10),y=v=>H-30-((v-minV)/(maxV-minV))*(H-40);
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;">';
+  BT_YEARS.forEach((yr,i)=>{if(i%2===0||i===BT_YEARS.length-1)svg+='<text x="'+x(i)+'" y="'+(H-12)+'" font-size="9" fill="#9CA3AF" text-anchor="middle">'+yr+'</text>';});
+  svg+='<text x="4" y="14" font-size="9" fill="#9CA3AF">PKR '+(maxV/1e6).toFixed(0)+'M</text>';
+  Object.values(BT_SERIES).forEach(s=>{let d='M';s.curve.forEach((v,i)=>{d+=(i?'L':'')+x(i).toFixed(1)+' '+y(v).toFixed(1)+' ';});svg+='<path d="'+d+'" fill="none" stroke="'+s.color+'" stroke-width="2.5"/><circle cx="'+x(s.curve.length-1)+'" cy="'+y(s.curve[s.curve.length-1])+'" r="3" fill="'+s.color+'"/>';});
+  svg+='</svg><div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;margin-top:4px;">';
+  Object.entries(BT_SERIES).forEach(([n,s])=>{svg+='<span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:14px;height:3px;background:'+s.color+';display:inline-block;"></span>'+n+' — '+s.cagr+'% CAGR</span>';});
+  document.getElementById('bt_curve').innerHTML=svg+'</div>';
+  let L='<ol style="margin:0;padding-left:20px;font-size:12.5px;line-height:1.9;">';
+  BT_TABLE.filter(s=>!s.n.startsWith('KSE')).forEach(s=>{L+='<li><b>'+s.n+'</b> ('+s.cagr.toFixed(2)+'%) — '+s.rule+'</li>';});
+  document.getElementById('bt_layers').innerHTML=L+'</ol>';
+  const sbp=val('sbp_rate'),curZone=sbp>=11?'Red':sbp>=9?'Yellow':sbp>=7?'Light Green':'Dark Green';
+  let a='<p style="font-size:11.5px;color:var(--grey-d);margin:0 0 8px;">Backtested Bonds / Stocks / Gold splits keyed to the SBP rate-zone (scoring-model + allocation reached 40.8% CAGR). SBP <b>'+sbp+'%</b> → <b>'+curZone+'</b> zone.</p><table><thead><tr><th>Rate Zone</th><th>HIGH risk (B/S/G)</th><th>LOW risk (B/S/G)</th></tr></thead><tbody>';
+  BT_ALLOC.forEach(z=>{a+='<tr'+(z.zone===curZone?' style="background:#FEF3C7;font-weight:600;"':'')+'><td>'+z.zone+(z.zone===curZone?' ← now':'')+'</td><td>'+z.hi+'</td><td>'+z.lo+'</td></tr>';});
+  document.getElementById('bt_alloc').innerHTML=a+'</tbody></table>';
+}
+
+// ===================== INVESTOR PROFILE SELECTOR (Checklist deck, 7 profiles) =====================
+const PROFILES=[
+  {id:1,name:'Pension / 20-yr Passive',you:false,desc:'Capital preservation, minimal turnover, long horizon.',tabs:[['zone','Allocation Zone'],['devalert','PKR Devaluation'],['metals','Gold & Metals']]},
+  {id:2,name:'Passive Trader 1 — Funds + Rate Cycle',you:false,desc:'Holds mutual funds, rotates with the SBP rate cycle.',tabs:[['zone','Allocation Zone'],['sectors','Sector Implications'],['pak','Pakistan Macro']]},
+  {id:3,name:'Passive Trader 2 — Buy & Hold + Smart Money',you:false,desc:'Buy-and-hold, follows institutional/smart-money positioning.',tabs:[['etf','ETF Overlap'],['mbus','US Multibagger'],['mbpsx','PSX Multibagger']]},
+  {id:4,name:'Active Trader 1 — Rate-Cycle Rotation',you:true,desc:'Rotates sectors on the rate cycle; reads monthly fund reports + macro.',tabs:[['sectors','Sector Implications'],['zone','Allocation Zone'],['pak','Pakistan Macro'],['us','US Macro'],['backtest','Strategy Backtest']]},
+  {id:5,name:'Active Trader 2 — Fundamentals',you:true,desc:'Stock fundamentals + business analysis; quality/value picks.',tabs:[['mbpsx','PSX Multibagger'],['mbus','US Multibagger'],['explosive','Explosive Stocks'],['zone','Allocation Zone'],['tce','TCE Convergence']]},
+  {id:6,name:'Swing Trader',you:false,desc:'Fundamentals + technicals; holds days to weeks.',tabs:[['tce','TCE Convergence'],['explosive','Explosive Stocks'],['metals','Gold & Metals']]},
+  {id:7,name:'Day Trader',you:false,desc:'Forex / metals / stocks intraday on news + technicals.',tabs:[['metals','Gold & Metals'],['tce','TCE Convergence'],['us','US Macro (FOMC/QE-QT)']]}
+];
+let _curProfile=4;
+function goTab(id){const bs=document.querySelectorAll('.tab');for(const b of bs){const oc=b.getAttribute('onclick');if(oc&&oc.indexOf("showPanel('"+id+"'")>=0){showPanel(id,b);return;}}}
+function selectProfile(n){
+  _curProfile=n;const p=PROFILES.find(x=>x.id===n);if(!p)return;
+  document.querySelectorAll('#prof_buttons .tab').forEach(b=>{const on=(+b.dataset.pid===n);b.style.background=on?'var(--navy)':'';b.style.color=on?'#fff':'';});
+  let d='<div style="border:1px solid #E5E7EB;border-radius:8px;padding:14px;"><div style="font-weight:700;color:var(--navy);font-size:15px;margin-bottom:4px;">'+p.name+(p.you?' <span style="background:#10B981;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;">YOUR PROFILE</span>':'')+'</div><div style="font-size:12.5px;color:var(--grey-d);margin-bottom:10px;">'+p.desc+'</div><div style="font-size:11px;color:var(--grey-d);margin-bottom:6px;font-weight:600;">Tabs that serve this mode — tap to jump:</div><div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  p.tabs.forEach(t=>{d+='<span onclick="goTab(\''+t[0]+'\')" style="cursor:pointer;background:#EEF2FF;color:var(--navy);border:1px solid #C7D2FE;border-radius:14px;padding:5px 12px;font-size:12px;">'+t[1]+' →</span>';});
+  document.getElementById('prof_detail').innerHTML=d+'</div></div>';
+}
+function renderProfiles(){
+  if(!document.getElementById('prof_buttons'))return;
+  document.getElementById('prof_intro').innerHTML='<div style="background:#EEF2FF;border-left:3px solid var(--navy);border-radius:4px;padding:10px 14px;font-size:12.5px;color:var(--grey-d);line-height:1.7;">The Sarmaaya framework maps to 7 investor profiles. You operate as <b>Profile 4–5</b> (active: rate-cycle rotation + fundamentals). Pick a profile to see which tabs serve that mode.</div>';
+  let b='<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  PROFILES.forEach(p=>{b+='<button class="tab" data-pid="'+p.id+'" onclick="selectProfile('+p.id+')"'+(p.you?' style="border:1px solid #10B981;"':'')+'>'+p.id+'. '+p.name.split(' — ')[0]+(p.you?' ★':'')+'</button>';});
+  document.getElementById('prof_buttons').innerHTML=b+'</div>';
+  selectProfile(_curProfile);
+}
+
+function recalc(){
+  calcUS();
+  calcPAK();
+  calcDevAlert();
+  calcSectors();
+  calcZone();
+  calcMbPsx();
+  calcMbUs();
+  calcExplosive();
+  calcMetals();
+  calcETF();
+  calcBacktest();
+  renderCandidates('us_candidates_table',(LIVE&&Array.isArray(LIVE.us_candidates))?LIVE.us_candidates:[],'us');
+  renderCandidates('psx_candidates_table',(LIVE&&Array.isArray(LIVE.psx_candidates))?LIVE.psx_candidates:[],'psx');
+  renderRecession((LIVE&&LIVE.recession)?LIVE.recession:null);
+  renderProfiles();
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  recalc();
+  loadLiveData();
+});
+</script>
+</body>
+</html>
