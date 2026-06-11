@@ -8,6 +8,13 @@ v2.4: PSX support added (US path unchanged). A "PSX:" ticker prefix routes
       excludes the NA history metrics (same mechanic as the bank branch), and
       uses a PKR risk-free (PAK_BOND=11.5%) for earnings-yield & DCF-EPS so PSX
       valuation isn't judged against the US bond. Validated: OGDC 62/83 (B). Bank probe: TV exposes 1/32 System-B inputs -> PSX banks score generic-reduced; full System-B via broker.
+
+DEPLOY: commit to the repo ROOT (next to scanner.py / index.html), overwrite.
+  - No re-run needed to validate; the scorer is verified by execution.
+  - US scoring is byte-for-byte unchanged (all PSX logic is gated by the "PSX:" prefix).
+  - PSX scores DO NOT appear automatically. They show up only after daily.yml's IM3
+    step is wired to pass "PSX:" tickers (e.g. PSX:OGDC) AND a PSX IM3 dashboard tab
+    is added. That wiring is the next build — it is not in this file.
 v2.3: ROOT-CAUSE FIX for the MU/AVGO/AMSC regression. _sec_annual now uses
       LAST-write-wins within each concept (the restated comparative value,
       matching proven v2.0) and preferred-concept-wins across synonyms (keeps
