@@ -1,6 +1,11 @@
 """
-IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.1-sourcing).
+IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.2-sourcing).
 =================================================================
+v2.2: removed the v2.1 annual-duration guard (300-400d) — it rejected
+      legitimate 52/53-week fiscal years (e.g. MU's late-August year-end)
+      and truncated the SEC series, collapsing CAGRs/Piotroski. fp=='FY'
+      already selects annuals. Keeps v2.1's synonym-merge + broadened
+      revenue list (which is what moved NVDA/AMD/AMAT onto SEC).
 v2.1: SEC coverage broadened — _sec_annual merges annual values across
       synonym us-gaap concepts (modern ASC-606 revenue tag + legacy
       Revenues/SalesRevenueNet), accepts 10-K/20-F/40-F, and applies an
@@ -404,13 +409,9 @@ def _sec_annual(facts, concepts, want_per_share=False):
             if r.get('fp') != 'FY' or not r.get('fy'): continue
             fr = r.get('frame', '')
             if fr and 'Q' in fr: continue          # reject quarterly frames
-            s, e = r.get('start'), r.get('end')     # flow items: require an ~annual span
-            if s and e:
-                try:
-                    if not (300 <= (date.fromisoformat(e) - date.fromisoformat(s)).days <= 400):
-                        continue
-                except Exception:
-                    pass
+            # fp=='FY' already selects annual periods; no duration gate (the
+            # 300-400d band in v2.1 wrongly rejected 52/53-week fiscal years
+            # such as MU's late-August year-end and truncated the series).
             fy = int(r['fy'])
             if fy not in merged and r.get('val') is not None:  # preferred concept wins per fy
                 merged[fy] = r.get('val')
