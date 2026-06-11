@@ -9,8 +9,8 @@
   },
   "_status": {
     "OGDC": "TEMPLATE / ILLUSTRATIVE numbers \u2014 REPLACE with broker-verified figures before trusting the score.",
-    "PPL": "EMPTY \u2014 fill from annual report / broker model.",
-    "FFC": "EMPTY \u2014 fill from annual report / broker model.",
+    "PPL": "FILLED from stockanalysis.com (S&P Global Market Intelligence), FY2021-FY2025, millions->raw PKR. VERIFY against AKD/Topline before fully trusting.",
+    "FFC": "FILLED from stockanalysis.com (S&P Global), FY2021-FY2025 (calendar yr), millions->raw PKR. Note: FY24 jump = FFBL consolidation. VERIFY vs broker.",
     "HUBC": "EMPTY \u2014 fill from annual report / broker model.",
     "MCB": "EMPTY (BANK) \u2014 fill standard keys + loans/deps/npl_s + _bank_system_b (NIM/CASA/ADR/NPL/CAR). Bank System-B branch not yet wired; data slot is ready for when it is."
   },
@@ -258,486 +258,426 @@
   },
   "PPL": {
     "rev": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "op": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "np_": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "eps_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      244977000000,
+      291241000000,
+      288053000000,
+      203811000000,
+      149279000000
     ],
     "cogs": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      92411000000,
+      101393000000,
+      96198000000,
+      71382000000,
+      62985000000
     ],
     "sga": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      6795000000,
+      5311000000,
+      3994000000,
+      4675000000,
+      3786000000
     ],
-    "tax_exp": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+    "op": [
+      113675000000,
+      147406000000,
+      149440000000,
+      90002000000,
+      65660000000
     ],
     "pbt": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      136868000000,
+      160279000000,
+      164912000000,
+      98937000000,
+      68438000000
+    ],
+    "tax_exp": [
+      46919000000,
+      44802000000,
+      67690000000,
+      44585000000,
+      16155000000
+    ],
+    "np_": [
+      89949000000,
+      115477000000,
+      97222000000,
+      54353000000,
+      52283000000
+    ],
+    "eps_s": [
+      33.06,
+      42.44,
+      35.73,
+      19.98,
+      19.21
     ],
     "ebitda_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      130771000000,
+      169549000000,
+      169720000000,
+      107065000000,
+      83748000000
     ],
     "int_exp": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ppe": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "td": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ltd": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "eq0s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ta_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ca_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "cl_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "re_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ar_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ap_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "inv_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "cash_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "sti_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "cfo": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "fcf": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ncc": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      197240000.0,
+      104990000.0,
+      210290000.0,
+      39340000.0,
+      960000.0
     ],
     "dep": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      17097000000,
+      22143000000,
+      20279000000,
+      17063000000,
+      18087000000
+    ],
+    "ppe": [
+      144400000000,
+      137880000000,
+      138045000000,
+      139578000000,
+      147403000000
+    ],
+    "td": [
+      1617000000,
+      1266000000,
+      1128000000,
+      1434000000,
+      430000.0
+    ],
+    "ltd": [
+      1369000000,
+      1136000000,
+      0,
+      0,
+      0
+    ],
+    "eq0s": [
+      705023000000,
+      640732000000,
+      540867000000,
+      434704000000,
+      388932000000
+    ],
+    "ta_s": [
+      929394000000,
+      913041000000,
+      794445000000,
+      628679000000,
+      537508000000
+    ],
+    "ca_s": [
+      701986000000,
+      710880000000,
+      600695000000,
+      452634000000,
+      385639000000
+    ],
+    "cl_s": [
+      146953000000,
+      200083000000,
+      181133000000,
+      128670000000,
+      88345000000
+    ],
+    "re_s": [
+      661753000000,
+      593767000000,
+      492541000000,
+      402371000000,
+      357842000000
+    ],
+    "ar_s": [
+      604764000000,
+      583552000000,
+      517464000000,
+      368740000000,
+      285125000000
+    ],
+    "ap_s": [
+      1290000000,
+      1445000000,
+      1117000000,
+      861400000.0,
+      799190000.0
+    ],
+    "inv_s": [
+      8810000000,
+      6862000000,
+      5929000000,
+      5496000000,
+      4568000000
+    ],
+    "cash_s": [
+      6365000000,
+      7208000000,
+      6299000000,
+      5427000000,
+      4751000000
+    ],
+    "sti_s": [
+      78740000000,
+      90555000000,
+      56172000000,
+      69634000000,
+      69787000000
+    ],
+    "cfo": [
+      22306000000,
+      81785000000,
+      11904000000,
+      41762000000,
+      53442000000
+    ],
+    "fcf": [
+      -10741000000,
+      54935000000,
+      -6239000000,
+      18795000000,
+      39250000000
+    ],
+    "ncc": [
+      -29718000000,
+      43949000000,
+      16047000000,
+      -35553000000,
+      49574000000
     ],
     "div_paid": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      20374000000,
+      14494000000,
+      3882000000,
+      9044000000,
+      6580000000
     ],
     "buyback": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      0,
+      0,
+      0,
+      0,
+      0
     ],
     "issuance": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      0,
+      0,
+      0,
+      0,
+      0
     ]
   },
   "FFC": {
     "rev": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "op": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "np_": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "eps_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      483808000000,
+      411254000000,
+      181382000000,
+      125678000000,
+      114345000000
     ],
     "cogs": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      335003000000,
+      267560000000,
+      104551000000,
+      75995000000,
+      72994000000
     ],
     "sga": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      38010000000,
+      31936000000,
+      13807000000,
+      11226000000,
+      9098000000
     ],
-    "tax_exp": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+    "op": [
+      99433000000,
+      99104000000,
+      54463000000,
+      35410000000,
+      29292000000
     ],
     "pbt": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      136182000000,
+      140590000000,
+      71410000000,
+      50634000000,
+      49909000000
+    ],
+    "tax_exp": [
+      51235000000,
+      55064000000,
+      23958000000,
+      16263000000,
+      10045000000
+    ],
+    "np_": [
+      83171000000,
+      84379000000,
+      46511000000,
+      33745000000,
+      39869000000
+    ],
+    "eps_s": [
+      58.44,
+      59.29,
+      36.56,
+      26.52,
+      31.34
     ],
     "ebitda_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      109429000000,
+      105205000000,
+      56960000000,
+      39345000000,
+      32755000000
     ],
     "int_exp": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ppe": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "td": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ltd": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "eq0s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ta_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ca_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "cl_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "re_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ar_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ap_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "inv_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "cash_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "sti_s": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "cfo": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "fcf": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
-    ],
-    "ncc": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      6654000000,
+      7499000000,
+      5950000000,
+      5497000000,
+      2589000000
     ],
     "dep": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      9995000000,
+      6101000000,
+      2497000000,
+      3934000000,
+      3464000000
+    ],
+    "ppe": [
+      132494000000,
+      116420000000,
+      69294000000,
+      57922000000,
+      54958000000
+    ],
+    "td": [
+      84967000000,
+      78601000000,
+      41340000000,
+      87111000000,
+      70810000000
+    ],
+    "ltd": [
+      50818000000,
+      32491000000,
+      19565000000,
+      17821000000,
+      19172000000
+    ],
+    "eq0s": [
+      264805000000,
+      244891000000,
+      150083000000,
+      121546000000,
+      104420000000
+    ],
+    "ta_s": [
+      613298000000,
+      573683000000,
+      327052000000,
+      327919000000,
+      275197000000
+    ],
+    "ca_s": [
+      327864000000,
+      328724000000,
+      155362000000,
+      179686000000,
+      144838000000
+    ],
+    "cl_s": [
+      257902000000,
+      262257000000,
+      143309000000,
+      169999000000,
+      119148000000
+    ],
+    "re_s": [
+      202560000000,
+      188838000000,
+      129593000000,
+      101644000000,
+      84497000000
+    ],
+    "ar_s": [
+      42620000000,
+      36319000000,
+      36440000000,
+      41387000000,
+      35576000000
+    ],
+    "ap_s": [
+      15639000000,
+      21160000000,
+      8631000000,
+      8480000000,
+      3428000000
+    ],
+    "inv_s": [
+      63451000000,
+      45886000000,
+      12195000000,
+      26675000000,
+      6090000000
+    ],
+    "cash_s": [
+      13965000000,
+      15976000000,
+      1796000000,
+      2001000000,
+      1827000000
+    ],
+    "sti_s": [
+      10057000000,
+      8959000000,
+      5188000000,
+      3652000000,
+      17868000000
+    ],
+    "cfo": [
+      53551000000,
+      128433000000,
+      72099000000,
+      7790000000,
+      24280000000
+    ],
+    "fcf": [
+      27474000000,
+      114674000000,
+      56318000000,
+      1181000000,
+      19546000000
+    ],
+    "ncc": [
+      -9134000000,
+      105305000000,
+      39381000000,
+      -10771000000,
+      -269900000.0
     ],
     "div_paid": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      71011000000,
+      25739000000,
+      18660000000,
+      17684000000,
+      16853000000
     ],
     "buyback": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      0,
+      0,
+      0,
+      0,
+      0
     ],
     "issuance": [
-      null,
-      null,
-      null,
-      null,
-      null,
-      null
+      0,
+      0,
+      0,
+      0,
+      0
     ]
   },
   "HUBC": {
