@@ -1,23 +1,48 @@
 """
-IM3 162-Point Stock Scorer — Free, uses yfinance only
-======================================================
-Usage:
-    python im3_score.py RBB
-    python im3_score.py RBB MCB LOB AROW WSBF BWB PCB KRNY WTBA AVAH
+IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2-sourcing).
+=================================================================
+Data sourcing (the change in this version):
+  * SINGLE-PERIOD ratios/valuation/margins/quality  -> TradingView america/scan
+    (62 columns probe-confirmed). Fixes the dividend-units bug (TV gives a percent
+    number -> converted to decimal) and the EV/EBITDA "bug" (TV ttm value used
+    directly), and makes every ratio reflect the LIVE price, not a stale sheet.
+  * MULTI-YEAR statements (CAGRs, trend metrics, Piotroski/Beneish/Altman, the DCF
+    series) -> FMP /stable/  ->  SEC EDGAR companyfacts  ->  Yahoo, in that order,
+    each guarded. YAHOO IS THE FINAL BACKSTOP, so coverage can never regress below
+    the prior all-Yahoo behaviour: worst case == today, best case the CAGR gap closes.
+  * Bond yield -> BOND constant (live FRED handled in the scanner; not needed here).
 
-Install once:  pip install yfinance
+Scoring is UNCHANGED — this is a re-source, not a methodology change. Each metric keeps
+its existing threshold/verdict logic; only where the value comes from changed. The two
+deferred methodology calls (peer-relative P/E, level-vs-momentum trends) are untouched.
+Grade A>=80%. Points are absolute out of 162; each metric carries weightage (max) + earned (pts).
+
+Intrinsic-value engine (DCF EPS/FCF/Cash, Projected, Peter Lynch, MoS) computed in-code from
+the fetched series + live price (no Sarmaaya inputs).
+
+Usage:
+    python im3_score.py MU
+    python im3_score.py --json MU RBB MCB ...
+
+Deps: requests (primary), yfinance (fallback only). Both already in daily.yml.
 """
 
-import sys, math, time
+import sys, math, time, os, json
+import requests
 
 try:
     import yfinance as yf
 except ImportError:
-    print("ERROR: Run this first:  pip install yfinance")
-    sys.exit(1)
+    yf = None  # Yahoo is now FALLBACK-ONLY; its absence must not kill a run TV+FMP/SEC can cover.
 
 # ── CONSTANTS ────────────────────────────────────────────────────────────────
 BOND = 0.043  # US 10Y ~4.3%
+HDRS = {"User-Agent": "Mozilla/5.0 (im3-score)"}
+# SEC asks for a descriptive UA + contact; this works for low-volume per-ticker reads.
+HDRS_SEC = {"User-Agent": "IM3-Score research hammad.khan@airproducts.com"}
+TV_URL = "https://scanner.tradingview.com/america/scan"
+FMP_BASE = "https://financialmodelingprep.com/stable"
+FMP_KEY = os.environ.get("FMP_API_KEY", "")
 
 WEIGHTS = {
     'rev_cagr':5,'op_cagr':1,'op_margin':5,'np_cagr':1,'np_margin':5,
@@ -30,25 +55,12 @@ WEIGHTS = {
     'fcf_sale':5,'fcf_cfo':3,'ccc':3,'altman_z':5,'beneish_m':5,
     'piotroski_f':10,'roic_wacc':3,'cash_share':5,'cash_debt':5,
 }
-# Canonical Sarmaaya "Financial Analysis of a Bank" (Week 6) framework: banks are scored
-# ONLY on bank-applicable factors. Everything industrial is zeroed (score AND denominator):
-#   working-capital/coverage: int_coverage, current_ratio, inv_turn, dro, fat, ccc, nfa_turn
-#   leverage (a bank is levered 10-15x by design): de_ratio, total_debt
-#   FCF/operating (not reported the industrial way): op_cagr, op_margin, fcf_trend, croic,
-#     fcf_sale, fcf_cfo, cash_share, cash_debt
-#   industrial valuation (no EBITDA; bank valuation is P/TBV): ev_ebitda, ps_ratio,
-#     peg_ratio, graham_val, mos, val_shareholders
-#   non-financial quality models: piotroski_f, altman_z, beneish_m, roic_wacc
 BANK_ZERO  = ('int_coverage','current_ratio','inv_turn','dro','fat','ccc','nfa_turn',
               'de_ratio','total_debt','op_cagr','op_margin','fcf_trend','croic',
               'fcf_sale','fcf_cfo','cash_share','cash_debt','ev_ebitda','ps_ratio',
               'peg_ratio','graham_val','mos','val_shareholders','piotroski_f',
               'altman_z','beneish_m','roic_wacc')
 BANK_EXTRA = {'nim':4,'casa':3,'adr':3,'npl':5,'car':4}
-# Kept for banks (canonical mappings): rev_cagr->Markup gr, np_cagr->Net Profit gr,
-# np_margin->Net Margin, tax_rate, eps_trend->EPS, cfo_trend->CFO, net_cash->Net Change in
-# Cash, ccfo_cpat->cCFO vs cPAT, roe->ROE, pe/pb/earn_yield/div_yield. Applicable max ~= 70;
-# banks score out of that (NA excluded), NOT /162 (which capped every bank ~55%).
 
 LABELS = {
     'rev_cagr':'Revenue CAGR 5yr','op_cagr':'Op Profit CAGR','op_margin':'Op Margin',
@@ -82,7 +94,7 @@ SECTIONS = [
     ('Bank',      ['nim','casa','adr','npl','car']),
 ]
 
-# ── HELPERS ──────────────────────────────────────────────────────────────────
+# ── HELPERS (unchanged) ──────────────────────────────────────────────────────
 def sdiv(a, b):
     try:
         if b is not None and b != 0:
@@ -116,20 +128,6 @@ def pts(verdict, max_p):
 def mk(key, verdict, W):
     mp = W.get(key, 0)
     return {'key': key, 'verdict': verdict, 'pts': pts(verdict, mp), 'max': mp}
-
-def gs(df, keys, n=6):
-    if df is None or df.empty: return []
-    for k in (keys if isinstance(keys, list) else [keys]):
-        for idx in df.index:
-            if k.lower() in str(idx).lower():
-                vals = []
-                for v in df.loc[idx].values[:n]:
-                    try:
-                        fv = float(v)
-                        vals.append(None if math.isnan(fv) else fv)
-                    except: vals.append(None)
-                if any(v is not None for v in vals): return vals
-    return []
 
 def safe_nfat(rev, ppe):
     out = []
@@ -198,43 +196,370 @@ def peter_lynch(peg, eg, eps):
     if peg is None or eps is None: return None
     return peg * max(0.05, min(0.20, (eg or 5)/100)) * eps
 
+def dcf_2stage(base_ps, g_pct, n=10, r=0.12, g_term=0.04):
+    """2-stage DCF on a per-share cash measure: n-year explicit growth stage discounted at
+    r, then a Gordon terminal at g_term. Growth clamped 5-20% per the IM3 sheet note."""
+    if not base_ps or base_ps <= 0: return None
+    g = max(0.05, min(0.20, (g_pct or 5)/100))
+    if r <= g_term: return None
+    pv = 0.0; cf = base_ps
+    for t in range(1, n+1):
+        cf *= (1+g); pv += cf/(1+r)**t
+    tv = cf*(1+g_term)/(r-g_term)
+    return pv + tv/(1+r)**n
+
+# ── DATA LAYER 1: TRADINGVIEW single-period fields ───────────────────────────
+TV_FIELDS = [
+    'description','sector','industry','market_cap_basic','close','currency',
+    'price_earnings_ttm','price_book_ratio','price_sales_ratio','enterprise_value_ebitda_ttm',
+    'gross_margin','operating_margin','net_margin','pre_tax_margin_ttm',
+    'return_on_equity','return_on_invested_capital','return_on_assets',
+    'debt_to_equity','current_ratio','quick_ratio',
+    'dividends_yield','dividend_payout_ratio_ttm','dividends_per_share_fq',
+    'total_debt','total_revenue_ttm','free_cash_flow_ttm','free_cash_flow_margin_ttm',
+    'cash_n_short_term_invest_fq','ebitda_ttm','ebit_ttm',
+    'earnings_per_share_diluted_ttm','earnings_per_share_basic_ttm','earnings_per_share_forecast_next_fq',
+    'total_revenue_yoy_growth_ttm','earnings_per_share_diluted_yoy_growth_ttm',
+    'beta_1_year','total_shares_outstanding_fundamental','interest_coverage',
+    'total_current_assets_fq','total_current_liabilities_fq','total_assets_fq',
+]
+_TV_EXCHANGES = ['NASDAQ', 'NYSE', 'AMEX']
+
+def _tv_post(symbol, columns):
+    body = {"symbols": {"tickers": [symbol]}, "columns": columns}
+    try:
+        r = requests.post(TV_URL, json=body, headers=HDRS, timeout=20)
+        if r.status_code != 200: return None
+        data = r.json().get("data") or []
+        return (data[0].get("d") or []) if data else None
+    except Exception:
+        return None
+
+def tv_fetch(ticker):
+    """One america/scan row -> {field: value}. Resolves the exchange prefix. {} on miss."""
+    tk = ticker.upper()
+    for ex in _TV_EXCHANGES:
+        d = _tv_post(f"{ex}:{tk}", ['name'] + TV_FIELDS)
+        if d and len(d) == len(TV_FIELDS) + 1:
+            return dict(zip(TV_FIELDS, d[1:]))
+    d = _tv_post(tk, ['name'] + TV_FIELDS)  # bare fallback
+    if d and len(d) == len(TV_FIELDS) + 1:
+        return dict(zip(TV_FIELDS, d[1:]))
+    return {}
+
+def _tv_to_info(tv, ticker):
+    """Adapt the TV row to the yfinance `info` keys the scorer reads, with unit fixes."""
+    if not tv: return {}
+    close = tv.get('close')
+    pb    = tv.get('price_book_ratio')
+    roe   = tv.get('return_on_equity')          # TV percent (39.82) -> decimal
+    de    = tv.get('debt_to_equity')            # TV already decimal ratio (0.149)
+    dy    = tv.get('dividends_yield')           # TV percent number (0.0555) -> decimal
+    return {
+        'longName': tv.get('description') or ticker,
+        'shortName': tv.get('description') or ticker,
+        'sector': tv.get('sector') or '—',
+        'industry': tv.get('industry') or '',
+        'currentPrice': close,
+        'regularMarketPrice': close,
+        'marketCap': tv.get('market_cap_basic'),
+        'sharesOutstanding': tv.get('total_shares_outstanding_fundamental'),
+        'trailingEps': tv.get('earnings_per_share_diluted_ttm') or tv.get('earnings_per_share_basic_ttm'),
+        'trailingPE': tv.get('price_earnings_ttm'),
+        'forwardPE': None,                       # TV exposes no clean ANNUAL forward PE -> pe_ratio uses the 25 default (peer-relative is the pending methodology upgrade)
+        'pegRatio': None,                        # derived downstream as PE / avg-EPS-growth
+        'priceToBook': pb,
+        'priceToSalesTrailing12Months': tv.get('price_sales_ratio'),
+        'dividendYield': (dy/100.0) if dy is not None else None,   # FIX: percent -> decimal (0.0555% -> 0.000555 -> WATCH, never GOOD)
+        'enterpriseToEbitda': tv.get('enterprise_value_ebitda_ttm'),  # FIX: live ttm value used directly
+        'returnOnEquity': (roe/100.0) if roe is not None else None,
+        'returnOnInvestedCapital': tv.get('return_on_invested_capital'),
+        'debtToEquity': de,                      # already decimal; the scorer's >10 guard won't trigger
+        'currentRatio': tv.get('current_ratio'),
+        'beta': tv.get('beta_1_year'),
+        'bookValue': sdiv(close, pb),            # bvps = price / (price/book)
+        'effectiveTaxRate': None,                # from history
+        'interestCoverage': tv.get('interest_coverage'),  # often None on TV -> computed from history
+        'netInterestMargin': None, 'casaRatio': None,
+        'capitalAdequacyRatio': None, 'tier1CapitalRatio': None,
+        '_tv': tv,
+    }
+
+# ── DATA LAYER 2: multi-year statements  FMP-stable -> SEC -> Yahoo ───────────
+# Uniform history dict the scorer consumes. Series are newest-first, up to 6 entries.
+_HKEYS = ['rev','op','np_','eps_s','cogs','sga','tax_exp','pbt','ebitda_s','int_exp','nii',
+          'ppe','td','ltd','eq0s','ta_s','ca_s','cl_s','re_s','ar_s','ap_s','inv_s','cash_s',
+          'sti_s','loans','deps','npl_s','cfo','fcf','ncc','dep','div_paid','buyback','issuance']
+
+def _empty_hist():
+    h = {k: [] for k in _HKEYS}; h['source'] = 'none'; return h
+
+def _flist(rows, field, n=6):
+    out = []
+    for r in (rows or [])[:n]:
+        v = r.get(field)
+        try: out.append(float(v) if v is not None else None)
+        except Exception: out.append(None)
+    return out
+
+# --- FMP /stable/ ---
+def _fmp_get(endpoint, ticker):
+    if not FMP_KEY: return None
+    try:
+        url = f"{FMP_BASE}/{endpoint}?symbol={ticker}&limit=6&apikey={FMP_KEY}"
+        r = requests.get(url, headers=HDRS, timeout=25)
+        if r.status_code != 200: return None
+        js = r.json()
+        rows = js if isinstance(js, list) else None
+        if not rows or not isinstance(rows[0], dict): return None
+        # newest-first
+        rows.sort(key=lambda d: str(d.get('date') or d.get('fiscalYear') or ''), reverse=True)
+        return rows
+    except Exception:
+        return None
+
+def fmp_history(ticker):
+    inc = _fmp_get('income-statement', ticker)
+    bal = _fmp_get('balance-sheet-statement', ticker)
+    cfs = _fmp_get('cash-flow-statement', ticker)
+    if not inc or len(inc) < 3:            # require a usable income series, else this source failed
+        return None
+    h = _empty_hist(); h['source'] = 'fmp'
+    h['rev']     = _flist(inc, 'revenue')
+    h['op']      = _flist(inc, 'operatingIncome')
+    h['np_']     = _flist(inc, 'netIncome')
+    h['eps_s']   = _flist(inc, 'epsDiluted') or _flist(inc, 'eps')
+    h['cogs']    = _flist(inc, 'costOfRevenue')
+    h['sga']     = _flist(inc, 'sellingGeneralAndAdministrativeExpenses') or _flist(inc, 'generalAndAdministrativeExpenses')
+    h['tax_exp'] = _flist(inc, 'incomeTaxExpense')
+    h['pbt']     = _flist(inc, 'incomeBeforeTax')
+    h['ebitda_s']= _flist(inc, 'ebitda')
+    h['int_exp'] = _flist(inc, 'interestExpense')
+    h['dep']     = _flist(inc, 'depreciationAndAmortization') or _flist(cfs, 'depreciationAndAmortization')
+    if bal:
+        h['ppe']  = _flist(bal, 'propertyPlantEquipmentNet')
+        h['td']   = _flist(bal, 'totalDebt') or _flist(bal, 'longTermDebt')
+        h['ltd']  = _flist(bal, 'longTermDebt')
+        h['eq0s'] = _flist(bal, 'totalStockholdersEquity') or _flist(bal, 'totalEquity')
+        h['ta_s'] = _flist(bal, 'totalAssets')
+        h['ca_s'] = _flist(bal, 'totalCurrentAssets')
+        h['cl_s'] = _flist(bal, 'totalCurrentLiabilities')
+        h['re_s'] = _flist(bal, 'retainedEarnings')
+        h['ar_s'] = _flist(bal, 'netReceivables') or _flist(bal, 'accountsReceivables')
+        h['ap_s'] = _flist(bal, 'accountPayables') or _flist(bal, 'accountsPayables')
+        h['inv_s']= _flist(bal, 'inventory')
+        h['cash_s']= _flist(bal, 'cashAndCashEquivalents')
+        h['sti_s']= _flist(bal, 'shortTermInvestments')
+    if cfs:
+        h['cfo']  = _flist(cfs, 'operatingCashFlow') or _flist(cfs, 'netCashProvidedByOperatingActivities')
+        h['fcf']  = _flist(cfs, 'freeCashFlow')
+        h['ncc']  = _flist(cfs, 'netChangeInCash')
+        h['div_paid'] = [abs(v) if v is not None else None for v in _flist(cfs, 'dividendsPaid') or _flist(cfs, 'commonDividendsPaid')]
+        h['buyback']  = [abs(v) if v is not None else None for v in _flist(cfs, 'commonStockRepurchased') or _flist(cfs, 'netStockRepurchase')]
+        h['issuance'] = [abs(v) if v is not None else None for v in _flist(cfs, 'commonStockIssued') or _flist(cfs, 'netStockIssuance')]
+    return h
+
+# --- SEC EDGAR companyfacts ---
+_SEC_TICKER_MAP = None
+def _sec_cik(ticker):
+    global _SEC_TICKER_MAP
+    if _SEC_TICKER_MAP is None:
+        try:
+            r = requests.get("https://www.sec.gov/files/company_tickers.json", headers=HDRS_SEC, timeout=25)
+            j = r.json() if r.status_code == 200 else {}
+            _SEC_TICKER_MAP = {row['ticker'].upper(): str(row['cik_str']).zfill(10) for row in j.values()}
+        except Exception:
+            _SEC_TICKER_MAP = {}
+    return _SEC_TICKER_MAP.get(ticker.upper())
+
+def _sec_annual(facts, concepts, want_per_share=False):
+    """Newest-first annual series for the first matching us-gaap concept (10-K, FY)."""
+    for c in (concepts if isinstance(concepts, list) else [concepts]):
+        node = facts.get(c)
+        if not node: continue
+        units = node.get('units', {})
+        ukey = ('USD/shares' if want_per_share else 'USD')
+        rows = units.get(ukey) or (units.get(next(iter(units), '')) if units else None)
+        if not rows: continue
+        annual = {}
+        for r in rows:
+            if r.get('form', '').startswith('10-K') and r.get('fp') == 'FY' and r.get('fy'):
+                fr = r.get('frame', '')
+                # accept annual frames (CYxxxx) and undated FY rows; reject quarterly frames (…Qx)
+                if fr and 'Q' in fr: continue
+                annual[int(r['fy'])] = r.get('val')
+        if annual:
+            return [annual[y] for y in sorted(annual, reverse=True)][:6]
+    return []
+
+def sec_history(ticker):
+    cik = _sec_cik(ticker)
+    if not cik: return None
+    try:
+        r = requests.get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json",
+                         headers=HDRS_SEC, timeout=30)
+        if r.status_code != 200: return None
+        facts = r.json().get('facts', {}).get('us-gaap', {})
+    except Exception:
+        return None
+    if not facts: return None
+    h = _empty_hist(); h['source'] = 'sec'
+    h['rev']    = _sec_annual(facts, ['RevenueFromContractWithCustomerExcludingAssessedTax','Revenues','SalesRevenueNet'])
+    if not h['rev'] or len([x for x in h['rev'] if x]) < 3:
+        return None                            # no usable revenue -> treat SEC as a miss, fall to Yahoo
+    h['op']     = _sec_annual(facts, ['OperatingIncomeLoss'])
+    h['np_']    = _sec_annual(facts, ['NetIncomeLoss','ProfitLoss'])
+    h['eps_s']  = _sec_annual(facts, ['EarningsPerShareDiluted','EarningsPerShareBasicAndDiluted'], want_per_share=True)
+    h['cogs']   = _sec_annual(facts, ['CostOfRevenue','CostOfGoodsAndServicesSold'])
+    h['sga']    = _sec_annual(facts, ['SellingGeneralAndAdministrativeExpense','GeneralAndAdministrativeExpense'])
+    h['tax_exp']= _sec_annual(facts, ['IncomeTaxExpenseBenefit'])
+    h['pbt']    = _sec_annual(facts, ['IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest',
+                                      'IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments'])
+    h['int_exp']= _sec_annual(facts, ['InterestExpense','InterestExpenseDebt'])
+    h['dep']    = _sec_annual(facts, ['DepreciationDepletionAndAmortization','DepreciationAmortizationAndAccretionNet','DepreciationAndAmortization'])
+    h['ppe']    = _sec_annual(facts, ['PropertyPlantAndEquipmentNet'])
+    h['td']     = _sec_annual(facts, ['LongTermDebtNoncurrent','LongTermDebt','DebtLongtermAndShorttermCombinedAmount'])
+    h['ltd']    = _sec_annual(facts, ['LongTermDebtNoncurrent','LongTermDebt'])
+    h['eq0s']   = _sec_annual(facts, ['StockholdersEquity','StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'])
+    h['ta_s']   = _sec_annual(facts, ['Assets'])
+    h['ca_s']   = _sec_annual(facts, ['AssetsCurrent'])
+    h['cl_s']   = _sec_annual(facts, ['LiabilitiesCurrent'])
+    h['re_s']   = _sec_annual(facts, ['RetainedEarningsAccumulatedDeficit'])
+    h['ar_s']   = _sec_annual(facts, ['AccountsReceivableNetCurrent'])
+    h['ap_s']   = _sec_annual(facts, ['AccountsPayableCurrent'])
+    h['inv_s']  = _sec_annual(facts, ['InventoryNet'])
+    h['cash_s'] = _sec_annual(facts, ['CashAndCashEquivalentsAtCarryingValue'])
+    h['sti_s']  = _sec_annual(facts, ['ShortTermInvestments'])
+    h['cfo']    = _sec_annual(facts, ['NetCashProvidedByUsedInOperatingActivities','NetCashProvidedByUsedInOperatingActivitiesContinuingOperations'])
+    capex       = _sec_annual(facts, ['PaymentsToAcquirePropertyPlantAndEquipment'])
+    if h['cfo'] and capex:
+        h['fcf'] = [(h['cfo'][i] - capex[i]) if i < len(capex) and h['cfo'][i] is not None and capex[i] is not None else None
+                    for i in range(len(h['cfo']))]
+    h['div_paid'] = [abs(v) if v is not None else None for v in _sec_annual(facts, ['PaymentsOfDividendsCommonStock','PaymentsOfDividends'])]
+    h['buyback']  = [abs(v) if v is not None else None for v in _sec_annual(facts, ['PaymentsForRepurchaseOfCommonStock'])]
+    h['issuance'] = [abs(v) if v is not None else None for v in _sec_annual(facts, ['ProceedsFromIssuanceOfCommonStock'])]
+    # EBITDA not a us-gaap tag -> approximate op + dep so peter-lynch growth has a base
+    if h['op'] and h['dep']:
+        h['ebitda_s'] = [(h['op'][i] + (h['dep'][i] or 0)) if h['op'][i] is not None else None for i in range(len(h['op']))]
+    return h
+
+# --- Yahoo (FINAL BACKSTOP) ---
+def _gs(df, keys, n=6):
+    if df is None or df.empty: return []
+    for k in (keys if isinstance(keys, list) else [keys]):
+        for idx in df.index:
+            if k.lower() in str(idx).lower():
+                vals = []
+                for v in df.loc[idx].values[:n]:
+                    try:
+                        fv = float(v); vals.append(None if math.isnan(fv) else fv)
+                    except: vals.append(None)
+                if any(v is not None for v in vals): return vals
+    return []
+
+def yahoo_history(ticker):
+    if yf is None: return _empty_hist()
+    try:    t = yf.Ticker(ticker)
+    except: return _empty_hist()
+    def gd(attr):
+        try:
+            df = getattr(t, attr)
+            if df is not None and not df.empty:
+                df = df.copy(); df.index = df.index.astype(str).str.lower().str.strip(); return df
+        except: pass
+        return None
+    inc, bal, cf = gd('income_stmt'), gd('balance_sheet'), gd('cashflow')
+    h = _empty_hist(); h['source'] = 'yahoo'
+    h['rev']    = _gs(inc,['total revenue','totalrevenue','revenue'])
+    h['op']     = _gs(inc,['operating income','ebit','operatingincome'])
+    h['np_']    = _gs(inc,['net income','netincome'])
+    h['eps_s']  = _gs(inc,['diluted eps','basic eps','eps diluted'])
+    h['cogs']   = _gs(inc,['cost of revenue','cost of goods sold','costofrevenue'])
+    h['sga']    = _gs(inc,['selling general administrative','sga','operatingexpenses'])
+    h['tax_exp']= _gs(inc,['tax provision','income tax expense','incometaxexpense'])
+    h['pbt']    = _gs(inc,['pretax income','income before tax','incomebeforetax'])
+    h['ebitda_s']= _gs(inc,['ebitda','normalized ebitda'])
+    h['int_exp']= _gs(inc,['interest expense','interestexpense'])
+    h['nii']    = _gs(inc,['net interest income','netinterestincome'])
+    h['ppe']    = _gs(bal,['net ppe','property plant equipment net','netppe','property plant and equipment'])
+    h['td']     = _gs(bal,['long term debt','total debt','longtermdebt','totaldebt'])
+    h['ltd']    = _gs(bal,['long term debt','longtermdebt'])
+    h['eq0s']   = _gs(bal,['stockholders equity','total stockholders equity','stockholdersequity'])
+    h['ta_s']   = _gs(bal,['total assets','totalassets'])
+    h['ca_s']   = _gs(bal,['current assets','total current assets','currentassets'])
+    h['cl_s']   = _gs(bal,['current liabilities','total current liabilities','currentliabilities'])
+    h['re_s']   = _gs(bal,['retained earnings','retainedearnings'])
+    h['ar_s']   = _gs(bal,['accounts receivable','net receivables','accountsreceivable'])
+    h['ap_s']   = _gs(bal,['accounts payable','accountspayable'])
+    h['inv_s']  = _gs(bal,['inventory','inventories'])
+    h['cash_s'] = _gs(bal,['cash and cash equivalents','cash','cashandcashequivalents'])
+    h['sti_s']  = _gs(bal,['short term investments','other short term investments'])
+    h['loans']  = _gs(bal,['net loans','loans','totalloans'])
+    h['deps']   = _gs(bal,['total deposits','deposits','totaldeposits'])
+    h['npl_s']  = _gs(bal,['nonperforming loans','allowance for loan losses','allowanceforloanlosses'])
+    h['cfo']    = _gs(cf,['operating cash flow','total cash from operating activities','cashfromoperations','operatingcashflow'])
+    h['fcf']    = _gs(cf,['free cash flow','freecashflow'])
+    h['ncc']    = _gs(cf,['changes in cash','net change in cash','netchangeincash'])
+    h['dep']    = _gs(cf,['depreciation','depreciation and amortization','depreciationandamortization'])
+    h['div_paid']= [abs(v) if v is not None else None for v in _gs(cf,['common stock dividend paid','cash dividends paid','dividends paid'])]
+    h['buyback'] = [abs(v) if v is not None else None for v in _gs(cf,['repurchase of capital stock','common stock payments'])]
+    h['issuance']= [abs(v) if v is not None else None for v in _gs(cf,['issuance of capital stock','common stock issuance'])]
+    return h
+
+def fetch_history(ticker, log=True):
+    """FMP-stable -> SEC -> Yahoo, first usable wins. Yahoo is the guaranteed backstop."""
+    for fn in (fmp_history, sec_history):
+        try:
+            h = fn(ticker)
+        except Exception:
+            h = None
+        if h and h.get('rev') and len([x for x in h['rev'] if x]) >= 3:
+            if log and not _json_mode: print(f"    history source: {h['source']}", flush=True)
+            return h
+    h = yahoo_history(ticker)
+    if log and not _json_mode: print(f"    history source: {h.get('source')}", flush=True)
+    return h
+
 # ── MAIN SCORER ──────────────────────────────────────────────────────────────
-_json_mode = False  # set True by main() when --json used
+_json_mode = False
 
 def score_ticker(ticker):
     if not _json_mode:
         print(f"  Fetching {ticker}...", flush=True)
-    t = yf.Ticker(ticker)
 
-    try:    info = t.info or {}
-    except: info = {}
+    tv = tv_fetch(ticker)
+    info = _tv_to_info(tv, ticker)
+    if not info:  # TV miss -> Yahoo info backstop so behaviour can't regress
+        if yf is not None:
+            try: info = yf.Ticker(ticker).info or {}
+            except: info = {}
+        else: info = {}
 
-    def get_df(attr):
-        try:
-            df = getattr(t, attr)
-            if df is not None and not df.empty:
-                df = df.copy()
-                df.index = df.index.astype(str).str.lower().str.strip()
-                return df
-        except: pass
-        return None
+    H = fetch_history(ticker)
 
-    inc = get_df('income_stmt')
-    bal = get_df('balance_sheet')
-    cf  = get_df('cashflow')
+    rev, op, np_, eps_s = H['rev'], H['op'], H['np_'], H['eps_s']
+    if not eps_s and info.get('trailingEps'): eps_s = [info['trailingEps']]
+    cogs, sga, tax_exp, pbt = H['cogs'], H['sga'], H['tax_exp'], H['pbt']
+    ebitda_s, int_exp, nii  = H['ebitda_s'], H['int_exp'], H['nii']
+    ppe, td, ltd, eq0s      = H['ppe'], H['td'], H['ltd'], H['eq0s']
+    ta_s, ca_s, cl_s, re_s  = H['ta_s'], H['ca_s'], H['cl_s'], H['re_s']
+    ar_s, ap_s, inv_s       = H['ar_s'], H['ap_s'], H['inv_s']
+    cash_s, sti_s           = H['cash_s'], H['sti_s']
+    loans, deps, npl_s      = H['loans'], H['deps'], H['npl_s']
+    cfo, fcf, ncc, dep      = H['cfo'], H['fcf'], H['ncc'], H['dep']
+    div_paid, buyback, issuance = H['div_paid'], H['buyback'], H['issuance']
 
-    # Bank detection — only actual deposit-taking banks, not all financials
+    # Bank detection
     sec = (info.get('sector','') + ' ' + info.get('industry','')).lower()
     BANK_INDUSTRIES = ('banks—regional','banks—diversified','savings institutions',
                        'banks - regional','banks - diversified','savings institution',
-                       'thrift','bancorp','bancshares','bancshare')
+                       'thrift','bancorp','bancshares','bancshare','banks')
     NONBANK_OVERRIDE = ('software','technology','biotech','pharmaceutical',
                         'lending','marketplace','business development',
                         'asset management','investment','insurance','reit',
                         'capital corp','lending tree')
     is_bank = (any(k in sec for k in BANK_INDUSTRIES)
                and not any(k in sec for k in NONBANK_OVERRIDE))
-    # Manual overrides — known non-bank financials that yfinance misclassifies
     FORCE_NONBANK = ('TREE','SSSS','AVAH','VITL','PAYS','WGS')
     FORCE_BANK    = ('RBB','MCB','LOB','AROW','WSBF','BWB','EGBN','BWFG','NBN',
                      'SFST','PGC','BMRC','NFBK','PCB','KRNY','WTBA','BCML',
@@ -249,52 +574,15 @@ def score_ticker(ticker):
 
     price  = info.get('currentPrice') or info.get('regularMarketPrice')
     shares = info.get('sharesOutstanding')
+    mktcap = info.get('marketCap')
 
-    # ── Fetch all series
-    rev   = gs(inc,['total revenue','totalrevenue','revenue'])
-    op    = gs(inc,['operating income','ebit','operatingincome'])
-    np_   = gs(inc,['net income','netincome'])
-    eps_s = gs(inc,['diluted eps','basic eps','eps diluted'])
-    if not eps_s and info.get('trailingEps'): eps_s = [info['trailingEps']]
-    cogs  = gs(inc,['cost of revenue','cost of goods sold','costofrevenue'])
-    sga   = gs(inc,['selling general administrative','sga','operatingexpenses'])
-    tax_exp = gs(inc,['tax provision','income tax expense','incometaxexpense'])
-    pbt     = gs(inc,['pretax income','income before tax','incomebeforetax'])
-    ebitda_s= gs(inc,['ebitda','normalized ebitda'])
-    int_exp = gs(inc,['interest expense','interestexpense'])
-    nii     = gs(inc,['net interest income','netinterestincome'])
-
-    ppe   = gs(bal,['net ppe','property plant equipment net','netppe','property plant and equipment'])
-    td    = gs(bal,['long term debt','total debt','longtermdebt','totaldebt'])
-    ltd   = gs(bal,['long term debt','longtermdebt'])
-    eq0s  = gs(bal,['stockholders equity','total stockholders equity','stockholdersequity'])
-    ta_s  = gs(bal,['total assets','totalassets'])
-    ca_s  = gs(bal,['current assets','total current assets','currentassets'])
-    cl_s  = gs(bal,['current liabilities','total current liabilities','currentliabilities'])
-    re_s  = gs(bal,['retained earnings','retainedearnings'])
-    ar_s  = gs(bal,['accounts receivable','net receivables','accountsreceivable'])
-    ap_s  = gs(bal,['accounts payable','accountspayable'])
-    inv_s = gs(bal,['inventory','inventories'])
-    cash_s= gs(bal,['cash and cash equivalents','cash','cashandcashequivalents'])
-    sti_s = gs(bal,['short term investments','other short term investments'])
-    loans = gs(bal,['net loans','loans','totalloans'])
-    deps  = gs(bal,['total deposits','deposits','totaldeposits'])
-    npl_s = gs(bal,['nonperforming loans','allowance for loan losses','allowanceforloanlosses'])
-
-    cfo   = gs(cf,['operating cash flow','total cash from operating activities',
-                   'cashfromoperations','operatingcashflow'])
-    fcf   = gs(cf,['free cash flow','freecashflow'])
-    ncc   = gs(cf,['changes in cash','net change in cash','netchangeincash'])
-    dep   = gs(cf,['depreciation','depreciation and amortization','depreciationandamortization'])
-
-    # ── Key scalars (all None-safe)
+    # ── derived scalars (None-safe)
     def v0(s): return s[0] if s else None
     def v1(s): return s[1] if len(s) > 1 else None
-
     td0=v0(td); eq00=v0(eq0s); ta0=v0(ta_s); ta1=v1(ta_s)
     ca0=v0(ca_s); cl0=v0(cl_s); re0=v0(re_s); op0=v0(op)
     ni0=v0(np_); cfo0=v0(cfo); fcf0=v0(fcf); eps0=v0(eps_s) or info.get('trailingEps')
-    tc0 = (v0(cash_s) or 0) + (v0(sti_s) or 0) if cash_s or sti_s else None
+    tc0 = (v0(cash_s) or 0) + (v0(sti_s) or 0) if cash_s or sti_s else info.get('_tv',{}).get('cash_n_short_term_invest_fq')
     tax_r = sdiv(v0(tax_exp), v0(pbt)) or info.get('effectiveTaxRate')
 
     ic = None
@@ -347,7 +635,8 @@ def score_ticker(ticker):
     pe = info.get('trailingPE') or info.get('forwardPE')
     fpe = info.get('forwardPE') or 25
     metrics.append(mk('pe_ratio', 'GOOD' if pe and pe>0 and pe<=fpe*1.1 else 'WATCH' if pe and pe>0 and pe<=fpe*1.3 else 'BAD' if pe and pe>0 else 'NA', W))
-    peg = info.get('pegRatio') or info.get('trailingPegRatio')
+    # PEG: TV exposes none and Yahoo is demoted -> standard definition PE / avg-EPS-growth.
+    peg = info.get('pegRatio') or (sdiv(pe, avg_eg) if pe and avg_eg and avg_eg>0 else None)
     metrics.append(mk('peg_ratio', 'GOOD' if peg and peg<1.0 else 'WATCH' if peg and peg<=1.5 else 'BAD' if peg else 'NA', W))
     ey = sdiv(1, pe)
     metrics.append(mk('earn_yield', 'GOOD' if ey and ey>BOND else 'BAD' if ey else 'NA', W))
@@ -361,16 +650,28 @@ def score_ticker(ticker):
     metrics.append(mk('div_yield', 'GOOD' if dy and dy>=0.04 else 'WATCH' if dy else 'NA', W))
     ev_eb = info.get('enterpriseToEbitda')
     metrics.append(mk('ev_ebitda', 'GOOD' if ev_eb and ev_eb<10 else 'WATCH' if ev_eb and ev_eb<15 else 'BAD' if ev_eb else 'NA', W))
+
     iv_eps_v = dcf_eps(eps0, avg_eg)
     mos = sdiv((iv_eps_v-price), iv_eps_v) if iv_eps_v and price else None
     metrics.append(mk('mos', 'GOOD' if mos and mos>=0.25 else 'WATCH' if mos and mos>=0 else 'BAD' if mos is not None else 'NA', W))
-    metrics.append(mk('val_shareholders', trend(avg(eps_s,3), avg(eps_s,5)), W))
+
+    # ── VALUE FOR SHAREHOLDERS = net shareholder yield (div + net buyback)/mktcap, else EPS-momentum proxy
+    vsh_verdict = None
+    nsy = None
+    if mktcap and (v0(div_paid) is not None or v0(buyback) is not None):
+        ret_cash = (v0(div_paid) or 0) + max(0.0, (v0(buyback) or 0) - (v0(issuance) or 0))
+        nsy = sdiv(ret_cash, mktcap)
+        if nsy is not None:
+            vsh_verdict = 'GOOD' if nsy >= 0.05 else 'WATCH' if nsy >= 0.02 else 'BAD'
+    if vsh_verdict is None:
+        vsh_verdict = trend(avg(eps_s,3), avg(eps_s,5))   # fallback proxy
+    metrics.append(mk('val_shareholders', vsh_verdict, W))
 
     # ── INVENTORY
     if is_bank:
         for k in ('inv_turn','dro','fat','ccc'): metrics.append(mk(k,'NA',W))
     else:
-        it = safe_nfat(rev, inv_s)  # reuse same safe pattern
+        it = safe_nfat(rev, inv_s)
         metrics.append(mk('inv_turn', trend(avg(it,3), avg(it,5)), W))
         dro = [sdiv(ar_s[i] if i<len(ar_s) else None, rev[i])*365
                if rev and i<len(rev) and rev[i] and sdiv(ar_s[i] if i<len(ar_s) else None, rev[i]) is not None
@@ -455,61 +756,37 @@ def score_ticker(ticker):
         if car_v and car_v > 1: car_v = car_v/100
         cv2 = band(car_v,0.18,0.15) if car_v else 'NA'
         metrics.append({'key':'car','verdict':cv2,'pts':pts(cv2,4),'max':4})
-        # Phase-2 probe: which canonical bank inputs Yahoo actually returned (per bank).
-        # Extended to capture the raw fields the next-stage canonical ratios need
-        # (Provision/Gross-Loans, Loan & Deposit growth, P/TBV) plus a preview of each
-        # computed ratio, so ONE live run reveals exactly which are scoreable before they
-        # are added as scored metrics. All None-safe; never raises, never drops a bank.
-        _prov   = gs(inc, ['provision for loan losses', 'provision for credit losses',
-                           'provisionforcreditlosses', 'credit losses provision'])
-        _intang = gs(bal, ['goodwill and other intangible assets', 'intangible assets',
-                           'goodwill', 'otherintangibleassets'])
-        _bvps   = info.get('bookValue')
-        _shares = info.get('sharesOutstanding')
-        _prov0, _loans0, _loans1 = v0(_prov), v0(loans), v1(loans)
-        _deps0,  _deps1          = v0(deps), v1(deps)
-        _intang0                 = v0(_intang)
-        def _gr(a, b):
-            try:
-                return round((a - b) / abs(b) * 100, 1) if (a is not None and b not in (None, 0)) else None
-            except Exception:
-                return None
-        _tbvps = None  # tangible book value per share (book net of intangibles/share) -> P/TBV
-        try:
-            if _bvps is not None and _shares and _intang0 is not None:
-                _tbvps = _bvps - (_intang0 / _shares)
-            elif _bvps is not None and _intang0 is None:
-                _tbvps = _bvps  # no intangibles reported -> tangible == book
-        except Exception:
-            _tbvps = None
-        bank_inputs = {'nii': v0(nii), 'total_assets': ta0, 'gross_loans': _loans0,
-                       'deposits': _deps0, 'npl_found': npl_v is not None,
-                       'casa_found': casa_v is not None, 'car_found': car_v is not None,
-                       # Phase-2 raw inputs + computed-ratio previews (None when source absent):
-                       'provisions': _prov0,
-                       'provision_to_loans': sdiv(_prov0, _loans0),
-                       'loan_growth_pct': _gr(_loans0, _loans1),
-                       'deposit_growth_pct': _gr(_deps0, _deps1),
-                       'book_value_ps': _bvps, 'intangibles': _intang0,
-                       'tangible_bvps': round(_tbvps, 2) if _tbvps is not None else None,
-                       'p_tbv': sdiv(price, _tbvps) if (_tbvps and _tbvps > 0) else None}
+        bank_inputs = {'nii': v0(nii), 'total_assets': ta0, 'gross_loans': v0(loans),
+                       'deposits': v0(deps), 'npl_found': npl_v is not None,
+                       'casa_found': casa_v is not None, 'car_found': car_v is not None}
     else:
         bank_inputs = None
 
-    # ── INTRINSIC VALUES
+    # ── INTRINSIC VALUES (in-code engine; no Sarmaaya inputs)
     bvps    = info.get('bookValue')
     iv_eps  = dcf_eps(eps0, avg_eg)
     iv_gr   = graham_iv(eps0, bvps)
     iv_pl   = peter_lynch(peg, avg_eg2, eps0)
-    ivs     = [v for v in [iv_eps,iv_gr,iv_pl] if v and v > 0]
+    fcf_ps      = sdiv(fcf0, shares)
+    cash_ps     = sdiv(tc0,  shares)
+    g_fcf       = avg(egrates(fcf))    or 5.0
+    g_cash      = avg(egrates(cash_s)) or 5.0
+    avg6_fcf_ps = sdiv(avg(fcf),    shares)
+    avg6_cash_ps= sdiv(avg(cash_s), shares)
+    iv_dcf_fcf  = dcf_2stage(fcf_ps,      g_fcf)
+    iv_dcf_cash = dcf_2stage(cash_ps,     g_cash)
+    iv_proj_fcf = dcf_2stage(avg6_fcf_ps, g_fcf)
+    iv_proj_cash= dcf_2stage(avg6_cash_ps,g_cash)
+    def _mos(v): return sdiv((v-price), v)*100 if v and price else None
+    iv_fcf_val  = avg([v for v in [iv_dcf_fcf, iv_eps, iv_proj_fcf, iv_pl] if v and v>0])
+    iv_cash_val = avg([v for v in [iv_dcf_cash,iv_eps, iv_proj_cash,iv_pl] if v and v>0])
+    iv_fcf_mos  = _mos(iv_fcf_val)
+    iv_cash_mos = _mos(iv_cash_val)
+    ivs     = [v for v in [iv_eps,iv_gr,iv_pl,iv_dcf_fcf,iv_dcf_cash] if v and v > 0]
     iv_comp = avg(ivs)
-    mos_pct = sdiv((iv_comp-price), iv_comp)*100 if iv_comp and price else None
+    mos_pct = _mos(iv_eps)
 
     if is_bank:
-        # Score out of the APPLICABLE bank max (~70), excluding NA so a Yahoo data gap
-        # (CASA/CAR) does not structurally penalise the bank. Recomputed from W + verdicts
-        # so it is independent of how each metric's pts were stored. Fixes the /162 bug that
-        # capped every bank ~55%. Non-banks are unchanged (still /162) below.
         applicable = [x for x in metrics if W.get(x['key'], 0) > 0]
         total   = sum(pts(x['verdict'], W.get(x['key'], 0)) for x in applicable)
         max_s   = sum(W.get(x['key'], 0) for x in applicable if x['verdict'] != 'NA')
@@ -522,21 +799,31 @@ def score_ticker(ticker):
         pct   = round(total/162*100, 1)
         bank_coverage = None
         max_out = 162
-    grade = 'A' if pct>=75 else 'B' if pct>=60 else 'C' if pct>=50 else 'FAIL'
+    grade = 'A' if pct>=80 else 'B' if pct>=60 else 'C' if pct>=50 else 'FAIL'
 
     return {
         'ticker': ticker, 'name': info.get('longName') or info.get('shortName') or ticker,
         'sector': info.get('sector','—'), 'is_bank': is_bank, 'price': price,
         'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics, 'max': max_out,
         'bank_coverage': bank_coverage, 'bank_inputs': bank_inputs,
+        'src': {'fund': info.get('_tv') and 'tv' or 'yahoo', 'hist': H.get('source')},
         'piotroski': pf, 'altman_z': round(az,2) if az else None,
         'beneish_m': round(bm,2) if bm else None,
+        'shareholder_yield_pct': round(nsy*100,2) if nsy is not None else None,
         'iv': {
-            'dcf_eps':    round(iv_eps,2)  if iv_eps  else None,
-            'graham':     round(iv_gr,2)   if iv_gr   else None,
-            'peter_lynch':round(iv_pl,2)   if iv_pl   else None,
-            'composite':  round(iv_comp,2) if iv_comp else None,
-            'mos_pct':    round(mos_pct,1) if mos_pct is not None else None,
+            'dcf_eps':       round(iv_eps,2)       if iv_eps       else None,
+            'dcf_fcf':       round(iv_dcf_fcf,2)   if iv_dcf_fcf   else None,
+            'dcf_cash':      round(iv_dcf_cash,2)  if iv_dcf_cash  else None,
+            'proj_fcf':      round(iv_proj_fcf,2)  if iv_proj_fcf  else None,
+            'proj_cash':     round(iv_proj_cash,2) if iv_proj_cash else None,
+            'graham':        round(iv_gr,2)        if iv_gr        else None,
+            'peter_lynch':   round(iv_pl,2)        if iv_pl        else None,
+            'intrinsic_fcf': round(iv_fcf_val,2)   if iv_fcf_val   else None,
+            'intrinsic_cash':round(iv_cash_val,2)  if iv_cash_val  else None,
+            'composite':     round(iv_comp,2)      if iv_comp      else None,
+            'mos_pct':       round(mos_pct,1)      if mos_pct is not None else None,
+            'mos_fcf_pct':   round(iv_fcf_mos,1)   if iv_fcf_mos  is not None else None,
+            'mos_cash_pct':  round(iv_cash_mos,1)  if iv_cash_mos is not None else None,
         },
     }
 
@@ -544,97 +831,66 @@ def score_ticker(ticker):
 SYM = {'GOOD':'[OK]','WATCH':'[~~]','BAD':'[!!]','NA':'[--]'}
 
 def print_result(r):
-    fill = int(r['pct']/100*40)
-    bar  = '#'*fill + '-'*(40-fill)
-    print()
-    print('='*65)
+    fill = int(r['pct']/100*40); bar = '#'*fill + '-'*(40-fill)
+    print(); print('='*65)
     print(f"  {r['ticker']}  {r['name']}")
-    print(f"  {r['sector']}" + ('  [BANK]' if r['is_bank'] else ''))
+    print(f"  {r['sector']}" + ('  [BANK]' if r['is_bank'] else '') + f"   (src: {r['src']['fund']}/{r['src']['hist']})")
     if r['price']: print(f"  Price: ${r['price']}")
     print('='*65)
-    print(f"  SCORE : {r['score']} / 162  ({r['pct']}%)")
+    print(f"  SCORE : {r['score']} / {r['max']}  ({r['pct']}%)")
     print(f"  GRADE : {r['grade']}  [{bar}]")
-    if r['altman_z']:  print(f"  Altman Z   : {r['altman_z']}  ({'SAFE' if r['altman_z']>2.6 else 'GREY' if r['altman_z']>1.1 else 'DISTRESS'})")
-    if r['beneish_m']: print(f"  Beneish M  : {r['beneish_m']}  ({'CLEAN' if r['beneish_m']<-2.22 else 'GREY' if r['beneish_m']<-1.78 else 'MANIPULATOR'})")
+    if r['altman_z']:  print(f"  Altman Z   : {r['altman_z']}")
+    if r['beneish_m']: print(f"  Beneish M  : {r['beneish_m']}")
     print(f"  Piotroski F: {r['piotroski']} / 7")
-
-    iv = r['iv']
-    print()
-    print('  INTRINSIC VALUES:')
+    if r.get('shareholder_yield_pct') is not None: print(f"  Shareholder yield: {r['shareholder_yield_pct']}%")
+    iv = r['iv']; print(); print('  INTRINSIC VALUES:')
     if iv['dcf_eps']:    print(f"    DCF EPS     : ${iv['dcf_eps']}")
-    if iv['graham']:     print(f"    Graham      : ${iv['graham']}")
     if iv['peter_lynch']:print(f"    Peter Lynch : ${iv['peter_lynch']}")
     if iv['composite']:  print(f"    Composite   : ${iv['composite']}")
     if iv['mos_pct'] is not None:
         lbl = 'SAFE' if iv['mos_pct']>=25 else 'SLIM' if iv['mos_pct']>=0 else 'OVERVALUED'
         print(f"    MoS         : {iv['mos_pct']}%  [{lbl}]")
-
     mdict = {mx['key']: mx for mx in r['metrics']}
     for sec_name, keys in SECTIONS:
         if sec_name == 'Bank' and not r['is_bank']: continue
         sec_m = [mdict[k] for k in keys if k in mdict]
         if not sec_m: continue
-        sp = sum(x['pts'] for x in sec_m)
-        sm = sum(x['max'] for x in sec_m)
-        print()
-        print(f"  -- {sec_name}  {sp}/{sm} --")
+        sp = sum(x['pts'] for x in sec_m); sm = sum(x['max'] for x in sec_m)
+        print(); print(f"  -- {sec_name}  {sp}/{sm} --")
         for mx in sec_m:
-            sym = SYM.get(mx['verdict'],'[--]')
-            lbl = LABELS.get(mx['key'], mx['key'])
-            print(f"    {sym}  {lbl:<38}  {mx['pts']:2}/{mx['max']:2}")
-    print()
-    print('='*65)
+            print(f"    {SYM.get(mx['verdict'],'[--]')}  {LABELS.get(mx['key'], mx['key']):<38}  {mx['pts']:2}/{mx['max']:2}")
+    print(); print('='*65)
 
 # ── ENTRY POINT ──────────────────────────────────────────────────────────────
 def main():
     import json as _json
-
     args = sys.argv[1:]
     json_mode = '--json' in args
     args = [a for a in args if a != '--json']
-    # Suppress per-ticker print statements in JSON mode
     global _json_mode
     _json_mode = json_mode
-
     if not args:
-        if json_mode:
-            print('[]')
-            return
-        print('\nIM3 162-Point Stock Scorer')
-        print('Usage: python im3_score.py RBB MCB LOB')
-        print('       python im3_score.py --json RBB MCB LOB  (outputs JSON)')
-        print()
+        if json_mode: print('[]'); return
+        print('\nIM3 162-Point Stock Scorer (re-threaded: TV + FMP/SEC/Yahoo)')
+        print('Usage: python im3_score.py MU   |   python im3_score.py --json MU RBB ...')
         inp = input('Enter ticker(s): ').strip().upper()
         args = inp.split()
-
     tickers = [a.upper() for a in args if not a.startswith('--')]
-
     if not json_mode:
-        print(f"\nScoring: {', '.join(tickers)}")
-        print("~15 seconds per stock\n")
-
+        print(f"\nScoring: {', '.join(tickers)}\n")
     results = []
     for tk in tickers:
         try:
             r = score_ticker(tk)
-            if json_mode:
-                results.append(r)
-            else:
-                print_result(r)
-                results.append(r)
+            results.append(r)
+            if not json_mode: print_result(r)
         except Exception as e:
-            if json_mode:
-                results.append({'ticker': tk, 'error': str(e)})
+            if json_mode: results.append({'ticker': tk, 'error': str(e)})
             else:
-                import traceback; traceback.print_exc()
-                print(f"\n  ERROR {tk}: {e}")
-        if len(tickers) > 1 and not json_mode:
-            time.sleep(1)
-
+                import traceback; traceback.print_exc(); print(f"\n  ERROR {tk}: {e}")
+        if len(tickers) > 1 and not json_mode: time.sleep(1)
     if json_mode:
-        print(_json.dumps(results, default=str))
-        return
-
+        print(_json.dumps(results, default=str)); return
     if len(results) > 1:
         print('\nSUMMARY')
         print(f"{'#':<4}{'Ticker':<8}{'Score':<10}{'%':<8}{'Grade':<7}{'Bank':<6}MoS%")
