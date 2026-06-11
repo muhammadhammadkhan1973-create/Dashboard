@@ -1,11 +1,13 @@
 """
-IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.2-sourcing).
+IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.3-sourcing).
 =================================================================
-v2.2: removed the v2.1 annual-duration guard (300-400d) — it rejected
-      legitimate 52/53-week fiscal years (e.g. MU's late-August year-end)
-      and truncated the SEC series, collapsing CAGRs/Piotroski. fp=='FY'
-      already selects annuals. Keeps v2.1's synonym-merge + broadened
-      revenue list (which is what moved NVDA/AMD/AMAT onto SEC).
+v2.3: ROOT-CAUSE FIX for the MU/AVGO/AMSC regression. _sec_annual now uses
+      LAST-write-wins within each concept (the restated comparative value,
+      matching proven v2.0) and preferred-concept-wins across synonyms (keeps
+      the NVDA/AMD/AMAT fix). v2.1's first-write-wins picked un-restated values
+      and broke CAGRs/margins. The v2.2 duration-guard removal was a misdiagnosis
+      (kept, harmless). 
+v2.2: removed the v2.1 annual-duration guard (300-400d).
 v2.1: SEC coverage broadened — _sec_annual merges annual values across
       synonym us-gaap concepts (modern ASC-606 revenue tag + legacy
       Revenues/SalesRevenueNet), accepts 10-K/20-F/40-F, and applies an
@@ -403,18 +405,23 @@ def _sec_annual(facts, concepts, want_per_share=False):
         ukey = ('USD/shares' if want_per_share else 'USD')
         rows = units.get(ukey) or (units.get(next(iter(units), '')) if units else None)
         if not rows: continue
+        this_concept = {}
         for r in rows:
             form = r.get('form', '')
             if not any(form.startswith(f) for f in _ANNUAL_FORMS): continue
             if r.get('fp') != 'FY' or not r.get('fy'): continue
             fr = r.get('frame', '')
             if fr and 'Q' in fr: continue          # reject quarterly frames
-            # fp=='FY' already selects annual periods; no duration gate (the
-            # 300-400d band in v2.1 wrongly rejected 52/53-week fiscal years
-            # such as MU's late-August year-end and truncated the series).
-            fy = int(r['fy'])
-            if fy not in merged and r.get('val') is not None:  # preferred concept wins per fy
-                merged[fy] = r.get('val')
+            if r.get('val') is None: continue
+            # LAST-write-wins within a concept: companyfacts lists each fiscal
+            # year first as originally filed, then as a restated comparative in
+            # later 10-Ks — the later (restated) value is the one to keep. This
+            # matches the proven v2.0 behaviour; v2.1's first-write-wins picked
+            # the un-restated value and broke MU/AVGO/AMSC CAGRs & margins.
+            this_concept[int(r['fy'])] = r.get('val')
+        for fy, val in this_concept.items():
+            if fy not in merged:                   # preferred concept wins ACROSS concepts; synonyms fill gaps
+                merged[fy] = val
     if merged:
         return [merged[y] for y in sorted(merged, reverse=True)][:6]
     return []
