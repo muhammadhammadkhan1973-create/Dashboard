@@ -1,6 +1,18 @@
 """
-IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.4-sourcing).
+IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.5-sourcing).
 =================================================================
+v2.5: PSX Tier-2 broker-history layer. psx_history() reads psx_financials.json
+      (broker-model / annual-report multi-year statements, newest-first PKR) and
+      feeds fetch_history's PSX branch. When a name is in the file (>=3yr revenue)
+      it gets FULL history -> the previously-NA multi-year metrics compute (CAGRs,
+      CFO/EPS/FCF trends, Altman-Z / Beneish-M / Piotroski-F, CROIC, CCC, DCF) and
+      the reduced PSX denominator self-expands toward 162. Names not in the file
+      fall back to the TV single-period reduced score (graceful). US path unchanged.
+      DEPLOY: commit im3_score.py + psx_financials.json to the repo ROOT. The
+      daily.yml PSX step auto-picks-up via scorer-hash change. NOTE: the OGDC entry
+      in psx_financials.json is an ILLUSTRATIVE TEMPLATE — replace with AKD/Topline/
+      JS Global / annual-report figures before the OGDC score is trusted; the
+      template validates the MACHINERY only.
 v2.4: PSX support added (US path unchanged). A "PSX:" ticker prefix routes
       fundamentals to TradingView pakistan/scan (57/61 single-period columns
       confirmed populated), returns empty statement history (no SEC/Yahoo PSX
@@ -565,14 +577,49 @@ def yahoo_history(ticker):
     h['issuance']= [abs(v) if v is not None else None for v in _gs(cf,['issuance of capital stock','common stock issuance'])]
     return h
 
+def psx_history(ticker):
+    """Tier-2 PSX history layer. Reads multi-year statements from psx_financials.json
+    (broker-model / annual-report sourced, newest-first PKR series) and returns the
+    _HKEYS history dict. Returns None if the name isn't in the file or has < 3 years of
+    revenue, so unlisted names fall back to the TV single-period reduced score. With a
+    history present, the previously-NA multi-year metrics (CAGRs, CFO/EPS/FCF trends,
+    Altman-Z / Beneish-M / Piotroski-F, CROIC, CCC, DCF-FCF/Cash) compute, and the
+    reduced PSX denominator self-expands toward the full 162 as NA shrinks."""
+    sym = ticker.upper().split(':')[-1]
+    try:
+        store = json.load(open('psx_financials.json'))
+    except Exception:
+        return None
+    rec = store.get(sym)
+    if not isinstance(rec, dict):
+        return None
+    h = _empty_hist()
+    for k in _HKEYS:
+        v = rec.get(k)
+        if isinstance(v, list):
+            out = []
+            for x in v:
+                try: out.append(float(x) if x is not None else None)
+                except Exception: out.append(None)
+            h[k] = out
+    if len([x for x in h.get('rev', []) if x]) < 3:
+        return None
+    h['source'] = 'psx-broker'
+    return h
+
 def fetch_history(ticker, log=True):
     """FMP-stable -> SEC -> Yahoo, first usable wins. Yahoo is the guaranteed backstop.
-    PSX:* has no free statement source (SEC/Yahoo do not cover PSX) -> empty history;
-    the multi-year metrics go NA and the reduced PSX denominator excludes them. The
-    broker-research history layer (AKD/Topline/JS Global) fills this in a later phase."""
+    PSX:* has no free statement source (SEC/Yahoo do not cover PSX). Tier-2: psx_history
+    reads psx_financials.json (broker / annual-report) -> full history when present;
+    otherwise empty -> multi-year metrics go NA and the reduced PSX denominator excludes
+    them (TV single-period reduced score)."""
     if ticker.upper().startswith("PSX:"):
+        h = psx_history(ticker)
+        if h:
+            if log and not _json_mode: print("    history source: psx-broker (psx_financials.json)", flush=True)
+            return h
         h = _empty_hist(); h['source'] = 'psx-tv-only'
-        if log and not _json_mode: print("    history source: psx-tv-only (broker layer pending)", flush=True)
+        if log and not _json_mode: print("    history source: psx-tv-only (no broker financials for this name yet)", flush=True)
         return h
     for fn in (fmp_history, sec_history):
         try:
