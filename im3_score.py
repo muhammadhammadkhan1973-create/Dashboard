@@ -593,6 +593,13 @@ def psx_history(ticker):
     rec = store.get(sym)
     if not isinstance(rec, dict):
         return None
+    # Bank guard: a bank-tagged record must NOT be scored on the non-bank metric
+    # engine (Altman-Z, current ratio, cash-conversion cycle, inventory/receivable
+    # turns, gross margin are meaningless for a bank). Until the bank metric subset
+    # is wired (reads _bank_system_b: NIM/CASA/ADR/NPL/CAR), a bank stays on the
+    # TV single-period reduced score. Setting _bank_model_ready:true activates it.
+    if rec.get('_is_bank') and not rec.get('_bank_model_ready'):
+        return None
     h = _empty_hist()
     for k in _HKEYS:
         v = rec.get(k)
