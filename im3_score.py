@@ -1,6 +1,13 @@
 """
-IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.3-sourcing).
+IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.4-sourcing).
 =================================================================
+v2.4: PSX support added (US path unchanged). A "PSX:" ticker prefix routes
+      fundamentals to TradingView pakistan/scan (57/61 single-period columns
+      confirmed populated), returns empty statement history (no SEC/Yahoo PSX
+      coverage — broker layer pending), scores on a REDUCED denominator that
+      excludes the NA history metrics (same mechanic as the bank branch), and
+      uses a PKR risk-free (PAK_BOND=11.5%) for earnings-yield & DCF-EPS so PSX
+      valuation isn't judged against the US bond. Validated: OGDC 52/73 (B).
 v2.3: ROOT-CAUSE FIX for the MU/AVGO/AMSC regression. _sec_annual now uses
       LAST-write-wins within each concept (the restated comparative value,
       matching proven v2.0) and preferred-concept-wins across synonyms (keeps
@@ -55,6 +62,8 @@ HDRS = {"User-Agent": "Mozilla/5.0 (im3-score)"}
 # SEC asks for a descriptive UA + contact; this works for low-volume per-ticker reads.
 HDRS_SEC = {"User-Agent": "IM3-Score research hammad.khan@airproducts.com"}
 TV_URL = "https://scanner.tradingview.com/america/scan"
+PAK_TV_URL = "https://scanner.tradingview.com/pakistan/scan"  # PSX single-period fundamentals
+PAK_BOND = 0.115  # PKR risk-free ~ SBP policy rate; used for PSX earnings-yield & DCF-EPS
 FMP_BASE = "https://financialmodelingprep.com/stable"
 FMP_KEY = os.environ.get("FMP_API_KEY", "")
 
@@ -239,10 +248,10 @@ TV_FIELDS = [
 ]
 _TV_EXCHANGES = ['NASDAQ', 'NYSE', 'AMEX']
 
-def _tv_post(symbol, columns):
+def _tv_post(symbol, columns, url=TV_URL):
     body = {"symbols": {"tickers": [symbol]}, "columns": columns}
     try:
-        r = requests.post(TV_URL, json=body, headers=HDRS, timeout=20)
+        r = requests.post(url, json=body, headers=HDRS, timeout=20)
         if r.status_code != 200: return None
         data = r.json().get("data") or []
         return (data[0].get("d") or []) if data else None
@@ -250,8 +259,14 @@ def _tv_post(symbol, columns):
         return None
 
 def tv_fetch(ticker):
-    """One america/scan row -> {field: value}. Resolves the exchange prefix. {} on miss."""
+    """One scan row -> {field: value}. PSX:* routes to pakistan/scan; else america/scan
+    across the exchange prefixes. {} on miss."""
     tk = ticker.upper()
+    if tk.startswith("PSX:"):
+        d = _tv_post(tk, ['name'] + TV_FIELDS, url=PAK_TV_URL)
+        if d and len(d) == len(TV_FIELDS) + 1:
+            return dict(zip(TV_FIELDS, d[1:]))
+        return {}
     for ex in _TV_EXCHANGES:
         d = _tv_post(f"{ex}:{tk}", ['name'] + TV_FIELDS)
         if d and len(d) == len(TV_FIELDS) + 1:
@@ -544,7 +559,14 @@ def yahoo_history(ticker):
     return h
 
 def fetch_history(ticker, log=True):
-    """FMP-stable -> SEC -> Yahoo, first usable wins. Yahoo is the guaranteed backstop."""
+    """FMP-stable -> SEC -> Yahoo, first usable wins. Yahoo is the guaranteed backstop.
+    PSX:* has no free statement source (SEC/Yahoo do not cover PSX) -> empty history;
+    the multi-year metrics go NA and the reduced PSX denominator excludes them. The
+    broker-research history layer (AKD/Topline/JS Global) fills this in a later phase."""
+    if ticker.upper().startswith("PSX:"):
+        h = _empty_hist(); h['source'] = 'psx-tv-only'
+        if log and not _json_mode: print("    history source: psx-tv-only (broker layer pending)", flush=True)
+        return h
     for fn in (fmp_history, sec_history):
         try:
             h = fn(ticker)
@@ -563,6 +585,10 @@ _json_mode = False
 def score_ticker(ticker):
     if not _json_mode:
         print(f"  Fetching {ticker}...", flush=True)
+
+    is_psx = ticker.upper().startswith("PSX:")
+    eff_bond = PAK_BOND if is_psx else BOND
+    bare = ticker.upper().split(":")[-1]   # strip PSX: for force-list checks
 
     tv = tv_fetch(ticker)
     info = _tv_to_info(tv, ticker)
@@ -601,8 +627,8 @@ def score_ticker(ticker):
     FORCE_BANK    = ('RBB','MCB','LOB','AROW','WSBF','BWB','EGBN','BWFG','NBN',
                      'SFST','PGC','BMRC','NFBK','PCB','KRNY','WTBA','BCML',
                      'PDLB','FSBC','CHMG','ALRS')
-    if ticker.upper() in FORCE_NONBANK: is_bank = False
-    if ticker.upper() in FORCE_BANK:    is_bank = True
+    if bare in FORCE_NONBANK: is_bank = False
+    if bare in FORCE_BANK:    is_bank = True
 
     W = dict(WEIGHTS)
     if is_bank:
@@ -676,7 +702,7 @@ def score_ticker(ticker):
     peg = info.get('pegRatio') or (sdiv(pe, avg_eg) if pe and avg_eg and avg_eg>0 else None)
     metrics.append(mk('peg_ratio', 'GOOD' if peg and peg<1.0 else 'WATCH' if peg and peg<=1.5 else 'BAD' if peg else 'NA', W))
     ey = sdiv(1, pe)
-    metrics.append(mk('earn_yield', 'GOOD' if ey and ey>BOND else 'BAD' if ey else 'NA', W))
+    metrics.append(mk('earn_yield', 'GOOD' if ey and ey>eff_bond else 'BAD' if ey else 'NA', W))
     pb = info.get('priceToBook')
     metrics.append(mk('pb_ratio', 'GOOD' if pb and pb<1.5 else 'WATCH' if pb and pb<3.0 else 'BAD' if pb else 'NA', W))
     gv = (pe*pb) if pe and pb else None
@@ -688,7 +714,7 @@ def score_ticker(ticker):
     ev_eb = info.get('enterpriseToEbitda')
     metrics.append(mk('ev_ebitda', 'GOOD' if ev_eb and ev_eb<10 else 'WATCH' if ev_eb and ev_eb<15 else 'BAD' if ev_eb else 'NA', W))
 
-    iv_eps_v = dcf_eps(eps0, avg_eg)
+    iv_eps_v = dcf_eps(eps0, avg_eg, bond=eff_bond)
     mos = sdiv((iv_eps_v-price), iv_eps_v) if iv_eps_v and price else None
     metrics.append(mk('mos', 'GOOD' if mos and mos>=0.25 else 'WATCH' if mos and mos>=0 else 'BAD' if mos is not None else 'NA', W))
 
@@ -769,7 +795,7 @@ def score_ticker(ticker):
     metrics.append(mk('piotroski_f', 'GOOD' if pf>=6 else 'WATCH' if pf>=3 else 'BAD', W))
 
     beta  = info.get('beta')
-    ke    = BOND + (beta or 1.0)*0.055
+    ke    = eff_bond + (beta or 1.0)*0.055
     v_tot = (td0 or 0) + (eq00 or 0)
     wacc  = ((eq00 or 0)/v_tot*ke + (td0 or 0)/v_tot*0.06*(1-(tax_r or 0.21))) if v_tot else ke
     nopat = (op0*(1-(tax_r or 0.21))) if op0 else None
@@ -801,7 +827,7 @@ def score_ticker(ticker):
 
     # ── INTRINSIC VALUES (in-code engine; no Sarmaaya inputs)
     bvps    = info.get('bookValue')
-    iv_eps  = dcf_eps(eps0, avg_eg)
+    iv_eps  = dcf_eps(eps0, avg_eg, bond=eff_bond)
     iv_gr   = graham_iv(eps0, bvps)
     iv_pl   = peter_lynch(peg, avg_eg2, eps0)
     fcf_ps      = sdiv(fcf0, shares)
@@ -823,7 +849,10 @@ def score_ticker(ticker):
     iv_comp = avg(ivs)
     mos_pct = _mos(iv_eps)
 
-    if is_bank:
+    if is_bank or is_psx:
+        # Reduced denominator: NA metrics (e.g. PSX multi-year history not yet sourced,
+        # or bank-zeroed lines) are excluded from the max rather than scored as zero,
+        # so a name isn't penalised for data the engine cannot yet see.
         applicable = [x for x in metrics if W.get(x['key'], 0) > 0]
         total   = sum(pts(x['verdict'], W.get(x['key'], 0)) for x in applicable)
         max_s   = sum(W.get(x['key'], 0) for x in applicable if x['verdict'] != 'NA')
@@ -840,7 +869,7 @@ def score_ticker(ticker):
 
     return {
         'ticker': ticker, 'name': info.get('longName') or info.get('shortName') or ticker,
-        'sector': info.get('sector','—'), 'is_bank': is_bank, 'price': price,
+        'sector': info.get('sector','—'), 'is_bank': is_bank, 'is_psx': is_psx, 'price': price,
         'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics, 'max': max_out,
         'bank_coverage': bank_coverage, 'bank_inputs': bank_inputs,
         'src': {'fund': info.get('_tv') and 'tv' or 'yahoo', 'hist': H.get('source')},
