@@ -690,6 +690,11 @@ def score_ticker(ticker):
                      'PDLB','FSBC','CHMG','ALRS')
     if bare in FORCE_NONBANK: is_bank = False
     if bare in FORCE_BANK:    is_bank = True
+    # PSX banks use Banking Investo Genie 2.0 calibration (Sarmaaya Week-6 / SBP bands):
+    # NIM 4.5%, NPL <=5%/<=8%, CAR >=11.5% (SBP req), tax 45-60% (statutory ~54%),
+    # ADR contextual (low/moderate good when T-bills attractive, >70% bad). US banks
+    # keep the generic System-B (US-tuned) bands.
+    psx_bank = is_bank and is_psx
 
     W = dict(WEIGHTS)
     if is_bank:
@@ -741,8 +746,15 @@ def score_ticker(ticker):
     metrics.append(mk('np_margin', band(npm, 0.08, 0.03), W))
 
     # ── STABILITY
-    thresh = 0.25 if is_bank else 0.21
-    metrics.append(mk('tax_rate', 'GOOD' if tax_r and tax_r>=thresh else 'WATCH' if tax_r else 'NA', W))
+    if psx_bank:
+        # Pakistan bank statutory ~54%; 45-60% healthy, far-below flags aggressive planning.
+        tax_v = ('GOOD'  if tax_r and 0.45 <= tax_r <= 0.60 else
+                 'WATCH' if tax_r and (0.35 <= tax_r < 0.45 or 0.60 < tax_r <= 0.65) else
+                 'BAD'   if tax_r else 'NA')
+        metrics.append(mk('tax_rate', tax_v, W))
+    else:
+        thresh = 0.25 if is_bank else 0.21
+        metrics.append(mk('tax_rate', 'GOOD' if tax_r and tax_r>=thresh else 'WATCH' if tax_r else 'NA', W))
     int_cov = info.get('interestCoverage') or sdiv(op0, abs(v0(int_exp)) if v0(int_exp) else None)
     metrics.append(mk('int_coverage', 'NA' if is_bank else band(int_cov, 5.0, 2.0), W))
     de = info.get('debtToEquity')
@@ -871,19 +883,28 @@ def score_ticker(ticker):
     # ── BANK EXTRAS
     if is_bank:
         nim_v = sdiv(v0(nii), ta0) or info.get('netInterestMargin')
-        metrics.append({'key':'nim','verdict':band(nim_v,0.04,0.03),'pts':pts(band(nim_v,0.04,0.03),4),'max':4})
+        nim_vd = band(nim_v, 0.045, 0.035) if psx_bank else band(nim_v, 0.04, 0.03)
+        metrics.append({'key':'nim','verdict':nim_vd,'pts':pts(nim_vd,4),'max':4})
         casa_v = info.get('casaRatio')
         cv = band(casa_v,0.80,0.70) if casa_v else 'NA'
         metrics.append({'key':'casa','verdict':cv,'pts':pts(cv,3),'max':3})
         adr_v = sdiv(v0(loans), v0(deps))
-        av = 'GOOD' if adr_v and 0.40<=adr_v<=0.60 else 'WATCH' if adr_v and (0.30<=adr_v<0.40 or 0.60<adr_v<=0.70) else 'BAD' if adr_v else 'NA'
+        if psx_bank:
+            # Contextual (Banking IG 2.0 / SBP): when T-bills attractive (high-rate regime),
+            # prudent banks park in govt paper -> low/moderate ADR is GOOD, very high is the risk.
+            av = 'GOOD' if adr_v and adr_v<=0.60 else 'WATCH' if adr_v and adr_v<=0.70 else 'BAD' if adr_v else 'NA'
+        else:
+            av = 'GOOD' if adr_v and 0.40<=adr_v<=0.60 else 'WATCH' if adr_v and (0.30<=adr_v<0.40 or 0.60<adr_v<=0.70) else 'BAD' if adr_v else 'NA'
         metrics.append({'key':'adr','verdict':av,'pts':pts(av,3),'max':3})
         npl_v = sdiv(v0(npl_s), v0(loans))
-        nv = band(npl_v,0.03,0.05,hi=False) if npl_v else 'NA'
+        if psx_bank:
+            nv = band(npl_v,0.05,0.08,hi=False) if npl_v else 'NA'   # PSX structurally higher
+        else:
+            nv = band(npl_v,0.03,0.05,hi=False) if npl_v else 'NA'
         metrics.append({'key':'npl','verdict':nv,'pts':pts(nv,5),'max':5})
         car_v = info.get('capitalAdequacyRatio') or info.get('tier1CapitalRatio')
         if car_v and car_v > 1: car_v = car_v/100
-        cv2 = band(car_v,0.18,0.15) if car_v else 'NA'
+        cv2 = ((band(car_v,0.13,0.115) if psx_bank else band(car_v,0.18,0.15)) if car_v else 'NA')  # SBP req 11.5%
         metrics.append({'key':'car','verdict':cv2,'pts':pts(cv2,4),'max':4})
         bank_inputs = {'nii': v0(nii), 'total_assets': ta0, 'gross_loans': v0(loans),
                        'deposits': v0(deps), 'npl_found': npl_v is not None,
