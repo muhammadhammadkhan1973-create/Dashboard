@@ -270,20 +270,28 @@ jobs:
           missing = [t for t in psx_syms
                      if not (_has_im3(data.get('psx_candidates', []), t) or _has_im3(data.get('explosive_psx', []), t))]
 
-          try:    cur_hash = hashlib.sha256(open('im3_score.py', 'rb').read()).hexdigest()
+          # Hash BOTH the scorer AND the broker-financials file, so adding/editing a name's
+          # multi-year statements in psx_financials.json triggers a re-score on the next run
+          # (without it, a financials-only edit would be carried-forward as "unchanged").
+          try:
+              _h = hashlib.sha256()
+              _h.update(open('im3_score.py', 'rb').read())
+              try: _h.update(open('psx_financials.json', 'rb').read())
+              except Exception: pass
+              cur_hash = _h.hexdigest()
           except Exception: cur_hash = ''
           try:    prev_hash = open('.im3_psx_hash').read().strip()
           except Exception: prev_hash = ''
-          scorer_changed = bool(cur_hash) and cur_hash != prev_hash
+          inputs_changed = bool(cur_hash) and cur_hash != prev_hash
           forced = str(os.environ.get('FORCE_IM3', '')).lower() == 'true'
 
-          if not (set_changed or missing or scorer_changed or forced):
+          if not (set_changed or missing or inputs_changed or forced):
               print(f"PSX IM3 unchanged ({len(psx_syms)} names) — keeping last-good")
               try: open('.im3_psx_hash', 'w').write(cur_hash)
               except Exception: pass
               sys.exit(0)
 
-          print(f"Scoring {len(psx_syms)} PSX names (set_changed={set_changed} missing={len(missing)} scorer_changed={scorer_changed} forced={forced})")
+          print(f"Scoring {len(psx_syms)} PSX names (set_changed={set_changed} missing={len(missing)} inputs_changed={inputs_changed} forced={forced})")
           tickers = ['PSX:' + s for s in psx_syms]
           result = subprocess.run([sys.executable, 'im3_score.py', '--json'] + tickers,
                                   capture_output=True, text=True, timeout=900)
