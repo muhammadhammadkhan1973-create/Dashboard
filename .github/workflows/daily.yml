@@ -330,7 +330,21 @@ jobs:
           git add data.json .im3_scorer_hash
           [ -f .im3_psx_hash ] && git add .im3_psx_hash || true
           git diff --quiet --cached || git commit -m "Scan run"
-          # Rebase-on-reject: if a deploy commit advanced remote main while the scan was running,
-          # a plain push is rejected (non-fast-forward). Pull --rebase the scan commit on top, then
-          # push. --autostash guards any stray worktree change. Scan data.json is never lost to a race.
-          git push || { git pull --rebase --autostash origin main && git push; }
+          # Concurrent-run hardening. data.json is FULLY regenerated each run, so when two runs
+          # overlap (manual + scheduled, or back-to-back forced runs), the loser's push is rejected
+          # and a plain rebase hits an unresolvable data.json conflict (two different whole-file
+          # rewrites — git can't line-merge them) and aborts with exit 1. Retry loop: try push; on
+          # rejection, fetch latest main and rebase our scan commit on top, resolving any conflict in
+          # favour of OUR freshly-generated files (`-X theirs` == the commit being replayed during a
+          # rebase, i.e. ours). Non-conflicting files from the other commit merge normally and are
+          # preserved. Up to 5 attempts with linear backoff. The freshest scan's data.json wins.
+          export GIT_EDITOR=true GIT_SEQUENCE_EDITOR=true
+          pushed=""
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then pushed=1; echo "pushed on attempt $i"; break; fi
+            echo "push rejected (attempt $i) — rebasing scan commit onto latest main"
+            git fetch origin main
+            git rebase -X theirs origin/main || { echo "rebase failed; aborting and retrying"; git rebase --abort || true; }
+            sleep $((i * 4))
+          done
+          [ -n "$pushed" ] || { echo "::error title=Scan push failed::could not push after 5 attempts (persistent concurrent writes)"; exit 1; }
