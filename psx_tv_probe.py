@@ -4,18 +4,12 @@ PSX TradingView fundamental-column probe  —  Phase 0 of the PSX IM3 engine.
 Logging only; writes nothing. Run on GitHub Actions (TradingView is not
 reachable from the build sandbox).
 
-Mirrors the MU america/scan probe, but points at
-scanner.tradingview.com/pakistan/scan. It answers the one question that
-decides the whole PSX IM3 build:
-
-    Which of the 62 IM3 single-period fundamental columns does TradingView
-    actually populate for PSX names?
-
-  * If TV fills most of them  -> the single-period half of PSX IM3 is free /
-    automatable (same as US `fund:tv`); only the multi-year history needs
-    broker research.
-  * If TV fills few/none      -> single-period must also come from broker
-    research, and PSX IM3 is a broker-data build end to end.
+TWO sections, one run:
+  (1) GENERIC  — the 61 IM3 single-period columns across non-bank + bank names.
+  (2) BANK     — System-B bank inputs (NIM / CASA / ADR / NPL / CAR and the raw
+                 loans/deposits/interest fields they derive from) across PSX
+                 banks, to decide whether bank scoring can use TV or must wait
+                 for broker research.
 
 Paste the whole log back to lock the PSX source map.
 """
@@ -27,9 +21,12 @@ HDRS = {"User-Agent": "Mozilla/5.0", "Content-Type": "application/json",
 
 # five holdings + a few large liquid names for breadth across sectors
 TICKERS = ["PSX:OGDC", "PSX:PPL", "PSX:MCB", "PSX:FFC", "PSX:HUBC",
-           "PSX:ENGRO", "PSX:LUCK", "PSX:UBL"]
+           "PSX:LUCK", "PSX:UBL"]
 
-# the 62 columns confirmed valid on america/scan for MU — the IM3 single-period inputs
+# PSX banks for the System-B section
+BANK_TICKERS = ["PSX:MCB", "PSX:UBL", "PSX:HBL", "PSX:MEBL", "PSX:BAFL"]
+
+# the 61 generic IM3 single-period columns (confirmed valid on america/scan)
 COLS = [
     "name","description","sector","industry","market_cap_basic","close","currency",
     "price_earnings_ttm","price_earnings_current","price_book_ratio","price_book_fq",
@@ -49,10 +46,29 @@ COLS = [
     "total_assets_fq","retained_earnings_fq",
 ]
 
-def scan(cols):
-    """POST one column set; returns (data_list | None, status, err). TV rejects the
-    whole request if ANY column is unknown, so callers fall back to per-field probing."""
-    body = {"symbols": {"tickers": TICKERS, "query": {"types": []}}, "columns": cols}
+# candidate TV column names for the System-B bank inputs and their raw drivers.
+# TV rejects unknown columns, so the per-field fallback flags the invalid ones.
+BANK_COLS = [
+    # net interest margin / income
+    "net_interest_margin","net_interest_margin_fq","nim",
+    "net_interest_income","net_interest_income_fy","total_interest_income",
+    "interest_income","interest_income_fq","interest_expense","interest_expense_fq",
+    # loans & deposits (ADR / advance-to-deposit)
+    "loans_net_fq","loans_gross_fq","total_loans_fq","net_loans_fq",
+    "total_deposits_fq","total_deposits_fy","deposits_fq",
+    "demand_deposits_fq","savings_deposits_fq","time_deposits_fq",   # CASA decomposition
+    # asset quality (NPL)
+    "nonperf_loans_loans_fq","nonperforming_loans_fq","npl_ratio",
+    "loan_loss_allowances_fq","loan_loss_provision_fq","loan_losses_fq",
+    # capital adequacy
+    "tier_1_capital_ratio","total_capital_ratio","capital_adequacy_ratio","tier1_ratio",
+    # efficiency / book
+    "efficiency_ratio","book_value_per_share_fq",
+]
+
+def scan(cols, tickers):
+    """POST one column set for a ticker list; (data|None, status, err)."""
+    body = {"symbols": {"tickers": tickers, "query": {"types": []}}, "columns": cols}
     try:
         r = requests.post(URL, json=body, headers=HDRS, timeout=30)
     except Exception as e:
@@ -61,36 +77,26 @@ def scan(cols):
         return None, r.status_code, r.text[:160]
     return r.json().get("data", []), 200, ""
 
-def main():
-    print("PSX TradingView pakistan/scan fundamental probe — logging only")
-    print("=" * 70)
-
-    # 1) reachability + which tickers resolve
-    data, code, err = scan(["name", "close"])
-    if data is None:
-        print(f"BASE SCAN FAILED (HTTP {code}): {err}")
-        print("If this 404s/blocks, the pakistan/scan fundamental path is unavailable "
-              "and PSX single-period must come from broker research.")
-        return
-    resolved = {row["s"]: row["d"] for row in data}
-    print(f"tickers resolved: {len(resolved)}/{len(TICKERS)}")
-    for s, d in resolved.items():
-        print(f"  {s:12} name={d[0]!r} close={d[1]}")
-    print()
-
-    # 2) per-column coverage (batches of 6, per-field fallback for rejected columns)
+def probe_columns(cols, tickers, label):
+    """Per-column coverage with per-field fallback for TV-rejected columns."""
+    print(f"=== {label} (n={len(tickers)} names) ===")
+    base, code, err = scan(["name"], tickers)
+    if base is None:
+        print(f"  base scan failed (HTTP {code}): {err}"); return
+    resolved = {row["s"]: row["d"][0] for row in base}
+    print("  resolved:", ", ".join(f"{s.split(':')[1]}" for s in resolved) or "(none)")
     valid, invalid = {}, []
     B = 6
-    for i in range(0, len(COLS), B):
-        batch = COLS[i:i + B]
-        data, code, err = scan(["name"] + batch)
+    for i in range(0, len(cols), B):
+        batch = cols[i:i+B]
+        data, code, err = scan(["name"] + batch, tickers)
         if data is not None:
             for row in data:
                 for j, c in enumerate(batch):
-                    valid.setdefault(c, {})[row["s"]] = row["d"][j + 1]
+                    valid.setdefault(c, {})[row["s"]] = row["d"][j+1]
         else:
-            for c in batch:                      # narrow down the offending column(s)
-                d2, code2, err2 = scan(["name", c])
+            for c in batch:
+                d2, _, _ = scan(["name", c], tickers)
                 if d2 is not None:
                     for row in d2:
                         valid.setdefault(c, {})[row["s"]] = row["d"][1]
@@ -98,28 +104,27 @@ def main():
                     invalid.append(c)
                 time.sleep(0.2)
         time.sleep(0.3)
-
-    # 3) coverage report
-    n = len(resolved)
-    filled = 0
-    print(f"=== COLUMN COVERAGE (non-null across {n} PSX names) ===")
-    for c in COLS:
+    n = len(resolved); filled = 0
+    for c in cols:
         if c in valid:
-            vals = valid[c]
-            nonnull = sum(1 for v in vals.values() if v is not None)
-            if nonnull:
-                filled += 1
-            sample = next((v for v in vals.values() if v is not None), None)
-            print(f"  {c:42} {nonnull}/{n}   e.g. {sample}")
+            nn = sum(1 for v in valid[c].values() if v is not None)
+            if nn: filled += 1
+            sample = next((v for v in valid[c].values() if v is not None), None)
+            print(f"  {c:42} {nn}/{n}   e.g. {sample}")
         else:
-            print(f"  {c:42} INVALID (column rejected by TV)")
+            print(f"  {c:42} INVALID (rejected by TV)")
+    print(f"  -> {filled}/{len(cols)} populated for >=1 name; INVALID: {invalid or '(none)'}")
     print()
-    print(f"SUMMARY: {filled}/{len(COLS)} columns populated for at least one PSX name.")
-    print(f"INVALID columns: {invalid or '(none)'}")
-    print()
+    return filled, len(cols), invalid
+
+def main():
+    print("PSX TradingView pakistan/scan probe — generic + bank — logging only")
+    print("=" * 70)
+    probe_columns(COLS, TICKERS, "GENERIC IM3 single-period columns")
+    probe_columns(BANK_COLS, BANK_TICKERS, "BANK System-B inputs (PSX banks)")
     print("VERDICT GUIDE:")
-    print("  high coverage  -> PSX single-period IM3 = TV (free, automatable); broker only for history")
-    print("  low coverage   -> PSX single-period must come from broker research too")
+    print("  generic high + bank fields present -> PSX IM3 incl. banks = TV-automatable")
+    print("  generic high + bank fields absent  -> non-bank PSX = TV; bank System-B = broker")
     print()
     print("Paste this whole log back to lock the PSX source map.")
 
