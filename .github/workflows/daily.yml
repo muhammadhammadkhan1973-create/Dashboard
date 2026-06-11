@@ -237,11 +237,90 @@ jobs:
           # (scanner already loaded EXISTING data, so scores are intact)
           EOF
 
+      - name: Score PSX stocks with IM3 (reduced / System B)
+        # ADDITIVE — does not touch the US IM3 steps above. Scores the 5 holdings + the live
+        # PSX screen via im3_score.py with the "PSX:" prefix (TV pakistan/scan single-period,
+        # empty history, reduced denominator, PKR risk-free). Self-gates: re-scores only when
+        # the PSX set changes, the scorer changes, a score is missing, or force_im3 is set, so
+        # identical runs don't churn data.json. Writes scores into explosive_psx / tce_psx /
+        # psx_candidates so the dashboard's PSX IM3 column picks them up.
+        env:
+          FORCE_IM3: ${{ github.event.inputs.force_im3 }}
+        run: |
+          python3 << 'EOF'
+          import json, subprocess, sys, os, hashlib
+
+          with open('data.json') as f:
+              data = json.load(f)
+
+          HOLDINGS = ['OGDC', 'PPL', 'MCB', 'FFC', 'HUBC']
+          psx_syms = sorted(set(HOLDINGS + [r['ticker'] for r in data.get('psx_candidates', []) if r.get('ticker')]))
+          if not psx_syms:
+              print("No PSX names to score"); sys.exit(0)
+
+          # --- self-gate: only re-score on a real change ---
+          prev = sorted(data.get('im3_psx_tickers', []))
+          set_changed = psx_syms != prev
+
+          def _has_im3(records, tk):
+              for r in records:
+                  if r.get('ticker') == tk:
+                      v = r.get('im3'); return isinstance(v, dict) and len(v) > 0
+              return False
+          missing = [t for t in psx_syms
+                     if not (_has_im3(data.get('psx_candidates', []), t) or _has_im3(data.get('explosive_psx', []), t))]
+
+          try:    cur_hash = hashlib.sha256(open('im3_score.py', 'rb').read()).hexdigest()
+          except Exception: cur_hash = ''
+          try:    prev_hash = open('.im3_psx_hash').read().strip()
+          except Exception: prev_hash = ''
+          scorer_changed = bool(cur_hash) and cur_hash != prev_hash
+          forced = str(os.environ.get('FORCE_IM3', '')).lower() == 'true'
+
+          if not (set_changed or missing or scorer_changed or forced):
+              print(f"PSX IM3 unchanged ({len(psx_syms)} names) — keeping last-good")
+              try: open('.im3_psx_hash', 'w').write(cur_hash)
+              except Exception: pass
+              sys.exit(0)
+
+          print(f"Scoring {len(psx_syms)} PSX names (set_changed={set_changed} missing={len(missing)} scorer_changed={scorer_changed} forced={forced})")
+          tickers = ['PSX:' + s for s in psx_syms]
+          result = subprocess.run([sys.executable, 'im3_score.py', '--json'] + tickers,
+                                  capture_output=True, text=True, timeout=900)
+          if result.stderr: print("STDERR:", result.stderr[:500])
+
+          raw = result.stdout.strip()
+          js = raw.find('[')
+          if js > 0: raw = raw[js:]
+          try:
+              scores = json.loads(raw)
+          except Exception as e:
+              print(f"::warning title=PSX IM3 parse failed::{e}. Keeping last-good PSX scores.")
+              print("Output head:", result.stdout[:200]); sys.exit(0)
+
+          smap = {s['ticker'].split(':')[-1]: s for s in scores
+                  if 'error' not in s and str(s.get('ticker', '')).startswith('PSX:')}
+          print(f"PSX scored: {sorted(smap.keys())}")
+
+          for key in ('explosive_psx', 'tce_psx', 'psx_candidates'):
+              for rec in data.get(key, []):
+                  if rec.get('ticker') in smap:
+                      rec['im3'] = smap[rec['ticker']]
+
+          data['im3_psx_tickers'] = psx_syms
+          with open('data.json', 'w') as f:
+              json.dump(data, f, indent=2, default=str)
+          try: open('.im3_psx_hash', 'w').write(cur_hash)
+          except Exception: pass
+          print(f"data.json updated with PSX IM3 for {len(smap)} names")
+          EOF
+
       - name: Commit data.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data.json .im3_scorer_hash
+          [ -f .im3_psx_hash ] && git add .im3_psx_hash || true
           git diff --quiet --cached || git commit -m "Scan run"
           # Rebase-on-reject: if a deploy commit advanced remote main while the scan was running,
           # a plain push is rejected (non-fast-forward). Pull --rebase the scan commit on top, then
