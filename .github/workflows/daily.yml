@@ -329,6 +329,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data.json .im3_scorer_hash
           [ -f .im3_psx_hash ] && git add .im3_psx_hash || true
+          [ -f psx_history_cache.json ] && git add psx_history_cache.json || true
           git diff --quiet --cached || git commit -m "Scan run"
           # Concurrent-run hardening. data.json is FULLY regenerated each run, so when two runs
           # overlap (manual + scheduled, or back-to-back forced runs), the loser's push is rejected
