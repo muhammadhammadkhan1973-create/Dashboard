@@ -285,13 +285,31 @@ jobs:
           inputs_changed = bool(cur_hash) and cur_hash != prev_hash
           forced = str(os.environ.get('FORCE_IM3', '')).lower() == 'true'
 
-          if not (set_changed or missing or inputs_changed or forced):
+          # Version trigger: re-score whenever the scorer's stamped version differs from the
+          # version already in data.json. Unlike the hash gate (which writes its hash even on a
+          # skip and can get "stuck"), this reliably fires once after any im3_score.py deploy,
+          # so a scorer change auto-re-scores on the next run with NO manual force_im3.
+          try:
+              _vl = next((l for l in open('im3_score.py') if l.strip().startswith('IM3_VERSION')), '')
+              cur_ver = _vl.split('=', 1)[1].strip().strip('"\'') if _vl else ''
+          except Exception:
+              cur_ver = ''
+          def _im3_ver(records):
+              for r in records:
+                  v = r.get('im3')
+                  if isinstance(v, dict) and v.get('ver'):
+                      return v.get('ver')
+              return None
+          data_ver = _im3_ver(data.get('psx_candidates', [])) or _im3_ver(data.get('explosive_psx', []))
+          ver_changed = bool(cur_ver) and cur_ver != data_ver
+
+          if not (set_changed or missing or inputs_changed or ver_changed or forced):
               print(f"PSX IM3 unchanged ({len(psx_syms)} names) — keeping last-good")
               try: open('.im3_psx_hash', 'w').write(cur_hash)
               except Exception: pass
               sys.exit(0)
 
-          print(f"Scoring {len(psx_syms)} PSX names (set_changed={set_changed} missing={len(missing)} inputs_changed={inputs_changed} forced={forced})")
+          print(f"Scoring {len(psx_syms)} PSX names (set_changed={set_changed} missing={len(missing)} inputs_changed={inputs_changed} ver_changed={ver_changed} forced={forced})")
           tickers = ['PSX:' + s for s in psx_syms]
           result = subprocess.run([sys.executable, 'im3_score.py', '--json'] + tickers,
                                   capture_output=True, text=True, timeout=900)
