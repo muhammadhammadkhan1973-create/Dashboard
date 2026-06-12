@@ -1,6 +1,14 @@
 """
-IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.7-sourcing).
+IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.8-sourcing).
 =================================================================
+v2.8: PSX CAGR fix. cagr() required yrs+1 (=6) points for a 5-yr CAGR; PSX history
+      (stockanalysis / psx_financials.json) supplies 5 fiscal years -> rev/op/np CAGR
+      went NA on EVERY PSX name (holdings included), capping the PSX denominator ~7pts
+      below 162. cagr() is now length-adaptive: a 6-point series keeps the exact strict
+      5-yr computation (US path byte-for-byte UNCHANGED), while a shorter series computes
+      the longest CAGR it supports (>=2 periods), shortening past a non-positive base year.
+      Effect: PSX non-banks/holdings now score their 3 CAGRs -> denominator rises toward
+      the full 162 (e.g. OGDC 155 -> 162). US scoring is provably untouched.
 v2.7: PSX Tier-3 — GENERALIZED full-162 engine. fetch_psx_history(ticker) scrapes
       the stockanalysis.com / S&P Global Market Intelligence statement pages
       (income / balance-sheet / cash-flow) for ANY PSX non-bank, maps the stable
@@ -165,10 +173,34 @@ def avg(lst, n=None):
     return sum(vals)/len(vals) if vals else None
 
 def cagr(s, yrs=5):
-    if not s or len(s) <= yrs: return None
-    a, b = s[yrs], s[0]
-    if a is None or b is None or a <= 0 or b <= 0: return None
-    return (b/a)**(1/yrs) - 1
+    """CAGR over up to `yrs` periods, adapting to the available history length.
+
+    A strict `yrs`-year CAGR needs `yrs`+1 points. US history (FMP limit=6) supplies 6
+    points, so the full 5-yr window is used and behaviour is UNCHANGED. PSX history from
+    stockanalysis / psx_financials.json supplies 5 fiscal years (5 points), which the old
+    `len(s) <= yrs` guard rejected -> rev/op/np CAGR went NA on every PSX name (the holdings
+    too). Now, when the series is shorter than the full window, the longest CAGR the series
+    supports (>= 2 periods) is computed instead, shortening the window past a non-positive
+    base year. Returns None if no >= 2-period window with a positive base and latest value
+    exists.
+
+    US byte-for-byte guarantee: a 6-point series takes the first branch (s[yrs] vs s[0]),
+    identical to the previous implementation; the adaptive branch only runs for < yrs+1 points.
+    """
+    if not s: return None
+    b = s[0]
+    if b is None or b <= 0: return None
+    if len(s) > yrs:                         # full window available -> original strict 5-yr CAGR (US path)
+        a = s[yrs]
+        if a is None or a <= 0: return None
+        return (b / a) ** (1.0 / yrs) - 1
+    n = len(s) - 1                           # shorter series (PSX 5-yr): longest CAGR available
+    while n >= 2:
+        a = s[n]
+        if a is not None and a > 0:
+            return (b / a) ** (1.0 / n) - 1
+        n -= 1
+    return None
 
 def trend(s3, s5, hi=True):
     if s3 is None or s5 is None: return 'NA'
