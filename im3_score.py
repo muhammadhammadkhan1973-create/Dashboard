@@ -1,6 +1,21 @@
 """
-IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.5-sourcing).
+IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.7-sourcing).
 =================================================================
+v2.7: PSX Tier-3 — GENERALIZED full-162 engine. fetch_psx_history(ticker) scrapes
+      the stockanalysis.com / S&P Global Market Intelligence statement pages
+      (income / balance-sheet / cash-flow) for ANY PSX non-bank, maps the stable
+      S&P row labels onto _HKEYS (millions -> raw PKR), and returns a newest-first
+      history (source 'psx-sa', >=3yr revenue). Wired as the Tier-3 fallback in
+      fetch_history AFTER psx_financials.json and BEFORE psx-tv-only, so the ~25
+      non-holding PSX names now reach the full /162 instead of the TV single-period
+      reduced score — mirroring the US screen. Banks are excluded (gated on
+      _PSX_FORCE_BANK + sector, plus the upstream psx_history bank guard) and stay
+      System B. Cached to psx_history_cache.json (TTL 7d). Fully guarded: any fetch/
+      parse failure -> None -> psx-tv-only; never breaks the scorer. NETWORK on the
+      runner only (sandbox can't reach stockanalysis.com) — the runner run confirms
+      live coverage; the log prints "psx-sa (... Nyr)" per name and the reason on a
+      miss. DEPLOY: commit im3_score.py to the repo ROOT (optionally add
+      psx_history_cache.json to the daily.yml commit so it persists between runs).
 v2.5: PSX Tier-2 broker-history layer. psx_history() reads psx_financials.json
       (broker-model / annual-report multi-year statements, newest-first PKR) and
       feeds fetch_history's PSX branch. When a name is in the file (>=3yr revenue)
@@ -577,6 +592,133 @@ def yahoo_history(ticker):
     h['issuance']= [abs(v) if v is not None else None for v in _gs(cf,['issuance of capital stock','common stock issuance'])]
     return h
 
+# ── PSX generalized multi-year history (stockanalysis.com / S&P Global feed) ──
+# v2.7: generalizes the broker-history layer to ANY PSX non-bank. Scrapes the three
+# S&P-templated statement pages (income / balance-sheet / cash-flow), maps the stable
+# row labels onto _HKEYS, scales millions -> raw PKR, and returns a newest-first
+# history dict tagged 'psx-sa'. This lifts the ~25 non-holding PSX names from the
+# TV single-period reduced score toward the full /162, exactly as the US screen does.
+# Banks NEVER reach here (gated below + upstream bank guard). Fully guarded: any
+# failure -> None -> caller falls back to psx-tv-only. Cached to psx_history_cache.json.
+from html.parser import HTMLParser as _HTMLParser
+
+_SA_BASE = "https://stockanalysis.com/quote/psx"
+_SA_CACHE = "psx_history_cache.json"
+_SA_TTL_DAYS = 7
+# PSX banks -> System B only; never the non-bank multi-year engine (Altman/CCC/etc.).
+_PSX_FORCE_BANK = ('MCB','UBL','HBL','NBP','MEBL','BAHL','BAFL','ABL','AKBL','FABL',
+                   'HMB','BOP','SCBPL','BIPL','JSBL','SNBL','SBL','BOK','BML','SAMBA',
+                   'AMBL','FCIBL','ESBL','ICIBL')
+# SA row-label -> _HKEYS key. MONEY maps are scaled x1e6; RAW maps kept as-is (per-share).
+_SA_INCOME_MONEY = {'Revenue':'rev','Cost of Revenue':'cogs','Selling, General & Admin':'sga',
+                    'Operating Income':'op','Pretax Income':'pbt','Income Tax Expense':'tax_exp',
+                    'Net Income':'np_','EBITDA':'ebitda_s','Interest Expense':'int_exp'}
+_SA_INCOME_RAW   = {'EPS (Basic)':'eps_s'}
+_SA_BAL_MONEY    = {'Property, Plant & Equipment':'ppe','Total Debt':'td','Long-Term Debt':'ltd',
+                    'Total Common Equity':'eq0s','Total Assets':'ta_s','Total Current Assets':'ca_s',
+                    'Total Current Liabilities':'cl_s','Retained Earnings':'re_s','Receivables':'ar_s',
+                    'Accounts Payable':'ap_s','Inventory':'inv_s','Cash & Equivalents':'cash_s',
+                    'Trading Asset Securities':'sti_s'}
+_SA_CF_MONEY     = {'Operating Cash Flow':'cfo','Free Cash Flow':'fcf',
+                    'Depreciation & Amortization':'dep','Dividends Paid':'div_paid',
+                    'Repurchase of Common Stock':'buyback','Issuance of Common Stock':'issuance'}
+
+def _sa_num(s):
+    """'63,524' -> 63524.0 ; '-'/'\u2014'/'' -> None ; '(1,234)' -> -1234.0"""
+    if s is None: return None
+    s = s.strip().replace(',', '').replace('\u2014', '').replace('\u2212', '-')
+    if s in ('', '-', 'n/a', 'N/A'): return None
+    neg = s.startswith('(') and s.endswith(')')
+    if neg: s = s[1:-1]
+    try:
+        v = float(s); return -v if neg else v
+    except Exception:
+        return None
+
+class _SATableParser(_HTMLParser):
+    """Collect every <tr> as a list of cell texts (td/th), whitespace-collapsed."""
+    def __init__(self):
+        super().__init__(); self.rows = []; self._row = None; self._cell = None
+    def handle_starttag(self, tag, attrs):
+        if tag == 'tr': self._row = []
+        elif tag in ('td', 'th') and self._row is not None: self._cell = []
+    def handle_endtag(self, tag):
+        if tag in ('td', 'th') and self._cell is not None:
+            self._row.append(' '.join(''.join(self._cell).split())); self._cell = None
+        elif tag == 'tr' and self._row is not None:
+            if self._row: self.rows.append(self._row)
+            self._row = None
+    def handle_data(self, data):
+        if self._cell is not None: self._cell.append(data)
+
+def _sa_fetch_statement(url):
+    """GET one statement page -> {row_label: [values aligned to ANNUAL FY columns]},
+    newest-first, dropping any TTM/Current column. Returns None on any failure."""
+    try:
+        r = requests.get(url, headers=HDRS, timeout=25)
+        if r.status_code != 200: return None
+    except Exception:
+        return None
+    p = _SATableParser()
+    try: p.feed(r.text)
+    except Exception: return None
+    hdr = next((row for row in p.rows if row and row[0].strip().lower().startswith('fiscal year')), None)
+    if not hdr: return None
+    periods = hdr[1:]
+    keep = [i for i, lbl in enumerate(periods) if 'FY' in lbl.upper()]   # annual cols only (drop TTM)
+    if not keep: return None
+    out = {}
+    for row in p.rows:
+        if not row or len(row) < 2 or row[0].strip().lower().startswith('fiscal year'): continue
+        label = row[0].strip(); vals = row[1:]
+        if label in out: continue
+        out[label] = [vals[i] if i < len(vals) else None for i in keep]
+    return out
+
+def fetch_psx_history(ticker, info=None):
+    """Generalized PSX multi-year history from stockanalysis.com (the S&P Global
+    Market Intelligence feed). Returns an _HKEYS dict (source 'psx-sa') for a PSX
+    NON-BANK with >=3yr revenue, else None. Cached (TTL 7d). Never raises -> a miss
+    degrades cleanly to the TV single-period score, never breaks the scorer."""
+    bare = ticker.upper().split(':')[-1]
+    if bare in _PSX_FORCE_BANK: return None
+    sec = ((info or {}).get('sector', '') + ' ' + (info or {}).get('industry', '')).lower()
+    if ('bank' in sec or 'bancorp' in sec) and not any(k in sec for k in ('insurance', 'asset management', 'investment', 'reit')):
+        return None
+    try: cache = json.load(open(_SA_CACHE))
+    except Exception: cache = {}
+    ent = cache.get(bare)
+    if isinstance(ent, dict) and ent.get('h'):
+        try:
+            if (time.time() - float(ent.get('ts', 0))) / 86400.0 < _SA_TTL_DAYS:
+                return ent['h']
+        except Exception:
+            pass
+    inc = _sa_fetch_statement(f"{_SA_BASE}/{bare}/financials/")
+    if not inc: return None
+    bal = _sa_fetch_statement(f"{_SA_BASE}/{bare}/financials/balance-sheet/") or {}
+    cf  = _sa_fetch_statement(f"{_SA_BASE}/{bare}/financials/cash-flow-statement/") or {}
+    h = _empty_hist()
+    def put(table, mapping, money):
+        for label, key in mapping.items():
+            vals = table.get(label)
+            if not vals: continue
+            arr = [(None if (n := _sa_num(v)) is None else (n * 1e6 if money else n)) for v in vals]
+            if key in ('int_exp', 'div_paid', 'buyback'):
+                arr = [abs(x) if x is not None else None for x in arr]
+            h[key] = arr
+    put(inc, _SA_INCOME_MONEY, True); put(inc, _SA_INCOME_RAW, False)
+    put(bal, _SA_BAL_MONEY, True); put(cf, _SA_CF_MONEY, True)
+    if h.get('dep') and not h.get('ncc'): h['ncc'] = list(h['dep'])   # non-cash-charges proxy
+    if len([x for x in h.get('rev', []) if x]) < 3:
+        return None
+    h['source'] = 'psx-sa'
+    try:
+        cache[bare] = {'ts': time.time(), 'h': h}; json.dump(cache, open(_SA_CACHE, 'w'))
+    except Exception:
+        pass
+    return h
+
 def psx_history(ticker):
     """Tier-2 PSX history layer. Reads multi-year statements from psx_financials.json
     (broker-model / annual-report sourced, newest-first PKR series) and returns the
@@ -614,19 +756,24 @@ def psx_history(ticker):
     h['source'] = 'psx-broker'
     return h
 
-def fetch_history(ticker, log=True):
+def fetch_history(ticker, log=True, info=None):
     """FMP-stable -> SEC -> Yahoo, first usable wins. Yahoo is the guaranteed backstop.
     PSX:* has no free statement source (SEC/Yahoo do not cover PSX). Tier-2: psx_history
     reads psx_financials.json (broker / annual-report) -> full history when present;
-    otherwise empty -> multi-year metrics go NA and the reduced PSX denominator excludes
-    them (TV single-period reduced score)."""
+    Tier-3 (v2.7): fetch_psx_history scrapes the stockanalysis.com / S&P Global feed for
+    ANY PSX non-bank -> full history -> /162; otherwise empty -> multi-year metrics go NA
+    and the reduced PSX denominator excludes them (TV single-period reduced score)."""
     if ticker.upper().startswith("PSX:"):
         h = psx_history(ticker)
         if h:
             if log and not _json_mode: print("    history source: psx-broker (psx_financials.json)", flush=True)
             return h
+        h = fetch_psx_history(ticker, info=info)   # Tier-3: generalized S&P feed -> full /162 for non-banks
+        if h:
+            if log and not _json_mode: print(f"    history source: psx-sa (stockanalysis/S&P Global, {len([x for x in h.get('rev',[]) if x])}yr)", flush=True)
+            return h
         h = _empty_hist(); h['source'] = 'psx-tv-only'
-        if log and not _json_mode: print("    history source: psx-tv-only (no broker financials for this name yet)", flush=True)
+        if log and not _json_mode: print("    history source: psx-tv-only (no broker/S&P financials for this name)", flush=True)
         return h
     for fn in (fmp_history, sec_history):
         try:
@@ -659,7 +806,7 @@ def score_ticker(ticker):
             except: info = {}
         else: info = {}
 
-    H = fetch_history(ticker)
+    H = fetch_history(ticker, info=info)
 
     rev, op, np_, eps_s = H['rev'], H['op'], H['np_'], H['eps_s']
     if not eps_s and info.get('trailingEps'): eps_s = [info['trailingEps']]
