@@ -1,6 +1,14 @@
 """
-IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.9-sourcing).
+IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.9.1-sourcing).
 =================================================================
+v2.9.1: fixes two v2.9 misses found on the live run + makes deploys self-applying.
+      (1) div_yield derivation was gated on `dy is None`, but TV reports many PSX payers'
+          yield as 0.0 (e.g. HUBC, which pays ~6.3%) -> gate skipped -> stayed NA. Now fires
+          on falsy (0 or None). (2) The eq0s "Shareholders' Equity" alias (v2.9) never reached
+          cached psx-sa names because psx_history_cache.json served pre-alias parses; added a
+          cache schema-version tag (_SA_CACHE_VER) so a parse/label change invalidates stale
+          entries and forces a re-fetch. (3) IM3_VERSION constant stamped into every record so
+          the daily.yml gate can re-score on a version change (no more manual force_im3).
 v2.9: PSX div_yield + altman_z denominator-recovery (both 5-pt metrics, ~17 and ~13 names).
       (1) div_yield: read only TV's dividend field, so PSX names without it went NA even when they
           pay (HUBC). Now falls back to the parsed dividends-paid line / market cap, PSX-only,
@@ -647,6 +655,8 @@ from html.parser import HTMLParser as _HTMLParser
 _SA_BASE = "https://stockanalysis.com/quote/psx"
 _SA_CACHE = "psx_history_cache.json"
 _SA_TTL_DAYS = 7
+_SA_CACHE_VER = "2.9.1"   # bump whenever the SA label maps / parse change, to invalidate stale cached parses
+IM3_VERSION = "2.9.1"     # scorer version stamped into every record; the daily.yml gate re-scores when this changes
 # PSX banks -> System B only; never the non-bank multi-year engine (Altman/CCC/etc.).
 _PSX_FORCE_BANK = ('MCB','UBL','HBL','NBP','MEBL','BAHL','BAFL','ABL','AKBL','FABL',
                    'HMB','BOP','SCBPL','BIPL','JSBL','SNBL','SBL','BOK','BML','SAMBA',
@@ -731,7 +741,7 @@ def fetch_psx_history(ticker, info=None):
     try: cache = json.load(open(_SA_CACHE))
     except Exception: cache = {}
     ent = cache.get(bare)
-    if isinstance(ent, dict) and ent.get('h'):
+    if isinstance(ent, dict) and ent.get('h') and ent.get('cv') == _SA_CACHE_VER:
         try:
             if (time.time() - float(ent.get('ts', 0))) / 86400.0 < _SA_TTL_DAYS:
                 return ent['h']
@@ -757,7 +767,7 @@ def fetch_psx_history(ticker, info=None):
         return None
     h['source'] = 'psx-sa'
     try:
-        cache[bare] = {'ts': time.time(), 'h': h}; json.dump(cache, open(_SA_CACHE, 'w'))
+        cache[bare] = {'ts': time.time(), 'cv': _SA_CACHE_VER, 'h': h}; json.dump(cache, open(_SA_CACHE, 'w'))
     except Exception:
         pass
     return h
@@ -978,10 +988,11 @@ def score_ticker(ticker):
     ps = info.get('priceToSalesTrailing12Months')
     metrics.append(mk('ps_ratio', 'GOOD' if ps and ps<1.5 else 'WATCH' if ps and ps<3.0 else 'BAD' if ps else 'NA', W))
     dy = info.get('dividendYield')
-    if dy is None and is_psx:
+    if not dy and is_psx:
         # Derive from the parsed dividends-paid line (total dividends / market cap) when the TV
-        # dividend field is absent. Fills ACTUAL payers only (div_paid>0) — genuine non-payers
-        # stay NA, never fabricated. Sanity-capped at 50% to reject statement data artefacts.
+        # dividend field is absent OR reported as 0 (TV gives 0.0 for many PSX payers, e.g. HUBC).
+        # Fills ACTUAL payers only (div_paid>0) — genuine non-payers stay NA, never fabricated.
+        # Sanity-capped at 50% to reject statement data artefacts.
         dp0 = v0(div_paid)
         if dp0 and mktcap and mktcap > 0:
             _dyd = dp0 / mktcap
@@ -1162,7 +1173,7 @@ def score_ticker(ticker):
     return {
         'ticker': ticker, 'name': info.get('longName') or info.get('shortName') or ticker,
         'sector': info.get('sector','—'), 'is_bank': is_bank, 'is_psx': is_psx, 'price': price,
-        'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics, 'max': max_out, 'ver': '2.9',
+        'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics, 'max': max_out, 'ver': IM3_VERSION,
         'bank_coverage': bank_coverage, 'bank_inputs': bank_inputs,
         'src': {'fund': info.get('_tv') and 'tv' or 'yahoo', 'hist': H.get('source')},
         'piotroski': pf, 'altman_z': round(az,2) if az else None,
