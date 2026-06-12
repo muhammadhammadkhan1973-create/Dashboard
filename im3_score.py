@@ -1162,7 +1162,7 @@ def score_ticker(ticker):
     return {
         'ticker': ticker, 'name': info.get('longName') or info.get('shortName') or ticker,
         'sector': info.get('sector','—'), 'is_bank': is_bank, 'is_psx': is_psx, 'price': price,
-        'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics, 'max': max_out,
+        'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics, 'max': max_out, 'ver': '2.9',
         'bank_coverage': bank_coverage, 'bank_inputs': bank_inputs,
         'src': {'fund': info.get('_tv') and 'tv' or 'yahoo', 'hist': H.get('source')},
         'piotroski': pf, 'altman_z': round(az,2) if az else None,
