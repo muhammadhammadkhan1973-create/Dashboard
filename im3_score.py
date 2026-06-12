@@ -1,6 +1,16 @@
 """
-IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.8-sourcing).
+IM3 162-Point Stock Scorer — re-threaded off Yahoo (v2.9-sourcing).
 =================================================================
+v2.9: PSX div_yield + altman_z denominator-recovery (both 5-pt metrics, ~17 and ~13 names).
+      (1) div_yield: read only TV's dividend field, so PSX names without it went NA even when they
+          pay (HUBC). Now falls back to the parsed dividends-paid line / market cap, PSX-only,
+          ACTUAL payers only (div_paid>0; non-payers stay NA), capped <50% to reject artefacts.
+      (2) altman_z: NA on ~13 PSX names because stockanalysis labels total equity "Shareholders'
+          Equity" (or "Total Equity") while the SA map only matched "Total Common Equity" -> eq0s
+          empty -> eq00 None -> Altman None. Added those equity aliases (SA/PSX map only; US FMP
+          path untouched). Also: Altman X4 falls back to total liabilities (ta-eq) for debt-free
+          PSX names so a clean balance sheet isn't lost to a divide-by-zero. US path byte-for-byte
+          unchanged (both fixes gated to is_psx / the SA parser).
 v2.8: PSX CAGR fix. cagr() required yrs+1 (=6) points for a 5-yr CAGR; PSX history
       (stockanalysis / psx_financials.json) supplies 5 fiscal years -> rev/op/np CAGR
       went NA on EVERY PSX name (holdings included), capping the PSX denominator ~7pts
@@ -647,7 +657,8 @@ _SA_INCOME_MONEY = {'Revenue':'rev','Cost of Revenue':'cogs','Selling, General &
                     'Net Income':'np_','EBITDA':'ebitda_s','Interest Expense':'int_exp'}
 _SA_INCOME_RAW   = {'EPS (Basic)':'eps_s'}
 _SA_BAL_MONEY    = {'Property, Plant & Equipment':'ppe','Total Debt':'td','Long-Term Debt':'ltd',
-                    'Total Common Equity':'eq0s','Total Assets':'ta_s','Total Current Assets':'ca_s',
+                    'Total Common Equity':'eq0s',"Shareholders' Equity":'eq0s','Total Equity':'eq0s',
+                    'Total Assets':'ta_s','Total Current Assets':'ca_s',
                     'Total Current Liabilities':'cl_s','Retained Earnings':'re_s','Receivables':'ar_s',
                     'Accounts Payable':'ap_s','Inventory':'inv_s','Cash & Equivalents':'cash_s',
                     'Trading Asset Securities':'sti_s'}
@@ -967,6 +978,14 @@ def score_ticker(ticker):
     ps = info.get('priceToSalesTrailing12Months')
     metrics.append(mk('ps_ratio', 'GOOD' if ps and ps<1.5 else 'WATCH' if ps and ps<3.0 else 'BAD' if ps else 'NA', W))
     dy = info.get('dividendYield')
+    if dy is None and is_psx:
+        # Derive from the parsed dividends-paid line (total dividends / market cap) when the TV
+        # dividend field is absent. Fills ACTUAL payers only (div_paid>0) — genuine non-payers
+        # stay NA, never fabricated. Sanity-capped at 50% to reject statement data artefacts.
+        dp0 = v0(div_paid)
+        if dp0 and mktcap and mktcap > 0:
+            _dyd = dp0 / mktcap
+            if 0 < _dyd < 0.5: dy = _dyd
     metrics.append(mk('div_yield', 'GOOD' if dy and dy>=0.04 else 'WATCH' if dy else 'NA', W))
     ev_eb = info.get('enterpriseToEbitda')
     metrics.append(mk('ev_ebitda', 'GOOD' if ev_eb and ev_eb<10 else 'WATCH' if ev_eb and ev_eb<15 else 'BAD' if ev_eb else 'NA', W))
@@ -1026,7 +1045,14 @@ def score_ticker(ticker):
 
     # ── RISK
     wc = (ca0-cl0) if ca0 is not None and cl0 is not None else None
-    az = altman_z(wc, re0, op0, eq00, td0, ta0)
+    # Altman Z'' X4 = equity / liabilities. Default to total debt (US path unchanged); for PSX names
+    # that are effectively debt-free (td<=0/None) fall back to total liabilities (ta-eq) so a strong
+    # balance sheet isn't lost to a divide-by-zero.
+    _liab0 = (ta0 - eq00) if (ta0 is not None and eq00 is not None) else None
+    _az_den = td0
+    if is_psx and (td0 is None or td0 <= 0) and _liab0 and _liab0 > 0:
+        _az_den = _liab0
+    az = altman_z(wc, re0, op0, eq00, _az_den, ta0)
     metrics.append(mk('altman_z', 'GOOD' if az and az>2.6 else 'WATCH' if az and az>1.1 else 'BAD' if az is not None else 'NA', W))
 
     gp_s = [((rev[i] or 0)-(cogs[i] if cogs and i<len(cogs) else 0)) for i in range(len(rev)) if rev[i] is not None] if rev else []
