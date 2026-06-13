@@ -656,7 +656,7 @@ _SA_BASE = "https://stockanalysis.com/quote/psx"
 _SA_CACHE = "psx_history_cache.json"
 _SA_TTL_DAYS = 7
 _SA_CACHE_VER = "2.9.1"   # bump whenever the SA label maps / parse change, to invalidate stale cached parses
-IM3_VERSION = "2.9.1"     # scorer version stamped into every record; the daily.yml gate re-scores when this changes
+IM3_VERSION = "2.9.2"     # 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
 # PSX banks -> System B only; never the non-bank multi-year engine (Altman/CCC/etc.).
 _PSX_FORCE_BANK = ('MCB','UBL','HBL','NBP','MEBL','BAHL','BAFL','ABL','AKBL','FABL',
                    'HMB','BOP','SCBPL','BIPL','JSBL','SNBL','SBL','BOK','BML','SAMBA',
@@ -842,6 +842,63 @@ def fetch_history(ticker, log=True, info=None):
 
 # ── MAIN SCORER ──────────────────────────────────────────────────────────────
 _json_mode = False
+
+def _exp_yoy(s):
+    """YoY% from a most-recent-first statement series (s[0]=latest, s[1]=prior)."""
+    if not s or len(s) < 2: return None
+    a, b = s[0], s[1]
+    if a is None or b is None or b == 0: return None
+    return round((a - b) / abs(b) * 100, 1)
+
+# Canonical explosive thresholds (Explosive Screen Specification v1.1) — kept in sync
+# with scanner.py. Used to FINALISE the PSX explosive verdict from the statements IM3
+# already parses, so PSX runs the SAME conditions as US (no eps/rev proxy).
+EXP_G1_REV = 20.0; EXP_G2_OP = 15.0; EXP_A1_OP = 20.0; EXP_A1_RATIO = 1.5; EXP_A2_PBT = 1.0
+
+def explosive_from_history(H):
+    """Compute the canonical explosive conditions + verdict from the multi-year
+    statement series (rev/op/np_/pbt/cfo). Returns a dict the workflow merges onto
+    the explosive record so PSX is judged on real operating/net/cash growth."""
+    rev = H.get('rev') or []; op = H.get('op') or []; np_ = H.get('np_') or []
+    pbt = H.get('pbt') or []; cfo = H.get('cfo') or []
+    rev_g = _exp_yoy(rev); op_g = _exp_yoy(op); np_g = _exp_yoy(np_); pbt_g = _exp_yoy(pbt)
+    prev_op = op[1] if len(op) >= 2 else None
+    g1 = None if rev_g is None else bool(rev_g > EXP_G1_REV)
+    g2 = None if op_g  is None else bool(op_g  >= EXP_G2_OP)
+    ratio = None
+    if op_g is None or np_g is None:
+        a1 = None
+    elif (prev_op is not None and prev_op <= 0) or op_g <= 0:
+        a1 = False
+    else:
+        ratio = round(np_g / op_g, 2) if op_g != 0 else None
+        a1 = bool(op_g > EXP_A1_OP and ratio is not None and ratio > EXP_A1_RATIO)
+    a2 = None if (pbt_g is None or op_g is None or op_g <= 0) else bool((pbt_g / op_g) > EXP_A2_PBT)
+    c1 = None; c3 = None
+    if cfo and np_ and cfo[0] is not None and np_[0] is not None:
+        c1 = bool(cfo[0] >= np_[0])
+    cfo_v = [x for x in cfo[:5] if x is not None]; np_v = [x for x in np_[:5] if x is not None]
+    if cfo_v and np_v:
+        c3 = bool(sum(cfo_v) >= sum(np_v))
+    if rev_g is None and op_g is None and np_g is None:
+        verdict = 'INSUFFICIENT DATA'
+    elif op_g is not None and op_g <= 0:
+        verdict = 'NOT EXPLOSIVE — OP declining'
+    else:
+        growth = bool(g1) and bool(g2); accel = bool(a1)
+        cash_fail = (c1 is False and c3 is False)
+        if   growth and accel and not cash_fail: verdict = 'EXPLOSIVE — both signals'
+        elif growth and accel and cash_fail:     verdict = 'QUALITY-GROWTH (growth + accel, cash flow does not back earnings)'
+        elif growth:                             verdict = 'QUALITY-GROWTH (growth, not accelerating)'
+        elif accel:                              verdict = 'INFLECTION (accelerating off low base — verify)'
+        else:                                    verdict = 'NOT EXPLOSIVE'
+    growth_known = (g1 is not None and g2 is not None)
+    return {'verdict': verdict, 'rev_growth': rev_g, 'op_growth': op_g, 'np_growth': np_g,
+            'pbt_growth': pbt_g, 'op_np_ratio': ratio,
+            'signal_a': (bool(g1) and bool(g2)) if growth_known else None, 'signal_b': a1,
+            'conditions': {'g1': g1, 'g2': g2, 'a1': a1, 'a2': a2, 'c1': c1, 'c3': c3},
+            'source': 'im3_statements'}
+
 
 def score_ticker(ticker):
     if not _json_mode:
@@ -1176,6 +1233,7 @@ def score_ticker(ticker):
         'score': total, 'pct': pct, 'grade': grade, 'metrics': metrics, 'max': max_out, 'ver': IM3_VERSION,
         'bank_coverage': bank_coverage, 'bank_inputs': bank_inputs,
         'src': {'fund': info.get('_tv') and 'tv' or 'yahoo', 'hist': H.get('source')},
+        'explosive': explosive_from_history(H),
         'piotroski': pf, 'altman_z': round(az,2) if az else None,
         'beneish_m': round(bm,2) if bm else None,
         'shareholder_yield_pct': round(nsy*100,2) if nsy is not None else None,
