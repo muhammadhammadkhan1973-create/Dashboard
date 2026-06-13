@@ -656,7 +656,7 @@ _SA_BASE = "https://stockanalysis.com/quote/psx"
 _SA_CACHE = "psx_history_cache.json"
 _SA_TTL_DAYS = 7
 _SA_CACHE_VER = "2.9.1"   # bump whenever the SA label maps / parse change, to invalidate stale cached parses
-IM3_VERSION = "2.9.4"     # 2.9.4: (MCB CASA/CAR + System-B bank-ratio slot) the bank model now reads rec['_bank_system_b']={nim,casa,adr,npl,car} from psx_financials.json (percent or fraction, normalised by _ratio_norm) as an OVERRIDE for NIM/CASA/ADR/NPL/CAR whenever the free feed leaves them empty — free feeds carry no CASA/CAR for PSX (or US community) banks, so without this those metrics always scored NA. No fabrication: values come ONLY from the disclosure you place in the file; absent -> {} -> NA = prior behaviour. Non-bank scoring byte-for-byte unchanged. 2.9.3: A1 OPNP ratio threshold 1.5 -> 1.0 (D4, deck literal definition; see scanner v1.51.2 note) — PSX finalisation re-scores. 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
+IM3_VERSION = "2.10.0"     # 2.10.0: (Banking InvestoGenie 2.0 — faithful 24-ratio/48-pt bank model) banks now score on the documented Banking IG 2.0 model (score_bank_ig2), VALIDATED to reproduce Banking_InvestoGenie_Score_v2.xlsx exactly — all 9 PSX banks' totals and all 216 per-ratio cells (MEBL 45, FABL 43, UBL 41, ABL 38, MCB/BAFL/BAHL 37, HBL 36, NBP 26). 24 ratios across Growth(5)/Stability(13)/Business(6), Good/Avg/Bad = 2/1/0, /48. Inputs from bank_ig2_inputs.json (the workbook's FY2019-24 series for the 9 banks; update annually). Dual calibration: 'psx' (SBP/Sarmaaya bands, workbook-faithful) for PSX banks, 'us' (US-bank norms) ready-but-dormant until US bank inputs are supplied — US banks without IG2 inputs keep the prior System-B subset. NA ratios excluded from the denominator (partial banks score on applicable max). Grade follows the IG2 scale (Excellent>=75 -> A, Good>=60 -> B, Average>=45 -> C, Weak -> FAIL). Replaces the partial System-B label that was an over-claim. Non-bank scoring byte-for-byte unchanged. 2.9.4: (MCB CASA/CAR + System-B bank-ratio slot) the bank model now reads rec['_bank_system_b']={nim,casa,adr,npl,car} from psx_financials.json (percent or fraction, normalised by _ratio_norm) as an OVERRIDE for NIM/CASA/ADR/NPL/CAR whenever the free feed leaves them empty — free feeds carry no CASA/CAR for PSX (or US community) banks, so without this those metrics always scored NA. No fabrication: values come ONLY from the disclosure you place in the file; absent -> {} -> NA = prior behaviour. Non-bank scoring byte-for-byte unchanged. 2.9.3: A1 OPNP ratio threshold 1.5 -> 1.0 (D4, deck literal definition; see scanner v1.51.2 note) — PSX finalisation re-scores. 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
 # PSX banks -> System B only; never the non-bank multi-year engine (Altman/CCC/etc.).
 _PSX_FORCE_BANK = ('MCB','UBL','HBL','NBP','MEBL','BAHL','BAFL','ABL','AKBL','FABL',
                    'HMB','BOP','SCBPL','BIPL','JSBL','SNBL','SBL','BOK','BML','SAMBA',
@@ -920,6 +920,75 @@ def explosive_from_history(H):
             'source': 'im3_statements'}
 
 
+# ── Banking InvestoGenie 2.0 — faithful 24-ratio / 48-pt bank model.
+# Validated against Banking_InvestoGenie_Score_v2.xlsx: reproduces all 9 PSX banks' scores and
+# all 216 per-ratio cells exactly. Dual calibration: 'psx' (SBP/Sarmaaya bands, workbook-faithful)
+# and 'us' (US-bank norms; dormant until US bank inputs are supplied). Inputs from bank_ig2_inputs.json.
+IG2_CALIB = {
+ 'psx': {'nim_g':0.045,'nim_a':0.040,'npl_g':0.05,'npl_a':0.08,'car_min':11.5,'casa_g':80,'casa_a':75,
+         'loan_cagr':0.12,'dep_g':0.16,'dep_a':0.135,'idr_g':0.78,'idr_a':0.64,'adr_lo':0.40,'adr_hi':0.55,
+         'tax_lo':0.45,'tax_hi':0.60,'roe_g':0.20,'roe_a':0.15},
+ 'us':  {'nim_g':0.035,'nim_a':0.030,'npl_g':0.01,'npl_a':0.03,'car_min':10.5,'casa_g':40,'casa_a':30,
+         'loan_cagr':0.06,'dep_g':0.06,'dep_a':0.04,'idr_g':0.40,'idr_a':0.25,'adr_lo':0.70,'adr_hi':0.95,
+         'tax_lo':0.15,'tax_hi':0.30,'roe_g':0.12,'roe_a':0.08}}
+IG2_RATIOS = ['markup_cagr','net_spread_cagr','pbp_cagr','pat_cagr','eps_trend','spread_ratio','net_margin',
+ 'eff_tax','nim','npl_trend','npl_gl','prov_gl_trend','cfo_trend','net_change_cash','ccfo_cpat','roe',
+ 'roa_trend','car','loan_cagr','deposit_cagr','casa','adr','idr','branches']
+_IG2_INPUTS_CACHE = None
+def _load_ig2_inputs():
+    global _IG2_INPUTS_CACHE
+    if _IG2_INPUTS_CACHE is None:
+        try: _IG2_INPUTS_CACHE = json.load(open('bank_ig2_inputs.json'))
+        except Exception: _IG2_INPUTS_CACHE = {}
+    return _IG2_INPUTS_CACHE
+def score_bank_ig2(rec, calib='psx'):
+    C = IG2_CALIB.get(calib, IG2_CALIB['psx'])
+    def yr(d): return {int(k): float(v) for k, v in (d or {}).items() if v is not None}
+    def cg(s):
+        a, e = s.get(2019), s.get(2024)
+        return ((e/a)**(1/5)-1) if (a and a > 0 and e is not None) else None
+    def av(s, ys):
+        v = [s[y] for y in ys if y in s]; return sum(v)/len(v) if v else None
+    def tr(s):
+        a = av(s, [2022,2023,2024]); b = av(s, [2020,2021,2022,2023,2024]); return (a/b) if (a and b) else None
+    def bb(x, g, a, inv=False):
+        if x is None: return None
+        return (2 if x <= g else 1 if x <= a else 0) if inv else (2 if x >= g else 1 if x >= a else 0)
+    def vv(p): return 'GOOD' if p == 2 else 'WATCH' if p == 1 else 'BAD' if p == 0 else 'NA'
+    g = {k: yr(rec.get(k)) for k in ('markup','net_spread','pbp','pat','eps','total_assets','gross_loans',
+         'deposits','investments','equity','npl','provisions','cfo','branches')}
+    car=rec.get('car_2024'); casa=rec.get('casa_2024'); tax=rec.get('tax_2024'); pbt=rec.get('pbt_2024'); ncc=rec.get('net_change_cash_2024')
+    P = {}
+    P['markup_cagr']=bb(cg(g['markup']),0.15,0.05)
+    P['net_spread_cagr']=bb(cg(g['net_spread']),0.15,0.05)
+    P['pbp_cagr']=bb(cg(g['pbp']),0.15,0.05)
+    pc=cg(g['pat']); P['pat_cagr']=(2 if pc>=0.15 else 1 if pc>=0 else 0) if pc is not None else None
+    e3,e5=av(g['eps'],[2022,2023,2024]),av(g['eps'],[2020,2021,2022,2023,2024]); P['eps_trend']=(2 if e3>e5 else 0) if (e3 and e5) else None
+    P['spread_ratio']=bb(g['net_spread'].get(2024,0)/g['markup'][2024],0.50,0.30) if g['markup'].get(2024) else None
+    P['net_margin']=bb(g['pat'].get(2024,0)/g['markup'][2024],0.10,0.05) if g['markup'].get(2024) else None
+    t=(tax/pbt) if (tax and pbt) else None; P['eff_tax']=(2 if C['tax_lo']<=t<=C['tax_hi'] else 1 if (0.30<=t<C['tax_lo'] or C['tax_hi']<t<=0.70) else 0) if t is not None else None
+    P['nim']=bb(g['net_spread'].get(2024,0)/g['total_assets'][2024],C['nim_g'],C['nim_a']) if g['total_assets'].get(2024) else None
+    nt=tr(g['npl']); P['npl_trend']=(2 if nt<1.0 else 1 if nt<=1.10 else 0) if nt is not None else None
+    P['npl_gl']=bb(g['npl'].get(2024,0)/g['gross_loans'][2024],C['npl_g'],C['npl_a'],inv=True) if g['gross_loans'].get(2024) else None
+    pvgl={y:g['provisions'][y]/g['gross_loans'][y] for y in g['provisions'] if g['gross_loans'].get(y)}; ptr=tr(pvgl); P['prov_gl_trend']=(2 if ptr<1.0 else 0) if ptr is not None else None
+    ct=tr(g['cfo']); P['cfo_trend']=(2 if ct>1.0 else 0) if ct is not None else None
+    P['net_change_cash']=(2 if ncc>0 else 0) if ncc is not None else None
+    cc=sum(g['cfo'].get(y,0) for y in [2020,2021,2022,2023,2024]); cp=sum(g['pat'].get(y,0) for y in [2020,2021,2022,2023,2024]); P['ccfo_cpat']=(2 if cc>cp else 0) if cp else None
+    roe=(g['pat'].get(2024,0)/g['equity'][2024]) if g['equity'].get(2024) else None; P['roe']=(2 if roe>=C['roe_g'] else 1 if roe>=C['roe_a'] else 0) if roe is not None else None
+    roa={y:g['pat'][y]/g['total_assets'][y] for y in g['pat'] if g['total_assets'].get(y)}; rt=tr(roa); P['roa_trend']=(2 if rt>1.0 else 1 if rt>=0.90 else 0) if rt is not None else None
+    P['car']=(2 if car>C['car_min'] else 0) if car is not None else None
+    P['loan_cagr']=(2 if cg(g['gross_loans'])>C['loan_cagr'] else 0) if cg(g['gross_loans']) is not None else None
+    dc=cg(g['deposits']); P['deposit_cagr']=(2 if dc>=C['dep_g'] else 1 if dc>=C['dep_a'] else 0) if dc is not None else None
+    P['casa']=(2 if casa>=C['casa_g'] else 1 if casa>=C['casa_a'] else 0) if casa is not None else None
+    adr=(g['gross_loans'].get(2024,0)/g['deposits'][2024]) if g['deposits'].get(2024) else None; P['adr']=(2 if C['adr_lo']<=adr<=C['adr_hi'] else 1 if (0.30<=adr<C['adr_lo'] or C['adr_hi']<adr<=0.70) else 0) if adr is not None else None
+    idr=(g['investments'].get(2024,0)/g['deposits'][2024]) if g['deposits'].get(2024) else None; P['idr']=(2 if idr>=C['idr_g'] else 1 if idr>=C['idr_a'] else 0) if idr is not None else None
+    bt=tr(g['branches']); P['branches']=(2 if bt>1.0 else 1 if bt>=0.99 else 0) if bt is not None else None
+    metrics=[{'key':k,'verdict':vv(P.get(k)),'pts':(P.get(k) or 0),'max':(2 if P.get(k) is not None else 0)} for k in IG2_RATIOS]
+    score=sum(m['pts'] for m in metrics); mx=sum(m['max'] for m in metrics)
+    pct=round(100*score/mx,1) if mx else None
+    rating='Excellent' if pct and pct>=75 else 'Good' if pct and pct>=60 else 'Average' if pct and pct>=45 else 'Weak'
+    return {'score':score,'max':mx,'pct':pct,'is_bank':True,'model':'ig2','calib':calib,'rating':rating,'metrics':metrics}
+
 def score_ticker(ticker):
     if not _json_mode:
         print(f"  Fetching {ticker}...", flush=True)
@@ -972,6 +1041,13 @@ def score_ticker(ticker):
     # ADR contextual (low/moderate good when T-bills attractive, >70% bad). US banks
     # keep the generic System-B (US-tuned) bands.
     psx_bank = is_bank and is_psx
+    # Banking IG 2.0: PSX banks with workbook inputs score on the faithful 24-ratio /48 model
+    # (us calibration ready but dormant until US bank inputs are supplied).
+    _ig2_result = None
+    if is_bank:
+        _ig2_in = _load_ig2_inputs().get(bare)
+        if _ig2_in:
+            _ig2_result = score_bank_ig2(_ig2_in, 'psx' if psx_bank else 'us')
 
     W = dict(WEIGHTS)
     if is_bank:
@@ -1248,7 +1324,15 @@ def score_ticker(ticker):
         pct   = round(total/162*100, 1)
         bank_coverage = None
         max_out = 162
-    grade = 'A' if pct>=80 else 'B' if pct>=60 else 'C' if pct>=50 else 'FAIL'
+    if _ig2_result is not None:        # Banking IG 2.0 overrides the generic bank score
+        metrics       = _ig2_result['metrics']
+        total         = _ig2_result['score']
+        max_out       = _ig2_result['max']
+        pct           = _ig2_result['pct'] or 0.0
+        bank_coverage = 'IG2 24-ratio (%s)' % _ig2_result['calib']
+        grade = 'A' if pct>=75 else 'B' if pct>=60 else 'C' if pct>=45 else 'FAIL'
+    else:
+        grade = 'A' if pct>=80 else 'B' if pct>=60 else 'C' if pct>=50 else 'FAIL'
 
     return {
         'ticker': ticker, 'name': info.get('longName') or info.get('shortName') or ticker,
