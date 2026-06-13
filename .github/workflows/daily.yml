@@ -65,8 +65,15 @@ jobs:
               r['ticker'] for r in data.get('explosive_us', [])
               if r.get('verdict', '').startswith('FINANCIAL')
           ])
-          # Combined — score explosives, banks (System B), and TCE-HIGH
-          new_tickers = sorted(set(explosive + financial + tce_high))
+          # Watchlist verdicts (P3 widen): QUALITY-GROWTH + INFLECTION — the names you
+          # might actually act on. NOT-EXPLOSIVE stays unscored.
+          watchlist = sorted([
+              r['ticker'] for r in data.get('explosive_us', [])
+              if r.get('verdict', '').startswith('QUALITY-GROWTH')
+              or r.get('verdict', '').startswith('INFLECTION')
+          ])
+          # Combined — score explosives, banks (System B), TCE-HIGH, and the watchlist
+          new_tickers = sorted(set(explosive + financial + tce_high + watchlist))
 
           # Read previous list (stored in data.json from last run)
           prev_tickers = sorted(data.get('im3_explosive_tickers', []))
@@ -145,7 +152,13 @@ jobs:
               r['ticker'] for r in data.get('explosive_us', [])
               if r.get('verdict', '').startswith('FINANCIAL')
           ]
-          explosive_tickers = sorted(set(explosive + financial + tce_high))
+          # Watchlist verdicts (P3 widen): QUALITY-GROWTH + INFLECTION. NOT-EXPLOSIVE skipped.
+          watchlist = sorted([
+              r['ticker'] for r in data.get('explosive_us', [])
+              if r.get('verdict', '').startswith('QUALITY-GROWTH')
+              or r.get('verdict', '').startswith('INFLECTION')
+          ])
+          explosive_tickers = sorted(set(explosive + financial + tce_high + watchlist))
 
           if not explosive_tickers:
               print("No explosive stocks to score")
