@@ -656,7 +656,7 @@ _SA_BASE = "https://stockanalysis.com/quote/psx"
 _SA_CACHE = "psx_history_cache.json"
 _SA_TTL_DAYS = 7
 _SA_CACHE_VER = "2.9.1"   # bump whenever the SA label maps / parse change, to invalidate stale cached parses
-IM3_VERSION = "2.9.2"     # 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
+IM3_VERSION = "2.9.3"     # 2.9.3: A1 OPNP ratio threshold 1.5 -> 1.0 (D4, deck literal definition; see scanner v1.51.2 note) — PSX finalisation re-scores. 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
 # PSX banks -> System B only; never the non-bank multi-year engine (Altman/CCC/etc.).
 _PSX_FORCE_BANK = ('MCB','UBL','HBL','NBP','MEBL','BAHL','BAFL','ABL','AKBL','FABL',
                    'HMB','BOP','SCBPL','BIPL','JSBL','SNBL','SBL','BOK','BML','SAMBA',
@@ -853,7 +853,7 @@ def _exp_yoy(s):
 # Canonical explosive thresholds (Explosive Screen Specification v1.1) — kept in sync
 # with scanner.py. Used to FINALISE the PSX explosive verdict from the statements IM3
 # already parses, so PSX runs the SAME conditions as US (no eps/rev proxy).
-EXP_G1_REV = 20.0; EXP_G2_OP = 15.0; EXP_A1_OP = 20.0; EXP_A1_RATIO = 1.5; EXP_A2_PBT = 1.0
+EXP_G1_REV = 20.0; EXP_G2_OP = 15.0; EXP_A1_OP = 20.0; EXP_A1_RATIO = 1.0; EXP_A2_PBT = 1.0
 
 def explosive_from_history(H):
     """Compute the canonical explosive conditions + verdict from the multi-year
