@@ -108,7 +108,21 @@ jobs:
           scorer_changed = bool(cur_hash) and cur_hash != prev_hash
           print(f"Scorer changed: {scorer_changed} (cur {cur_hash[:8]} vs prev {prev_hash[:8]})")
 
-          changed = names_changed or needs_heal or scorer_changed
+          # Max-age (P4): re-score every 14 days even if nothing changed — a staleness
+          # ceiling so grades never drift stale (standard freshness-vs-compute cache rule).
+          from datetime import datetime, timezone
+          MAX_AGE_DAYS = 14
+          stale = True
+          _last = data.get('im3_last_scored_utc')
+          if _last:
+              try:
+                  _dt = datetime.fromisoformat(str(_last).replace('Z', '+00:00'))
+                  stale = (datetime.now(timezone.utc) - _dt).days >= MAX_AGE_DAYS
+              except Exception:
+                  stale = True
+
+          changed = names_changed or needs_heal or scorer_changed or stale
+          print(f"Stale (>{MAX_AGE_DAYS}d): {stale} (last scored {_last})")
           print(f"Previous:      {prev_tickers}")
           print(f"New:           {new_tickers}")
           print(f"Names changed: {names_changed}")
@@ -224,6 +238,9 @@ jobs:
 
           # Store ticker list for change detection next run
           data['im3_explosive_tickers'] = explosive_tickers
+          # P4: stamp the score time so the next run can apply a 14-day staleness ceiling
+          from datetime import datetime, timezone
+          data['im3_last_scored_utc'] = datetime.now(timezone.utc).isoformat()
 
           # Write updated data.json
           with open('data.json', 'w') as f:
