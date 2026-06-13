@@ -427,7 +427,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.27 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — v5.27 PSX full-history + CAGR fix: the IM3 PSX scorer now sources full multi-year financial statements for the broad universe (S&amp;P Global Market Intelligence feed via stockanalysis), and the CAGR engine is length-adaptive — five fiscal years now yield a 4-year CAGR instead of NA (it had required six data points), so rev/op/np CAGR score for every full-history PSX name and the denominator reaches the true /162 (e.g. OGDC 155→162); the US 6-point CAGR path is byte-for-byte unchanged. The PSX Explosive caption/explainer/tooltip now count psx-sa + psx-broker as full multi-year history and flag only genuine data-gap names (negative-revenue / thin holding-cos) as TV-only fallback. — v5.26 PSX explainer trued-up: the PSX Explosive caption + explainer now reflect the live mixed state — the broker-research history layer has LANDED for the five holdings (OGDC/PPL/FFC/HUBC score on the expanded multi-year denominator with CAGRs/Altman/Beneish/Piotroski/DCF-growth live; MCB scores on the System-B bank model, Banking Investo Genie 2.0 PSX-calibrated: NIM 4.5%, NPL ≤5%/≤8%, contextual ADR, CAR ≥11.5% SBP req, tax 45–60%), while the rest of the universe stays TV single-period reduced pending broker data; the caption now counts broker-backed names dynamically from data.json (src.hist) instead of asserting all-TV. — v5.25 PSX IM3 surfaced: the PSX Explosive table now shows the IM3 Quality column (same as US), reading the scores the daily.yml PSX step writes into explosive_psx/tce_psx/psx_candidates. PSX scores render on the reduced denominator (TV single-period; history metrics NA/excluded; PKR risk-free; banks generic-reduced pending broker System-B), with a PSX-specific explainer and per-cell tooltip. v5.24 stale-calendar fix: the US Recession Watch \u201CUpcoming high-impact US releases\u201D table now filters out events dated before the scan\u2019s as-of day (meta.last_scan_utc), so already-released prints (e.g. the Jun-10 CPI on a Jun-11 scan) no longer linger as \u201Cupcoming\u201D; only on/after-today releases show. v5.23 IM3 re-thread surfaced: the IM3 detail card now shows the data-provenance badge (fundamentals TV · history SEC/Yahoo per the re-threaded scorer), net shareholder yield, Piotroski/Altman-Z/Beneish-M, and the full intrinsic-value set — per-method (DCF·EPS, Graham, DCF·FCF, DCF·Cash) plus the scorer's blended composites (Composite, FCF-blend, Cash-blend with their own MoS), replacing the single mislabeled "Composite MoS" tile (which was DCF-EPS-only). Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&amp;P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory) + v5.17 Wave D2 labels: the three PSX analyst-conviction streams now render as readable chips on the PSX TCE table — Target (mean price-target upside %), Rec (analyst buy share %), and Fwd-EPS (forward-EPS revised up) — each pulling the analyst_detail block; PSX-only, so they show n/a on US rows + v5.19 Wave O Part 2 (metric meaning): every screen-survivor row now carries a visible plain-language “reads:” line interpreting its metrics (Rev/EPS/ROE/P/E for US, Rev/EPS/3M for PSX) in threshold terms — e.g. “P/E 52 — priced for perfection”, “ROE 92% — elite returns on capital”, “Rev +498% — explosive top-line”; and the gate thresholds are now visible in each screen caption (✓ Rev ≥15% · EPS ≥0% · ROE ≥8% for US; ✓ Rev ≥0% · EPS ≥0% for PSX) instead of hidden in column tooltips. Sector/peer + regime enrichment of the reads arrives with Wave O L1 (TV sector medians) + v5.18 Feedback-loop panel: the TCE Forward-Validation ledger now shows a per-tier scorecard (HIGH/WATCH/IGNORE: open, matured, hit-rate ≥+40%, avg fwd, avg alpha vs SPY/KSE-100, beat-market %, and HIGH/WATCH lift over the IGNORE control base rate), an earliest-maturation “first verdict ~DATE” line that reads pending until picks reach the 90-day horizon, and an open-picks table with forward return + alpha + days-to-maturity + v5.20: (1) the Target + Rec analyst-conviction chips now render on US TCE rows too (the scanner's US analyst overlay emits s11/s12 for both markets) — Fwd-EPS stays PSX-only since US uses the Yahoo EPS-rev stream; the Rec tip now reads ≥70% buy (buy70 calibration). (2) the RS-guardrail chip now reads rs_ok correctly: data.json serializes it as the string 'True'/'False' (which is truthy in JS), so a vetoed name no longer mis-shows GUARD-holds — the falsy set is coerced to match the live scorer. + v5.21 PSX institutional layer (Wave P): the Pakistan tab now renders the AMC fund-ownership smart-money overlay — top-ten holdings aggregated across 9 high-conviction equity/asset-allocation mutual funds (monthly Fund Manager Reports), with each name’s fund count, avg/max portfolio weight and a month-over-month accumulate/trim flow tag (baseline until next month’s reports land), your five holdings highlighted; a 🏦 funds badge on any screen-survivor the funds also hold; and a market breadth (advancers/decliners) + volume/value leaders strip — all from the Wave P scanner feeds (scanner v1.45–v1.48). + v5.22: the US Multibagger “Moat OR Insider Gate” card no longer shows n/a — it now reads the live SEC EDGAR Form-4 signal (the TCE s3_insider stream) as an “Insider Buying (SEC Form-4): N of 15 candidates” tally, since the TV-era screen insider gate was dropped in Wave O L1 and TradingView carries no insider field; the sector-breakdown moat/insider column is labelled an illustrative design target (the live scan applies no such per-sector gate).
+  Muhammad Hammad Khan | Active Macro Dashboard v5.28 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — v5.28 Explosive tab rebuilt (P3): the columns now show the real decision inputs — <strong>Rev YoY</strong> (G1 &gt;20%), <strong>OP YoY</strong> (G2 ≥15%), <strong>NP YoY</strong>, and <strong>NP/OP</strong> (A1 &gt;1.0) — all annual year-over-year from financial statements; the legacy EPS/Rev proxy column and the bare A/B dots are replaced by a per-name <strong>Conditions</strong> strip (G1 G2 A1 A2 C1 C3 + ▲FWD, green=pass/red=fail/grey=n/a, each with a tooltip); a <strong>Verdict key</strong> legend explains EXPLOSIVE / QUALITY-GROWTH / INFLECTION / NOT-EXPLOSIVE / FINANCIAL inline (INFLECTION = profit accelerating off a sub-20% top line — verify the turn), and every row carries a one-line plain-English reason under its verdict; PSX growth figures are rounded to 1 dp (no more 16-digit floats); rows are ordered by conviction and the NOT-EXPLOSIVE / insufficient names are collapsed behind a toggle so reds no longer flood the tab; the IM3 cell shows "—" for names outside the IM3 set instead of a "Pending next scan" that never resolves, because the scanner's IM3 scope was widened (daily.yml) to also grade QUALITY-GROWTH + INFLECTION (~56 extra names/run; NOT-EXPLOSIVE still skipped). — v5.27 PSX full-history + CAGR fix: the IM3 PSX scorer now sources full multi-year financial statements for the broad universe (S&amp;P Global Market Intelligence feed via stockanalysis), and the CAGR engine is length-adaptive — five fiscal years now yield a 4-year CAGR instead of NA (it had required six data points), so rev/op/np CAGR score for every full-history PSX name and the denominator reaches the true /162 (e.g. OGDC 155→162); the US 6-point CAGR path is byte-for-byte unchanged. The PSX Explosive caption/explainer/tooltip now count psx-sa + psx-broker as full multi-year history and flag only genuine data-gap names (negative-revenue / thin holding-cos) as TV-only fallback. — v5.26 PSX explainer trued-up: the PSX Explosive caption + explainer now reflect the live mixed state — the broker-research history layer has LANDED for the five holdings (OGDC/PPL/FFC/HUBC score on the expanded multi-year denominator with CAGRs/Altman/Beneish/Piotroski/DCF-growth live; MCB scores on the System-B bank model, Banking Investo Genie 2.0 PSX-calibrated: NIM 4.5%, NPL ≤5%/≤8%, contextual ADR, CAR ≥11.5% SBP req, tax 45–60%), while the rest of the universe stays TV single-period reduced pending broker data; the caption now counts broker-backed names dynamically from data.json (src.hist) instead of asserting all-TV. — v5.25 PSX IM3 surfaced: the PSX Explosive table now shows the IM3 Quality column (same as US), reading the scores the daily.yml PSX step writes into explosive_psx/tce_psx/psx_candidates. PSX scores render on the reduced denominator (TV single-period; history metrics NA/excluded; PKR risk-free; banks generic-reduced pending broker System-B), with a PSX-specific explainer and per-cell tooltip. v5.24 stale-calendar fix: the US Recession Watch \u201CUpcoming high-impact US releases\u201D table now filters out events dated before the scan\u2019s as-of day (meta.last_scan_utc), so already-released prints (e.g. the Jun-10 CPI on a Jun-11 scan) no longer linger as \u201Cupcoming\u201D; only on/after-today releases show. v5.23 IM3 re-thread surfaced: the IM3 detail card now shows the data-provenance badge (fundamentals TV · history SEC/Yahoo per the re-threaded scorer), net shareholder yield, Piotroski/Altman-Z/Beneish-M, and the full intrinsic-value set — per-method (DCF·EPS, Graham, DCF·FCF, DCF·Cash) plus the scorer's blended composites (Composite, FCF-blend, Cash-blend with their own MoS), replacing the single mislabeled "Composite MoS" tile (which was DCF-EPS-only). Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&amp;P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory) + v5.17 Wave D2 labels: the three PSX analyst-conviction streams now render as readable chips on the PSX TCE table — Target (mean price-target upside %), Rec (analyst buy share %), and Fwd-EPS (forward-EPS revised up) — each pulling the analyst_detail block; PSX-only, so they show n/a on US rows + v5.19 Wave O Part 2 (metric meaning): every screen-survivor row now carries a visible plain-language “reads:” line interpreting its metrics (Rev/EPS/ROE/P/E for US, Rev/EPS/3M for PSX) in threshold terms — e.g. “P/E 52 — priced for perfection”, “ROE 92% — elite returns on capital”, “Rev +498% — explosive top-line”; and the gate thresholds are now visible in each screen caption (✓ Rev ≥15% · EPS ≥0% · ROE ≥8% for US; ✓ Rev ≥0% · EPS ≥0% for PSX) instead of hidden in column tooltips. Sector/peer + regime enrichment of the reads arrives with Wave O L1 (TV sector medians) + v5.18 Feedback-loop panel: the TCE Forward-Validation ledger now shows a per-tier scorecard (HIGH/WATCH/IGNORE: open, matured, hit-rate ≥+40%, avg fwd, avg alpha vs SPY/KSE-100, beat-market %, and HIGH/WATCH lift over the IGNORE control base rate), an earliest-maturation “first verdict ~DATE” line that reads pending until picks reach the 90-day horizon, and an open-picks table with forward return + alpha + days-to-maturity + v5.20: (1) the Target + Rec analyst-conviction chips now render on US TCE rows too (the scanner's US analyst overlay emits s11/s12 for both markets) — Fwd-EPS stays PSX-only since US uses the Yahoo EPS-rev stream; the Rec tip now reads ≥70% buy (buy70 calibration). (2) the RS-guardrail chip now reads rs_ok correctly: data.json serializes it as the string 'True'/'False' (which is truthy in JS), so a vetoed name no longer mis-shows GUARD-holds — the falsy set is coerced to match the live scorer. + v5.21 PSX institutional layer (Wave P): the Pakistan tab now renders the AMC fund-ownership smart-money overlay — top-ten holdings aggregated across 9 high-conviction equity/asset-allocation mutual funds (monthly Fund Manager Reports), with each name’s fund count, avg/max portfolio weight and a month-over-month accumulate/trim flow tag (baseline until next month’s reports land), your five holdings highlighted; a 🏦 funds badge on any screen-survivor the funds also hold; and a market breadth (advancers/decliners) + volume/value leaders strip — all from the Wave P scanner feeds (scanner v1.45–v1.48). + v5.22: the US Multibagger “Moat OR Insider Gate” card no longer shows n/a — it now reads the live SEC EDGAR Form-4 signal (the TCE s3_insider stream) as an “Insider Buying (SEC Form-4): N of 15 candidates” tally, since the TV-era screen insider gate was dropped in Wave O L1 and TradingView carries no insider field; the sector-breakdown moat/insider column is labelled an illustrative design target (the live scan applies no such per-sector gate).
 </div>
 
 <script>
@@ -1505,6 +1505,29 @@ function calcMbUs(){
 // TCE + EXPLOSIVE
 // =========================================================
 function explosiveVerdictClass(v){if(!v)return'neutral';const u=v.toUpperCase();if(u.startsWith('EXPLOSIVE'))return'pos';if(u.startsWith('FINANCIAL'))return'warn';if(u.startsWith('QUALITY-GROWTH')||u.startsWith('INFLECTION'))return'warn';if(u.startsWith('NOT EXPLOSIVE'))return'neg';return'neutral';}
+// One-line plain-English reason shown under each verdict
+function explosiveWhy(v){
+  if(!v) return '';
+  const u=v.toUpperCase();
+  if(u.startsWith('EXPLOSIVE'))        return 'Rev &gt;20% &amp; OP ≥15%, profit accelerating (NP/OP &gt;1.0), and cash backs earnings.';
+  if(u.startsWith('QUALITY-GROWTH'))   return u.includes('CASH') ? 'Growing &amp; accelerating, but operating cash flow does not back the profit — verify earnings quality.' : 'Growing &gt;20%, but profit not accelerating (net profit not outpacing operating profit by enough).';
+  if(u.startsWith('INFLECTION'))       return 'Profit accelerating off a sub-20% top line — early turn; verify revenue follows and the gain is operational, not a low-base / below-the-line effect.';
+  if(u.startsWith('FINANCIAL'))        return 'Bank / financial — industrial OP/NP/CFO invalid; scored on the System-B bank model (NIM, NPL, CAR, ROE).';
+  if(u.includes('OP DECLINING'))       return 'Operating profit is shrinking — acceleration is undefined on a falling base.';
+  if(u.startsWith('NOT EXPLOSIVE'))    return 'Growth and/or acceleration gates not met.';
+  if(u.startsWith('PARTIAL'))          return 'Profit / cash data pending — finalised by the IM3 step from the statements.';
+  if(u.startsWith('INSUFFICIENT'))     return 'No fetchable statements — needs broker data to evaluate.';
+  return '';
+}
+// Toggle the default-hidden NOT-EXPLOSIVE / INSUFFICIENT rows
+function toggleNotExplosive(elId){
+  const el=document.getElementById(elId); if(!el) return;
+  const rows=el.querySelectorAll('tr[data-exphidden="1"]'); if(!rows.length) return;
+  const hidden = rows[0].style.display==='none';
+  rows.forEach(r=>{ r.style.display = hidden?'':'none'; });
+  const btn=el.querySelector('[data-exptoggle]');
+  if(btn){ const n=btn.getAttribute('data-expn'); btn.textContent = (hidden?'Hide ':'Show ')+n+' not-explosive / insufficient'; }
+}
 function sigDot(s){const c=s===true?'#10b981':s===false?'#ef4444':'#d1d5db';return`<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${c};"></span>`;}
 
 function usMacroVerdict(){
@@ -1597,14 +1620,20 @@ function im3RefreshRow(ticker) {
 }
 
 // Mini IM3 cell for the table column
-function im3CellHTML(ticker) {
+function im3CellHTML(ticker, verdict) {
   const r = im3Scores[ticker];
   const busy = im3Busy[ticker];
   if (busy) return `<span style="color:var(--grey-d);font-size:11px;font-family:var(--font-mono);">⏳ scoring…</span>`;
 
-  // Unscored OR previously errored → pending next scan (scores come from GitHub Actions)
+  // Unscored OR previously errored. NOT-EXPLOSIVE / INSUFFICIENT names are outside the
+  // IM3 scoring set (scanner widened to EXPLOSIVE+FINANCIAL+QUALITY-GROWTH+INFLECTION),
+  // so they will never be scored — show "—", not a "pending" that never resolves.
   if (!r || r.error) {
-    return `<span style="color:#9ca3af;font-size:11px;">Pending next scan</span>`;
+    const u=(verdict||'').toUpperCase();
+    const outOfScope = u && !(u.startsWith('EXPLOSIVE')||u.startsWith('FINANCIAL')||u.startsWith('QUALITY-GROWTH')||u.startsWith('INFLECTION')||u.startsWith('PARTIAL'));
+    return outOfScope
+      ? `<span style="color:#cbd5e1;font-size:11px;" title="Not graded — NOT-EXPLOSIVE / insufficient names are outside the IM3 scoring set">—</span>`
+      : `<span style="color:#9ca3af;font-size:11px;" title="Queued — IM3 scores are written by the scheduled GitHub Actions scan">Pending next scan</span>`;
   }
 
   const gc = r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f';
@@ -1785,15 +1814,17 @@ function renderExplosiveTable(elId, rows, market) {
   const insuff=rows.filter(r=>r.verdict==='INSUFFICIENT DATA');
   const counts={
     explosive: rows.filter(r=>r.verdict&&r.verdict.startsWith('EXPLOSIVE')).length,
+    inflection:rows.filter(r=>r.verdict&&r.verdict.startsWith('INFLECTION')).length,
     quality:   rows.filter(r=>r.verdict&&r.verdict.startsWith('QUALITY-GROWTH')).length,
     financial: rows.filter(r=>r.verdict&&r.verdict.startsWith('FINANCIAL')).length,
-    not:       rows.filter(r=>r.verdict==='NOT EXPLOSIVE').length,
+    not:       rows.filter(r=>r.verdict&&r.verdict.toUpperCase().startsWith('NOT EXPLOSIVE')).length,
     insuff:    insuff.length
   };
 
   let html=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:600;align-items:center;">`;
   if(counts.explosive) html+=`<span style="background:var(--green-l);color:var(--green);padding:4px 10px;border-radius:6px;">🚀 ${counts.explosive} EXPLOSIVE</span>`;
   if(counts.quality)   html+=`<span style="background:var(--orange-l);color:var(--orange);padding:4px 10px;border-radius:6px;">📈 ${counts.quality} QUALITY-GROWTH</span>`;
+  if(counts.inflection)html+=`<span style="background:#FEF9C3;color:#854D0E;padding:4px 10px;border-radius:6px;">⤴ ${counts.inflection} INFLECTION</span>`;
   if(counts.financial) html+=`<span style="background:#EEF2FF;color:var(--navy);padding:4px 10px;border-radius:6px;">🏦 ${counts.financial} FINANCIAL → bank model (System B)</span>`;
   if(counts.not)       html+=`<span style="background:var(--red-l);color:var(--red);padding:4px 10px;border-radius:6px;">✗ ${counts.not} NOT EXPLOSIVE</span>`;
   if(counts.insuff)    html+=`<span style="background:#F3F4F6;color:#6B7280;padding:4px 10px;border-radius:6px;">◌ ${counts.insuff} INSUFFICIENT DATA</span>`;
@@ -1829,12 +1860,30 @@ function renderExplosiveTable(elId, rows, market) {
       <strong style="color:var(--navy);">IM3 Quality Score — PSX.</strong> Most PSX names now score on <strong>full multi-year financial-statement history</strong> (S&amp;P Global Market Intelligence feed): CAGRs, Altman/Beneish/Piotroski and DCF-growth compute from real annual statements, so these names are graded against the <strong>full /162 denominator</strong>. Your holdings (OGDC, PPL, FFC, HUBC) run on broker-research financials; the bank (MCB) scores on the <strong>System-B bank model</strong> (NIM/CASA/ADR/NPL/CAR, Banking Investo Genie 2.0 PSX-calibrated: NIM 4.5%, NPL ≤5%/≤8%, contextual ADR, CAR ≥11.5% SBP req, tax 45–60%). With five fiscal years on file the growth engine now computes a 4-year CAGR — it previously required six data points and returned NA, which had been capping every PSX name ~7 points below 162 — so the three CAGR metrics score for every full-history name. Only names whose statements can't be fetched (genuine data gaps — negative-revenue or thin holding-cos) fall back to <strong>TradingView single-period</strong> on a reduced denominator (multi-year metrics NA/excluded). Earnings-yield &amp; DCF use the PKR risk-free (≈11.5%). CASA/CAR remain NA until broker disclosure lands. <strong>Click any score to expand the metrics.</strong>
     </div>`;
   }
+  html+=`<div style="width:100%;margin-top:8px;padding:8px 12px;background:#FAFAFF;border-left:3px solid var(--green);border-radius:4px;font-size:11px;color:var(--grey-d);line-height:1.7;">
+    <strong style="color:var(--navy);">Verdict key</strong> —
+    <strong style="color:var(--green);">🚀 EXPLOSIVE</strong>: revenue &gt;20% AND operating profit ≥15% AND profit accelerating (NP/OP &gt;1.0), cash-backed. ·
+    <strong style="color:var(--orange);">📈 QUALITY-GROWTH</strong>: growing &gt;20% but profit not accelerating (or operating cash flow doesn't back it). ·
+    <strong style="color:#854D0E;">⤴ INFLECTION</strong>: profit accelerating off a <em>sub-20% top line</em> — an early turn to <strong>verify</strong> (revenue hasn't confirmed it yet; check the gain is operational, not a low-base or below-the-line effect). ·
+    <strong style="color:var(--red);">✗ NOT EXPLOSIVE</strong>: gates not met, or operating profit declining. ·
+    <strong style="color:var(--navy);">🏦 FINANCIAL</strong>: bank — scored on the System-B bank model.
+    <div style="margin-top:4px;opacity:.92;">Conditions chips — <b>G1</b> Rev YoY&gt;20% · <b>G2</b> OP YoY≥15% · <b>A1</b> NP/OP&gt;1.0 (accelerating) · <b>A2</b> PBT/OP&gt;1.0 · <b>C1</b> CFO≥NP · <b>C3</b> ΣCFO≥ΣNP (5y) · <b>▲FWD</b> forward-EPS booster. <span style="color:#059669;">green=pass</span>, <span style="color:#DC2626;">red=fail</span>, grey=n/a. All growth figures are annual year-over-year from financial statements.</div>
+  </div>`;
   html+='</div>';
 
   const showIM3 = (market==='us' || market==='psx');
+  const hiddenCount = rows.filter(r=>{const u=(r.verdict||'').toUpperCase();return u.startsWith('NOT EXPLOSIVE')||u==='INSUFFICIENT DATA';}).length;
+  if(hiddenCount>0){
+    html+=`<div style="margin:6px 0;"><button data-exptoggle data-expn="${hiddenCount}" onclick="toggleNotExplosive('${elId}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--line,#e5e7eb);background:#fff;border-radius:6px;cursor:pointer;color:var(--grey-d);">Show ${hiddenCount} not-explosive / insufficient</button></div>`;
+  }
   html+=`<table style="font-size:12px;"><thead><tr>
-    <th>Ticker</th><th>Name</th><th>Sector</th><th>Rev Gr</th><th>EPS Gr</th><th>EPS/Rev</th>
-    <th>A</th><th>B</th><th>Verdict</th>
+    <th>Ticker</th><th>Name</th><th>Sector</th>
+    <th title="Revenue growth, annual year-over-year from financial statements">Rev YoY<div style="font-size:9px;font-weight:400;opacity:.85;">G1 &gt;20%</div></th>
+    <th title="Operating-profit growth, annual year-over-year from financial statements">OP YoY<div style="font-size:9px;font-weight:400;opacity:.85;">G2 ≥15%</div></th>
+    <th title="Net-profit growth, annual year-over-year from financial statements">NP YoY</th>
+    <th title="A1 OPNP — net-profit growth ÷ operating-profit growth; fires &gt;1.0 with OP &gt;20% = profit accelerating">NP/OP<div style="font-size:9px;font-weight:400;opacity:.85;">A1 &gt;1.0</div></th>
+    <th title="Per-condition pass/fail: G1 G2 A1 A2 C1 C3 + forward booster">Conditions</th>
+    <th>Verdict</th>
     ${showIM3?`<th style="background:#312E81;min-width:130px;line-height:1.4;">
       IM3 Quality
       <div style="font-size:9px;font-weight:400;margin-top:3px;">
@@ -1847,31 +1896,38 @@ function renderExplosiveTable(elId, rows, market) {
     </th>`:''}
   </tr></thead><tbody>`;
 
-  [...scored,...insuff].forEach(r=>{
+  const _rank=v=>{const u=(v||'').toUpperCase();return u.startsWith('EXPLOSIVE')?0:u.startsWith('INFLECTION')?1:u.startsWith('QUALITY')?2:u.startsWith('FINANCIAL')?3:u.startsWith('PARTIAL')?4:u.startsWith('NOT EXPLOSIVE')?5:6;};
+  const _ordered=[...rows].sort((a,b)=>_rank(a.verdict)-_rank(b.verdict)||(a.ticker||'').localeCompare(b.ticker||''));
+  const _chip=(cond,k,lbl,tip)=>{const v=cond[k];const c=v===true?'#059669':v===false?'#DC2626':'#9CA3AF';const bg=v===true?'#ECFDF5':v===false?'#FEF2F2':'#F3F4F6';return `<span title="${tip}" style="display:inline-block;font-size:9px;font-weight:700;font-family:var(--font-mono);padding:1px 4px;margin:1px;border-radius:3px;color:${c};background:${bg};">${lbl}</span>`;};
+  _ordered.forEach(r=>{
     const cls=explosiveVerdictClass(r.verdict);
     const em=v=>(v===null||v===undefined)?'—':v;
-    const pct=v=>(v===null||v===undefined)?'—':(v+'%');
-    let _ratioVal=r.eps_rev_ratio;
-    if(_ratioVal===null||_ratioVal===undefined){ _ratioVal=(r.eps_growth!=null&&r.rev_growth!=null&&r.rev_growth!=0)?(r.eps_growth/r.rev_growth):(r.op_np_ratio!=null?r.op_np_ratio:null); }
-    const ratio=(_ratioVal===null||_ratioVal===undefined||isNaN(_ratioVal))?'—':Number(_ratioVal).toFixed(2);
+    const pct=v=>(v===null||v===undefined||isNaN(Number(v)))?'—':(Number(v).toFixed(1)+'%');
+    const ratio=(r.op_np_ratio===null||r.op_np_ratio===undefined||isNaN(Number(r.op_np_ratio)))?'—':Number(r.op_np_ratio).toFixed(2);
     const tk=r.ticker||'';
+    const cond=r.conditions||{};
+    const fwd=r.forward||{};
+    const fwdChip=(fwd.f1||fwd.fr)?`<span title="Forward booster: ${[fwd.f1?'F1 next-FY EPS &gt;20%':null,fwd.fr?'FR estimate raised vs 90d':null].filter(Boolean).join(' · ')}" style="display:inline-block;font-size:9px;font-weight:700;font-family:var(--font-mono);padding:1px 4px;margin:1px;border-radius:3px;color:#92400E;background:#FEF3C7;">▲FWD</span>`:'';
+    const condCell=_chip(cond,'g1','G1','G1 — Revenue YoY &gt; 20%')+_chip(cond,'g2','G2','G2 — Operating-profit YoY ≥ 15%')+_chip(cond,'a1','A1','A1 — NP/OP &gt; 1.0 with OP &gt; 20% (profit accelerating)')+_chip(cond,'a2','A2','A2 — PBT/OP &gt; 1.0')+_chip(cond,'c1','C1','C1 — CFO ≥ Net Profit (cash backs earnings)')+_chip(cond,'c3','C3','C3 — ΣCFO ≥ ΣNP over 5y')+fwdChip;
+    const why=explosiveWhy(r.verdict);
+    const hidden=_rank(r.verdict)>=5;
 
     // Main data row
-    html+=`<tr class="${cls}">
+    html+=`<tr class="${cls}"${hidden?' data-exphidden="1" style="display:none;"':''}>
       <td><b>${em(tk)}</b></td>
       <td>${em(r.name)}</td>
       <td>${em(r.sector)}</td>
       <td>${pct(r.rev_growth)}</td>
-      <td>${pct(r.eps_growth)}</td>
+      <td>${pct(r.op_growth)}</td>
+      <td>${pct(r.np_growth)}</td>
       <td>${ratio}</td>
-      <td style="text-align:center;">${sigDot(r.signal_a)}</td>
-      <td style="text-align:center;">${sigDot(r.signal_b)}</td>
-      <td><b>${em(r.verdict)}</b></td>
+      <td style="white-space:nowrap;line-height:1.6;">${condCell}</td>
+      <td><b>${em(r.verdict)}</b>${why?`<div style="font-size:10px;font-weight:400;color:var(--grey-d);margin-top:2px;max-width:250px;">${why}</div>`:''}</td>
       ${showIM3?`<td data-im3-cell="${tk}"
           data-im3-ticker="${tk}"
           data-im3-name="${(r.name||tk).replace(/"/g,'')}"
           data-im3-sector="${(r.sector||'').replace(/"/g,'')}"
-          style="background:#EEF2FF;">${im3CellHTML(tk)}</td>`:''}
+          style="background:#EEF2FF;">${im3CellHTML(tk, r.verdict)}</td>`:''}
     </tr>`;
 
     // Hidden detail row — expands when IM3 score is clicked
