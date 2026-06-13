@@ -656,7 +656,7 @@ _SA_BASE = "https://stockanalysis.com/quote/psx"
 _SA_CACHE = "psx_history_cache.json"
 _SA_TTL_DAYS = 7
 _SA_CACHE_VER = "2.9.1"   # bump whenever the SA label maps / parse change, to invalidate stale cached parses
-IM3_VERSION = "2.9.3"     # 2.9.3: A1 OPNP ratio threshold 1.5 -> 1.0 (D4, deck literal definition; see scanner v1.51.2 note) — PSX finalisation re-scores. 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
+IM3_VERSION = "2.9.4"     # 2.9.4: (MCB CASA/CAR + System-B bank-ratio slot) the bank model now reads rec['_bank_system_b']={nim,casa,adr,npl,car} from psx_financials.json (percent or fraction, normalised by _ratio_norm) as an OVERRIDE for NIM/CASA/ADR/NPL/CAR whenever the free feed leaves them empty — free feeds carry no CASA/CAR for PSX (or US community) banks, so without this those metrics always scored NA. No fabrication: values come ONLY from the disclosure you place in the file; absent -> {} -> NA = prior behaviour. Non-bank scoring byte-for-byte unchanged. 2.9.3: A1 OPNP ratio threshold 1.5 -> 1.0 (D4, deck literal definition; see scanner v1.51.2 note) — PSX finalisation re-scores. 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
 # PSX banks -> System B only; never the non-bank multi-year engine (Altman/CCC/etc.).
 _PSX_FORCE_BANK = ('MCB','UBL','HBL','NBP','MEBL','BAHL','BAFL','ABL','AKBL','FABL',
                    'HMB','BOP','SCBPL','BIPL','JSBL','SNBL','SBL','BOK','BML','SAMBA',
@@ -808,6 +808,26 @@ def psx_history(ticker):
         return None
     h['source'] = 'psx-broker'
     return h
+
+def _psx_bank_ratios(ticker):
+    """v2.9.4 (MCB CASA/CAR slot): read broker-disclosed bank ratios from psx_financials.json —
+    rec['_bank_system_b'] = {nim,casa,adr,npl,car} (percent or fraction). Free feeds carry no
+    NIM/CASA/CAR/NPL/ADR for PSX (or US community) banks, so without this the System-B inputs
+    score NA. Returns {} when the file / record / sub-dict is absent. No fabrication — values come
+    only from the disclosure you place in the file."""
+    try:
+        sym = str(ticker).upper().split(':')[-1]
+        rec = json.load(open('psx_financials.json')).get(sym) or {}
+        b = rec.get('_bank_system_b') or {}
+        return b if isinstance(b, dict) else {}
+    except Exception:
+        return {}
+
+def _ratio_norm(x):
+    """Normalise a disclosed bank ratio to a fraction: 78 -> 0.78, 4.5 -> 0.045, 0.78 -> 0.78."""
+    try: x = float(x)
+    except Exception: return None
+    return x / 100.0 if abs(x) > 1.5 else x
 
 def fetch_history(ticker, log=True, info=None):
     """FMP-stable -> SEC -> Yahoo, first usable wins. Yahoo is the guaranteed backstop.
@@ -1155,13 +1175,15 @@ def score_ticker(ticker):
 
     # ── BANK EXTRAS
     if is_bank:
-        nim_v = sdiv(v0(nii), ta0) or info.get('netInterestMargin')
+        _bank_ovr = _psx_bank_ratios(ticker)          # v2.9.4: broker disclosure (MCB CASA/CAR etc.)
+        nim_v = sdiv(v0(nii), ta0) or info.get('netInterestMargin') or _ratio_norm(_bank_ovr.get('nim'))
         nim_vd = band(nim_v, 0.045, 0.035) if psx_bank else band(nim_v, 0.04, 0.03)
         metrics.append({'key':'nim','verdict':nim_vd,'pts':pts(nim_vd,4),'max':4})
-        casa_v = info.get('casaRatio')
+        casa_v = info.get('casaRatio') or _ratio_norm(_bank_ovr.get('casa'))
         cv = band(casa_v,0.80,0.70) if casa_v else 'NA'
         metrics.append({'key':'casa','verdict':cv,'pts':pts(cv,3),'max':3})
         adr_v = sdiv(v0(loans), v0(deps))
+        if adr_v is None: adr_v = _ratio_norm(_bank_ovr.get('adr'))
         if psx_bank:
             # Contextual (Banking IG 2.0 / SBP): when T-bills attractive (high-rate regime),
             # prudent banks park in govt paper -> low/moderate ADR is GOOD, very high is the risk.
@@ -1170,12 +1192,13 @@ def score_ticker(ticker):
             av = 'GOOD' if adr_v and 0.40<=adr_v<=0.60 else 'WATCH' if adr_v and (0.30<=adr_v<0.40 or 0.60<adr_v<=0.70) else 'BAD' if adr_v else 'NA'
         metrics.append({'key':'adr','verdict':av,'pts':pts(av,3),'max':3})
         npl_v = sdiv(v0(npl_s), v0(loans))
+        if npl_v is None: npl_v = _ratio_norm(_bank_ovr.get('npl'))
         if psx_bank:
             nv = band(npl_v,0.05,0.08,hi=False) if npl_v else 'NA'   # PSX structurally higher
         else:
             nv = band(npl_v,0.03,0.05,hi=False) if npl_v else 'NA'
         metrics.append({'key':'npl','verdict':nv,'pts':pts(nv,5),'max':5})
-        car_v = info.get('capitalAdequacyRatio') or info.get('tier1CapitalRatio')
+        car_v = info.get('capitalAdequacyRatio') or info.get('tier1CapitalRatio') or _ratio_norm(_bank_ovr.get('car'))
         if car_v and car_v > 1: car_v = car_v/100
         cv2 = ((band(car_v,0.13,0.115) if psx_bank else band(car_v,0.18,0.15)) if car_v else 'NA')  # SBP req 11.5%
         metrics.append({'key':'car','verdict':cv2,'pts':pts(cv2,4),'max':4})
