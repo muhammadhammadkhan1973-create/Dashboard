@@ -331,7 +331,21 @@ jobs:
           for key in ('explosive_psx', 'tce_psx', 'psx_candidates'):
               for rec in data.get(key, []):
                   if rec.get('ticker') in smap:
-                      rec['im3'] = smap[rec['ticker']]
+                      sc = smap[rec['ticker']]
+                      rec['im3'] = sc
+                      # Finalise the PSX explosive verdict from IM3's statement-derived
+                      # canonical conditions (same G1/G2/A1/A2/C1/C3 as the US screen, fed
+                      # real operating/net/cash growth — no eps/rev proxy). Only the
+                      # PARTIAL (pending) rows are finalised; a true-bank carve-out stands.
+                      if key == 'explosive_psx' \
+                         and str(rec.get('verdict', '')).startswith('PARTIAL') \
+                         and isinstance(sc.get('explosive'), dict):
+                          exp = sc['explosive']
+                          for _f in ('verdict', 'rev_growth', 'op_growth', 'np_growth',
+                                     'pbt_growth', 'op_np_ratio', 'signal_a', 'signal_b',
+                                     'conditions'):
+                              if _f in exp:
+                                  rec[_f] = exp[_f]
 
           data['im3_psx_tickers'] = psx_syms
           with open('data.json', 'w') as f:
