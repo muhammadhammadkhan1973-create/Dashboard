@@ -234,6 +234,28 @@ def band(v, g, w, hi=True):
 def pts(verdict, max_p):
     return {'GOOD': max_p, 'WATCH': round(max_p*0.6), 'BAD': round(max_p*0.2)}.get(verdict, 0)
 
+# ── Option C (peer-relative IM3) ───────────────────────────────────────────────
+_SECTOR_MED_CACHE = None
+def _sector_medians():
+    """Per-GICS-sector medians {sector:{pe,op_margin,net_margin,roe}} written by the scanner
+    (sector_medians.json). Absent -> {} -> every metric falls back to its absolute band, so the
+    legacy /162 behaviour is byte-for-byte unchanged when the file is not present."""
+    global _SECTOR_MED_CACHE
+    if _SECTOR_MED_CACHE is None:
+        try:    _SECTOR_MED_CACHE = json.load(open('sector_medians.json')) or {}
+        except Exception: _SECTOR_MED_CACHE = {}
+    return _SECTOR_MED_CACHE
+
+def peer_band(v, med, hi=True, lo=0.7):
+    """Peer-relative verdict vs a sector median. Returns None when there is no median or no value
+    (the caller then uses the absolute band -> identical to legacy). hi=True (margins/ROE, higher
+    better): GOOD >= median · WATCH >= median*lo · BAD below. hi=False (P/E, lower better):
+    GOOD <= median · WATCH <= median*(2-lo) · BAD above."""
+    if med is None or v is None or med <= 0:
+        return None
+    if hi:  return 'GOOD' if v >= med else ('WATCH' if v >= med*lo else 'BAD')
+    else:   return 'GOOD' if v <= med else ('WATCH' if v <= med*(2-lo) else 'BAD')
+
 def mk(key, verdict, W):
     mp = W.get(key, 0)
     return {'key': key, 'verdict': verdict, 'pts': pts(verdict, mp), 'max': mp}
@@ -658,7 +680,7 @@ _SA_BASE = "https://stockanalysis.com/quote/psx"
 _SA_CACHE = "psx_history_cache.json"
 _SA_TTL_DAYS = 7
 _SA_CACHE_VER = "2.9.1"   # bump whenever the SA label maps / parse change, to invalidate stale cached parses
-IM3_VERSION = "2.12.0"  # 2.12.0: partial-bank SCS fallback — for banks with no audited equity/ADR series (BOP/AKBL/BIPL), score_bank_ig2 now fills roe/adr/roa_trend from the live SCS snapshot (rec roe_scs/adr_scs/roa_trend_scs as fractions/ratio, written by the scanner to bank_ig2_overrides.json), lifting them off the reduced /32 denominator. Fill-MISSING-ONLY: a curated value already in bank_ig2_inputs.json is never overwritten, so the nine full-data workbook banks reproduce EXACTLY (validated). Audited annual data (when sourced) takes precedence over SCS. Bank valuation + non-bank scoring byte-for-byte unchanged. # 2.11.0: bank valuation — banks now carry a bank-appropriate IV block (bank_valuation): justified P/B (ROE-driven, the anchor) + Graham + dividend-discount, blended to a fair value with MoS vs live price; capped DCF-EPS shown as optimistic bound; Peter-Lynch/PEG + P/E/P/B/earnings-yield/div-yield ratios; DCF-FCF/Cash suppressed for banks (no conventional FCF). PSX cost-of-equity = PKR risk-free 11.5% + 6% ERP; long-run g 10% (psx)/4% (us), held below COE. Inputs are real (eps/equity/pat from the IG2 series + live price); reported DPS lights up DDM/div-yield when the annual-report parse supplies it, else DDM uses an implied sustainable payout. Quality scoring (score_bank_ig2) and non-bank scoring byte-for-byte UNCHANGED. # 2.10.1: partial-bank fix — 7 IG2 ratios (spread_ratio/net_margin/nim/npl_gl/ccfo_cpat/adr/idr) returned a fake GOOD/BAD when a source line item was MISSING (defaulted to 0); they now return NA so partial-data banks (e.g. BOP/AKBL/BIPL with no NPL/CFO/equity) score honestly on their applicable ratios only. The 9 full-data workbook banks reproduce EXACTLY as before (validated).     # 2.10.0: (Banking InvestoGenie 2.0 — faithful 24-ratio/48-pt bank model) banks now score on the documented Banking IG 2.0 model (score_bank_ig2), VALIDATED to reproduce Banking_InvestoGenie_Score_v2.xlsx exactly — all 9 PSX banks' totals and all 216 per-ratio cells (MEBL 45, FABL 43, UBL 41, ABL 38, MCB/BAFL/BAHL 37, HBL 36, NBP 26). 24 ratios across Growth(5)/Stability(13)/Business(6), Good/Avg/Bad = 2/1/0, /48. Inputs from bank_ig2_inputs.json (the workbook's FY2019-24 series for the 9 banks; update annually). Dual calibration: 'psx' (SBP/Sarmaaya bands, workbook-faithful) for PSX banks, 'us' (US-bank norms) ready-but-dormant until US bank inputs are supplied — US banks without IG2 inputs keep the prior System-B subset. NA ratios excluded from the denominator (partial banks score on applicable max). Grade follows the IG2 scale (Excellent>=75 -> A, Good>=60 -> B, Average>=45 -> C, Weak -> FAIL). Replaces the partial System-B label that was an over-claim. Non-bank scoring byte-for-byte unchanged. 2.9.4: (MCB CASA/CAR + System-B bank-ratio slot) the bank model now reads rec['_bank_system_b']={nim,casa,adr,npl,car} from psx_financials.json (percent or fraction, normalised by _ratio_norm) as an OVERRIDE for NIM/CASA/ADR/NPL/CAR whenever the free feed leaves them empty — free feeds carry no CASA/CAR for PSX (or US community) banks, so without this those metrics always scored NA. No fabrication: values come ONLY from the disclosure you place in the file; absent -> {} -> NA = prior behaviour. Non-bank scoring byte-for-byte unchanged. 2.9.3: A1 OPNP ratio threshold 1.5 -> 1.0 (D4, deck literal definition; see scanner v1.51.2 note) — PSX finalisation re-scores. 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
+IM3_VERSION = "2.13.0"  # 2.13.0: (Option C — peer-relative IM3) op_margin / net_margin / ROE / P/E are now scored PEER-RELATIVE against this name's GICS-sector MEDIAN (from sector_medians.json, written by scanner v1.58.0's fetch_sector_medians) instead of fixed absolute bars: peer_band() gives GOOD>=median / WATCH>=median*0.7 for margins+ROE, and the P/E reference fpe is the sector-median P/E (was a flat 25 default) — this closes the largest gap vs the IM3 master and resolves the standing P/E divergence. GATED TO NON-BANKS (med={} when is_bank) so the validated IG2 bank model is provably untouched; and FALLBACK-PRESERVING — when sector_medians.json is absent OR the name's sector has no median (Yahoo-fallback US names + every PSX name, different taxonomy), peer_band returns None and the prior ABSOLUTE thresholds apply, so PSX + bank scoring and the no-file path are byte-for-byte unchanged (validated). ev_ebitda confirmed already fixed (live TTM used directly, line 389) — no change. # 2.12.0: partial-bank SCS fallback — for banks with no audited equity/ADR series (BOP/AKBL/BIPL), score_bank_ig2 now fills roe/adr/roa_trend from the live SCS snapshot (rec roe_scs/adr_scs/roa_trend_scs as fractions/ratio, written by the scanner to bank_ig2_overrides.json), lifting them off the reduced /32 denominator. Fill-MISSING-ONLY: a curated value already in bank_ig2_inputs.json is never overwritten, so the nine full-data workbook banks reproduce EXACTLY (validated). Audited annual data (when sourced) takes precedence over SCS. Bank valuation + non-bank scoring byte-for-byte unchanged. # 2.11.0: bank valuation — banks now carry a bank-appropriate IV block (bank_valuation): justified P/B (ROE-driven, the anchor) + Graham + dividend-discount, blended to a fair value with MoS vs live price; capped DCF-EPS shown as optimistic bound; Peter-Lynch/PEG + P/E/P/B/earnings-yield/div-yield ratios; DCF-FCF/Cash suppressed for banks (no conventional FCF). PSX cost-of-equity = PKR risk-free 11.5% + 6% ERP; long-run g 10% (psx)/4% (us), held below COE. Inputs are real (eps/equity/pat from the IG2 series + live price); reported DPS lights up DDM/div-yield when the annual-report parse supplies it, else DDM uses an implied sustainable payout. Quality scoring (score_bank_ig2) and non-bank scoring byte-for-byte UNCHANGED. # 2.10.1: partial-bank fix — 7 IG2 ratios (spread_ratio/net_margin/nim/npl_gl/ccfo_cpat/adr/idr) returned a fake GOOD/BAD when a source line item was MISSING (defaulted to 0); they now return NA so partial-data banks (e.g. BOP/AKBL/BIPL with no NPL/CFO/equity) score honestly on their applicable ratios only. The 9 full-data workbook banks reproduce EXACTLY as before (validated).     # 2.10.0: (Banking InvestoGenie 2.0 — faithful 24-ratio/48-pt bank model) banks now score on the documented Banking IG 2.0 model (score_bank_ig2), VALIDATED to reproduce Banking_InvestoGenie_Score_v2.xlsx exactly — all 9 PSX banks' totals and all 216 per-ratio cells (MEBL 45, FABL 43, UBL 41, ABL 38, MCB/BAFL/BAHL 37, HBL 36, NBP 26). 24 ratios across Growth(5)/Stability(13)/Business(6), Good/Avg/Bad = 2/1/0, /48. Inputs from bank_ig2_inputs.json (the workbook's FY2019-24 series for the 9 banks; update annually). Dual calibration: 'psx' (SBP/Sarmaaya bands, workbook-faithful) for PSX banks, 'us' (US-bank norms) ready-but-dormant until US bank inputs are supplied — US banks without IG2 inputs keep the prior System-B subset. NA ratios excluded from the denominator (partial banks score on applicable max). Grade follows the IG2 scale (Excellent>=75 -> A, Good>=60 -> B, Average>=45 -> C, Weak -> FAIL). Replaces the partial System-B label that was an over-claim. Non-bank scoring byte-for-byte unchanged. 2.9.4: (MCB CASA/CAR + System-B bank-ratio slot) the bank model now reads rec['_bank_system_b']={nim,casa,adr,npl,car} from psx_financials.json (percent or fraction, normalised by _ratio_norm) as an OVERRIDE for NIM/CASA/ADR/NPL/CAR whenever the free feed leaves them empty — free feeds carry no CASA/CAR for PSX (or US community) banks, so without this those metrics always scored NA. No fabrication: values come ONLY from the disclosure you place in the file; absent -> {} -> NA = prior behaviour. Non-bank scoring byte-for-byte unchanged. 2.9.3: A1 OPNP ratio threshold 1.5 -> 1.0 (D4, deck literal definition; see scanner v1.51.2 note) — PSX finalisation re-scores. 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
 # PSX banks -> System B only; never the non-bank multi-year engine (Altman/CCC/etc.).
 _PSX_FORCE_BANK = ('MCB','UBL','HBL','NBP','MEBL','BAHL','BAFL','ABL','AKBL','FABL',
                    'HMB','BOP','SCBPL','BIPL','JSBL','SNBL','SBL','BOK','BML','SAMBA',
@@ -1172,6 +1194,11 @@ def score_ticker(ticker):
     metrics = []
 
     # ── GROWTH
+    # Option C: this name's sector median for peer-relative P/E / margins / ROE. Gated to
+    # NON-BANKS (banks score on the separate validated IG2 model — provably untouched). When no
+    # median for the sector (e.g. Yahoo-fallback US names + all PSX names, different taxonomy) the
+    # peer_band() calls below return None and the absolute thresholds apply -> legacy behaviour.
+    med = {} if is_bank else (_sector_medians().get(info.get('sector')) or {})
     for key, ser in [('rev_cagr',rev),('op_cagr',op),('np_cagr',np_)]:
         c = cagr(ser, 5)
         metrics.append(mk(key, 'GOOD' if c is not None and c>=0.15 else 'WATCH' if c is not None else 'NA', W))
@@ -1180,8 +1207,8 @@ def score_ticker(ticker):
         _tvr = info['_tv']
         if opm is None and _tvr.get('operating_margin') is not None: opm = _tvr['operating_margin']/100.0
         if npm is None and _tvr.get('net_margin') is not None:       npm = _tvr['net_margin']/100.0
-    metrics.append(mk('op_margin', band(opm, 0.12, 0.06), W))
-    metrics.append(mk('np_margin', band(npm, 0.08, 0.03), W))
+    metrics.append(mk('op_margin', peer_band(opm, med.get('op_margin')) or band(opm, 0.12, 0.06), W))
+    metrics.append(mk('np_margin', peer_band(npm, med.get('net_margin')) or band(npm, 0.08, 0.03), W))
 
     # ── STABILITY
     if psx_bank:
@@ -1207,12 +1234,12 @@ def score_ticker(ticker):
     cum_cfo = sum(v for v in cfo[:6] if v); cum_np = sum(v for v in np_[:6] if v)
     metrics.append(mk('ccfo_cpat', 'GOOD' if cum_cfo and cum_np and cum_cfo>cum_np else 'WATCH' if cum_cfo and cum_np else 'NA', W))
     metrics.append(mk('nfa_turn', trend(avg(nfat,3), avg(nfat,5)), W))
-    metrics.append(mk('roe', band(info.get('returnOnEquity'), 0.20, 0.10), W))
+    metrics.append(mk('roe', peer_band(info.get('returnOnEquity'), med.get('roe')) or band(info.get('returnOnEquity'), 0.20, 0.10), W))
 
     # ── VALUATION
     metrics.append(mk('eps_trend', trend(avg(eps_s,3), avg(eps_s,5)), W))
     pe = info.get('trailingPE') or info.get('forwardPE')
-    fpe = info.get('forwardPE') or 25
+    fpe = med.get('pe') or info.get('forwardPE') or 25   # Option C: peer (sector-median) P/E is the reference; else forward/25
     metrics.append(mk('pe_ratio', 'GOOD' if pe and pe>0 and pe<=fpe*1.1 else 'WATCH' if pe and pe>0 and pe<=fpe*1.3 else 'BAD' if pe and pe>0 else 'NA', W))
     # PEG: TV exposes none and Yahoo is demoted -> standard definition PE / avg-EPS-growth.
     peg = info.get('pegRatio') or (sdiv(pe, avg_eg) if pe and avg_eg and avg_eg>0 else None)
