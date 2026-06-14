@@ -101,7 +101,15 @@ jobs:
           # successful score, re-score even when the ticker set is unchanged (so a
           # scorer upgrade like System B propagates automatically — no manual checkbox).
           import hashlib
-          try:    cur_hash = hashlib.sha256(open('im3_score.py','rb').read()).hexdigest()
+          # Hash the scorer AND the bank-input files, so editing bank_ig2_inputs.json /
+          # bank_ig2_overrides.json alone also forces a re-score (US banks are scored here).
+          try:
+              _h = hashlib.sha256()
+              _h.update(open('im3_score.py','rb').read())
+              for _bf in ('bank_ig2_inputs.json','bank_ig2_overrides.json'):
+                  try: _h.update(open(_bf,'rb').read())
+                  except Exception: pass
+              cur_hash = _h.hexdigest()
           except Exception: cur_hash = ''
           try:    prev_hash = open('.im3_scorer_hash').read().strip()
           except Exception: prev_hash = ''
@@ -251,7 +259,12 @@ jobs:
           # Stamp the scorer version so the next run only re-scores on a real change.
           import hashlib
           try:
-              open('.im3_scorer_hash','w').write(hashlib.sha256(open('im3_score.py','rb').read()).hexdigest())
+              _wh = hashlib.sha256()
+              _wh.update(open('im3_score.py','rb').read())
+              for _bf in ('bank_ig2_inputs.json','bank_ig2_overrides.json'):
+                  try: _wh.update(open(_bf,'rb').read())
+                  except Exception: pass
+              open('.im3_scorer_hash','w').write(_wh.hexdigest())
               print('Updated .im3_scorer_hash')
           except Exception as _e:
               print('scorer hash write failed:', _e)
@@ -308,6 +321,9 @@ jobs:
               _h.update(open('im3_score.py', 'rb').read())
               try: _h.update(open('psx_financials.json', 'rb').read())
               except Exception: pass
+              for _bf in ('bank_ig2_inputs.json', 'bank_ig2_overrides.json'):
+                  try: _h.update(open(_bf, 'rb').read())
+                  except Exception: pass
               cur_hash = _h.hexdigest()
           except Exception: cur_hash = ''
           try:    prev_hash = open('.im3_psx_hash').read().strip()
