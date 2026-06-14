@@ -124,6 +124,8 @@ HDRS_SEC = {"User-Agent": "IM3-Score research hammad.khan@airproducts.com"}
 TV_URL = "https://scanner.tradingview.com/america/scan"
 PAK_TV_URL = "https://scanner.tradingview.com/pakistan/scan"  # PSX single-period fundamentals
 PAK_BOND = 0.115  # PKR risk-free ~ SBP policy rate; used for PSX earnings-yield & DCF-EPS
+BANK_ERP  = 0.06                          # equity risk premium added to the risk-free for bank cost-of-equity
+BANK_G_LR = {'psx': 0.10, 'us': 0.04}     # long-run nominal growth for banks (kept below COE)
 FMP_BASE = "https://financialmodelingprep.com/stable"
 FMP_KEY = os.environ.get("FMP_API_KEY", "")
 
@@ -656,7 +658,7 @@ _SA_BASE = "https://stockanalysis.com/quote/psx"
 _SA_CACHE = "psx_history_cache.json"
 _SA_TTL_DAYS = 7
 _SA_CACHE_VER = "2.9.1"   # bump whenever the SA label maps / parse change, to invalidate stale cached parses
-IM3_VERSION = "2.10.1"  # 2.10.1: partial-bank fix — 7 IG2 ratios (spread_ratio/net_margin/nim/npl_gl/ccfo_cpat/adr/idr) returned a fake GOOD/BAD when a source line item was MISSING (defaulted to 0); they now return NA so partial-data banks (e.g. BOP/AKBL/BIPL with no NPL/CFO/equity) score honestly on their applicable ratios only. The 9 full-data workbook banks reproduce EXACTLY as before (validated).     # 2.10.0: (Banking InvestoGenie 2.0 — faithful 24-ratio/48-pt bank model) banks now score on the documented Banking IG 2.0 model (score_bank_ig2), VALIDATED to reproduce Banking_InvestoGenie_Score_v2.xlsx exactly — all 9 PSX banks' totals and all 216 per-ratio cells (MEBL 45, FABL 43, UBL 41, ABL 38, MCB/BAFL/BAHL 37, HBL 36, NBP 26). 24 ratios across Growth(5)/Stability(13)/Business(6), Good/Avg/Bad = 2/1/0, /48. Inputs from bank_ig2_inputs.json (the workbook's FY2019-24 series for the 9 banks; update annually). Dual calibration: 'psx' (SBP/Sarmaaya bands, workbook-faithful) for PSX banks, 'us' (US-bank norms) ready-but-dormant until US bank inputs are supplied — US banks without IG2 inputs keep the prior System-B subset. NA ratios excluded from the denominator (partial banks score on applicable max). Grade follows the IG2 scale (Excellent>=75 -> A, Good>=60 -> B, Average>=45 -> C, Weak -> FAIL). Replaces the partial System-B label that was an over-claim. Non-bank scoring byte-for-byte unchanged. 2.9.4: (MCB CASA/CAR + System-B bank-ratio slot) the bank model now reads rec['_bank_system_b']={nim,casa,adr,npl,car} from psx_financials.json (percent or fraction, normalised by _ratio_norm) as an OVERRIDE for NIM/CASA/ADR/NPL/CAR whenever the free feed leaves them empty — free feeds carry no CASA/CAR for PSX (or US community) banks, so without this those metrics always scored NA. No fabrication: values come ONLY from the disclosure you place in the file; absent -> {} -> NA = prior behaviour. Non-bank scoring byte-for-byte unchanged. 2.9.3: A1 OPNP ratio threshold 1.5 -> 1.0 (D4, deck literal definition; see scanner v1.51.2 note) — PSX finalisation re-scores. 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
+IM3_VERSION = "2.12.0"  # 2.12.0: partial-bank SCS fallback — for banks with no audited equity/ADR series (BOP/AKBL/BIPL), score_bank_ig2 now fills roe/adr/roa_trend from the live SCS snapshot (rec roe_scs/adr_scs/roa_trend_scs as fractions/ratio, written by the scanner to bank_ig2_overrides.json), lifting them off the reduced /32 denominator. Fill-MISSING-ONLY: a curated value already in bank_ig2_inputs.json is never overwritten, so the nine full-data workbook banks reproduce EXACTLY (validated). Audited annual data (when sourced) takes precedence over SCS. Bank valuation + non-bank scoring byte-for-byte unchanged. # 2.11.0: bank valuation — banks now carry a bank-appropriate IV block (bank_valuation): justified P/B (ROE-driven, the anchor) + Graham + dividend-discount, blended to a fair value with MoS vs live price; capped DCF-EPS shown as optimistic bound; Peter-Lynch/PEG + P/E/P/B/earnings-yield/div-yield ratios; DCF-FCF/Cash suppressed for banks (no conventional FCF). PSX cost-of-equity = PKR risk-free 11.5% + 6% ERP; long-run g 10% (psx)/4% (us), held below COE. Inputs are real (eps/equity/pat from the IG2 series + live price); reported DPS lights up DDM/div-yield when the annual-report parse supplies it, else DDM uses an implied sustainable payout. Quality scoring (score_bank_ig2) and non-bank scoring byte-for-byte UNCHANGED. # 2.10.1: partial-bank fix — 7 IG2 ratios (spread_ratio/net_margin/nim/npl_gl/ccfo_cpat/adr/idr) returned a fake GOOD/BAD when a source line item was MISSING (defaulted to 0); they now return NA so partial-data banks (e.g. BOP/AKBL/BIPL with no NPL/CFO/equity) score honestly on their applicable ratios only. The 9 full-data workbook banks reproduce EXACTLY as before (validated).     # 2.10.0: (Banking InvestoGenie 2.0 — faithful 24-ratio/48-pt bank model) banks now score on the documented Banking IG 2.0 model (score_bank_ig2), VALIDATED to reproduce Banking_InvestoGenie_Score_v2.xlsx exactly — all 9 PSX banks' totals and all 216 per-ratio cells (MEBL 45, FABL 43, UBL 41, ABL 38, MCB/BAFL/BAHL 37, HBL 36, NBP 26). 24 ratios across Growth(5)/Stability(13)/Business(6), Good/Avg/Bad = 2/1/0, /48. Inputs from bank_ig2_inputs.json (the workbook's FY2019-24 series for the 9 banks; update annually). Dual calibration: 'psx' (SBP/Sarmaaya bands, workbook-faithful) for PSX banks, 'us' (US-bank norms) ready-but-dormant until US bank inputs are supplied — US banks without IG2 inputs keep the prior System-B subset. NA ratios excluded from the denominator (partial banks score on applicable max). Grade follows the IG2 scale (Excellent>=75 -> A, Good>=60 -> B, Average>=45 -> C, Weak -> FAIL). Replaces the partial System-B label that was an over-claim. Non-bank scoring byte-for-byte unchanged. 2.9.4: (MCB CASA/CAR + System-B bank-ratio slot) the bank model now reads rec['_bank_system_b']={nim,casa,adr,npl,car} from psx_financials.json (percent or fraction, normalised by _ratio_norm) as an OVERRIDE for NIM/CASA/ADR/NPL/CAR whenever the free feed leaves them empty — free feeds carry no CASA/CAR for PSX (or US community) banks, so without this those metrics always scored NA. No fabrication: values come ONLY from the disclosure you place in the file; absent -> {} -> NA = prior behaviour. Non-bank scoring byte-for-byte unchanged. 2.9.3: A1 OPNP ratio threshold 1.5 -> 1.0 (D4, deck literal definition; see scanner v1.51.2 note) — PSX finalisation re-scores. 2.9.2: adds explosive_from_history() -> result["explosive"] (canonical G1/G2/A1/A2/C1/C3 + verdict from the parsed statements) so the PSX IM3 step FINALISES the explosive verdict on real operating/net/cash growth (same conditions as US, no eps/rev proxy). Scoring/grade math UNCHANGED. // scorer version stamped into every record; the daily.yml gate re-scores when this changes
 # PSX banks -> System B only; never the non-bank multi-year engine (Altman/CCC/etc.).
 _PSX_FORCE_BANK = ('MCB','UBL','HBL','NBP','MEBL','BAHL','BAFL','ABL','AKBL','FABL',
                    'HMB','BOP','SCBPL','BIPL','JSBL','SNBL','SBL','BOK','BML','SAMBA',
@@ -940,6 +942,17 @@ def _load_ig2_inputs():
     if _IG2_INPUTS_CACHE is None:
         try: _IG2_INPUTS_CACHE = json.load(open('bank_ig2_inputs.json'))
         except Exception: _IG2_INPUTS_CACHE = {}
+        # SCS fallback layer (scanner writes bank_ig2_overrides.json from the live SCS snapshot):
+        # fills ONLY still-missing fields (e.g. roe_scs/adr_scs/roa_trend_scs on partial banks);
+        # a curated value already present in bank_ig2_inputs.json is never overwritten, so the
+        # nine full-data workbook banks are structurally untouched.
+        try:
+            _ov = json.load(open('bank_ig2_overrides.json')) or {}
+            for _sym, _o in _ov.items():
+                _tgt = _IG2_INPUTS_CACHE.setdefault(_sym, {})
+                for _k, _v in (_o or {}).items():
+                    if _v is not None and _tgt.get(_k) is None: _tgt[_k] = _v
+        except Exception: pass
     return _IG2_INPUTS_CACHE
 def score_bank_ig2(rec, calib='psx'):
     C = IG2_CALIB.get(calib, IG2_CALIB['psx'])
@@ -974,13 +987,19 @@ def score_bank_ig2(rec, calib='psx'):
     ct=tr(g['cfo']); P['cfo_trend']=(2 if ct>1.0 else 0) if ct is not None else None
     P['net_change_cash']=(2 if ncc>0 else 0) if ncc is not None else None
     cc=sum(g['cfo'].get(y,0) for y in [2020,2021,2022,2023,2024]); cp=sum(g['pat'].get(y,0) for y in [2020,2021,2022,2023,2024]); P['ccfo_cpat']=(2 if cc>cp else 0) if (cp and any(y in g['cfo'] for y in [2020,2021,2022,2023,2024])) else None
-    roe=(g['pat'].get(2024,0)/g['equity'][2024]) if g['equity'].get(2024) else None; P['roe']=(2 if roe>=C['roe_g'] else 1 if roe>=C['roe_a'] else 0) if roe is not None else None
-    roa={y:g['pat'][y]/g['total_assets'][y] for y in g['pat'] if g['total_assets'].get(y)}; rt=tr(roa); P['roa_trend']=(2 if rt>1.0 else 1 if rt>=0.90 else 0) if rt is not None else None
+    roe=(g['pat'].get(2024,0)/g['equity'][2024]) if g['equity'].get(2024) else None
+    if roe is None and rec.get('roe_scs') is not None: roe=rec['roe_scs']
+    P['roe']=(2 if roe>=C['roe_g'] else 1 if roe>=C['roe_a'] else 0) if roe is not None else None
+    roa={y:g['pat'][y]/g['total_assets'][y] for y in g['pat'] if g['total_assets'].get(y)}; rt=tr(roa)
+    if rt is None and rec.get('roa_trend_scs') is not None: rt=rec['roa_trend_scs']
+    P['roa_trend']=(2 if rt>1.0 else 1 if rt>=0.90 else 0) if rt is not None else None
     P['car']=(2 if car>C['car_min'] else 0) if car is not None else None
     P['loan_cagr']=(2 if cg(g['gross_loans'])>C['loan_cagr'] else 0) if cg(g['gross_loans']) is not None else None
     dc=cg(g['deposits']); P['deposit_cagr']=(2 if dc>=C['dep_g'] else 1 if dc>=C['dep_a'] else 0) if dc is not None else None
     P['casa']=(2 if casa>=C['casa_g'] else 1 if casa>=C['casa_a'] else 0) if casa is not None else None
-    adr=(g['gross_loans'][2024]/g['deposits'][2024]) if (g['deposits'].get(2024) and g['gross_loans'].get(2024) is not None) else None; P['adr']=(2 if C['adr_lo']<=adr<=C['adr_hi'] else 1 if (0.30<=adr<C['adr_lo'] or C['adr_hi']<adr<=0.70) else 0) if adr is not None else None
+    adr=(g['gross_loans'][2024]/g['deposits'][2024]) if (g['deposits'].get(2024) and g['gross_loans'].get(2024) is not None) else None
+    if adr is None and rec.get('adr_scs') is not None: adr=rec['adr_scs']
+    P['adr']=(2 if C['adr_lo']<=adr<=C['adr_hi'] else 1 if (0.30<=adr<C['adr_lo'] or C['adr_hi']<adr<=0.70) else 0) if adr is not None else None
     idr=(g['investments'][2024]/g['deposits'][2024]) if (g['deposits'].get(2024) and g['investments'].get(2024) is not None) else None; P['idr']=(2 if idr>=C['idr_g'] else 1 if idr>=C['idr_a'] else 0) if idr is not None else None
     bt=tr(g['branches']); P['branches']=(2 if bt>1.0 else 1 if bt>=0.99 else 0) if bt is not None else None
     metrics=[{'key':k,'verdict':vv(P.get(k)),'pts':(P.get(k) or 0),'max':(2 if P.get(k) is not None else 0)} for k in IG2_RATIOS]
@@ -988,6 +1007,72 @@ def score_bank_ig2(rec, calib='psx'):
     pct=round(100*score/mx,1) if mx else None
     rating='Excellent' if pct and pct>=75 else 'Good' if pct and pct>=60 else 'Average' if pct and pct>=45 else 'Weak'
     return {'score':score,'max':mx,'pct':pct,'is_bank':True,'model':'ig2','calib':calib,'rating':rating,'metrics':metrics}
+
+def bank_valuation(ig2_in, price, calib='psx'):
+    """Bank-appropriate intrinsic value from the IM3 engine, adapted for banks.
+    Anchor = justified P/B = (ROE - g)/(COE - g) x BVPS (a bank earning above its cost
+    of equity is worth a premium to book). Graham and a dividend-discount read cross-check
+    it; a capped DCF-EPS is the optimistic bound (shown, not blended). DCF-FCF / DCF-Cash
+    are deliberately NOT computed for a bank (no conventional free cash flow). All inputs
+    are real: eps/equity/pat from the IG2 series (shares = pat/eps) + the live price."""
+    def yr(d): return {int(k): float(v) for k, v in (d or {}).items() if v is not None}
+    eps_s, equity, pat = yr(ig2_in.get('eps')), yr(ig2_in.get('equity')), yr(ig2_in.get('pat'))
+    e24, q24, p24 = eps_s.get(2024), equity.get(2024), pat.get(2024)
+    if not (price and e24 and e24 > 0 and q24 and q24 > 0 and p24):
+        return None
+    shares = p24 / e24
+    bvps   = q24 / shares
+    roe    = p24 / q24
+    ys = sorted(eps_s); n = len(ys) - 1
+    cagr = ((eps_s[ys[-1]] / eps_s[ys[0]]) ** (1.0 / n) - 1.0) if (n > 0 and eps_s[ys[0]] > 0) else 0.0
+    rf  = PAK_BOND if calib == 'psx' else BOND
+    coe = rf + BANK_ERP
+    g   = min(BANK_G_LR.get(calib, 0.04), coe - 0.02)            # long-run growth, held below COE
+    # Graham number (uses EPS + book — valid for banks)
+    graham = graham_iv(e24, bvps)
+    # DCF-EPS: capped 2-stage (5y growth capped 15%, terminal g), discounted at the bank COE
+    gh = min(max(cagr, 0.0), 0.15); e = e24; v = 0.0
+    for i in range(1, 6): e *= (1 + gh); v += e / ((1 + coe) ** i)
+    v += (e * (1 + g)) / (coe - g) / ((1 + coe) ** 5)
+    dcf_eps_v = v
+    # Justified P/B (ROE-driven) — the primary bank anchor
+    just_pb = (roe - g) / (coe - g) if coe > g else None
+    just_iv = just_pb * bvps if just_pb else None
+    # Dividend discount: reported DPS if disclosed (annual report), else implied sustainable payout
+    dps = ig2_in.get('dps_2024'); div_yield = None
+    if dps:
+        d1 = float(dps) * (1 + g); div_yield = float(dps) / price; dps_src = 'reported'
+    else:
+        payout = max(0.0, 1.0 - g / roe) if roe > 0 else 0.0
+        d1 = e24 * payout * (1 + g); dps_src = 'implied'
+    ddm = d1 / (coe - g) if coe > g else None
+    # Peter Lynch / PEG fair ratio (~1 = fairly priced on growth; <1 cheap)
+    peg = (price / e24) / (cagr * 100) if cagr > 0 else None
+    # Fair value = blend of the bank-valid anchors (Graham + justified-P/B + DDM)
+    anchors = [x for x in [graham, just_iv, ddm] if x and x > 0]
+    fair = sum(anchors) / len(anchors) if anchors else None
+    def _mos(x): return round((x - price) / x * 100, 1) if (x and price) else None
+    return {
+        'bank_method':    True,
+        'dcf_eps':        round(dcf_eps_v, 2) if dcf_eps_v else None,
+        'graham':         round(graham, 2) if graham else None,
+        'justified_pb':   round(just_pb, 2) if just_pb else None,
+        'justified_iv':   round(just_iv, 2) if just_iv else None,
+        'ddm':            round(ddm, 2) if ddm else None,
+        'ddm_src':        dps_src,
+        'peter_lynch':    round(peg, 2) if peg else None,
+        'composite':      round(fair, 2) if fair else None,
+        'mos_pct':        _mos(fair),
+        'roe_pct':        round(roe * 100, 1),
+        'coe_pct':        round(coe * 100, 1),
+        'g_pct':          round(g * 100, 1),
+        'pe':             round(price / e24, 2),
+        'pb':             round(price / bvps, 2),
+        'peg':            round(peg, 2) if peg else None,
+        'earn_yield_pct': round(e24 / price * 100, 2),
+        'div_yield_pct':  round(div_yield * 100, 2) if div_yield else None,
+        'dcf_fcf': None, 'dcf_cash': None,   # not meaningful for a bank
+    }
 
 def score_ticker(ticker):
     if not _json_mode:
@@ -1334,6 +1419,7 @@ def score_ticker(ticker):
     else:
         grade = 'A' if pct>=80 else 'B' if pct>=60 else 'C' if pct>=50 else 'FAIL'
 
+    _bank_iv = bank_valuation(_ig2_in, price, 'psx' if psx_bank else 'us') if (_ig2_result is not None) else None
     return {
         'ticker': ticker, 'name': info.get('longName') or info.get('shortName') or ticker,
         'sector': info.get('sector','—'), 'is_bank': is_bank, 'is_psx': is_psx, 'price': price,
@@ -1344,7 +1430,7 @@ def score_ticker(ticker):
         'piotroski': pf, 'altman_z': round(az,2) if az else None,
         'beneish_m': round(bm,2) if bm else None,
         'shareholder_yield_pct': round(nsy*100,2) if nsy is not None else None,
-        'iv': {
+        'iv': _bank_iv if _bank_iv else {
             'dcf_eps':       round(iv_eps,2)       if iv_eps       else None,
             'dcf_fcf':       round(iv_dcf_fcf,2)   if iv_dcf_fcf   else None,
             'dcf_cash':      round(iv_dcf_cash,2)  if iv_dcf_cash  else None,
