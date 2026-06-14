@@ -32,6 +32,14 @@
   .tab:hover { background: var(--light-blue); color: var(--navy); transform: translateY(-1px); }
   .tab.active { background: linear-gradient(135deg, var(--navy), var(--blue)); color: white; border-color: transparent; box-shadow: 0 6px 18px rgba(99,102,241,0.35); }
   .tab.metals-tab.active { background: linear-gradient(135deg, #78350F, #D97706); box-shadow: 0 6px 18px rgba(180,83,9,0.4); }
+  .tab.banks-tab.active { background: linear-gradient(135deg, var(--bk-deep), var(--bk-accent)); box-shadow: 0 6px 18px rgba(14,124,123,0.38); }
+  .bank-qchip{display:inline-block;font-size:10.5px;font-weight:700;font-family:var(--font-head);padding:3px 9px;border-radius:20px;letter-spacing:.01em;white-space:nowrap;}
+  .bank-tag{display:inline-block;font-size:9px;font-weight:700;font-family:var(--font-mono);padding:1px 5px;margin-left:4px;border-radius:4px;vertical-align:middle;}
+  table.bank-rank-table{font-size:12.5px;}
+  table.bank-rank-table thead th{background:var(--bk-deep);color:#EAFBF7;font-family:var(--font-head);}
+  table.bank-rank-table thead th.qcol{background:#0A302E;}
+  table.bank-rank-table tbody tr:hover{background:var(--bk-bg);}
+  table.bank-rank-table td.rank-cell{font-family:var(--font-mono);font-weight:700;color:var(--bk);text-align:center;}
   .panel { display: none; background: white; border-radius: 16px; padding: 28px; box-shadow: var(--shadow); margin-bottom: 24px; border: 1px solid #EEF0F5; }
   .panel.active { display: block; }
   .section-title { font-family: var(--font-head); font-size: 21px; font-weight: 700; color: var(--ink); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--light-blue); letter-spacing:-0.01em; }
@@ -241,10 +249,11 @@
     <button class="tab" onclick="showPanel('mbus', this)">8. US Multibagger</button>
     <button class="tab" onclick="showPanel('tce', this)">9. TCE Convergence</button>
     <button class="tab" onclick="showPanel('explosive', this)">10. Explosive Stocks</button>
-    <button class="tab metals-tab" onclick="showPanel('metals', this)">11. Gold &amp; Metals</button>
-    <button class="tab" onclick="showPanel('etf', this)">12. ETF Overlap</button>
-    <button class="tab" onclick="showPanel('backtest', this)">13. Strategy Backtest</button>
-    <button class="tab" onclick="showPanel('profile', this)">14. Investor Profile</button>
+    <button class="tab banks-tab" onclick="showPanel('banks', this)">11. Banks</button>
+    <button class="tab metals-tab" onclick="showPanel('metals', this)">12. Gold &amp; Metals</button>
+    <button class="tab" onclick="showPanel('etf', this)">13. ETF Overlap</button>
+    <button class="tab" onclick="showPanel('backtest', this)">14. Strategy Backtest</button>
+    <button class="tab" onclick="showPanel('profile', this)">15. Investor Profile</button>
   </div>
 
   <!-- PANELS 1-11: identical to v4.1 — placeholder divs maintain structure -->
@@ -325,6 +334,17 @@
     <h3 class="subsection-title">PSX Explosive — gated to Tab 7 Zone</h3>
     <div id="explosive_psx_macro" class="reading-box"></div>
     <div id="explosive_psx_table"><p style="color:var(--grey-d);">Waiting for scan data…</p></div>
+  </div>
+
+  <!-- ============ PANEL 11: BANKS — Banking InvestoGenie 2.0 ============ -->
+  <div id="banks" class="panel">
+    <h2 class="section-title">Banks — Banking InvestoGenie 2.0</h2>
+    <div id="banks_intro" class="reading-box"></div>
+    <h3 class="subsection-title">PSX Banks</h3>
+    <div id="banks_psx_sector"></div>
+    <div id="banks_psx_table"><p style="color:var(--grey-d);">Waiting for scan data…</p></div>
+    <h3 class="subsection-title">US Banks</h3>
+    <div id="banks_us_table"><p style="color:var(--grey-d);">Waiting for scan data…</p></div>
   </div>
 
   <!-- ============ PANEL 12: GOLD & METALS ============ -->
@@ -450,7 +470,7 @@
 
 <div class="footer">
   Built per IM3 Macro Framework + Explosive Stocks Q2 2026 + IM3 Supplement + IM3 Addendum + Week 11-12 Gold &amp; Metals<br>
-  Muhammad Hammad Khan | Active Macro Dashboard v5.32 (14 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Gold &amp; Metals) — v5.32 bank-data surfaced + a banking-sector lens: the PSX Explosive tab now opens its bank section with a KPMG Pakistan banking-sector strip (FY2024 profit / asset / deposit / NPL growth + ECL coverage) as peer context, and every PSX bank's expanded card now shows its latest reported ROE / ROA / ADR / cash ratios with 5-year sparklines (SCS Trade, display-only — no score changes); banks scored on a reduced ratio set (16 of 24) carry a PARTIAL flag and now rank below full /48 banks so a thin denominator no longer reads as a top score; all of this rendered in a dedicated teal banking-lens palette, distinct from the indigo macro and amber metals themes. — v5.31 Banking InvestoGenie 2.0 made real: banks are now scored on the faithful 24-ratio/48-pt Sarmaaya bank model (im3 v2.10.0, validated to reproduce the workbook exactly — MEBL 45/48 … NBP 26/48), shown in a Growth(5)/Stability(13)/Business(6) layout when a bank row is expanded, with the verdict-key, the IM3 bank tooltip and the FINANCIAL count badge all naming the real model instead of the old &ldquo;System B&rdquo; placeholder; PSX banks use PSX (SBP) calibration, US banks the US calibration. — v5.30 banks on merit + in context: the Explosive tab now ranks FINANCIAL (bank) rows by their System-B score (highest first) instead of alphabetically, and the Verdict key now carries the full reason a bank is never EXPLOSIVE — the EXPLOSIVE test is industrial income-statement mechanics (revenue/OP growth, NP acceleration, CFO≥NP) a bank&rsquo;s accounts structurally lack, so every bank is carved to the System-B model and judged there. Paired with scanner v1.53 which admits every true bank in the PSX scan on merit (not force-inclusion). — v5.29 ▲FWD made plain-English: the Conditions-strip legend, the Conditions column tooltip, and the per-name ▲FWD tooltip now state in plain words that ▲FWD is the one forward-looking signal — Wall-Street analysts expect next year&rsquo;s EPS to grow &gt;20% and/or recently raised their estimate — that only adds confidence and never changes a verdict, replacing the ambiguous &ldquo;forward-EPS booster&rdquo; label. — v5.28 Explosive tab rebuilt (P3): the columns now show the real decision inputs — <strong>Rev YoY</strong> (G1 &gt;20%), <strong>OP YoY</strong> (G2 ≥15%), <strong>NP YoY</strong>, and <strong>NP/OP</strong> (A1 &gt;1.0) — all annual year-over-year from financial statements; the legacy EPS/Rev proxy column and the bare A/B dots are replaced by a per-name <strong>Conditions</strong> strip (G1 G2 A1 A2 C1 C3 + ▲FWD, green=pass/red=fail/grey=n/a, each with a tooltip); a <strong>Verdict key</strong> legend explains EXPLOSIVE / QUALITY-GROWTH / INFLECTION / NOT-EXPLOSIVE / FINANCIAL inline (INFLECTION = profit accelerating off a sub-20% top line — verify the turn), and every row carries a one-line plain-English reason under its verdict; PSX growth figures are rounded to 1 dp (no more 16-digit floats); rows are ordered by conviction and the NOT-EXPLOSIVE / insufficient names are collapsed behind a toggle so reds no longer flood the tab; the IM3 cell shows "—" for names outside the IM3 set instead of a "Pending next scan" that never resolves, because the scanner's IM3 scope was widened (daily.yml) to also grade QUALITY-GROWTH + INFLECTION (~56 extra names/run; NOT-EXPLOSIVE still skipped). — v5.27 PSX full-history + CAGR fix: the IM3 PSX scorer now sources full multi-year financial statements for the broad universe (S&amp;P Global Market Intelligence feed via stockanalysis), and the CAGR engine is length-adaptive — five fiscal years now yield a 4-year CAGR instead of NA (it had required six data points), so rev/op/np CAGR score for every full-history PSX name and the denominator reaches the true /162 (e.g. OGDC 155→162); the US 6-point CAGR path is byte-for-byte unchanged. The PSX Explosive caption/explainer/tooltip now count psx-sa + psx-broker as full multi-year history and flag only genuine data-gap names (negative-revenue / thin holding-cos) as TV-only fallback. — v5.26 PSX explainer trued-up: the PSX Explosive caption + explainer now reflect the live mixed state — the broker-research history layer has LANDED for the five holdings (OGDC/PPL/FFC/HUBC score on the expanded multi-year denominator with CAGRs/Altman/Beneish/Piotroski/DCF-growth live; MCB scores on the System-B bank model, Banking Investo Genie 2.0 PSX-calibrated: NIM 4.5%, NPL ≤5%/≤8%, contextual ADR, CAR ≥11.5% SBP req, tax 45–60%), while the rest of the universe stays TV single-period reduced pending broker data; the caption now counts broker-backed names dynamically from data.json (src.hist) instead of asserting all-TV. — v5.25 PSX IM3 surfaced: the PSX Explosive table now shows the IM3 Quality column (same as US), reading the scores the daily.yml PSX step writes into explosive_psx/tce_psx/psx_candidates. PSX scores render on the reduced denominator (TV single-period; history metrics NA/excluded; PKR risk-free; banks generic-reduced pending broker System-B), with a PSX-specific explainer and per-cell tooltip. v5.24 stale-calendar fix: the US Recession Watch \u201CUpcoming high-impact US releases\u201D table now filters out events dated before the scan\u2019s as-of day (meta.last_scan_utc), so already-released prints (e.g. the Jun-10 CPI on a Jun-11 scan) no longer linger as \u201Cupcoming\u201D; only on/after-today releases show. v5.23 IM3 re-thread surfaced: the IM3 detail card now shows the data-provenance badge (fundamentals TV · history SEC/Yahoo per the re-threaded scorer), net shareholder yield, Piotroski/Altman-Z/Beneish-M, and the full intrinsic-value set — per-method (DCF·EPS, Graham, DCF·FCF, DCF·Cash) plus the scorer's blended composites (Composite, FCF-blend, Cash-blend with their own MoS), replacing the single mislabeled "Composite MoS" tile (which was DCF-EPS-only). Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&amp;P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory) + v5.17 Wave D2 labels: the three PSX analyst-conviction streams now render as readable chips on the PSX TCE table — Target (mean price-target upside %), Rec (analyst buy share %), and Fwd-EPS (forward-EPS revised up) — each pulling the analyst_detail block; PSX-only, so they show n/a on US rows + v5.19 Wave O Part 2 (metric meaning): every screen-survivor row now carries a visible plain-language “reads:” line interpreting its metrics (Rev/EPS/ROE/P/E for US, Rev/EPS/3M for PSX) in threshold terms — e.g. “P/E 52 — priced for perfection”, “ROE 92% — elite returns on capital”, “Rev +498% — explosive top-line”; and the gate thresholds are now visible in each screen caption (✓ Rev ≥15% · EPS ≥0% · ROE ≥8% for US; ✓ Rev ≥0% · EPS ≥0% for PSX) instead of hidden in column tooltips. Sector/peer + regime enrichment of the reads arrives with Wave O L1 (TV sector medians) + v5.18 Feedback-loop panel: the TCE Forward-Validation ledger now shows a per-tier scorecard (HIGH/WATCH/IGNORE: open, matured, hit-rate ≥+40%, avg fwd, avg alpha vs SPY/KSE-100, beat-market %, and HIGH/WATCH lift over the IGNORE control base rate), an earliest-maturation “first verdict ~DATE” line that reads pending until picks reach the 90-day horizon, and an open-picks table with forward return + alpha + days-to-maturity + v5.20: (1) the Target + Rec analyst-conviction chips now render on US TCE rows too (the scanner's US analyst overlay emits s11/s12 for both markets) — Fwd-EPS stays PSX-only since US uses the Yahoo EPS-rev stream; the Rec tip now reads ≥70% buy (buy70 calibration). (2) the RS-guardrail chip now reads rs_ok correctly: data.json serializes it as the string 'True'/'False' (which is truthy in JS), so a vetoed name no longer mis-shows GUARD-holds — the falsy set is coerced to match the live scorer. + v5.21 PSX institutional layer (Wave P): the Pakistan tab now renders the AMC fund-ownership smart-money overlay — top-ten holdings aggregated across 9 high-conviction equity/asset-allocation mutual funds (monthly Fund Manager Reports), with each name’s fund count, avg/max portfolio weight and a month-over-month accumulate/trim flow tag (baseline until next month’s reports land), your five holdings highlighted; a 🏦 funds badge on any screen-survivor the funds also hold; and a market breadth (advancers/decliners) + volume/value leaders strip — all from the Wave P scanner feeds (scanner v1.45–v1.48). + v5.22: the US Multibagger “Moat OR Insider Gate” card no longer shows n/a — it now reads the live SEC EDGAR Form-4 signal (the TCE s3_insider stream) as an “Insider Buying (SEC Form-4): N of 15 candidates” tally, since the TV-era screen insider gate was dropped in Wave O L1 and TradingView carries no insider field; the sector-breakdown moat/insider column is labelled an illustrative design target (the live scan applies no such per-sector gate).
+  Muhammad Hammad Khan | Active Macro Dashboard v5.34 (15 tabs: IM3 framework + Multibagger Hunter + TCE + Explosive scanner + Banks + Gold &amp; Metals) — v5.34 Banks tab: banks are pulled out of the Explosive screen into their own dedicated tab — a bank can never pass the industrial EXPLOSIVE gates on merit, so listing them there was a category error. The new Banks tab is the single home for Banking InvestoGenie 2.0: every US + PSX bank ranked by its 24-ratio/48-pt quality score (full /48 above reduced-set PARTIAL banks), each carrying a quality-tier label (🏆 ELITE ≥85% · ✅ STRONG ≥75% · ➕ SOLID ≥60% · ➖ FAIR ≥50% · ⚠ WEAK) plus a 💎 CHEAP / RICH valuation tag once the IM3 step writes the bank valuation, with the KPMG Pakistan banking-sector strip atop the PSX section and the full ratio breakdown + SCS live ratios + bank valuation in each expand; the Explosive tab now shows only genuine industrial explosive / quality-growth / inflection names, with a one-line &ldquo;N banks → Banks tab&rdquo; pointer where the financials used to sit. Rendered in the teal banking-lens palette. — v5.33 bank valuation surfaced: expanding a bank now shows a full IM3 valuation block adapted for banks — P/E, P/B, PEG, earnings &amp; dividend yield, then intrinsic value with justified P/B (ROE-driven) as the anchor plus Graham and a dividend-discount read blended to a fair value with margin-of-safety vs the live price, and a capped DCF·EPS shown as the optimistic bound; DCF·FCF/Cash are omitted for banks (no conventional free cash flow), PSX cost-of-equity = PKR risk-free 11.5% + 6% ERP, all from im3 v2.11.0 reading the bank's real eps/equity/pat — so a high-ROE name like UBL reads cheap and the weak-ROE state bank NBP reads rich. Rendered in the teal banking-lens palette. Partial banks (BOP/AKBL/BIPL) show valuation once their eps/equity is sourced. — v5.32 bank-data surfaced + a banking-sector lens: the PSX Explosive tab now opens its bank section with a KPMG Pakistan banking-sector strip (FY2024 profit / asset / deposit / NPL growth + ECL coverage) as peer context, and every PSX bank's expanded card now shows its latest reported ROE / ROA / ADR / cash ratios with 5-year sparklines (SCS Trade, display-only — no score changes); banks scored on a reduced ratio set (16 of 24) carry a PARTIAL flag and now rank below full /48 banks so a thin denominator no longer reads as a top score; all of this rendered in a dedicated teal banking-lens palette, distinct from the indigo macro and amber metals themes. — v5.31 Banking InvestoGenie 2.0 made real: banks are now scored on the faithful 24-ratio/48-pt Sarmaaya bank model (im3 v2.10.0, validated to reproduce the workbook exactly — MEBL 45/48 … NBP 26/48), shown in a Growth(5)/Stability(13)/Business(6) layout when a bank row is expanded, with the verdict-key, the IM3 bank tooltip and the FINANCIAL count badge all naming the real model instead of the old &ldquo;System B&rdquo; placeholder; PSX banks use PSX (SBP) calibration, US banks the US calibration. — v5.30 banks on merit + in context: the Explosive tab now ranks FINANCIAL (bank) rows by their System-B score (highest first) instead of alphabetically, and the Verdict key now carries the full reason a bank is never EXPLOSIVE — the EXPLOSIVE test is industrial income-statement mechanics (revenue/OP growth, NP acceleration, CFO≥NP) a bank&rsquo;s accounts structurally lack, so every bank is carved to the System-B model and judged there. Paired with scanner v1.53 which admits every true bank in the PSX scan on merit (not force-inclusion). — v5.29 ▲FWD made plain-English: the Conditions-strip legend, the Conditions column tooltip, and the per-name ▲FWD tooltip now state in plain words that ▲FWD is the one forward-looking signal — Wall-Street analysts expect next year&rsquo;s EPS to grow &gt;20% and/or recently raised their estimate — that only adds confidence and never changes a verdict, replacing the ambiguous &ldquo;forward-EPS booster&rdquo; label. — v5.28 Explosive tab rebuilt (P3): the columns now show the real decision inputs — <strong>Rev YoY</strong> (G1 &gt;20%), <strong>OP YoY</strong> (G2 ≥15%), <strong>NP YoY</strong>, and <strong>NP/OP</strong> (A1 &gt;1.0) — all annual year-over-year from financial statements; the legacy EPS/Rev proxy column and the bare A/B dots are replaced by a per-name <strong>Conditions</strong> strip (G1 G2 A1 A2 C1 C3 + ▲FWD, green=pass/red=fail/grey=n/a, each with a tooltip); a <strong>Verdict key</strong> legend explains EXPLOSIVE / QUALITY-GROWTH / INFLECTION / NOT-EXPLOSIVE / FINANCIAL inline (INFLECTION = profit accelerating off a sub-20% top line — verify the turn), and every row carries a one-line plain-English reason under its verdict; PSX growth figures are rounded to 1 dp (no more 16-digit floats); rows are ordered by conviction and the NOT-EXPLOSIVE / insufficient names are collapsed behind a toggle so reds no longer flood the tab; the IM3 cell shows "—" for names outside the IM3 set instead of a "Pending next scan" that never resolves, because the scanner's IM3 scope was widened (daily.yml) to also grade QUALITY-GROWTH + INFLECTION (~56 extra names/run; NOT-EXPLOSIVE still skipped). — v5.27 PSX full-history + CAGR fix: the IM3 PSX scorer now sources full multi-year financial statements for the broad universe (S&amp;P Global Market Intelligence feed via stockanalysis), and the CAGR engine is length-adaptive — five fiscal years now yield a 4-year CAGR instead of NA (it had required six data points), so rev/op/np CAGR score for every full-history PSX name and the denominator reaches the true /162 (e.g. OGDC 155→162); the US 6-point CAGR path is byte-for-byte unchanged. The PSX Explosive caption/explainer/tooltip now count psx-sa + psx-broker as full multi-year history and flag only genuine data-gap names (negative-revenue / thin holding-cos) as TV-only fallback. — v5.26 PSX explainer trued-up: the PSX Explosive caption + explainer now reflect the live mixed state — the broker-research history layer has LANDED for the five holdings (OGDC/PPL/FFC/HUBC score on the expanded multi-year denominator with CAGRs/Altman/Beneish/Piotroski/DCF-growth live; MCB scores on the System-B bank model, Banking Investo Genie 2.0 PSX-calibrated: NIM 4.5%, NPL ≤5%/≤8%, contextual ADR, CAR ≥11.5% SBP req, tax 45–60%), while the rest of the universe stays TV single-period reduced pending broker data; the caption now counts broker-backed names dynamically from data.json (src.hist) instead of asserting all-TV. — v5.25 PSX IM3 surfaced: the PSX Explosive table now shows the IM3 Quality column (same as US), reading the scores the daily.yml PSX step writes into explosive_psx/tce_psx/psx_candidates. PSX scores render on the reduced denominator (TV single-period; history metrics NA/excluded; PKR risk-free; banks generic-reduced pending broker System-B), with a PSX-specific explainer and per-cell tooltip. v5.24 stale-calendar fix: the US Recession Watch \u201CUpcoming high-impact US releases\u201D table now filters out events dated before the scan\u2019s as-of day (meta.last_scan_utc), so already-released prints (e.g. the Jun-10 CPI on a Jun-11 scan) no longer linger as \u201Cupcoming\u201D; only on/after-today releases show. v5.23 IM3 re-thread surfaced: the IM3 detail card now shows the data-provenance badge (fundamentals TV · history SEC/Yahoo per the re-threaded scorer), net shareholder yield, Piotroski/Altman-Z/Beneish-M, and the full intrinsic-value set — per-method (DCF·EPS, Graham, DCF·FCF, DCF·Cash) plus the scorer's blended composites (Composite, FCF-blend, Cash-blend with their own MoS), replacing the single mislabeled "Composite MoS" tile (which was DCF-EPS-only). Wave A wiring + Wave C US Recession Watch + bank IM3 denominator display (System B) + Wave M M1–M4: US + PSX three-lens rollups, Gold&amp;Metals long/short verdict, structural-break tripwire, and regime tint on the Explosive + TCE picks + v5.14 explainability: IM3 bank score now shows the System-B applicable denominator (not /162), Recession Watch as explained cards, readable ET release dates with why-it-matters, screen-survivor funnel caption + pass/fail gate tinting + rank-tier explainer, and a plain-English why-line on every metal stance + v5.15 Wave T3 dashboard: the US macro tab now reads each print vs its prior release — a Macro-momentum line (inflation accelerating/cooling, labor softening/tightening, growth decelerating) plus per-card trend notes driven by the new MoM/QoQ/YoY fields + v5.16 Wave T3 feeds read into the dashboard: oil-momentum line (E&amp;P tilt), Sector rotation (Zacks #1/#2 breadth change), Allocation rate-path repricing, live KSE-100 trend, and the PSX Devaluation-slope alert (reserves/PKR trajectory) + v5.17 Wave D2 labels: the three PSX analyst-conviction streams now render as readable chips on the PSX TCE table — Target (mean price-target upside %), Rec (analyst buy share %), and Fwd-EPS (forward-EPS revised up) — each pulling the analyst_detail block; PSX-only, so they show n/a on US rows + v5.19 Wave O Part 2 (metric meaning): every screen-survivor row now carries a visible plain-language “reads:” line interpreting its metrics (Rev/EPS/ROE/P/E for US, Rev/EPS/3M for PSX) in threshold terms — e.g. “P/E 52 — priced for perfection”, “ROE 92% — elite returns on capital”, “Rev +498% — explosive top-line”; and the gate thresholds are now visible in each screen caption (✓ Rev ≥15% · EPS ≥0% · ROE ≥8% for US; ✓ Rev ≥0% · EPS ≥0% for PSX) instead of hidden in column tooltips. Sector/peer + regime enrichment of the reads arrives with Wave O L1 (TV sector medians) + v5.18 Feedback-loop panel: the TCE Forward-Validation ledger now shows a per-tier scorecard (HIGH/WATCH/IGNORE: open, matured, hit-rate ≥+40%, avg fwd, avg alpha vs SPY/KSE-100, beat-market %, and HIGH/WATCH lift over the IGNORE control base rate), an earliest-maturation “first verdict ~DATE” line that reads pending until picks reach the 90-day horizon, and an open-picks table with forward return + alpha + days-to-maturity + v5.20: (1) the Target + Rec analyst-conviction chips now render on US TCE rows too (the scanner's US analyst overlay emits s11/s12 for both markets) — Fwd-EPS stays PSX-only since US uses the Yahoo EPS-rev stream; the Rec tip now reads ≥70% buy (buy70 calibration). (2) the RS-guardrail chip now reads rs_ok correctly: data.json serializes it as the string 'True'/'False' (which is truthy in JS), so a vetoed name no longer mis-shows GUARD-holds — the falsy set is coerced to match the live scorer. + v5.21 PSX institutional layer (Wave P): the Pakistan tab now renders the AMC fund-ownership smart-money overlay — top-ten holdings aggregated across 9 high-conviction equity/asset-allocation mutual funds (monthly Fund Manager Reports), with each name’s fund count, avg/max portfolio weight and a month-over-month accumulate/trim flow tag (baseline until next month’s reports land), your five holdings highlighted; a 🏦 funds badge on any screen-survivor the funds also hold; and a market breadth (advancers/decliners) + volume/value leaders strip — all from the Wave P scanner feeds (scanner v1.45–v1.48). + v5.22: the US Multibagger “Moat OR Insider Gate” card no longer shows n/a — it now reads the live SEC EDGAR Form-4 signal (the TCE s3_insider stream) as an “Insider Buying (SEC Form-4): N of 15 candidates” tally, since the TV-era screen insider gate was dropped in Wave O L1 and TradingView carries no insider field; the sector-breakdown moat/insider column is labelled an illustrative design target (the live scan applies no such per-sector gate).
 </div>
 
 <script>
@@ -1599,6 +1619,7 @@ function calcExplosive(){
   if(__tg){var __V=usMacroVerdict(),__P=psxRollup();__tg.innerHTML='<strong>Regime gate:</strong> US \u2014 '+__V.regime+(__V.trip?' \u26A0 tripwire TRIPPED':'')+' \u00b7 PSX \u2014 '+__P.regime+'. Read TCE convergence within this regime.';}
   renderExplosiveTable('explosive_us_table',(LIVE&&Array.isArray(LIVE.explosive_us))?LIVE.explosive_us:[],'us');
   renderExplosiveTable('explosive_psx_table',(LIVE&&Array.isArray(LIVE.explosive_psx))?LIVE.explosive_psx:[],'psx');
+  renderBanksTab();
   // Load IM3 scores from data.json into im3Scores (no API call needed)
   if (LIVE && Array.isArray(LIVE.explosive_us)) {
     LIVE.explosive_us.forEach(r => {
@@ -1711,6 +1732,34 @@ function im3ToggleDetail(ticker) {
 }
 
 // Full detail HTML for the expandable row
+function bankValuationHTML(r){
+  var iv=r.iv, p=r.price||0, cur=r.is_psx?'Rs ':'$';
+  function mc(m){return m==null?'#9ca3af':m>=25?'#065F46':m>=0?'#0E7C7B':m>=-15?'#92400E':'#991B1B';}
+  function ivt(label,v,anchor){
+    var m=(v&&p)?((v-p)/v*100):null;
+    return '<div class="scs-tile"'+(anchor?' style="border-color:var(--bk-accent);border-width:1.5px;"':'')+'>'
+      +'<div class="scs-l" style="margin-top:0;margin-bottom:3px;">'+label+'</div>'
+      +'<div class="scs-v">'+(v?cur+v.toFixed(0):'\u2014')+'</div>'
+      +'<div style="font-family:var(--font-mono);font-size:10px;font-weight:700;margin-top:3px;color:'+mc(m)+';">'+(m!=null?'MoS '+m.toFixed(0)+'%':'\u2014')+'</div></div>';
+  }
+  function rt(label,v,suf){return '<div class="scs-tile"><div class="scs-l" style="margin-top:0;margin-bottom:3px;">'+label+'</div><div class="scs-v">'+(v!=null?v.toFixed(2)+(suf||''):'\u2014')+'</div></div>';}
+  var fm=iv.mos_pct;
+  var verdict=fm==null?'':fm>=25?'CHEAP':fm>=0?'FAIR \u00b7 modest discount':fm>=-15?'FULLY VALUED':'RICH vs fundamentals';
+  var earns=(iv.roe_pct!=null&&iv.coe_pct!=null)?(iv.roe_pct>iv.coe_pct?'earns <strong>above</strong> its ~'+iv.coe_pct+'% cost of equity \u2014 justifies a premium to book':'earns <strong>below</strong> its ~'+iv.coe_pct+'% cost of equity \u2014 warrants a discount to book'):'';
+  return '<div class="scs-wrap" style="margin-top:2px;">'
+    +'<div class="scs-h">\ud83d\udcd0 Bank valuation vs live price'+(p?' ('+cur+p.toFixed(2)+')':'')+'<span class="scs-src">InvestoGenie IM3 \u00b7 bank methods</span></div>'
+    +(earns?'<div style="font-size:10.5px;color:var(--bk-ink);margin-bottom:11px;line-height:1.5;">ROE <strong>'+iv.roe_pct+'%</strong> '+earns+(iv.g_pct!=null?' \u00b7 long-run g '+iv.g_pct+'%':'')+'</div>':'')
+    +'<div class="scs-tiles" style="margin-bottom:11px;">'+rt('P/E',iv.pe,'x')+rt('P/B',iv.pb,'x')+rt('PEG',iv.peg,'')+rt('Earnings yield',iv.earn_yield_pct,'%')+rt('Div yield',iv.div_yield_pct,'%')+'</div>'
+    +'<div style="font-size:9.5px;color:var(--grey-d);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;font-weight:600;">Intrinsic value \u2014 justified P/B is the anchor</div>'
+    +'<div class="scs-tiles">'+ivt('Justified P/B',iv.justified_iv,true)+ivt('Graham',iv.graham)+ivt('Dividend disc.',iv.ddm)+ivt('DCF \u00b7 EPS (high)',iv.dcf_eps)+'</div>'
+    +'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:12px;padding:11px 15px;background:var(--bk-bg);border:1px solid var(--bk-border);border-radius:10px;">'
+      +'<div><div class="scs-l" style="margin-top:0;">Fair value (blend)</div><div style="font-family:var(--font-mono);font-size:19px;font-weight:700;color:var(--bk-deep);">'+(iv.composite!=null?cur+iv.composite.toFixed(0):'\u2014')+'</div></div>'
+      +'<div><div class="scs-l" style="margin-top:0;">Margin of safety</div><div style="font-family:var(--font-mono);font-size:19px;font-weight:700;color:'+mc(fm)+';">'+(fm!=null?(fm>0?'+':'')+fm.toFixed(0)+'%':'\u2014')+'</div></div>'
+      +(verdict?'<div style="margin-left:auto;font-family:var(--font-head);font-size:12px;font-weight:700;color:'+mc(fm)+';letter-spacing:.03em;">'+verdict+'</div>':'')+'</div>'
+    +'<div style="font-size:10px;color:var(--bk-ink);opacity:.82;margin-top:10px;line-height:1.55;">Fair value blends the bank-valid anchors \u2014 <strong>justified P/B</strong> (ROE vs cost of equity \u00d7 book), <strong>Graham</strong>, and a <strong>dividend-discount</strong> read'+(iv.ddm_src==='implied'?' (implied sustainable payout until the annual-report dividend lands)':'')+'. <strong>DCF\u00b7EPS</strong> extrapolates trailing growth and is the optimistic bound \u2014 shown, not blended. DCF\u00b7FCF/Cash are omitted: a bank has no conventional free cash flow.</div>'
+    +'</div>';
+}
+
 function im3DetailHTML(ticker) {
   const r = im3Scores[ticker];
   if (!r || r.error) return `<td colspan="20"><div style="padding:12px;color:var(--red);">Error: ${r?.error||'No data'}</div></td>`;
@@ -1837,7 +1886,7 @@ function im3DetailHTML(ticker) {
     </div>
 
     <!-- Intrinsic Values -->
-    ${r.iv?`<div style="margin-bottom:14px;">
+    ${(r.iv&&r.iv.bank_method)?bankValuationHTML(r):(r.iv?`<div style="margin-bottom:14px;">
       <div style="font-weight:700;font-size:12px;color:var(--navy);margin-bottom:8px;">📐 Intrinsic Value vs Live Price ${r.price?'<span style="font-family:var(--font-mono);color:var(--grey-d);">($'+r.price.toFixed(2)+')</span>':''}</div>
       <div style="font-size:10px;color:var(--grey-d);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Per-method intrinsic (each vs live price)</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
@@ -1868,7 +1917,7 @@ function im3DetailHTML(ticker) {
       <div style="font-size:10px;color:var(--grey-d);margin-top:8px;line-height:1.5;">
         DCF·EPS extrapolates trailing EPS growth and can overstate value for hyper-growth names; <strong>Graham</strong> and <strong>DCF·FCF/Cash</strong> are the conservative cross-checks. The Valuation-section <strong>Margin of Safety</strong> metric scores off these intrinsics — a wide spread between EPS and FCF/Cash reads signals growth priced aggressively.
       </div>
-    </div>`:''}
+    </div>`:'')}
 
     ${r.data_note?`<div style="background:#f8f9fe;border-left:3px solid var(--blue);padding:8px 12px;border-radius:0 6px 6px 0;font-size:11px;color:var(--grey-d);"><strong>Data note:</strong> ${r.data_note}</div>`:''}
     </div>
@@ -1881,8 +1930,16 @@ function im3DetailHTML(ticker) {
 // ─────────────────────────────────────────────────────────
 function renderExplosiveTable(elId, rows, market) {
   const el = document.getElementById(elId); if (!el) return;
+  // Banks are carved out to their own tab (Banking InvestoGenie 2.0) — they can never
+  // pass the industrial EXPLOSIVE gates on merit, so they no longer clutter this screen.
+  const _allRows = rows||[];
+  const _bankN = _allRows.filter(r=>_isBank(r)).length;
+  rows = _allRows.filter(r=>!_isBank(r));
+  const _bankPtr = _bankN
+    ? `<div style="margin:6px 0 10px;padding:9px 13px;background:var(--bk-bg);border:1px solid var(--bk-border);border-radius:9px;font-size:12px;color:var(--bk-deep);cursor:pointer;display:inline-flex;align-items:center;gap:7px;" onclick="goTab('banks')" title="Banks are scored on Banking InvestoGenie 2.0 and live in their own tab">🏦 <b>${_bankN}</b> ${market==='psx'?'PSX':'US'} bank${_bankN===1?'':'s'} scored on Banking InvestoGenie 2.0 → <b>open the Banks tab →</b></div>`
+    : '';
   if (!rows||rows.length===0) {
-    el.innerHTML=`<p style="color:var(--grey-d);">${market==='psx'?'PSX fundamentals not available from public API — verify in IM3 workbook.':'Waiting for scan data…'}</p>`;
+    el.innerHTML = _bankPtr || `<p style="color:var(--grey-d);">${market==='psx'?'PSX fundamentals not available from public API — verify in IM3 workbook.':'Waiting for scan data…'}</p>`;
     return;
   }
   const scored=rows.filter(r=>r.verdict!=='INSUFFICIENT DATA');
@@ -1900,7 +1957,7 @@ function renderExplosiveTable(elId, rows, market) {
   if(counts.explosive) html+=`<span style="background:var(--green-l);color:var(--green);padding:4px 10px;border-radius:6px;">🚀 ${counts.explosive} EXPLOSIVE</span>`;
   if(counts.quality)   html+=`<span style="background:var(--orange-l);color:var(--orange);padding:4px 10px;border-radius:6px;">📈 ${counts.quality} QUALITY-GROWTH</span>`;
   if(counts.inflection)html+=`<span style="background:#FEF9C3;color:#854D0E;padding:4px 10px;border-radius:6px;">⤴ ${counts.inflection} INFLECTION</span>`;
-  if(counts.financial) html+=`<span style="background:#EEF2FF;color:var(--navy);padding:4px 10px;border-radius:6px;">🏦 ${counts.financial} FINANCIAL → Banking InvestoGenie 2.0 (24-ratio/48-pt)</span>`;
+  if(_bankN) html+=`<span onclick="goTab('banks')" style="cursor:pointer;background:var(--bk-bg);color:var(--bk-deep);border:1px solid var(--bk-border);padding:4px 10px;border-radius:6px;" title="Banks are scored on Banking InvestoGenie 2.0 — open the Banks tab">🏦 ${_bankN} banks → Banks tab</span>`;
   if(counts.not)       html+=`<span style="background:var(--red-l);color:var(--red);padding:4px 10px;border-radius:6px;">✗ ${counts.not} NOT EXPLOSIVE</span>`;
   if(counts.insuff)    html+=`<span style="background:#F3F4F6;color:#6B7280;padding:4px 10px;border-radius:6px;">◌ ${counts.insuff} INSUFFICIENT DATA</span>`;
   if(market==='us') {
@@ -2029,6 +2086,115 @@ function renderExplosiveTable(elId, rows, market) {
       cell.querySelector('button[onclick]')?.setAttribute(
         'onclick', `im3ScoreOne('${tk2}','${(cell.dataset.im3Name||tk2).replace(/'/g,"\\'")}','${(cell.dataset.im3Sector||'').replace(/'/g,"\\'")}')` );
     }
+  });
+}
+
+// ─────────────────────────────────────────────────────────
+// BANKS TAB — Banking InvestoGenie 2.0 (banks pulled out of Explosive)
+// ─────────────────────────────────────────────────────────
+function _isBank(r){ return !!(r && (r.is_bank===true || (r.verdict||'').toUpperCase().startsWith('FINANCIAL'))); }
+
+// Headline ROE for a bank: PSX from the SCS snapshot (percent), else the IG2 'roe' metric.
+function _bankROE(r){
+  try{
+    var snap=(typeof LIVE!=='undefined'&&LIVE&&LIVE.bank_snapshot)?LIVE.bank_snapshot[r.ticker]:null;
+    if(snap&&snap.roe!=null&&!isNaN(Number(snap.roe))) return Number(snap.roe);
+  }catch(e){}
+  var m=(r.im3&&Array.isArray(r.im3.metrics))?r.im3.metrics.find(function(x){return x.key==='roe';}):null;
+  if(m&&m.value!=null&&!isNaN(Number(m.value))) return Number(m.value);
+  return null;
+}
+
+// Quality-tier chip from the IG2 % — the bank-tab analogue of the Explosive verdict label.
+// Adds a PARTIAL flag (reduced denominator) and, once the IM3 step writes the valuation block,
+// a CHEAP / RICH tag off the bank's margin-of-safety.
+function _bankQualityChip(r){
+  var m=r.im3, pct=(m&&typeof m.pct==='number')?m.pct:null;
+  if(pct==null) return '<span class="bank-qchip" style="background:#F3F4F6;color:#6B7280;">◌ pending scan</span>';
+  var lbl,bg,fg;
+  if(pct>=85){lbl='🏆 ELITE';bg='var(--bk-bg)';fg='var(--bk-deep)';}
+  else if(pct>=75){lbl='✅ STRONG';bg='#D1FAE5';fg='#065F46';}
+  else if(pct>=60){lbl='➕ SOLID';bg='#FEF3C7';fg='#92400E';}
+  else if(pct>=50){lbl='➖ FAIR';bg='#FFEDD5';fg='#9A3412';}
+  else {lbl='⚠ WEAK';bg='#FEE2E2';fg='#991B1B';}
+  var out='<span class="bank-qchip" style="background:'+bg+';color:'+fg+';">'+lbl+'</span>';
+  if(m.max&&m.max<48) out+='<span class="bank-tag" style="background:var(--orange-l);color:#9A3412;" title="Scored on a reduced ratio set (missing inputs excluded from the denominator) — not directly comparable to a full /48 bank.">PARTIAL</span>';
+  if(r.iv&&r.iv.bank_method&&typeof r.iv.mos==='number'){
+    if(r.iv.mos>=15) out+='<span class="bank-tag" style="background:#DCFCE7;color:#166534;" title="Margin of safety vs blended fair value '+r.iv.mos.toFixed(0)+'%">💎 CHEAP</span>';
+    else if(r.iv.mos<=-15) out+='<span class="bank-tag" style="background:#FEE2E2;color:#991B1B;" title="Trading above blended fair value ('+r.iv.mos.toFixed(0)+'% MoS)">RICH</span>';
+  }
+  return out;
+}
+
+function banksIntroHTML(){
+  return '<strong style="color:var(--bk-deep);">Banking InvestoGenie 2.0</strong> — every bank (US + PSX) carved out of the Explosive screen and judged on the faithful '
+    +'<strong>24-ratio / 48-point Sarmaaya bank scorecard</strong> (Growth 5 · Stability 13 · Business 6), PSX-calibrated to SBP benchmarks for PSX banks and US-calibrated for US banks. '
+    +'A bank can never pass the industrial EXPLOSIVE gates on merit — there is no operating-profit cascade and operating cash flow is dominated by loan &amp; deposit flows — so banks live here instead, '
+    +'<strong>ranked by quality</strong> (full /48 above reduced-set PARTIAL banks). Click any score to expand the full ratio breakdown, the SCS live ratios, and the bank valuation '
+    +'(justified P/B · Graham · dividend-discount · capped DCF·EPS, with margin of safety). '
+    +'<span style="color:var(--bk);">🏆 ELITE ≥85% · ✅ STRONG ≥75% (Grade A) · ➕ SOLID ≥60% (B) · ➖ FAIR ≥50% (C) · ⚠ WEAK &lt;50%.</span> '
+    +'The Pakistan banking-sector strip below is KPMG peer context, not a score input.';
+}
+
+function renderBanksTab(){
+  var intro=document.getElementById('banks_intro'); if(intro) intro.innerHTML=banksIntroHTML();
+  var us =(typeof LIVE!=='undefined'&&LIVE&&Array.isArray(LIVE.explosive_us)) ? LIVE.explosive_us.filter(_isBank) : [];
+  var psx=(typeof LIVE!=='undefined'&&LIVE&&Array.isArray(LIVE.explosive_psx))? LIVE.explosive_psx.filter(_isBank): [];
+  // Make sure bank scores are in im3Scores before the cells render.
+  us.concat(psx).forEach(function(r){ if(r.im3&&!r.im3.error) im3Scores[r.ticker]=r.im3; });
+  var sec=document.getElementById('banks_psx_sector'); if(sec) sec.innerHTML=kpmgSectorStrip();
+  renderBankTable('banks_psx_table', psx, 'psx');
+  renderBankTable('banks_us_table',  us,  'us');
+}
+
+function renderBankTable(elId, rows, market){
+  var el=document.getElementById(elId); if(!el) return;
+  if(!rows||rows.length===0){
+    el.innerHTML='<p style="color:var(--grey-d);">No '+(market==='psx'?'PSX':'US')+' banks in the latest scan.</p>';
+    return;
+  }
+  var cur=(market==='psx')?'Rs ':'$';
+  // Rank: full /48 banks above reduced-set, then by IG2 % descending.
+  var _full=function(r){ var m=r&&r.im3; return (m&&m.max&&m.max>=48)?1:0; };
+  var _pct =function(r){ var m=r&&r.im3; return (m&&typeof m.pct==='number')?m.pct:-1; };
+  var ordered=rows.slice().sort(function(a,b){
+    var df=_full(b)-_full(a); if(df) return df;
+    var dp=_pct(b)-_pct(a);   if(dp) return dp;
+    return (a.ticker||'').localeCompare(b.ticker||'');
+  });
+  var nFull=rows.filter(function(r){return _full(r);}).length;
+  var nPart=rows.length-nFull;
+  var html='<div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:9px;font-size:12px;font-weight:600;">'
+    +'<span style="background:var(--bk-bg);color:var(--bk-deep);border:1px solid var(--bk-border);padding:4px 11px;border-radius:20px;">🏦 '+rows.length+' '+(market==='psx'?'PSX':'US')+' bank'+(rows.length===1?'':'s')+'</span>';
+  if(nFull) html+='<span style="background:#D1FAE5;color:#065F46;padding:4px 10px;border-radius:20px;">'+nFull+' full /48</span>';
+  if(nPart) html+='<span style="background:var(--orange-l);color:#9A3412;padding:4px 10px;border-radius:20px;">'+nPart+' PARTIAL (reduced set)</span>';
+  html+='</div>';
+  html+='<table class="bank-rank-table"><thead><tr>'
+    +'<th style="width:34px;">#</th><th>Ticker</th><th>Name</th><th>Sector</th>'
+    +'<th class="qcol">Quality</th>'
+    +'<th title="Return on equity — headline bank profitability. PSX from latest SCS reported ratios; US from the IG2 ROE input.">ROE</th>'
+    +'<th style="min-width:130px;">IG2 Quality<div style="font-size:9px;font-weight:400;opacity:.85;margin-top:2px;">24-ratio · /48 · click to expand</div></th>'
+    +'</tr></thead><tbody>';
+  ordered.forEach(function(r,i){
+    var tk=r.ticker||'';
+    var roe=_bankROE(r);
+    var roeStr=(roe==null)?'<span style="color:#cbd5e1;">—</span>':('<span style="font-family:var(--font-mono);font-weight:700;color:'+(roe>=15?'#059669':roe>=8?'#D97706':'#DC2626')+';">'+roe.toFixed(1)+'%</span>');
+    html+='<tr>'
+      +'<td class="rank-cell">'+(i+1)+'</td>'
+      +'<td><b>'+tk+'</b></td>'
+      +'<td>'+(r.name||tk)+'</td>'
+      +'<td style="color:var(--grey-d);">'+(r.sector||'Finance')+'</td>'
+      +'<td>'+_bankQualityChip(r)+'</td>'
+      +'<td>'+roeStr+'</td>'
+      +'<td data-im3-cell="'+tk+'" data-im3-ticker="'+tk+'" data-im3-name="'+(r.name||tk).replace(/"/g,'')+'" data-im3-sector="'+(r.sector||'').replace(/"/g,'')+'" style="background:var(--bk-bg2);">'+im3CellHTML(tk, r.verdict)+'</td>'
+      +'</tr>';
+    html+='<tr id="im3-detail-'+tk+'" class="im3-detail-closed" style="display:none;"></tr>';
+  });
+  html+='</tbody></table>';
+  el.innerHTML=html;
+  el.querySelectorAll('[data-im3-ticker]').forEach(function(cell){
+    var tk2=cell.dataset.im3Ticker;
+    if(tk2){ var b=cell.querySelector('button[onclick]'); if(b) b.setAttribute('onclick', "im3ScoreOne('"+tk2+"','"+(cell.dataset.im3Name||tk2).replace(/'/g,"\\'")+"','"+(cell.dataset.im3Sector||'').replace(/'/g,"\\'")+"')"); }
   });
 }
 
