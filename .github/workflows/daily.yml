@@ -230,9 +230,23 @@ jobs:
               print("Output was:", result.stdout[:200])
               sys.exit(0)  # Soft-exit so the dashboard still deploys, but the warning above flags it.
 
-          # Map scores by ticker
+          # Map scores by ticker; SURFACE per-ticker errors instead of silently dropping
+          # them (the dropped {'ticker','error'} records were the only diagnostic for names
+          # like ABCL/GAU that raise inside score_ticker on the runner — printed here + in
+          # the Actions step summary so the exact cause is visible on the next run).
+          import os
           score_map = {s['ticker']: s for s in scores if 'error' not in s}
+          error_map = {s['ticker']: s.get('error') for s in scores if 'error' in s}
           print(f"Successfully scored: {list(score_map.keys())}")
+          if error_map:
+              print(f"IM3 per-ticker errors ({len(error_map)}): "
+                    + "; ".join(f"{t}: {e}" for t, e in error_map.items()))
+              _sf = os.environ.get('GITHUB_STEP_SUMMARY')
+              if _sf:
+                  with open(_sf, 'a') as _s:
+                      _s.write("\n### ⚠️ IM3 per-ticker errors\n"
+                               + "\n".join(f"- **{t}** — {e}" for t, e in error_map.items())
+                               + "\n")
 
           # Write scores back into explosive_us AND tce_us records
           for record in data.get('explosive_us', []):
@@ -372,7 +386,17 @@ jobs:
 
           smap = {s['ticker'].split(':')[-1]: s for s in scores
                   if 'error' not in s and str(s.get('ticker', '')).startswith('PSX:')}
+          emap = {s['ticker'].split(':')[-1]: s.get('error') for s in scores
+                  if 'error' in s and str(s.get('ticker', '')).startswith('PSX:')}
           print(f"PSX scored: {sorted(smap.keys())}")
+          if emap:
+              print(f"PSX IM3 per-ticker errors ({len(emap)}): "
+                    + "; ".join(f"{t}: {e}" for t, e in emap.items()))
+              _sf = os.environ.get('GITHUB_STEP_SUMMARY')
+              if _sf:
+                  with open(_sf, 'a') as _s:
+                      _s.write("\n### ⚠️ PSX IM3 per-ticker errors\n"
+                               + "\n".join(f"- **{t}** — {e}" for t, e in emap.items()) + "\n")
 
           for key in ('explosive_psx', 'tce_psx', 'psx_candidates'):
               for rec in data.get(key, []):
