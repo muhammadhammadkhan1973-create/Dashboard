@@ -1,7 +1,7 @@
 {
   "meta": {
     "scan_version": "1.58.0",
-    "last_scan_utc": "2026-06-15T18:39:03.218888Z",
+    "last_scan_utc": "2026-06-15T18:51:05.885310Z",
     "errors": [],
     "warnings": []
   },
@@ -96,25 +96,25 @@
       "permits_yoy": -22.0,
       "permits_yoy_dir": "down",
       "us_2s10s": 0.4,
-      "wti": 80.72,
+      "wti": 80.88,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-15",
-      "wti_wow": -10.58,
+      "wti_wow": -10.42,
       "wti_wow_dir": "down",
-      "wti_mom": -20.45,
+      "wti_mom": -20.29,
       "wti_mom_dir": "down",
-      "wti_qoq": -12.78,
+      "wti_qoq": -12.62,
       "wti_qoq_dir": "down",
-      "brent": 83.13,
+      "brent": 83.28,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-15",
-      "brent_wow": -11.12,
+      "brent_wow": -10.97,
       "brent_wow_dir": "down",
-      "brent_mom": -22.59,
+      "brent_mom": -22.44,
       "brent_mom_dir": "down",
-      "brent_qoq": -17.08,
+      "brent_qoq": -16.93,
       "brent_qoq_dir": "down",
-      "brent_wti_spread": 2.41,
+      "brent_wti_spread": 2.4,
       "us_oil_rigs": 545,
       "us_rigs_utc": "2026-06-10T17:19:50.414589Z",
       "fomc": {
@@ -207,15 +207,15 @@
       "kse100_mom_dir": "up"
     },
     "metals": {
-      "gold_px": 4347.6,
+      "gold_px": 4346.9,
       "gold_px_date": "2026-06-15",
-      "silver_px": 70.25,
+      "silver_px": 70.2,
       "silver_px_date": "2026-06-15",
-      "platinum_px": 1777.6,
+      "platinum_px": 1777.2,
       "platinum_px_date": "2026-06-15",
       "palladium_px": 1356.5,
       "palladium_px_date": "2026-06-15",
-      "dxy": 99.6,
+      "dxy": 99.62,
       "dxy_date": "2026-06-15",
       "gs_ratio": 61.9,
       "cot_date": "06/09/26",
@@ -330,23 +330,23 @@
       "cot_silver_pct_wow_dir": "down",
       "cot_copper_pct_wow": -1.4,
       "cot_copper_pct_wow_dir": "down",
-      "gold_px_wow": 11.7,
+      "gold_px_wow": 11.0,
       "gold_px_wow_dir": "up",
-      "gold_px_mom": -330.5,
+      "gold_px_mom": -331.2,
       "gold_px_mom_dir": "down",
-      "gold_px_qoq": -646.4,
+      "gold_px_qoq": -647.1,
       "gold_px_qoq_dir": "down",
-      "silver_px_wow": 1.82,
+      "silver_px_wow": 1.77,
       "silver_px_wow_dir": "up",
-      "silver_px_mom": -14.66,
+      "silver_px_mom": -14.71,
       "silver_px_mom_dir": "down",
-      "silver_px_qoq": -10.01,
+      "silver_px_qoq": -10.06,
       "silver_px_qoq_dir": "down",
-      "platinum_px_wow": 28.2,
+      "platinum_px_wow": 27.8,
       "platinum_px_wow_dir": "up",
-      "platinum_px_mom": -305.9,
+      "platinum_px_mom": -306.3,
       "platinum_px_mom_dir": "down",
-      "platinum_px_qoq": -311.9,
+      "platinum_px_qoq": -312.3,
       "platinum_px_qoq_dir": "down",
       "palladium_px_wow": 155.6,
       "palladium_px_wow_dir": "up",
@@ -354,11 +354,11 @@
       "palladium_px_mom_dir": "down",
       "palladium_px_qoq": -228.0,
       "palladium_px_qoq_dir": "down",
-      "dxy_wow": -0.45,
+      "dxy_wow": -0.43,
       "dxy_wow_dir": "down",
-      "dxy_mom": 0.72,
+      "dxy_mom": 0.74,
       "dxy_mom_dir": "up",
-      "dxy_qoq": -0.11,
+      "dxy_qoq": -0.09,
       "dxy_qoq_dir": "down",
       "dfii10_wow": 0.05,
       "dfii10_wow_dir": "up",
@@ -430,17 +430,17 @@
     ],
     [
       "Active US universe (NASDAQ-sourced)",
-      5188,
+      5190,
       "After ETFs/funds removed"
     ],
     [
       "Small-cap zone ($300M-$2bn) PRE-FILTERED",
-      688,
+      690,
       "TradingView market-cap pre-filter"
     ],
     [
       "+ Revenue Growth >15% YoY",
-      550,
+      552,
       "TV rev-growth (FactSet); financials gated on ROE>=8%"
     ],
     [
@@ -726,7 +726,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -1051,7 +1051,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -1376,7 +1376,7 @@
           }
         ],
         "max": 154,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -1701,7 +1701,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -2026,7 +2026,7 @@
           }
         ],
         "max": 154,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -2351,7 +2351,7 @@
           }
         ],
         "max": 124,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.75,
         "bank_inputs": null,
         "src": {
@@ -2676,7 +2676,7 @@
           }
         ],
         "max": 135,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.82,
         "bank_inputs": null,
         "src": {
@@ -3001,7 +3001,7 @@
           }
         ],
         "max": 146,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "src": {
@@ -3326,7 +3326,7 @@
           }
         ],
         "max": 121,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.7,
         "bank_inputs": null,
         "src": {
@@ -3651,7 +3651,7 @@
           }
         ],
         "max": 150,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "src": {
@@ -3985,7 +3985,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -4310,7 +4310,7 @@
           }
         ],
         "max": 145,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.88,
         "bank_inputs": null,
         "src": {
@@ -4635,7 +4635,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -4960,7 +4960,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -5285,7 +5285,7 @@
           }
         ],
         "max": 145,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.88,
         "bank_inputs": null,
         "src": {
@@ -5610,7 +5610,7 @@
           }
         ],
         "max": 159,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -5935,7 +5935,7 @@
           }
         ],
         "max": 150,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "src": {
@@ -6260,7 +6260,7 @@
           }
         ],
         "max": 152,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -6594,7 +6594,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -6919,7 +6919,7 @@
           }
         ],
         "max": 123,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.72,
         "bank_inputs": null,
         "src": {
@@ -7244,7 +7244,7 @@
           }
         ],
         "max": 146,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.88,
         "bank_inputs": null,
         "src": {
@@ -7569,7 +7569,7 @@
           }
         ],
         "max": 44,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.23,
         "bank_inputs": null,
         "src": {
@@ -7894,7 +7894,7 @@
           }
         ],
         "max": 156,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -8219,7 +8219,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -8544,7 +8544,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -8878,7 +8878,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -9212,7 +9212,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -9450,16 +9450,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": 165653000000.0,
-          "total_assets": 3230000000000.0,
-          "gross_loans": 680000000000.0,
-          "deposits": 2230000000000.0,
-          "npl_found": true,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -9797,7 +9794,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -10131,7 +10128,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -10369,16 +10366,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -10620,16 +10614,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -10871,16 +10862,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -11113,16 +11101,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -11355,16 +11340,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -11606,16 +11588,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -11857,16 +11836,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -12108,16 +12084,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -12359,16 +12332,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -12601,16 +12571,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -12843,16 +12810,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -12912,15 +12876,15 @@
       "name": "VOXR",
       "sector": "Finance",
       "industry": "",
-      "market_cap": 373447424.3127413,
+      "market_cap": 373102915.61872584,
       "market_cap_m": 373.0,
-      "price": 5.42,
+      "price": 5.415,
       "rev_growth": 498.3,
       "eps_growth": 433.3,
       "growth_source": "yf_stmt",
       "roe": 34.9,
       "debt_equity": 0.0,
-      "pe": 12.50865451188553,
+      "pe": 12.497115162704823,
       "forward_pe": null,
       "insider_pct": null,
       "ocf_ni": null,
@@ -12928,7 +12892,7 @@
       "status": "HIGH-CONVICTION",
       "analyst_row": {
         "name": "VOXR",
-        "close": 5.42,
+        "close": 5.415,
         "price_target_average": 7.69907,
         "recommendation_mark": 1,
         "recommendation_buy": 6,
@@ -12944,9 +12908,9 @@
       "name": "HYLN",
       "sector": "Producer Manufacturing",
       "industry": "",
-      "market_cap": 1278606327.2716217,
-      "market_cap_m": 1279.0,
-      "price": 7.17,
+      "market_cap": 1273185179.1057837,
+      "market_cap_m": 1273.0,
+      "price": 7.1396,
       "rev_growth": 479.1,
       "eps_growth": 33.2,
       "growth_source": "tv",
@@ -12960,7 +12924,7 @@
       "status": "HIGH-CONVICTION",
       "analyst_row": {
         "name": "HYLN",
-        "close": 7.165,
+        "close": 7.135,
         "price_target_average": 7,
         "recommendation_mark": 1.333333,
         "recommendation_buy": 2,
@@ -12976,15 +12940,15 @@
       "name": "RJET",
       "sector": "Transportation",
       "industry": "",
-      "market_cap": 883672200.7463015,
-      "market_cap_m": 884.0,
-      "price": 18.87,
+      "market_cap": 879457547.960548,
+      "market_cap_m": 879.0,
+      "price": 18.78,
       "rev_growth": 456.6,
       "eps_growth": 15.4,
       "growth_source": "yf_stmt",
       "roe": 6.0,
       "debt_equity": 0.92,
-      "pe": 5.995996314066919,
+      "pe": 5.967398557402053,
       "forward_pe": null,
       "insider_pct": null,
       "ocf_ni": null,
@@ -12992,7 +12956,7 @@
       "status": "HIGH-CONVICTION",
       "analyst_row": {
         "name": "RJET",
-        "close": 18.87,
+        "close": 18.73,
         "price_target_average": null,
         "recommendation_mark": null,
         "recommendation_buy": null,
@@ -13008,9 +12972,9 @@
       "name": "DVLT",
       "sector": "Electronic Technology",
       "industry": "",
-      "market_cap": 349582630.9109244,
-      "market_cap_m": 350.0,
-      "price": 0.4086,
+      "market_cap": 346630942.0302521,
+      "market_cap_m": 347.0,
+      "price": 0.40515,
       "rev_growth": 443.1,
       "eps_growth": 48.1,
       "growth_source": "tv",
@@ -13024,7 +12988,7 @@
       "status": "STRONG",
       "analyst_row": {
         "name": "DVLT",
-        "close": 0.4086,
+        "close": 0.4048,
         "price_target_average": 3,
         "recommendation_mark": 1,
         "recommendation_buy": 2,
@@ -13040,9 +13004,9 @@
       "name": "ABTC",
       "sector": "Technology Services",
       "industry": "",
-      "market_cap": 937152439.5054817,
+      "market_cap": 936939836.8649404,
       "market_cap_m": 937.0,
-      "price": 0.8816,
+      "price": 0.8814,
       "rev_growth": 403.5,
       "eps_growth": 28.7,
       "growth_source": "tv",
@@ -13056,7 +13020,7 @@
       "status": "STRONG",
       "analyst_row": {
         "name": "ABTC",
-        "close": 0.8816,
+        "close": 0.88115,
         "price_target_average": null,
         "recommendation_mark": null,
         "recommendation_buy": null,
@@ -13072,9 +13036,9 @@
       "name": "VSTM",
       "sector": "Health Technology",
       "industry": "",
-      "market_cap": 347540246.20000005,
-      "market_cap_m": 348.0,
-      "price": 3.955,
+      "market_cap": 348858350.8000001,
+      "market_cap_m": 349.0,
+      "price": 3.97,
       "rev_growth": 395.8,
       "eps_growth": 61.3,
       "growth_source": "tv",
@@ -13088,7 +13052,7 @@
       "status": "STRONG",
       "analyst_row": {
         "name": "VSTM",
-        "close": 3.95,
+        "close": 3.965,
         "price_target_average": 16,
         "recommendation_mark": 1,
         "recommendation_buy": 9,
@@ -13104,9 +13068,9 @@
       "name": "BTGO",
       "sector": "Technology Services",
       "industry": "",
-      "market_cap": 655170662.1887549,
-      "market_cap_m": 655.0,
-      "price": 5.65,
+      "market_cap": 651691879.9116465,
+      "market_cap_m": 652.0,
+      "price": 5.62,
       "rev_growth": 361.4,
       "eps_growth": -1747.2,
       "growth_source": "tv",
@@ -13120,7 +13084,7 @@
       "status": "STRONG",
       "analyst_row": {
         "name": "BTGO",
-        "close": 5.65,
+        "close": 5.59,
         "price_target_average": 14.538462,
         "recommendation_mark": 1.153846,
         "recommendation_buy": 11,
@@ -13136,9 +13100,9 @@
       "name": "WVE",
       "sector": "Health Technology",
       "industry": "",
-      "market_cap": 1128438918.9863713,
-      "market_cap_m": 1128.0,
-      "price": 5.865,
+      "market_cap": 1132286963.0408857,
+      "market_cap_m": 1132.0,
+      "price": 5.885,
       "rev_growth": 316.9,
       "eps_growth": 54.8,
       "growth_source": "tv",
@@ -13152,7 +13116,7 @@
       "status": "STRONG",
       "analyst_row": {
         "name": "WVE",
-        "close": 5.865,
+        "close": 5.89,
         "price_target_average": 23.833333,
         "recommendation_mark": 1.027778,
         "recommendation_buy": 17,
@@ -13168,9 +13132,9 @@
       "name": "FWDI",
       "sector": "Consumer Durables",
       "industry": "",
-      "market_cap": 363316734.81658876,
-      "market_cap_m": 363.0,
-      "price": 4.865,
+      "market_cap": 361449742.3457944,
+      "market_cap_m": 361.0,
+      "price": 4.84,
       "rev_growth": 315.0,
       "eps_growth": -126.2,
       "growth_source": "tv",
@@ -13184,7 +13148,7 @@
       "status": "WATCH",
       "analyst_row": {
         "name": "FWDI",
-        "close": 4.865,
+        "close": 4.84,
         "price_target_average": 8.25,
         "recommendation_mark": 1,
         "recommendation_buy": 2,
@@ -13200,9 +13164,9 @@
       "name": "MRLN",
       "sector": "Technology Services",
       "industry": "",
-      "market_cap": 688216509.4801762,
-      "market_cap_m": 688.0,
-      "price": 7.13,
+      "market_cap": 682907686.475771,
+      "market_cap_m": 683.0,
+      "price": 7.075,
       "rev_growth": 297.8,
       "eps_growth": -606.5,
       "growth_source": "tv",
@@ -13216,7 +13180,7 @@
       "status": "WATCH",
       "analyst_row": {
         "name": "MRLN",
-        "close": 7.12,
+        "close": 7.06,
         "price_target_average": 13,
         "recommendation_mark": 1,
         "recommendation_buy": 2,
@@ -13232,9 +13196,9 @@
       "name": "UMAC",
       "sector": "Electronic Technology",
       "industry": "",
-      "market_cap": 1254303715.3301678,
-      "market_cap_m": 1254.0,
-      "price": 26.244,
+      "market_cap": 1245509633.4973392,
+      "market_cap_m": 1246.0,
+      "price": 26.06,
       "rev_growth": 296.4,
       "eps_growth": 91.1,
       "growth_source": "tv",
@@ -13248,7 +13212,7 @@
       "status": "WATCH",
       "analyst_row": {
         "name": "UMAC",
-        "close": 26.244,
+        "close": 25.95,
         "price_target_average": 30.833333,
         "recommendation_mark": 1,
         "recommendation_buy": 6,
@@ -13264,15 +13228,15 @@
       "name": "RHLD",
       "sector": "Commercial Services",
       "industry": "",
-      "market_cap": 1085894952.0928607,
-      "market_cap_m": 1086.0,
-      "price": 131.505,
+      "market_cap": 1084615048.533495,
+      "market_cap_m": 1085.0,
+      "price": 131.35,
       "rev_growth": 292.5,
       "eps_growth": -150.9,
       "growth_source": "yf_stmt",
       "roe": 301.0,
       "debt_equity": 72.19,
-      "pe": 19.07251631617114,
+      "pe": 19.050036258158087,
       "forward_pe": null,
       "insider_pct": null,
       "ocf_ni": null,
@@ -13280,7 +13244,7 @@
       "status": "WATCH",
       "analyst_row": {
         "name": "RHLD",
-        "close": 131.505,
+        "close": 131.35,
         "price_target_average": null,
         "recommendation_mark": null,
         "recommendation_buy": null,
@@ -13296,9 +13260,9 @@
       "name": "TRX",
       "sector": "Non-Energy Minerals",
       "industry": "",
-      "market_cap": 319755252.3469847,
+      "market_cap": 319527100.18690836,
       "market_cap_m": 320.0,
-      "price": 0.98105,
+      "price": 0.98035,
       "rev_growth": 281.3,
       "eps_growth": -681.0,
       "growth_source": "tv",
@@ -13312,7 +13276,7 @@
       "status": "WATCH",
       "analyst_row": {
         "name": "TRX",
-        "close": 0.9818,
+        "close": 0.98035,
         "price_target_average": 2.337530418,
         "recommendation_mark": 1,
         "recommendation_buy": 3,
@@ -13328,9 +13292,9 @@
       "name": "ASPI",
       "sector": "Health Technology",
       "industry": "",
-      "market_cap": 866177938.181435,
-      "market_cap_m": 866.0,
-      "price": 6.8797,
+      "market_cap": 861179571.3709923,
+      "market_cap_m": 861.0,
+      "price": 6.84,
       "rev_growth": 279.4,
       "eps_growth": 53.3,
       "growth_source": "tv",
@@ -13344,7 +13308,7 @@
       "status": "WATCH",
       "analyst_row": {
         "name": "ASPI",
-        "close": 6.88,
+        "close": 6.835,
         "price_target_average": 13,
         "recommendation_mark": 1,
         "recommendation_buy": 3,
@@ -13360,15 +13324,15 @@
       "name": "FUBO",
       "sector": "Technology Services",
       "industry": "",
-      "market_cap": 1098459438.6988811,
-      "market_cap_m": 1098.0,
-      "price": 10.13,
+      "market_cap": 1103881252.315361,
+      "market_cap_m": 1104.0,
+      "price": 10.18,
       "rev_growth": 278.1,
       "eps_growth": -101.0,
       "growth_source": "tv",
       "roe": null,
       "debt_equity": 0.5,
-      "pe": 2.3475157582499073,
+      "pe": 2.3591027067111607,
       "forward_pe": null,
       "insider_pct": null,
       "ocf_ni": null,
@@ -13376,7 +13340,7 @@
       "status": "WATCH",
       "analyst_row": {
         "name": "FUBO",
-        "close": 10.13,
+        "close": 10.18,
         "price_target_average": 17,
         "recommendation_mark": 1.2,
         "recommendation_buy": 8,
@@ -14230,7 +14194,7 @@
           }
         ],
         "max": 124,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.75,
         "bank_inputs": null,
         "src": {
@@ -14564,7 +14528,7 @@
           }
         ],
         "max": 121,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.7,
         "bank_inputs": null,
         "src": {
@@ -14898,7 +14862,7 @@
           }
         ],
         "max": 146,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.88,
         "bank_inputs": null,
         "src": {
@@ -15237,7 +15201,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -15480,16 +15444,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": 165653000000.0,
-          "total_assets": 3230000000000.0,
-          "gross_loans": 680000000000.0,
-          "deposits": 2230000000000.0,
-          "npl_found": true,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -15736,16 +15697,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -16087,7 +16045,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -16426,7 +16384,7 @@
           }
         ],
         "max": 154,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -16764,7 +16722,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -17103,7 +17061,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -17442,7 +17400,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -17685,16 +17643,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -17941,16 +17896,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -18197,16 +18149,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -18453,16 +18402,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -18709,16 +18655,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -19061,7 +19004,7 @@
           }
         ],
         "max": 159,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -19395,7 +19338,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -19729,7 +19672,7 @@
           }
         ],
         "max": 154,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -20068,7 +20011,7 @@
           }
         ],
         "max": 152,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -20402,7 +20345,7 @@
           }
         ],
         "max": 123,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.72,
         "bank_inputs": null,
         "src": {
@@ -20741,7 +20684,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -20984,16 +20927,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -21240,16 +21180,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -21496,16 +21433,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -21747,16 +21681,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -22092,7 +22023,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -22162,7 +22093,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 0,
+        "s1_news_count": 1,
         "s5_volume_ratio": 1.75,
         "price": 2434.6699,
         "s6_momentum_pct": 1687.7,
@@ -22425,7 +22356,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -22759,7 +22690,7 @@
           }
         ],
         "max": 44,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.23,
         "bank_inputs": null,
         "src": {
@@ -22829,7 +22760,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 17,
+        "s1_news_count": 18,
         "s5_volume_ratio": 0.19,
         "price": 95.65,
         "s6_momentum_pct": 20.3,
@@ -23093,7 +23024,7 @@
           }
         ],
         "max": 156,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -23163,7 +23094,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 22,
+        "s1_news_count": 21,
         "s5_volume_ratio": 0.3,
         "price": 219.59,
         "s6_momentum_pct": 19.2,
@@ -23432,7 +23363,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -23766,7 +23697,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -24104,7 +24035,7 @@
           }
         ],
         "max": 135,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.82,
         "bank_inputs": null,
         "src": {
@@ -24437,7 +24368,7 @@
           }
         ],
         "max": 146,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "src": {
@@ -24771,7 +24702,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -25109,7 +25040,7 @@
           }
         ],
         "max": 145,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.88,
         "bank_inputs": null,
         "src": {
@@ -25179,7 +25110,7 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 2,
+        "s1_news_count": 0,
         "s5_volume_ratio": 0.46,
         "price": 77.4,
         "s6_momentum_pct": 6.8,
@@ -25443,7 +25374,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -25776,7 +25707,7 @@
           }
         ],
         "max": 150,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "src": {
@@ -26109,7 +26040,7 @@
           }
         ],
         "max": 145,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.88,
         "bank_inputs": null,
         "src": {
@@ -26442,7 +26373,7 @@
           }
         ],
         "max": 150,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "src": {
@@ -26680,16 +26611,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -26767,9 +26695,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 9,
         "s5_volume_ratio": 2.64,
-        "price": 26.04,
-        "s6_momentum_pct": 39.9,
-        "rs_vs_spy": 174.9,
+        "price": 25.65,
+        "s6_momentum_pct": 37.8,
+        "rs_vs_spy": 170.6,
         "rs_ok": true,
         "s8_capital_short_pct": 15.1,
         "s9_eps_rev_net": 0,
@@ -26779,7 +26707,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 17.5,
+          "target_upside_pct": 18.8,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": -0.13,
@@ -26794,7 +26722,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 26.2007,
+        "price": 25.95,
         "score": 81,
         "pct": 50.0,
         "grade": "C",
@@ -27041,7 +26969,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -27086,7 +27014,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 77.6
+          "mos_cash_pct": 77.8
         }
       }
     },
@@ -27113,9 +27041,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 28,
         "s5_volume_ratio": 1.5,
-        "price": 1087.25,
-        "s6_momentum_pct": 146.2,
-        "rs_vs_spy": 346.6,
+        "price": 1096.285,
+        "s6_momentum_pct": 148.2,
+        "rs_vs_spy": 350.4,
         "rs_ok": true,
         "s7_margin_spread_pct": 559.7,
         "s8_capital_short_pct": 3.3,
@@ -27126,7 +27054,7 @@
         "total": 7,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -12.9,
+          "target_upside_pct": -13.1,
           "buy_ratio": 0.76,
           "rec_mark": 1.173469,
           "fwd_eps": 20.214683,
@@ -27141,7 +27069,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 1080.36,
+        "price": 1087.74,
         "score": 104,
         "pct": 64.2,
         "grade": "B",
@@ -27388,7 +27316,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -27431,10 +27359,55 @@
           "composite": 156.11,
           "central": 189.75,
           "peg": 0.21,
-          "mos_pct": -82.4,
-          "mos_fcf_pct": -675.8,
-          "mos_cash_pct": -477.5
+          "mos_pct": -82.6,
+          "mos_fcf_pct": -681.1,
+          "mos_cash_pct": -481.5
         }
+      }
+    },
+    {
+      "ticker": "DVLT",
+      "name": "DVLT",
+      "sector": "Electronic Technology",
+      "src": "screen",
+      "tce_score": 7,
+      "conviction": 4,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s2_sponsor": 1,
+        "s3_insider": 1,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 1,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 1,
+        "s12_recommendation": 1,
+        "s1_news_count": 12,
+        "s5_volume_ratio": 0.47,
+        "price": 0.4048,
+        "s6_momentum_pct": -41.3,
+        "rs_vs_spy": -80.0,
+        "rs_ok": false,
+        "s8_capital_short_pct": 15.3,
+        "s9_eps_rev_net": 1,
+        "rev_est": 45000000.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 17,
+        "total": 5,
+        "analyst_covered": true,
+        "analyst_detail": {
+          "target_upside_pct": 641.1,
+          "buy_ratio": 1.0,
+          "rec_mark": 1.0,
+          "fwd_eps": -0.02,
+          "eps_rev_pct": 0.0,
+          "eps_surprise_pct": -12.5
+        },
+        "fwd_eps": -0.02
       }
     },
     {
@@ -27460,9 +27433,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 11,
         "s5_volume_ratio": 1.07,
-        "price": 6.845,
-        "s6_momentum_pct": 28.2,
-        "rs_vs_spy": 8.7,
+        "price": 6.805,
+        "s6_momentum_pct": 27.4,
+        "rs_vs_spy": 8.0,
         "rs_ok": true,
         "s8_capital_short_pct": 20.0,
         "s9_eps_rev_net": -1,
@@ -27472,7 +27445,7 @@
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 89.0,
+          "target_upside_pct": 90.2,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": -0.306667,
@@ -27487,7 +27460,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.865,
+        "price": 6.845,
         "score": 77,
         "pct": 47.5,
         "grade": "FAIL",
@@ -27734,7 +27707,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -27806,9 +27779,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 20,
         "s5_volume_ratio": 1.03,
-        "price": 212.042,
-        "s6_momentum_pct": 15.9,
-        "rs_vs_spy": 8.8,
+        "price": 212.41,
+        "s6_momentum_pct": 16.1,
+        "rs_vs_spy": 9.0,
         "rs_ok": true,
         "s7_margin_spread_pct": 129.3,
         "s8_capital_short_pct": 1.2,
@@ -27819,7 +27792,7 @@
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 46.1,
+          "target_upside_pct": 46.2,
           "buy_ratio": 0.84,
           "rec_mark": 1.123188,
           "fwd_eps": 2.074852,
@@ -27834,7 +27807,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 211.945,
+        "price": 212.085,
         "score": 122,
         "pct": 75.3,
         "grade": "B",
@@ -28081,7 +28054,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -28125,8 +28098,8 @@
           "central": 122.5,
           "peg": 0.25,
           "mos_pct": -42.2,
-          "mos_fcf_pct": -95.4,
-          "mos_cash_pct": -147.4
+          "mos_fcf_pct": -95.6,
+          "mos_cash_pct": -147.6
         }
       }
     },
@@ -28153,9 +28126,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 23,
         "s5_volume_ratio": 1.1,
-        "price": 588.66,
-        "s6_momentum_pct": 70.3,
-        "rs_vs_spy": 114.3,
+        "price": 588.15,
+        "s6_momentum_pct": 70.1,
+        "rs_vs_spy": 114.1,
         "rs_ok": true,
         "s7_margin_spread_pct": 22.1,
         "s8_capital_short_pct": 2.5,
@@ -28181,7 +28154,7 @@
         "sector": "Producer Manufacturing",
         "is_bank": false,
         "is_psx": false,
-        "price": 588.43,
+        "price": 589.155,
         "score": 114,
         "pct": 70.4,
         "grade": "B",
@@ -28428,7 +28401,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -28470,10 +28443,10 @@
           "intrinsic_cash": 247.02,
           "composite": 180.57,
           "central": 133.02,
-          "peg": 6.91,
+          "peg": 6.92,
           "mos_pct": -77.4,
-          "mos_fcf_pct": -351.1,
-          "mos_cash_pct": -138.2
+          "mos_fcf_pct": -351.6,
+          "mos_cash_pct": -138.5
         }
       }
     },
@@ -28500,9 +28473,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 28,
         "s5_volume_ratio": 0.78,
-        "price": 390.735,
-        "s6_momentum_pct": 78.1,
-        "rs_vs_spy": 126.5,
+        "price": 390.3,
+        "s6_momentum_pct": 77.9,
+        "rs_vs_spy": 126.2,
         "rs_ok": true,
         "s7_margin_spread_pct": 17.0,
         "s8_capital_short_pct": 2.9,
@@ -28513,7 +28486,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -14.6,
+          "target_upside_pct": -14.7,
           "buy_ratio": 0.7,
           "rec_mark": 1.283784,
           "fwd_eps": 1.668309,
@@ -28528,7 +28501,7 @@
         "sector": "Producer Manufacturing",
         "is_bank": false,
         "is_psx": false,
-        "price": 389.76,
+        "price": 390.61,
         "score": 97,
         "pct": 59.9,
         "grade": "C",
@@ -28775,7 +28748,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -28819,8 +28792,8 @@
           "central": null,
           "peg": null,
           "mos_pct": null,
-          "mos_fcf_pct": -966.5,
-          "mos_cash_pct": -382.9
+          "mos_fcf_pct": -968.8,
+          "mos_cash_pct": -384.0
         }
       }
     },
@@ -28847,9 +28820,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 29,
         "s5_volume_ratio": 0.96,
-        "price": 394.035,
-        "s6_momentum_pct": 21.5,
-        "rs_vs_spy": 4.8,
+        "price": 394.14,
+        "s6_momentum_pct": 21.6,
+        "rs_vs_spy": 4.9,
         "rs_ok": true,
         "s7_margin_spread_pct": 37.5,
         "s8_capital_short_pct": 1.2,
@@ -28860,7 +28833,7 @@
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 32.9,
+          "target_upside_pct": 33.1,
           "buy_ratio": 0.75,
           "rec_mark": 1.163636,
           "fwd_eps": 3.211664,
@@ -28875,7 +28848,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 393.86,
+        "price": 394.08,
         "score": 117,
         "pct": 72.2,
         "grade": "B",
@@ -29122,7 +29095,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -29166,8 +29139,8 @@
           "central": 187.92,
           "peg": 0.9,
           "mos_pct": -52.3,
-          "mos_fcf_pct": -167.8,
-          "mos_cash_pct": -329.3
+          "mos_fcf_pct": -168.0,
+          "mos_cash_pct": -329.5
         }
       }
     },
@@ -29194,9 +29167,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 28,
         "s5_volume_ratio": 0.67,
-        "price": 649.3,
-        "s6_momentum_pct": 126.9,
-        "rs_vs_spy": 266.1,
+        "price": 648.635,
+        "s6_momentum_pct": 126.7,
+        "rs_vs_spy": 265.7,
         "rs_ok": true,
         "s7_margin_spread_pct": 437.4,
         "s8_capital_short_pct": 10.4,
@@ -29207,7 +29180,7 @@
         "total": 7,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -13.3,
+          "target_upside_pct": -13.4,
           "buy_ratio": 0.62,
           "rec_mark": 1.344828,
           "fwd_eps": 3.286583,
@@ -29222,7 +29195,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 644.54,
+        "price": 648.78,
         "score": 113,
         "pct": 69.8,
         "grade": "B",
@@ -29469,7 +29442,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -29512,9 +29485,9 @@
           "composite": 105.94,
           "central": 128.0,
           "peg": 0.73,
-          "mos_pct": -80.1,
-          "mos_fcf_pct": -527.0,
-          "mos_cash_pct": -400.8
+          "mos_pct": -80.3,
+          "mos_fcf_pct": -531.1,
+          "mos_cash_pct": -404.1
         }
       }
     },
@@ -29539,11 +29512,11 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 1,
-        "s1_news_count": 25,
-        "s5_volume_ratio": 4.01,
-        "price": 309.135,
-        "s6_momentum_pct": 237.7,
-        "rs_vs_spy": 255.7,
+        "s1_news_count": 26,
+        "s5_volume_ratio": 4.02,
+        "price": 309.79,
+        "s6_momentum_pct": 238.4,
+        "rs_vs_spy": 256.5,
         "rs_ok": true,
         "s7_margin_spread_pct": -108.0,
         "s8_capital_short_pct": 4.7,
@@ -29565,17 +29538,17 @@
       }
     },
     {
-      "ticker": "DVLT",
-      "name": "DVLT",
-      "sector": "Electronic Technology",
+      "ticker": "VSTM",
+      "name": "VSTM",
+      "sector": "Health Technology",
       "src": "screen",
       "tce_score": 6,
       "conviction": 4,
       "tier": "WATCH",
       "streams": {
         "s1_news": 1,
-        "s2_sponsor": 1,
-        "s3_insider": 0,
+        "s2_sponsor": 0,
+        "s3_insider": 1,
         "s5_volume": 0,
         "s6_momentum": 0,
         "s7_margin": 0,
@@ -29585,27 +29558,28 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 12,
-        "s5_volume_ratio": 0.47,
-        "price": 0.4068,
-        "s6_momentum_pct": -41.0,
-        "rs_vs_spy": -79.8,
+        "s1_news_count": 4,
+        "s5_volume_ratio": 1.18,
+        "price": 3.97,
+        "s6_momentum_pct": -31.7,
+        "rs_vs_spy": -68.8,
         "rs_ok": false,
-        "s8_capital_short_pct": 15.3,
+        "s8_capital_short_pct": 24.3,
         "s9_eps_rev_net": 1,
-        "rev_est": 45000000.0,
+        "rev_est": 23238780.0,
         "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 10,
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 634.2,
+          "target_upside_pct": 303.5,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
-          "fwd_eps": -0.02,
+          "fwd_eps": -0.427988,
           "eps_rev_pct": 0.0,
-          "eps_surprise_pct": -12.5
+          "eps_surprise_pct": 20.4
         },
-        "fwd_eps": -0.02
+        "fwd_eps": -0.427988
       }
     },
     {
@@ -29631,9 +29605,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 5,
         "s5_volume_ratio": 0.93,
-        "price": 5.885,
-        "s6_momentum_pct": -52.6,
-        "rs_vs_spy": -75.1,
+        "price": 5.865,
+        "s6_momentum_pct": -52.7,
+        "rs_vs_spy": -75.2,
         "rs_ok": false,
         "s8_capital_short_pct": 11.9,
         "s9_eps_rev_net": 4,
@@ -29643,7 +29617,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 306.4,
+          "target_upside_pct": 304.6,
           "buy_ratio": 0.94,
           "rec_mark": 1.027778,
           "fwd_eps": -0.299737,
@@ -29676,9 +29650,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 30,
         "s5_volume_ratio": 0.86,
-        "price": 547.2743,
-        "s6_momentum_pct": 178.4,
-        "rs_vs_spy": 152.0,
+        "price": 548.15,
+        "s6_momentum_pct": 178.8,
+        "rs_vs_spy": 152.5,
         "rs_ok": true,
         "s7_margin_spread_pct": 53.4,
         "s8_capital_short_pct": 2.7,
@@ -29689,7 +29663,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -9.6,
+          "target_upside_pct": -9.5,
           "buy_ratio": 0.67,
           "rec_mark": 1.245614,
           "fwd_eps": 1.602401,
@@ -29704,7 +29678,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 546.74,
+        "price": 547.36,
         "score": 103,
         "pct": 63.6,
         "grade": "B",
@@ -29951,7 +29925,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -29993,10 +29967,10 @@
           "intrinsic_cash": 131.88,
           "composite": 130.28,
           "central": 104.4,
-          "peg": 4.8,
+          "peg": 4.81,
           "mos_pct": -80.9,
-          "mos_fcf_pct": -431.2,
-          "mos_cash_pct": -314.6
+          "mos_fcf_pct": -431.8,
+          "mos_cash_pct": -315.0
         }
       }
     },
@@ -30021,11 +29995,11 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 18,
+        "s1_news_count": 19,
         "s5_volume_ratio": 1.12,
-        "price": 121.02,
-        "s6_momentum_pct": 54.2,
-        "rs_vs_spy": 44.7,
+        "price": 121.11,
+        "s6_momentum_pct": 54.3,
+        "rs_vs_spy": 44.8,
         "rs_ok": true,
         "s7_margin_spread_pct": 25.1,
         "s8_capital_short_pct": 1.6,
@@ -30036,7 +30010,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 8.4,
+          "target_upside_pct": 8.3,
           "buy_ratio": 0.54,
           "rec_mark": 1.464286,
           "fwd_eps": 1.166537,
@@ -30334,9 +30308,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 12,
         "s5_volume_ratio": 0.97,
-        "price": 312.245,
-        "s6_momentum_pct": 61.7,
-        "rs_vs_spy": 65.9,
+        "price": 312.06,
+        "s6_momentum_pct": 61.6,
+        "rs_vs_spy": 65.8,
         "rs_ok": true,
         "s7_margin_spread_pct": 12.7,
         "s8_capital_short_pct": 2.3,
@@ -30347,7 +30321,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -5.8,
+          "target_upside_pct": -5.7,
           "buy_ratio": 0.38,
           "rec_mark": 1.65,
           "fwd_eps": 1.919752,
@@ -30645,9 +30619,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 22,
         "s5_volume_ratio": 0.96,
-        "price": 255.86,
-        "s6_momentum_pct": 78.1,
-        "rs_vs_spy": 97.8,
+        "price": 254.755,
+        "s6_momentum_pct": 77.4,
+        "rs_vs_spy": 96.9,
         "rs_ok": true,
         "s7_margin_spread_pct": 0.3,
         "s8_capital_short_pct": 3.0,
@@ -30658,7 +30632,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -23.0,
+          "target_upside_pct": -23.6,
           "buy_ratio": 0.47,
           "rec_mark": 1.515625,
           "fwd_eps": 0.995775,
@@ -30956,9 +30930,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 27,
         "s5_volume_ratio": 1.08,
-        "price": 398.74,
+        "price": 398.52,
         "s6_momentum_pct": -0.1,
-        "rs_vs_spy": -27.2,
+        "rs_vs_spy": -27.3,
         "rs_ok": false,
         "s7_margin_spread_pct": 5.1,
         "s8_capital_short_pct": 1.2,
@@ -30969,7 +30943,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 40.1,
+          "target_upside_pct": 40.4,
           "buy_ratio": 0.82,
           "rec_mark": 1.112903,
           "fwd_eps": 4.240016,
@@ -31002,9 +30976,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 21,
         "s5_volume_ratio": 0.95,
-        "price": 371.58,
-        "s6_momentum_pct": 21.7,
-        "rs_vs_spy": 9.1,
+        "price": 371.13,
+        "s6_momentum_pct": 21.5,
+        "rs_vs_spy": 9.0,
         "rs_ok": true,
         "s7_margin_spread_pct": 60.2,
         "s8_capital_short_pct": 1.4,
@@ -31015,7 +30989,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 16.9,
+          "target_upside_pct": 17.0,
           "buy_ratio": 0.75,
           "rec_mark": 1.194444,
           "fwd_eps": 2.876441,
@@ -31325,11 +31299,11 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 19,
+        "s1_news_count": 26,
         "s5_volume_ratio": 0.7,
-        "price": 2100.78,
-        "s6_momentum_pct": 198.6,
-        "rs_vs_spy": 929.1,
+        "price": 2098.0,
+        "s6_momentum_pct": 198.2,
+        "rs_vs_spy": 927.7,
         "rs_ok": true,
         "s8_capital_short_pct": 9.7,
         "s9_eps_rev_net": 12,
@@ -31339,7 +31313,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -11.4,
+          "target_upside_pct": -11.3,
           "buy_ratio": 0.64,
           "rec_mark": 1.321429,
           "fwd_eps": 33.584502,
@@ -31637,7 +31611,7 @@
         "s12_recommendation": 0,
         "s1_news_count": 27,
         "s5_volume_ratio": 0.69,
-        "price": 996.85,
+        "price": 996.84,
         "s6_momentum_pct": 150.4,
         "rs_vs_spy": 239.0,
         "rs_ok": true,
@@ -31650,7 +31624,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -9.2,
+          "target_upside_pct": -9.1,
           "buy_ratio": 0.63,
           "rec_mark": 1.296296,
           "fwd_eps": 5.077931,
@@ -31665,7 +31639,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 995,
+        "price": 996.51,
         "score": 103,
         "pct": 63.6,
         "grade": "B",
@@ -31912,7 +31886,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -31956,8 +31930,8 @@
           "central": 169.25,
           "peg": 0.96,
           "mos_pct": -83.0,
-          "mos_fcf_pct": -629.8,
-          "mos_cash_pct": -611.2
+          "mos_fcf_pct": -630.9,
+          "mos_cash_pct": -612.3
         }
       }
     },
@@ -31984,9 +31958,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 27,
         "s5_volume_ratio": 0.99,
-        "price": 937.93,
-        "s6_momentum_pct": 34.3,
-        "rs_vs_spy": 48.1,
+        "price": 936.525,
+        "s6_momentum_pct": 34.1,
+        "rs_vs_spy": 47.9,
         "rs_ok": true,
         "s7_margin_spread_pct": 8.0,
         "s8_capital_short_pct": 2.0,
@@ -31997,7 +31971,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 3.5,
+          "target_upside_pct": 3.6,
           "buy_ratio": 0.47,
           "rec_mark": 1.55,
           "fwd_eps": 6.171412,
@@ -32307,9 +32281,9 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 15,
+        "s1_news_count": 16,
         "s5_volume_ratio": 1.58,
-        "price": 5.595,
+        "price": 5.59,
         "s6_momentum_pct": -46.8,
         "rs_vs_spy": -80.5,
         "rs_ok": false,
@@ -32321,7 +32295,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 157.3,
+          "target_upside_pct": 160.1,
           "buy_ratio": 0.85,
           "rec_mark": 1.153846,
           "fwd_eps": 0.012981,
@@ -32352,11 +32326,11 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s1_news_count": 12,
-        "s5_volume_ratio": 17.23,
-        "price": 7.07,
-        "s6_momentum_pct": -7.9,
-        "rs_vs_spy": -45.5,
+        "s1_news_count": 11,
+        "s5_volume_ratio": 17.24,
+        "price": 7.05,
+        "s6_momentum_pct": -8.2,
+        "rs_vs_spy": -45.7,
         "rs_ok": false,
         "s9_eps_rev_net": -1,
         "rev_est": 5750000.0,
@@ -32365,7 +32339,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 82.6,
+          "target_upside_pct": 84.1,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": -0.175,
@@ -32398,9 +32372,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 27,
         "s5_volume_ratio": 2.22,
-        "price": 221.4,
+        "price": 221.315,
         "s6_momentum_pct": 71.7,
-        "rs_vs_spy": 13.2,
+        "rs_vs_spy": 13.1,
         "rs_ok": true,
         "s7_margin_spread_pct": 176.5,
         "s8_capital_short_pct": 4.8,
@@ -32411,7 +32385,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -12.8,
+          "target_upside_pct": -12.6,
           "buy_ratio": 0.2,
           "rec_mark": 1.8375,
           "fwd_eps": 2.207956,
@@ -32419,50 +32393,6 @@
           "eps_surprise_pct": 3.6
         },
         "fwd_eps": 2.207956
-      }
-    },
-    {
-      "ticker": "VSTM",
-      "name": "VSTM",
-      "sector": "Health Technology",
-      "src": "screen",
-      "tce_score": 5,
-      "conviction": 4,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s2_sponsor": 0,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 1,
-        "s9_eps_rev": 1,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 1,
-        "s12_recommendation": 1,
-        "s1_news_count": 4,
-        "s5_volume_ratio": 1.18,
-        "price": 3.965,
-        "s6_momentum_pct": -31.8,
-        "rs_vs_spy": -68.8,
-        "rs_ok": false,
-        "s8_capital_short_pct": 24.3,
-        "s9_eps_rev_net": 1,
-        "rev_est": 23238780.0,
-        "s10_rev_rev_pct": 0.0,
-        "total": 3,
-        "analyst_covered": true,
-        "analyst_detail": {
-          "target_upside_pct": 305.1,
-          "buy_ratio": 1.0,
-          "rec_mark": 1.0,
-          "fwd_eps": -0.427988,
-          "eps_rev_pct": 0.0,
-          "eps_surprise_pct": 20.4
-        },
-        "fwd_eps": -0.427988
       }
     },
     {
@@ -32487,10 +32417,10 @@
         "s11_target_upside": 1,
         "s12_recommendation": 1,
         "s1_news_count": 22,
-        "s5_volume_ratio": 1.07,
-        "price": 10.1622,
-        "s6_momentum_pct": -27.6,
-        "rs_vs_spy": -78.6,
+        "s5_volume_ratio": 1.08,
+        "price": 10.125,
+        "s6_momentum_pct": -27.9,
+        "rs_vs_spy": -78.8,
         "rs_ok": false,
         "s8_capital_short_pct": 24.3,
         "s9_eps_rev_net": -3,
@@ -32500,7 +32430,7 @@
         "total": 3,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 67.8,
+          "target_upside_pct": 67.0,
           "buy_ratio": 0.8,
           "rec_mark": 1.2,
           "fwd_eps": -0.273333,
@@ -32531,11 +32461,11 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 29,
+        "s1_news_count": 28,
         "s5_volume_ratio": 1.13,
-        "price": 127.99,
-        "s6_momentum_pct": 179.7,
-        "rs_vs_spy": 229.6,
+        "price": 128.16,
+        "s6_momentum_pct": 180.1,
+        "rs_vs_spy": 230.1,
         "rs_ok": true,
         "s8_capital_short_pct": 2.7,
         "s9_eps_rev_net": 31,
@@ -32578,9 +32508,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 26,
         "s5_volume_ratio": 0.97,
-        "price": 295.94,
-        "s6_momentum_pct": 17.2,
-        "rs_vs_spy": -3.4,
+        "price": 296.28,
+        "s6_momentum_pct": 17.3,
+        "rs_vs_spy": -3.3,
         "rs_ok": false,
         "s7_margin_spread_pct": 5.2,
         "s8_capital_short_pct": 1.1,
@@ -32591,7 +32521,7 @@
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 7.9,
+          "target_upside_pct": 7.8,
           "buy_ratio": 0.46,
           "rec_mark": 1.49,
           "fwd_eps": 1.888622,
@@ -32624,9 +32554,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 24,
         "s5_volume_ratio": 0.84,
-        "price": 141.615,
-        "s6_momentum_pct": -9.3,
-        "rs_vs_spy": 10.3,
+        "price": 141.56,
+        "s6_momentum_pct": -9.4,
+        "rs_vs_spy": 10.2,
         "rs_ok": true,
         "s7_margin_spread_pct": -46.0,
         "s8_capital_short_pct": 1.1,
@@ -32637,7 +32567,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 20.4,
+          "target_upside_pct": 20.2,
           "buy_ratio": 0.34,
           "rec_mark": 1.655172,
           "fwd_eps": 3.642628,
@@ -32670,9 +32600,9 @@
         "s12_recommendation": 0,
         "s1_news_count": 13,
         "s5_volume_ratio": 7.13,
-        "price": 7.18,
-        "s6_momentum_pct": 262.6,
-        "rs_vs_spy": 278.6,
+        "price": 7.15,
+        "s6_momentum_pct": 261.1,
+        "rs_vs_spy": 277.0,
         "rs_ok": true,
         "s8_capital_short_pct": 7.3,
         "s9_eps_rev_net": 0,
@@ -32682,7 +32612,7 @@
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -2.3,
+          "target_upside_pct": -1.9,
           "buy_ratio": 0.67,
           "rec_mark": 1.333333,
           "fwd_eps": -0.0757,
@@ -32715,9 +32645,9 @@
         "s12_recommendation": 1,
         "s1_news_count": 6,
         "s5_volume_ratio": 1.01,
-        "price": 4.84,
-        "s6_momentum_pct": -6.9,
-        "rs_vs_spy": -43.8,
+        "price": 4.825,
+        "s6_momentum_pct": -7.2,
+        "rs_vs_spy": -44.0,
         "rs_ok": false,
         "s8_capital_short_pct": 3.1,
         "s9_eps_rev_net": 0,
@@ -32727,7 +32657,7 @@
         "total": 2,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 69.6,
+          "target_upside_pct": 70.5,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": 0.025,
@@ -32760,18 +32690,19 @@
         "s12_recommendation": 1,
         "s1_news_count": 4,
         "s5_volume_ratio": 0.6,
-        "price": 5.415,
-        "s6_momentum_pct": -6.3,
-        "rs_vs_spy": -9.4,
+        "price": 5.405,
+        "s6_momentum_pct": -6.5,
+        "rs_vs_spy": -9.6,
         "rs_ok": false,
         "s8_capital_short_pct": 2.0,
         "s9_eps_rev_net": 0,
         "rev_est": 8766670.0,
         "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 0,
         "total": 1,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 42.0,
+          "target_upside_pct": 42.2,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": 0.0625,
@@ -33033,7 +32964,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -33117,7 +33048,7 @@
         "total": 1,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 138.1,
+          "target_upside_pct": 138.4,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": 0.035038269000000004,
@@ -33132,7 +33063,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 0.9819,
+        "price": 0.9803,
         "score": 87,
         "pct": 53.7,
         "grade": "C",
@@ -33379,7 +33310,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -33423,8 +33354,8 @@
           "central": 0.32,
           "peg": null,
           "mos_pct": -67.1,
-          "mos_fcf_pct": -204.1,
-          "mos_cash_pct": -94.5
+          "mos_fcf_pct": -203.6,
+          "mos_cash_pct": -94.2
         }
       }
     },
@@ -33485,10 +33416,10 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s1_news_count": 2,
-        "s5_volume_ratio": 3.17,
-        "price": 18.775,
-        "s6_momentum_pct": 7.5,
-        "rs_vs_spy": -13.8,
+        "s5_volume_ratio": 3.18,
+        "price": 18.73,
+        "s6_momentum_pct": 7.2,
+        "rs_vs_spy": -14.0,
         "rs_ok": false,
         "s7_margin_spread_pct": -48.3,
         "s8_capital_short_pct": 3.0,
@@ -33503,11 +33434,11 @@
       "name": "ABTC",
       "sector": "Technology Services",
       "src": "screen",
-      "tce_score": 1,
+      "tce_score": 0,
       "conviction": 0,
       "tier": "IGNORE",
       "streams": {
-        "s1_news": 1,
+        "s1_news": 0,
         "s2_sponsor": 0,
         "s3_insider": 0,
         "s5_volume": 0,
@@ -33519,17 +33450,18 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s1_news_count": 3,
+        "s1_news_count": 2,
         "s5_volume_ratio": 0.89,
-        "price": 0.8816,
-        "s6_momentum_pct": -15.2,
-        "rs_vs_spy": -58.2,
+        "price": 0.8706,
+        "s6_momentum_pct": -16.3,
+        "rs_vs_spy": -58.8,
         "rs_ok": false,
         "s8_capital_short_pct": 2.3,
         "s9_eps_rev_net": 0,
         "rev_est": 73800000.0,
         "s10_rev_rev_pct": 0.0,
-        "total": 1,
+        "s3_insider_count": 0,
+        "total": 0,
         "analyst_covered": false,
         "analyst_detail": {}
       },
@@ -33539,7 +33471,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 0.885,
+        "price": 0.8816,
         "score": 72,
         "pct": 44.4,
         "grade": "FAIL",
@@ -33786,7 +33718,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -33831,7 +33763,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": -316.7
+          "mos_cash_pct": -315.1
         }
       }
     }
@@ -33844,9 +33776,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 6.765,
-        "last_price": 5.925,
+        "last_price": 5.89,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -12.4,
+        "fwd_ret_pct": -12.9,
         "peak_ret_pct": 0.0,
         "days_open": 11,
         "resolved": false
@@ -33857,9 +33789,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 7.65,
-        "last_price": 6.845,
+        "last_price": 6.805,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -10.5,
+        "fwd_ret_pct": -11.0,
         "peak_ret_pct": 4.2,
         "days_open": 11,
         "resolved": false
@@ -33870,9 +33802,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 31.475,
-        "last_price": 26.04,
+        "last_price": 25.65,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -17.3,
+        "fwd_ret_pct": -18.5,
         "peak_ret_pct": 2.6,
         "days_open": 11,
         "resolved": false
@@ -33883,9 +33815,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 3.88,
-        "last_price": 4.645,
+        "last_price": 4.635,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 19.7,
+        "fwd_ret_pct": 19.5,
         "peak_ret_pct": 19.7,
         "days_open": 11,
         "resolved": false
@@ -33896,9 +33828,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 7.135,
-        "last_price": 7.18,
+        "last_price": 7.15,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 0.6,
+        "fwd_ret_pct": 0.2,
         "peak_ret_pct": 10.0,
         "days_open": 11,
         "resolved": false
@@ -33909,9 +33841,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 2.695,
-        "last_price": 2.11,
+        "last_price": 2.1,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -21.7,
+        "fwd_ret_pct": -22.1,
         "peak_ret_pct": 0.0,
         "days_open": 11,
         "resolved": false
@@ -33922,9 +33854,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 2098.8301,
-        "last_price": 255.86,
+        "last_price": 254.755,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -87.8,
+        "fwd_ret_pct": -87.9,
         "peak_ret_pct": 14.9,
         "days_open": 11,
         "resolved": false
@@ -33935,10 +33867,10 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 1013.84,
-        "last_price": 1087.25,
+        "last_price": 1096.285,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 7.2,
-        "peak_ret_pct": 7.2,
+        "fwd_ret_pct": 8.1,
+        "peak_ret_pct": 8.1,
         "days_open": 11,
         "resolved": false
       },
@@ -33948,9 +33880,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 128.89,
-        "last_price": 121.02,
+        "last_price": 121.11,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -6.1,
+        "fwd_ret_pct": -6.0,
         "peak_ret_pct": 0.9,
         "days_open": 11,
         "resolved": false
@@ -33961,9 +33893,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 521.87,
-        "last_price": 547.2743,
+        "last_price": 548.15,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 4.9,
+        "fwd_ret_pct": 5.0,
         "peak_ret_pct": 6.7,
         "days_open": 11,
         "resolved": false
@@ -33974,9 +33906,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 498.41,
-        "last_price": 588.66,
+        "last_price": 588.15,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 18.1,
+        "fwd_ret_pct": 18.0,
         "peak_ret_pct": 18.8,
         "days_open": 11,
         "resolved": false
@@ -33987,9 +33919,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 335.82,
-        "last_price": 390.735,
+        "last_price": 390.3,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 16.4,
+        "fwd_ret_pct": 16.2,
         "peak_ret_pct": 16.4,
         "days_open": 11,
         "resolved": false
@@ -34000,9 +33932,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 371.82,
-        "last_price": 371.58,
+        "last_price": 371.13,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -0.1,
+        "fwd_ret_pct": -0.2,
         "peak_ret_pct": 0.1,
         "days_open": 11,
         "resolved": false
@@ -34013,9 +33945,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 1637.15,
-        "last_price": 1653.3101,
+        "last_price": 1651.4399,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 1.0,
+        "fwd_ret_pct": 0.9,
         "peak_ret_pct": 1.0,
         "days_open": 11,
         "resolved": false
@@ -34026,9 +33958,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 1820.585,
-        "last_price": 2100.78,
+        "last_price": 2098.0,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 15.4,
+        "fwd_ret_pct": 15.2,
         "peak_ret_pct": 15.4,
         "days_open": 11,
         "resolved": false
@@ -34039,7 +33971,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 240.56,
-        "last_price": 221.4,
+        "last_price": 221.315,
         "last_date": "2026-06-15",
         "fwd_ret_pct": -8.0,
         "peak_ret_pct": 0.8,
@@ -34052,7 +33984,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 307.88,
-        "last_price": 312.245,
+        "last_price": 312.06,
         "last_date": "2026-06-15",
         "fwd_ret_pct": 1.4,
         "peak_ret_pct": 1.9,
@@ -34065,9 +33997,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 0.4671,
-        "last_price": 0.4068,
+        "last_price": 0.4048,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -12.9,
+        "fwd_ret_pct": -13.3,
         "peak_ret_pct": 0.6,
         "days_open": 11,
         "resolved": false
@@ -34078,9 +34010,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 218.16,
-        "last_price": 212.042,
+        "last_price": 212.41,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -2.8,
+        "fwd_ret_pct": -2.6,
         "peak_ret_pct": 0.2,
         "days_open": 11,
         "resolved": false
@@ -34091,9 +34023,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 409.86,
-        "last_price": 394.035,
+        "last_price": 394.14,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -3.9,
+        "fwd_ret_pct": -3.8,
         "peak_ret_pct": 2.2,
         "days_open": 11,
         "resolved": false
@@ -34104,9 +34036,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 310.925,
-        "last_price": 295.94,
+        "last_price": 296.28,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -4.8,
+        "fwd_ret_pct": -4.7,
         "peak_ret_pct": 1.2,
         "days_open": 11,
         "resolved": false
@@ -34117,9 +34049,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 110.89,
-        "last_price": 127.99,
+        "last_price": 128.16,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 15.4,
+        "fwd_ret_pct": 15.6,
         "peak_ret_pct": 19.0,
         "days_open": 11,
         "resolved": false
@@ -34130,9 +34062,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 313.41,
-        "last_price": 309.135,
+        "last_price": 309.79,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -1.4,
+        "fwd_ret_pct": -1.2,
         "peak_ret_pct": 1.0,
         "days_open": 11,
         "resolved": false
@@ -34143,7 +34075,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 165.65,
-        "last_price": 167.45,
+        "last_price": 167.52,
         "last_date": "2026-06-15",
         "fwd_ret_pct": 1.1,
         "peak_ret_pct": 1.1,
@@ -34156,9 +34088,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 40.94,
-        "last_price": 44.22,
+        "last_price": 44.31,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 8.0,
+        "fwd_ret_pct": 8.2,
         "peak_ret_pct": 11.0,
         "days_open": 11,
         "resolved": false
@@ -34254,7 +34186,7 @@
         "market": "us",
         "date": "2026-06-05",
         "entry": 609.7,
-        "last_price": 594.53,
+        "last_price": 594.59,
         "last_date": "2026-06-15",
         "fwd_ret_pct": -2.5,
         "peak_ret_pct": 0.0,
@@ -34267,9 +34199,9 @@
         "market": "us",
         "date": "2026-06-05",
         "entry": 5.73,
-        "last_price": 5.885,
+        "last_price": 5.865,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 2.7,
+        "fwd_ret_pct": 2.4,
         "peak_ret_pct": 3.3,
         "days_open": 10,
         "resolved": false
@@ -34298,9 +34230,9 @@
         "market": "us",
         "date": "2026-06-06",
         "entry": 401.39,
-        "last_price": 431.0,
+        "last_price": 430.24,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 7.4,
+        "fwd_ret_pct": 7.2,
         "peak_ret_pct": 7.4,
         "days_open": 9,
         "resolved": false
@@ -34311,9 +34243,9 @@
         "market": "us",
         "date": "2026-06-06",
         "entry": 8.36,
-        "last_price": 8.555,
+        "last_price": 8.515,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 2.3,
+        "fwd_ret_pct": 1.9,
         "peak_ret_pct": 8.1,
         "days_open": 9,
         "resolved": false
@@ -34409,13 +34341,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 5.08,
-        "last_price": 4.81,
+        "last_price": 4.785,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -5.3,
+        "fwd_ret_pct": -5.8,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -7.5,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -7.9,
         "peak_alpha_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -34426,13 +34358,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 5.7,
-        "last_price": 5.885,
+        "last_price": 5.865,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 3.2,
+        "fwd_ret_pct": 2.9,
         "peak_ret_pct": 3.9,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 1.0,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 0.8,
         "peak_alpha_pct": 3.3,
         "days_open": 6,
         "resolved": false
@@ -34443,13 +34375,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 396.6,
-        "last_price": 394.035,
+        "last_price": 394.14,
         "last_date": "2026-06-15",
         "fwd_ret_pct": -0.6,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -2.8,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -2.7,
         "peak_alpha_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -34460,13 +34392,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 411.74,
-        "last_price": 398.74,
+        "last_price": 398.52,
         "last_date": "2026-06-15",
         "fwd_ret_pct": -3.2,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -5.4,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -5.3,
         "peak_alpha_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -34477,13 +34409,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 189.24,
-        "last_price": 181.19,
+        "last_price": 181.115,
         "last_date": "2026-06-15",
         "fwd_ret_pct": -4.3,
         "peak_ret_pct": 1.7,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -6.5,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -6.4,
         "peak_alpha_pct": 3.1,
         "days_open": 6,
         "resolved": false
@@ -34494,13 +34426,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 151.75,
-        "last_price": 141.615,
+        "last_price": 141.56,
         "last_date": "2026-06-15",
         "fwd_ret_pct": -6.7,
         "peak_ret_pct": 0.3,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -8.9,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -8.8,
         "peak_alpha_pct": 1.7,
         "days_open": 6,
         "resolved": false
@@ -34516,8 +34448,8 @@
         "fwd_ret_pct": 11.0,
         "peak_ret_pct": 14.6,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 8.8,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 8.9,
         "peak_alpha_pct": 12.7,
         "days_open": 6,
         "resolved": false
@@ -34528,13 +34460,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 1.4,
-        "last_price": 1.59,
+        "last_price": 1.57,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 13.6,
+        "fwd_ret_pct": 12.1,
         "peak_ret_pct": 13.9,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 11.4,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 10.0,
         "peak_alpha_pct": 11.9,
         "days_open": 6,
         "resolved": false
@@ -34545,13 +34477,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 4.15,
-        "last_price": 4.84,
+        "last_price": 4.825,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 16.6,
+        "fwd_ret_pct": 16.3,
         "peak_ret_pct": 16.6,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 14.4,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 14.2,
         "peak_alpha_pct": 14.4,
         "days_open": 6,
         "resolved": false
@@ -34562,13 +34494,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 2.28,
-        "last_price": 2.11,
+        "last_price": 2.1,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -7.5,
+        "fwd_ret_pct": -7.9,
         "peak_ret_pct": 9.4,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -9.7,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -10.0,
         "peak_alpha_pct": 9.8,
         "days_open": 6,
         "resolved": false
@@ -34584,8 +34516,8 @@
         "fwd_ret_pct": -2.5,
         "peak_ret_pct": 12.4,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -4.7,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -4.6,
         "peak_alpha_pct": 14.3,
         "days_open": 6,
         "resolved": false
@@ -34596,13 +34528,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 5.1,
-        "last_price": 5.415,
+        "last_price": 5.405,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 6.2,
+        "fwd_ret_pct": 6.0,
         "peak_ret_pct": 7.5,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 4.0,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 3.9,
         "peak_alpha_pct": 5.5,
         "days_open": 6,
         "resolved": false
@@ -34618,8 +34550,8 @@
         "fwd_ret_pct": -5.5,
         "peak_ret_pct": 2.0,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -7.7,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -7.6,
         "peak_alpha_pct": 2.8,
         "days_open": 6,
         "resolved": false
@@ -34898,13 +34830,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 7.22,
-        "last_price": 7.18,
+        "last_price": 7.15,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -0.6,
+        "fwd_ret_pct": -1.0,
         "peak_ret_pct": 8.7,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -2.8,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -3.1,
         "peak_alpha_pct": 6.7,
         "days_open": 6,
         "resolved": false
@@ -34915,13 +34847,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 5.08,
-        "last_price": 4.81,
+        "last_price": 4.785,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -5.3,
+        "fwd_ret_pct": -5.8,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -7.5,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -7.9,
         "peak_alpha_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -34950,13 +34882,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 0.42,
-        "last_price": 0.4068,
+        "last_price": 0.4048,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -3.1,
+        "fwd_ret_pct": -3.6,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -5.3,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -5.7,
         "peak_alpha_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -34967,14 +34899,14 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 949.28,
-        "last_price": 1087.25,
+        "last_price": 1096.285,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 14.5,
-        "peak_ret_pct": 14.5,
+        "fwd_ret_pct": 15.5,
+        "peak_ret_pct": 15.5,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 12.3,
-        "peak_alpha_pct": 12.3,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 13.4,
+        "peak_alpha_pct": 13.4,
         "days_open": 6,
         "resolved": false
       },
@@ -34984,13 +34916,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 124.15,
-        "last_price": 121.02,
+        "last_price": 121.11,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -2.5,
+        "fwd_ret_pct": -2.4,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -4.7,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -4.5,
         "peak_alpha_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -35001,13 +34933,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 40.46,
-        "last_price": 44.22,
+        "last_price": 44.31,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 9.3,
+        "fwd_ret_pct": 9.5,
         "peak_ret_pct": 12.3,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 7.1,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 7.4,
         "peak_alpha_pct": 10.3,
         "days_open": 6,
         "resolved": false
@@ -35018,13 +34950,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 208.64,
-        "last_price": 212.042,
+        "last_price": 212.41,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 1.6,
-        "peak_ret_pct": 1.6,
+        "fwd_ret_pct": 1.8,
+        "peak_ret_pct": 1.8,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -0.6,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -0.3,
         "peak_alpha_pct": 0.1,
         "days_open": 6,
         "resolved": false
@@ -35035,13 +34967,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 490.33,
-        "last_price": 547.2743,
+        "last_price": 548.15,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 11.6,
+        "fwd_ret_pct": 11.8,
         "peak_ret_pct": 13.5,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 9.4,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 9.7,
         "peak_alpha_pct": 11.5,
         "days_open": 6,
         "resolved": false
@@ -35052,12 +34984,12 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 324.45,
-        "last_price": 390.735,
+        "last_price": 390.3,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 20.4,
+        "fwd_ret_pct": 20.3,
         "peak_ret_pct": 20.4,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
+        "bench_ret_pct": 2.1,
         "alpha_pct": 18.2,
         "peak_alpha_pct": 18.2,
         "days_open": 6,
@@ -35069,12 +35001,12 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 492.17,
-        "last_price": 588.66,
+        "last_price": 588.15,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 19.6,
+        "fwd_ret_pct": 19.5,
         "peak_ret_pct": 20.3,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
+        "bench_ret_pct": 2.1,
         "alpha_pct": 17.4,
         "peak_alpha_pct": 18.3,
         "days_open": 6,
@@ -35086,13 +35018,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 290.9,
-        "last_price": 312.245,
+        "last_price": 312.06,
         "last_date": "2026-06-15",
         "fwd_ret_pct": 7.3,
         "peak_ret_pct": 7.9,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 5.1,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 5.2,
         "peak_alpha_pct": 5.9,
         "days_open": 6,
         "resolved": false
@@ -35103,12 +35035,12 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 1642.0,
-        "last_price": 2100.78,
+        "last_price": 2098.0,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 27.9,
+        "fwd_ret_pct": 27.8,
         "peak_ret_pct": 27.9,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
+        "bench_ret_pct": 2.1,
         "alpha_pct": 25.7,
         "peak_alpha_pct": 25.7,
         "days_open": 6,
@@ -35120,13 +35052,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 411.74,
-        "last_price": 398.74,
+        "last_price": 398.52,
         "last_date": "2026-06-15",
         "fwd_ret_pct": -3.2,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -5.4,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -5.3,
         "peak_alpha_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -35137,13 +35069,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 189.24,
-        "last_price": 181.19,
+        "last_price": 181.115,
         "last_date": "2026-06-15",
         "fwd_ret_pct": -4.3,
         "peak_ret_pct": 1.7,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -6.5,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -6.4,
         "peak_alpha_pct": 3.1,
         "days_open": 6,
         "resolved": false
@@ -35154,13 +35086,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 151.75,
-        "last_price": 141.615,
+        "last_price": 141.56,
         "last_date": "2026-06-15",
         "fwd_ret_pct": -6.7,
         "peak_ret_pct": 0.3,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -8.9,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -8.8,
         "peak_alpha_pct": 1.7,
         "days_open": 6,
         "resolved": false
@@ -35171,13 +35103,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 1.4,
-        "last_price": 1.59,
+        "last_price": 1.57,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 13.6,
+        "fwd_ret_pct": 12.1,
         "peak_ret_pct": 13.9,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 11.4,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 10.0,
         "peak_alpha_pct": 11.9,
         "days_open": 6,
         "resolved": false
@@ -35242,13 +35174,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 22.91,
-        "last_price": 26.04,
+        "last_price": 25.65,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 13.7,
+        "fwd_ret_pct": 12.0,
         "peak_ret_pct": 16.8,
         "entry_bench": 730.44,
         "bench_ret_pct": 3.4,
-        "alpha_pct": 10.3,
+        "alpha_pct": 8.6,
         "peak_alpha_pct": 13.7,
         "days_open": 6,
         "resolved": false
@@ -35259,13 +35191,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 360.95,
-        "last_price": 371.58,
+        "last_price": 371.13,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 2.9,
+        "fwd_ret_pct": 2.8,
         "peak_ret_pct": 2.9,
         "entry_bench": 730.44,
         "bench_ret_pct": 3.4,
-        "alpha_pct": -0.5,
+        "alpha_pct": -0.6,
         "peak_alpha_pct": 0.7,
         "days_open": 6,
         "resolved": false
@@ -35293,13 +35225,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 392.59,
-        "last_price": 431.0,
+        "last_price": 430.24,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 9.8,
+        "fwd_ret_pct": 9.6,
         "peak_ret_pct": 9.8,
         "entry_bench": 727.54,
         "bench_ret_pct": 3.8,
-        "alpha_pct": 6.0,
+        "alpha_pct": 5.8,
         "peak_alpha_pct": 6.1,
         "days_open": 6,
         "resolved": false
@@ -35310,13 +35242,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 1458.395,
-        "last_price": 1653.3101,
+        "last_price": 1651.4399,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 13.4,
+        "fwd_ret_pct": 13.2,
         "peak_ret_pct": 13.4,
         "entry_bench": 727.54,
         "bench_ret_pct": 3.8,
-        "alpha_pct": 9.6,
+        "alpha_pct": 9.4,
         "peak_alpha_pct": 9.6,
         "days_open": 6,
         "resolved": false
@@ -35548,9 +35480,9 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 915.64,
-        "last_price": 937.93,
+        "last_price": 936.525,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 2.4,
+        "fwd_ret_pct": 2.3,
         "peak_ret_pct": 2.4,
         "entry_bench": null,
         "bench_ret_pct": 0.0,
@@ -35633,13 +35565,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 6.83,
-        "last_price": 6.845,
+        "last_price": 6.805,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 0.2,
+        "fwd_ret_pct": -0.4,
         "peak_ret_pct": 0.2,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -2.0,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -2.5,
         "peak_alpha_pct": 0.0,
         "days_open": 5,
         "resolved": false
@@ -35701,13 +35633,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 3.67,
-        "last_price": 3.965,
+        "last_price": 3.97,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 8.0,
+        "fwd_ret_pct": 8.2,
         "peak_ret_pct": 13.1,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 5.8,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 6.1,
         "peak_alpha_pct": 11.4,
         "days_open": 5,
         "resolved": false
@@ -35718,12 +35650,12 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 5.48,
-        "last_price": 5.595,
+        "last_price": 5.59,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 2.1,
+        "fwd_ret_pct": 2.0,
         "peak_ret_pct": 2.1,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
+        "bench_ret_pct": 2.1,
         "alpha_pct": -0.1,
         "peak_alpha_pct": 1.0,
         "days_open": 5,
@@ -35735,13 +35667,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 9.7,
-        "last_price": 10.1622,
+        "last_price": 10.125,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 4.8,
+        "fwd_ret_pct": 4.4,
         "peak_ret_pct": 8.6,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 2.6,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 2.3,
         "peak_alpha_pct": 9.5,
         "days_open": 5,
         "resolved": false
@@ -35752,13 +35684,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 7.89,
-        "last_price": 7.07,
+        "last_price": 7.05,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -10.4,
+        "fwd_ret_pct": -10.6,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -12.6,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -12.7,
         "peak_alpha_pct": 0.0,
         "days_open": 5,
         "resolved": false
@@ -35774,8 +35706,8 @@
         "fwd_ret_pct": 5.4,
         "peak_ret_pct": 8.4,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 3.2,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 3.3,
         "peak_alpha_pct": 6.5,
         "days_open": 5,
         "resolved": false
@@ -35786,13 +35718,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 17.41,
-        "last_price": 18.775,
+        "last_price": 18.73,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 7.8,
+        "fwd_ret_pct": 7.6,
         "peak_ret_pct": 11.1,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": 5.6,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": 5.5,
         "peak_alpha_pct": 9.1,
         "days_open": 5,
         "resolved": false
@@ -35803,13 +35735,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 0.901,
-        "last_price": 0.8816,
+        "last_price": 0.8706,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": -2.2,
+        "fwd_ret_pct": -3.4,
         "peak_ret_pct": 1.5,
         "entry_bench": 739.22,
-        "bench_ret_pct": 2.2,
-        "alpha_pct": -4.4,
+        "bench_ret_pct": 2.1,
+        "alpha_pct": -5.5,
         "peak_alpha_pct": 0.0,
         "days_open": 5,
         "resolved": false
@@ -35922,7 +35854,7 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 13.82,
-        "last_price": 13.602,
+        "last_price": 13.6,
         "last_date": "2026-06-15",
         "fwd_ret_pct": -1.6,
         "peak_ret_pct": 2.9,
@@ -36041,13 +35973,13 @@
         "market": "us",
         "date": "2026-06-12",
         "entry": 914.49,
-        "last_price": 937.93,
+        "last_price": 936.525,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 2.6,
+        "fwd_ret_pct": 2.4,
         "peak_ret_pct": 2.6,
         "entry_bench": 736.26,
         "bench_ret_pct": 2.6,
-        "alpha_pct": 0.0,
+        "alpha_pct": -0.2,
         "peak_alpha_pct": 0.0,
         "days_open": 3,
         "resolved": false
@@ -36126,13 +36058,13 @@
         "market": "us",
         "date": "2026-06-12",
         "entry": 382.07,
-        "last_price": 394.035,
+        "last_price": 394.14,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 3.1,
+        "fwd_ret_pct": 3.2,
         "peak_ret_pct": 3.3,
         "entry_bench": 741.75,
         "bench_ret_pct": 1.8,
-        "alpha_pct": 1.3,
+        "alpha_pct": 1.4,
         "peak_alpha_pct": 1.7,
         "days_open": 3,
         "resolved": false
@@ -36330,13 +36262,13 @@
         "market": "us",
         "date": "2026-06-14",
         "entry": 562.93,
-        "last_price": 649.3,
+        "last_price": 648.635,
         "last_date": "2026-06-15",
-        "fwd_ret_pct": 15.3,
+        "fwd_ret_pct": 15.2,
         "peak_ret_pct": 15.6,
         "entry_bench": 741.75,
         "bench_ret_pct": 1.8,
-        "alpha_pct": 13.5,
+        "alpha_pct": 13.4,
         "peak_alpha_pct": 14.0,
         "days_open": 1,
         "resolved": false
@@ -36347,7 +36279,7 @@
         "market": "us",
         "date": "2026-06-14",
         "entry": 931.04,
-        "last_price": 996.85,
+        "last_price": 996.84,
         "last_date": "2026-06-15",
         "fwd_ret_pct": 7.1,
         "peak_ret_pct": 8.7,
@@ -36799,7 +36731,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -37131,7 +37063,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -37463,7 +37395,7 @@
           }
         ],
         "max": 152,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -37699,16 +37631,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -38044,7 +37973,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -38376,7 +38305,7 @@
           }
         ],
         "max": 154,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -38708,7 +38637,7 @@
           }
         ],
         "max": 123,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.72,
         "bank_inputs": null,
         "src": {
@@ -39040,7 +38969,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -39372,7 +39301,7 @@
           }
         ],
         "max": 121,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.7,
         "bank_inputs": null,
         "src": {
@@ -39704,7 +39633,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -39940,16 +39869,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -40189,16 +40115,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -40534,7 +40457,7 @@
           }
         ],
         "max": 146,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.88,
         "bank_inputs": null,
         "src": {
@@ -40866,7 +40789,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -41198,7 +41121,7 @@
           }
         ],
         "max": 154,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -41530,7 +41453,7 @@
           }
         ],
         "max": 159,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -41862,7 +41785,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -42194,7 +42117,7 @@
           }
         ],
         "max": 124,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.75,
         "bank_inputs": null,
         "src": {
@@ -42430,16 +42353,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -42679,16 +42599,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -43024,7 +42941,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -43356,7 +43273,7 @@
           }
         ],
         "max": 135,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.82,
         "bank_inputs": null,
         "src": {
@@ -43592,16 +43509,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": 165653000000.0,
-          "total_assets": 3230000000000.0,
-          "gross_loans": 680000000000.0,
-          "deposits": 2230000000000.0,
-          "npl_found": true,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -43937,7 +43851,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -44173,16 +44087,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -44422,16 +44333,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -44767,7 +44675,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -45099,7 +45007,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -45335,16 +45243,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -45584,16 +45489,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -45929,7 +45831,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "src": {
@@ -46261,7 +46163,7 @@
           }
         ],
         "max": 156,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.95,
         "bank_inputs": null,
         "src": {
@@ -46593,7 +46495,7 @@
           }
         ],
         "max": 44,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.23,
         "bank_inputs": null,
         "src": {
@@ -46829,16 +46731,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -47078,16 +46977,13 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
-          "nii": null,
-          "total_assets": null,
-          "gross_loans": null,
-          "deposits": null,
-          "npl_found": false,
-          "casa_found": false,
-          "car_found": false
+          "source": "IG2 inputs (psx)",
+          "ratios_scored": 24,
+          "ratios_na": 0,
+          "ratios_total": 24
         },
         "src": {
           "fund": "tv",
@@ -47423,7 +47319,7 @@
           }
         ],
         "max": 146,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "src": {
@@ -47755,7 +47651,7 @@
           }
         ],
         "max": 150,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "src": {
@@ -48087,7 +47983,7 @@
           }
         ],
         "max": 145,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.88,
         "bank_inputs": null,
         "src": {
@@ -48419,7 +48315,7 @@
           }
         ],
         "max": 157,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "src": {
@@ -48751,7 +48647,7 @@
           }
         ],
         "max": 145,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.88,
         "bank_inputs": null,
         "src": {
@@ -49083,7 +48979,7 @@
           }
         ],
         "max": 150,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "src": {
@@ -49171,7 +49067,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 1080.36,
+        "price": 1087.74,
         "score": 104,
         "pct": 64.2,
         "grade": "B",
@@ -49418,7 +49314,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -49461,9 +49357,9 @@
           "composite": 156.11,
           "central": 189.75,
           "peg": 0.21,
-          "mos_pct": -82.4,
-          "mos_fcf_pct": -675.8,
-          "mos_cash_pct": -477.5
+          "mos_pct": -82.6,
+          "mos_fcf_pct": -681.1,
+          "mos_cash_pct": -481.5
         }
       }
     },
@@ -49504,7 +49400,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.815,
+        "price": 6.8099,
         "score": 104,
         "pct": 64.2,
         "grade": "B",
@@ -49751,7 +49647,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -49795,7 +49691,7 @@
           "central": 4.25,
           "peg": 0.07,
           "mos_pct": -37.6,
-          "mos_fcf_pct": -121.8,
+          "mos_fcf_pct": -121.6,
           "mos_cash_pct": 60.1
         }
       }
@@ -49837,7 +49733,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 16.51,
+        "price": 16.485,
         "score": 127,
         "pct": 78.4,
         "grade": "B",
@@ -50084,7 +49980,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -50128,7 +50024,7 @@
           "central": 132.37,
           "peg": 0.03,
           "mos_pct": 87.5,
-          "mos_fcf_pct": 89.0,
+          "mos_fcf_pct": 89.1,
           "mos_cash_pct": 94.6
         }
       }
@@ -50417,7 +50313,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -50503,7 +50399,7 @@
         "sector": "Transportation",
         "is_bank": false,
         "is_psx": false,
-        "price": 43.065,
+        "price": 43.18,
         "score": 131,
         "pct": 80.9,
         "grade": "A",
@@ -50750,7 +50646,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -50779,7 +50675,7 @@
         "piotroski": 7,
         "altman_z": 4.58,
         "beneish_m": 6.57,
-        "shareholder_yield_pct": 5.7,
+        "shareholder_yield_pct": 5.68,
         "iv": {
           "dcf_eps": 178.85,
           "dcf_fcf": 134.88,
@@ -50793,9 +50689,9 @@
           "composite": 159.19,
           "central": 134.88,
           "peg": 0.02,
-          "mos_pct": 68.1,
+          "mos_pct": 68.0,
           "mos_fcf_pct": 71.8,
-          "mos_cash_pct": 78.1
+          "mos_cash_pct": 78.0
         }
       }
     },
@@ -51083,7 +50979,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -51169,7 +51065,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 546.74,
+        "price": 547.36,
         "score": 103,
         "pct": 63.6,
         "grade": "B",
@@ -51416,7 +51312,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -51458,10 +51354,10 @@
           "intrinsic_cash": 131.88,
           "composite": 130.28,
           "central": 104.4,
-          "peg": 4.8,
+          "peg": 4.81,
           "mos_pct": -80.9,
-          "mos_fcf_pct": -431.2,
-          "mos_cash_pct": -314.6
+          "mos_fcf_pct": -431.8,
+          "mos_cash_pct": -315.0
         }
       }
     },
@@ -51502,7 +51398,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 393.86,
+        "price": 394.08,
         "score": 117,
         "pct": 72.2,
         "grade": "B",
@@ -51749,7 +51645,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -51793,8 +51689,8 @@
           "central": 187.92,
           "peg": 0.9,
           "mos_pct": -52.3,
-          "mos_fcf_pct": -167.8,
-          "mos_cash_pct": -329.3
+          "mos_fcf_pct": -168.0,
+          "mos_cash_pct": -329.5
         }
       }
     },
@@ -51835,7 +51731,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 37.16,
+        "price": 37.11,
         "score": 88,
         "pct": 54.3,
         "grade": "C",
@@ -52082,7 +51978,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -52168,7 +52064,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 7.93,
+        "price": 7.92,
         "score": 110,
         "pct": 67.9,
         "grade": "B",
@@ -52415,7 +52311,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -52458,9 +52354,9 @@
           "composite": 24.3,
           "central": 16.15,
           "peg": 0.12,
-          "mos_pct": 50.9,
-          "mos_fcf_pct": 41.7,
-          "mos_cash_pct": 71.0
+          "mos_pct": 51.0,
+          "mos_fcf_pct": 41.8,
+          "mos_cash_pct": 71.1
         }
       }
     },
@@ -52501,7 +52397,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 0.9819,
+        "price": 0.9803,
         "score": 87,
         "pct": 53.7,
         "grade": "C",
@@ -52748,7 +52644,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -52792,8 +52688,8 @@
           "central": 0.32,
           "peg": null,
           "mos_pct": -67.1,
-          "mos_fcf_pct": -204.1,
-          "mos_cash_pct": -94.5
+          "mos_fcf_pct": -203.6,
+          "mos_cash_pct": -94.2
         }
       }
     },
@@ -52834,7 +52730,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 20.495,
+        "price": 20.565,
         "score": 97,
         "pct": 59.9,
         "grade": "C",
@@ -53081,7 +52977,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -53110,7 +53006,7 @@
         "piotroski": 5,
         "altman_z": null,
         "beneish_m": null,
-        "shareholder_yield_pct": 0.7,
+        "shareholder_yield_pct": 0.69,
         "iv": {
           "dcf_eps": 62.24,
           "dcf_fcf": 125.09,
@@ -53124,9 +53020,9 @@
           "composite": 60.99,
           "central": 62.24,
           "peg": 0.05,
-          "mos_pct": 67.1,
-          "mos_fcf_pct": 72.4,
-          "mos_cash_pct": 56.8
+          "mos_pct": 67.0,
+          "mos_fcf_pct": 72.3,
+          "mos_cash_pct": 56.6
         }
       }
     },
@@ -53167,7 +53063,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 48.985,
+        "price": 49.1,
         "score": 104,
         "pct": 64.2,
         "grade": "B",
@@ -53414,7 +53310,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -53459,7 +53355,7 @@
           "peg": 0.23,
           "mos_pct": 69.4,
           "mos_fcf_pct": 78.2,
-          "mos_cash_pct": 56.6
+          "mos_cash_pct": 56.5
         }
       }
     },
@@ -53747,7 +53643,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -53833,7 +53729,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 21.21,
+        "price": 21.25,
         "score": 99,
         "pct": 61.1,
         "grade": "B",
@@ -54080,7 +53976,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -54123,9 +54019,9 @@
           "composite": 255.06,
           "central": 16.42,
           "peg": 0.23,
-          "mos_pct": -22.6,
-          "mos_fcf_pct": -51.0,
-          "mos_cash_pct": 93.7
+          "mos_pct": -22.7,
+          "mos_fcf_pct": -51.3,
+          "mos_cash_pct": 93.6
         }
       }
     },
@@ -54166,7 +54062,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 9.79,
+        "price": 9.8,
         "score": 82,
         "pct": 50.6,
         "grade": "C",
@@ -54413,7 +54309,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -54456,9 +54352,9 @@
           "composite": 8.56,
           "central": 6.07,
           "peg": null,
-          "mos_pct": -38.0,
-          "mos_fcf_pct": -61.4,
-          "mos_cash_pct": 30.2
+          "mos_pct": -38.1,
+          "mos_fcf_pct": -61.6,
+          "mos_cash_pct": 30.1
         }
       }
     },
@@ -54499,7 +54395,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 16.11,
+        "price": 16.075,
         "score": 88,
         "pct": 54.3,
         "grade": "C",
@@ -54746,7 +54642,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -54788,9 +54684,9 @@
           "intrinsic_cash": 60.3,
           "composite": 52.41,
           "central": 1.93,
-          "peg": 10.97,
+          "peg": 10.94,
           "mos_pct": -88.0,
-          "mos_fcf_pct": -733.9,
+          "mos_fcf_pct": -732.1,
           "mos_cash_pct": 73.3
         }
       }
@@ -54832,7 +54728,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 644.54,
+        "price": 648.78,
         "score": 113,
         "pct": 69.8,
         "grade": "B",
@@ -55079,7 +54975,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -55122,9 +55018,9 @@
           "composite": 105.94,
           "central": 128.0,
           "peg": 0.73,
-          "mos_pct": -80.1,
-          "mos_fcf_pct": -527.0,
-          "mos_cash_pct": -400.8
+          "mos_pct": -80.3,
+          "mos_fcf_pct": -531.1,
+          "mos_cash_pct": -404.1
         }
       }
     },
@@ -55165,7 +55061,7 @@
         "sector": "Transportation",
         "is_bank": false,
         "is_psx": false,
-        "price": 167.76,
+        "price": 168.33,
         "score": 80,
         "pct": 49.4,
         "grade": "FAIL",
@@ -55412,7 +55308,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -55455,9 +55351,9 @@
           "composite": 154.67,
           "central": 83.91,
           "peg": 0.49,
-          "mos_pct": -50.0,
-          "mos_fcf_pct": -45.0,
-          "mos_cash_pct": 17.9
+          "mos_pct": -50.2,
+          "mos_fcf_pct": -45.4,
+          "mos_cash_pct": 17.6
         }
       }
     },
@@ -55498,7 +55394,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 8.54,
+        "price": 8.55,
         "score": 127,
         "pct": 78.4,
         "grade": "B",
@@ -55745,7 +55641,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -55831,7 +55727,7 @@
         "sector": "Commercial Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 7.0593,
+        "price": 7.0374,
         "score": 100,
         "pct": 61.7,
         "grade": "B",
@@ -56078,7 +55974,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -56121,9 +56017,9 @@
           "composite": 18.44,
           "central": 5.12,
           "peg": 0.24,
-          "mos_pct": -27.5,
-          "mos_fcf_pct": 56.2,
-          "mos_cash_pct": 60.2
+          "mos_pct": -27.2,
+          "mos_fcf_pct": 56.3,
+          "mos_cash_pct": 60.3
         }
       }
     },
@@ -56164,7 +56060,7 @@
         "sector": "Commercial Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 15.02,
+        "price": 14.995,
         "score": 106,
         "pct": 65.4,
         "grade": "B",
@@ -56411,7 +56307,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -56455,8 +56351,8 @@
           "central": 4.33,
           "peg": 0.39,
           "mos_pct": -71.1,
-          "mos_fcf_pct": -1.9,
-          "mos_cash_pct": 39.5
+          "mos_fcf_pct": -1.8,
+          "mos_cash_pct": 39.6
         }
       }
     },
@@ -56497,7 +56393,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 995,
+        "price": 996.51,
         "score": 103,
         "pct": 63.6,
         "grade": "B",
@@ -56744,7 +56640,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -56788,8 +56684,8 @@
           "central": 169.25,
           "peg": 0.96,
           "mos_pct": -83.0,
-          "mos_fcf_pct": -629.8,
-          "mos_cash_pct": -611.2
+          "mos_fcf_pct": -630.9,
+          "mos_cash_pct": -612.3
         }
       }
     },
@@ -57077,7 +56973,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -57163,7 +57059,7 @@
         "sector": "Consumer Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 5.025,
+        "price": 5.045,
         "score": 65,
         "pct": 40.1,
         "grade": "FAIL",
@@ -57410,7 +57306,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -57439,7 +57335,7 @@
         "piotroski": 4,
         "altman_z": null,
         "beneish_m": 2.28,
-        "shareholder_yield_pct": 2.33,
+        "shareholder_yield_pct": 2.32,
         "iv": {
           "dcf_eps": null,
           "dcf_fcf": null,
@@ -57455,7 +57351,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 69.4
+          "mos_cash_pct": 69.3
         }
       }
     },
@@ -57743,7 +57639,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -57861,7 +57757,7 @@
         "sector": "Producer Manufacturing",
         "is_bank": false,
         "is_psx": false,
-        "price": 41.1,
+        "price": 41.14,
         "score": 116,
         "pct": 71.6,
         "grade": "B",
@@ -58108,7 +58004,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -58151,8 +58047,8 @@
           "composite": 61.67,
           "central": 76.25,
           "peg": 0.03,
-          "mos_pct": 46.1,
-          "mos_fcf_pct": 24.7,
+          "mos_pct": 46.0,
+          "mos_fcf_pct": 24.6,
           "mos_cash_pct": 48.0
         }
       }
@@ -58441,7 +58337,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -58774,7 +58670,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -58860,7 +58756,7 @@
         "sector": "Commercial Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 12.305,
+        "price": 12.29,
         "score": 83,
         "pct": 51.2,
         "grade": "C",
@@ -59107,7 +59003,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -59151,8 +59047,8 @@
           "central": 1.62,
           "peg": null,
           "mos_pct": -86.8,
-          "mos_fcf_pct": -187.2,
-          "mos_cash_pct": 24.4
+          "mos_fcf_pct": -186.8,
+          "mos_cash_pct": 24.5
         }
       }
     },
@@ -59193,7 +59089,7 @@
         "sector": "Retail Trade",
         "is_bank": false,
         "is_psx": false,
-        "price": 27.39,
+        "price": 27.18,
         "score": 100,
         "pct": 61.7,
         "grade": "B",
@@ -59440,7 +59336,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -59482,10 +59378,10 @@
           "intrinsic_cash": 19.41,
           "composite": 14.4,
           "central": 14.0,
-          "peg": 0.68,
-          "mos_pct": -48.9,
-          "mos_fcf_pct": -149.2,
-          "mos_cash_pct": -41.1
+          "peg": 0.67,
+          "mos_pct": -48.5,
+          "mos_fcf_pct": -147.3,
+          "mos_cash_pct": -40.1
         }
       }
     },
@@ -59526,7 +59422,7 @@
         "sector": "Producer Manufacturing",
         "is_bank": false,
         "is_psx": false,
-        "price": 52.21,
+        "price": 52.18,
         "score": 125,
         "pct": 77.2,
         "grade": "B",
@@ -59773,7 +59669,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -59802,7 +59698,7 @@
         "piotroski": 7,
         "altman_z": 163.76,
         "beneish_m": -1.33,
-        "shareholder_yield_pct": 7.29,
+        "shareholder_yield_pct": 7.3,
         "iv": {
           "dcf_eps": 564.14,
           "dcf_fcf": 2248.87,
@@ -59859,7 +59755,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.14,
+        "price": 6.13,
         "score": 49,
         "pct": 30.2,
         "grade": "FAIL",
@@ -60106,7 +60002,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -60149,8 +60045,8 @@
           "composite": 27.12,
           "central": 10.41,
           "peg": null,
-          "mos_pct": 41.0,
-          "mos_fcf_pct": 41.0,
+          "mos_pct": 41.1,
+          "mos_fcf_pct": 41.1,
           "mos_cash_pct": 90.6
         }
       }
@@ -60192,7 +60088,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 0.885,
+        "price": 0.8816,
         "score": 72,
         "pct": 44.4,
         "grade": "FAIL",
@@ -60439,7 +60335,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -60484,7 +60380,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": -316.7
+          "mos_cash_pct": -315.1
         }
       }
     },
@@ -60525,7 +60421,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 12.53,
+        "price": 12.52,
         "score": 94,
         "pct": 58.0,
         "grade": "C",
@@ -60772,7 +60668,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -60815,9 +60711,9 @@
           "composite": 11.85,
           "central": 11.74,
           "peg": null,
-          "mos_pct": -6.3,
-          "mos_fcf_pct": -6.7,
-          "mos_cash_pct": 3.9
+          "mos_pct": -6.2,
+          "mos_fcf_pct": -6.6,
+          "mos_cash_pct": 4.0
         }
       }
     },
@@ -60858,7 +60754,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 39.545,
+        "price": 39.68,
         "score": 112,
         "pct": 69.1,
         "grade": "B",
@@ -61105,7 +61001,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -61148,9 +61044,9 @@
           "composite": 24.58,
           "central": 31.98,
           "peg": 0.41,
-          "mos_pct": -19.1,
-          "mos_fcf_pct": -40.0,
-          "mos_cash_pct": -96.4
+          "mos_pct": -19.4,
+          "mos_fcf_pct": -40.4,
+          "mos_cash_pct": -97.1
         }
       }
     },
@@ -61191,7 +61087,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 17.51,
+        "price": 17.44,
         "score": 95,
         "pct": 58.6,
         "grade": "C",
@@ -61438,7 +61334,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -61481,9 +61377,9 @@
           "composite": 35.9,
           "central": 1.91,
           "peg": null,
-          "mos_pct": -89.1,
-          "mos_fcf_pct": -815.1,
-          "mos_cash_pct": 57.4
+          "mos_pct": -89.0,
+          "mos_fcf_pct": -811.4,
+          "mos_cash_pct": 57.6
         }
       }
     },
@@ -61771,7 +61667,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -61857,7 +61753,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 1126.105,
+        "price": 1124.73,
         "score": 72,
         "pct": 44.4,
         "grade": "FAIL",
@@ -62104,7 +62000,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -62147,9 +62043,9 @@
           "composite": 365.26,
           "central": 509.44,
           "peg": 0.83,
-          "mos_pct": -54.8,
-          "mos_fcf_pct": -121.0,
-          "mos_cash_pct": -199.1
+          "mos_pct": -54.7,
+          "mos_fcf_pct": -120.8,
+          "mos_cash_pct": -198.7
         }
       }
     },
@@ -62190,7 +62086,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 17.11,
+        "price": 17.06,
         "score": 83,
         "pct": 51.2,
         "grade": "C",
@@ -62437,7 +62333,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -62480,9 +62376,9 @@
           "composite": 156.72,
           "central": 8.53,
           "peg": null,
-          "mos_pct": -50.2,
-          "mos_fcf_pct": -100.6,
-          "mos_cash_pct": 91.5
+          "mos_pct": -50.0,
+          "mos_fcf_pct": -100.0,
+          "mos_cash_pct": 91.6
         }
       }
     },
@@ -62523,7 +62419,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 1.15,
+        "price": 1.155,
         "score": 73,
         "pct": 45.1,
         "grade": "FAIL",
@@ -62770,7 +62666,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -62815,7 +62711,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 86.8
+          "mos_cash_pct": 86.7
         }
       }
     },
@@ -62856,7 +62752,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 31.62,
+        "price": 31.72,
         "score": 85,
         "pct": 52.5,
         "grade": "C",
@@ -63103,7 +62999,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -63146,9 +63042,9 @@
           "composite": 26.92,
           "central": 15.19,
           "peg": null,
-          "mos_pct": -52.0,
-          "mos_fcf_pct": -108.2,
-          "mos_cash_pct": 5.7
+          "mos_pct": -52.1,
+          "mos_fcf_pct": -108.9,
+          "mos_cash_pct": 5.4
         }
       }
     },
@@ -63189,7 +63085,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 2.62,
+        "price": 2.625,
         "score": 79,
         "pct": 48.8,
         "grade": "FAIL",
@@ -63436,7 +63332,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -63465,7 +63361,7 @@
         "piotroski": 4,
         "altman_z": null,
         "beneish_m": -0.96,
-        "shareholder_yield_pct": 1.0,
+        "shareholder_yield_pct": 0.99,
         "iv": {
           "dcf_eps": null,
           "dcf_fcf": 0.02,
@@ -63480,7 +63376,7 @@
           "central": null,
           "peg": null,
           "mos_pct": null,
-          "mos_fcf_pct": -15996.1,
+          "mos_fcf_pct": -16026.8,
           "mos_cash_pct": 91.6
         }
       }
@@ -63522,7 +63418,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 211.945,
+        "price": 212.085,
         "score": 122,
         "pct": 75.3,
         "grade": "B",
@@ -63769,7 +63665,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -63813,8 +63709,8 @@
           "central": 122.5,
           "peg": 0.25,
           "mos_pct": -42.2,
-          "mos_fcf_pct": -95.4,
-          "mos_cash_pct": -147.4
+          "mos_fcf_pct": -95.6,
+          "mos_cash_pct": -147.6
         }
       }
     },
@@ -64102,7 +63998,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -64188,7 +64084,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 16.17,
+        "price": 16.19,
         "score": 94,
         "pct": 58.0,
         "grade": "C",
@@ -64435,7 +64331,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -64479,7 +64375,7 @@
           "central": 39.54,
           "peg": null,
           "mos_pct": 59.1,
-          "mos_fcf_pct": 57.0,
+          "mos_fcf_pct": 56.9,
           "mos_cash_pct": 84.8
         }
       }
@@ -64521,7 +64417,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 4.575,
+        "price": 4.565,
         "score": 89,
         "pct": 54.9,
         "grade": "C",
@@ -64768,7 +64664,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -64797,7 +64693,7 @@
         "piotroski": 5,
         "altman_z": 1.65,
         "beneish_m": 3.54,
-        "shareholder_yield_pct": 3.98,
+        "shareholder_yield_pct": 3.99,
         "iv": {
           "dcf_eps": null,
           "dcf_fcf": 5.49,
@@ -64811,8 +64707,8 @@
           "composite": 7.7,
           "central": 5.49,
           "peg": null,
-          "mos_pct": 16.7,
-          "mos_fcf_pct": -50.8,
+          "mos_pct": 16.8,
+          "mos_fcf_pct": -50.5,
           "mos_cash_pct": 66.5
         }
       }
@@ -64854,7 +64750,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 16.22,
+        "price": 16.24,
         "score": 119,
         "pct": 73.5,
         "grade": "B",
@@ -65101,7 +64997,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -65130,7 +65026,7 @@
         "piotroski": 6,
         "altman_z": -2.33,
         "beneish_m": 4.35,
-        "shareholder_yield_pct": 7.06,
+        "shareholder_yield_pct": 7.05,
         "iv": {
           "dcf_eps": 222.19,
           "dcf_fcf": 197.2,
@@ -65434,7 +65330,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -65520,7 +65416,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 440.4253,
+        "price": 441.705,
         "score": 136,
         "pct": 84.0,
         "grade": "A",
@@ -65767,7 +65663,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -65853,7 +65749,7 @@
         "sector": "Consumer Non-Durables",
         "is_bank": false,
         "is_psx": false,
-        "price": 15.01,
+        "price": 15.25,
         "score": 103,
         "pct": 63.6,
         "grade": "B",
@@ -66100,7 +65996,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -66142,10 +66038,10 @@
           "intrinsic_cash": 14.76,
           "composite": 12.02,
           "central": 5.12,
-          "peg": 1.69,
-          "mos_pct": -65.9,
-          "mos_fcf_pct": -144.2,
-          "mos_cash_pct": -1.7
+          "peg": 1.72,
+          "mos_pct": -66.4,
+          "mos_fcf_pct": -148.1,
+          "mos_cash_pct": -3.3
         }
       }
     },
@@ -66186,7 +66082,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.165,
+        "price": 6.155,
         "score": 91,
         "pct": 56.2,
         "grade": "C",
@@ -66433,7 +66329,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -66478,7 +66374,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 25.7
+          "mos_cash_pct": 25.8
         }
       }
     },
@@ -66519,7 +66415,7 @@
         "sector": "Producer Manufacturing",
         "is_bank": false,
         "is_psx": false,
-        "price": 4.14,
+        "price": 4.155,
         "score": 81,
         "pct": 50.0,
         "grade": "C",
@@ -66766,7 +66662,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -66811,7 +66707,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 51.1
+          "mos_cash_pct": 50.9
         }
       }
     },
@@ -66852,7 +66748,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 10.72,
+        "price": 10.71,
         "score": 72,
         "pct": 44.4,
         "grade": "FAIL",
@@ -67099,7 +66995,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -67185,7 +67081,7 @@
         "sector": "Health Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 5.26,
+        "price": 5.23,
         "score": 77,
         "pct": 47.5,
         "grade": "FAIL",
@@ -67432,7 +67328,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -67477,7 +67373,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 74.2
+          "mos_cash_pct": 74.3
         }
       }
     },
@@ -67518,7 +67414,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.7201,
+        "price": 6.67,
         "score": 62,
         "pct": 38.3,
         "grade": "FAIL",
@@ -67765,7 +67661,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -67810,7 +67706,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 69.5
+          "mos_cash_pct": 69.7
         }
       }
     },
@@ -67851,7 +67747,7 @@
         "sector": "Health Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 32.85,
+        "price": 32.82,
         "score": 90,
         "pct": 55.6,
         "grade": "C",
@@ -68098,7 +67994,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -68140,10 +68036,10 @@
           "intrinsic_cash": 18.69,
           "composite": 22.42,
           "central": 33.09,
-          "peg": 0.48,
-          "mos_pct": 0.7,
-          "mos_fcf_pct": -12.1,
-          "mos_cash_pct": -75.8
+          "peg": 0.47,
+          "mos_pct": 0.8,
+          "mos_fcf_pct": -12.0,
+          "mos_cash_pct": -75.6
         }
       }
     },
@@ -68216,7 +68112,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 167.405,
+        "price": 167.56,
         "score": 104,
         "pct": 64.2,
         "grade": "B",
@@ -68463,7 +68359,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -68505,10 +68401,10 @@
           "intrinsic_cash": 72.14,
           "composite": 81.33,
           "central": 108.34,
-          "peg": 3.11,
+          "peg": 3.12,
           "mos_pct": -35.3,
-          "mos_fcf_pct": -74.2,
-          "mos_cash_pct": -132.0
+          "mos_fcf_pct": -74.3,
+          "mos_cash_pct": -132.3
         }
       }
     },
@@ -68549,7 +68445,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 4.485,
+        "price": 4.51,
         "score": 74,
         "pct": 45.7,
         "grade": "FAIL",
@@ -68796,7 +68692,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -68882,7 +68778,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 595.58,
+        "price": 594.8,
         "score": 127,
         "pct": 78.4,
         "grade": "B",
@@ -69129,7 +69025,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -69172,9 +69068,9 @@
           "composite": 637.32,
           "central": 857.07,
           "peg": 0.92,
-          "mos_pct": 30.5,
-          "mos_fcf_pct": 20.8,
-          "mos_cash_pct": 9.9
+          "mos_pct": 30.6,
+          "mos_fcf_pct": 20.9,
+          "mos_cash_pct": 10.0
         }
       }
     },
@@ -69215,7 +69111,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 18.34,
+        "price": 18.345,
         "score": 64,
         "pct": 39.5,
         "grade": "FAIL",
@@ -69462,7 +69358,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -69548,7 +69444,7 @@
         "sector": "Retail Trade",
         "is_bank": false,
         "is_psx": false,
-        "price": 1.995,
+        "price": 2.005,
         "score": 89,
         "pct": 54.9,
         "grade": "C",
@@ -69795,7 +69691,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -69881,7 +69777,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 29.69,
+        "price": 29.665,
         "score": 40,
         "pct": 83.3,
         "grade": "A",
@@ -70158,7 +70054,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": null,
@@ -70210,8 +70106,8 @@
           "central": 19.97,
           "peg": 0.03,
           "mos_pct": -32.7,
-          "mos_fcf_pct": -7.7,
-          "mos_cash_pct": 71.0
+          "mos_fcf_pct": -7.6,
+          "mos_cash_pct": 71.1
         }
       }
     },
@@ -71138,7 +71034,7 @@
           }
         ],
         "max": 55,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.78,
         "bank_inputs": {
           "nii": 137070000.0,
@@ -71984,7 +71880,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 32.62,
+        "price": 32.63,
         "score": 41,
         "pct": 74.5,
         "grade": "B",
@@ -72261,7 +72157,7 @@
           }
         ],
         "max": 55,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.78,
         "bank_inputs": {
           "nii": 241216000.0,
@@ -72313,8 +72209,8 @@
           "central": 18.25,
           "peg": null,
           "mos_pct": -44.1,
-          "mos_fcf_pct": -29.9,
-          "mos_cash_pct": 92.7
+          "mos_fcf_pct": -30.0,
+          "mos_cash_pct": 92.6
         }
       }
     },
@@ -72731,7 +72627,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 34.56,
+        "price": 34.55,
         "score": 110,
         "pct": 67.9,
         "grade": "B",
@@ -72978,7 +72874,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -73022,8 +72918,8 @@
           "central": 18.5,
           "peg": 0.94,
           "mos_pct": -46.5,
-          "mos_fcf_pct": -151.9,
-          "mos_cash_pct": -40.6
+          "mos_fcf_pct": -151.8,
+          "mos_cash_pct": -40.5
         }
       }
     },
@@ -73128,7 +73024,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 14.34,
+        "price": 14.35,
         "score": 100,
         "pct": 61.7,
         "grade": "B",
@@ -73375,7 +73271,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -73418,8 +73314,8 @@
           "composite": 30.27,
           "central": 8.7,
           "peg": null,
-          "mos_pct": -39.3,
-          "mos_fcf_pct": -48.3,
+          "mos_pct": -39.4,
+          "mos_fcf_pct": -48.4,
           "mos_cash_pct": 69.8
         }
       }
@@ -73869,7 +73765,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 411.61,
+        "price": 412.705,
         "score": 94,
         "pct": 58.0,
         "grade": "C",
@@ -74116,7 +74012,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -74145,7 +74041,7 @@
         "piotroski": 5,
         "altman_z": 0.17,
         "beneish_m": 3.27,
-        "shareholder_yield_pct": 2.8,
+        "shareholder_yield_pct": 2.79,
         "iv": {
           "dcf_eps": 341.95,
           "dcf_fcf": 1074.55,
@@ -74158,10 +74054,10 @@
           "intrinsic_cash": 746.32,
           "composite": 728.0,
           "central": 341.95,
-          "peg": 1.71,
-          "mos_pct": -16.9,
-          "mos_fcf_pct": 24.1,
-          "mos_cash_pct": 44.8
+          "peg": 1.72,
+          "mos_pct": -17.1,
+          "mos_fcf_pct": 23.9,
+          "mos_cash_pct": 44.7
         }
       }
     },
@@ -74202,7 +74098,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 3.66,
+        "price": 3.675,
         "score": 111,
         "pct": 68.5,
         "grade": "B",
@@ -74449,7 +74345,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -74492,8 +74388,8 @@
           "composite": 17.84,
           "central": 8.34,
           "peg": 0.02,
-          "mos_pct": 56.1,
-          "mos_fcf_pct": 66.1,
+          "mos_pct": 55.9,
+          "mos_fcf_pct": 66.0,
           "mos_cash_pct": 89.1
         }
       }
@@ -74879,7 +74775,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 34.03,
+        "price": 33.99,
         "score": 42,
         "pct": 76.4,
         "grade": "B",
@@ -75156,7 +75052,7 @@
           }
         ],
         "max": 55,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.78,
         "bank_inputs": {
           "nii": 130449000.0,
@@ -75208,8 +75104,8 @@
           "central": 18.02,
           "peg": 4.21,
           "mos_pct": -47.0,
-          "mos_fcf_pct": -26.6,
-          "mos_cash_pct": 85.0
+          "mos_fcf_pct": -26.5,
+          "mos_cash_pct": 85.1
         }
       }
     },
@@ -75562,7 +75458,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 29.64,
+        "price": 29.65,
         "score": 37,
         "pct": 77.1,
         "grade": "B",
@@ -75839,7 +75735,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": null,
@@ -75892,7 +75788,7 @@
           "peg": 0.17,
           "mos_pct": -54.7,
           "mos_fcf_pct": 4.9,
-          "mos_cash_pct": 21.3
+          "mos_cash_pct": 21.2
         }
       }
     },
@@ -75965,7 +75861,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 55.75,
+        "price": 55.695,
         "score": 46,
         "pct": 83.6,
         "grade": "A",
@@ -76242,7 +76138,7 @@
           }
         ],
         "max": 55,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.78,
         "bank_inputs": {
           "nii": 87770000.0,
@@ -76292,9 +76188,9 @@
           "intrinsic_cash": 306.42,
           "composite": 222.42,
           "central": 40.6,
-          "peg": 14.13,
-          "mos_pct": -27.2,
-          "mos_fcf_pct": -23.5,
+          "peg": 14.12,
+          "mos_pct": -27.1,
+          "mos_fcf_pct": -23.3,
           "mos_cash_pct": 81.8
         }
       }
@@ -76776,7 +76672,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 22.13,
+        "price": 22.120554,
         "score": 50,
         "pct": 90.9,
         "grade": "A",
@@ -77053,7 +76949,7 @@
           }
         ],
         "max": 55,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.78,
         "bank_inputs": {
           "nii": 291447000.0,
@@ -77104,7 +77000,7 @@
           "composite": 70.11,
           "central": 30.42,
           "peg": 2.68,
-          "mos_pct": 27.2,
+          "mos_pct": 27.3,
           "mos_fcf_pct": 24.5,
           "mos_cash_pct": 71.9
         }
@@ -78035,7 +77931,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 194.75,
+        "price": 195.16,
         "score": 35,
         "pct": 72.9,
         "grade": "B",
@@ -78312,7 +78208,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": 0.67,
         "bank_inputs": {
           "nii": null,
@@ -78349,7 +78245,7 @@
         "piotroski": 5,
         "altman_z": null,
         "beneish_m": 1.82,
-        "shareholder_yield_pct": 4.35,
+        "shareholder_yield_pct": 4.34,
         "iv": {
           "dcf_eps": 35.05,
           "dcf_fcf": 1732.15,
@@ -78364,10 +78260,42 @@
           "central": 35.05,
           "peg": null,
           "mos_pct": -82.0,
-          "mos_fcf_pct": 73.4,
-          "mos_cash_pct": -605.6
+          "mos_fcf_pct": 73.3,
+          "mos_cash_pct": -607.1
         }
       }
+    },
+    {
+      "ticker": "AIP",
+      "name": "AIP",
+      "sector": "Electronic Technology",
+      "rev_growth": 22.3,
+      "op_growth": -4.9,
+      "np_growth": -3.3,
+      "pbt_growth": -7.1,
+      "eps_growth": 12.1,
+      "op_np_ratio": null,
+      "signal_a": false,
+      "signal_b": false,
+      "conditions": {
+        "g1": true,
+        "g2": false,
+        "a1": false,
+        "a2": null,
+        "c1": null,
+        "c3": null
+      },
+      "forward": {
+        "f1": false,
+        "fr": null
+      },
+      "forward_boost": false,
+      "verdict": "NOT EXPLOSIVE \u2014 OP declining",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "tv",
+      "fidelity": "im3_screen",
+      "is_financial": false,
+      "zacks_rank": 2
     },
     {
       "ticker": "HYLN",
@@ -79027,38 +78955,6 @@
       },
       "forward_boost": true,
       "verdict": "NOT EXPLOSIVE \u2014 OP declining",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "tv",
-      "fidelity": "im3_screen",
-      "is_financial": false,
-      "zacks_rank": null
-    },
-    {
-      "ticker": "TRIN",
-      "name": "TRIN",
-      "sector": "Miscellaneous",
-      "rev_growth": 16.6,
-      "op_growth": null,
-      "np_growth": 17.3,
-      "pbt_growth": 16.8,
-      "eps_growth": -17.6,
-      "op_np_ratio": null,
-      "signal_a": null,
-      "signal_b": null,
-      "conditions": {
-        "g1": false,
-        "g2": null,
-        "a1": null,
-        "a2": null,
-        "c1": null,
-        "c3": null
-      },
-      "forward": {
-        "f1": false,
-        "fr": null
-      },
-      "forward_boost": false,
-      "verdict": "NOT EXPLOSIVE",
       "cash_guardrails": "na_confirm_im3",
       "growth_source": "tv",
       "fidelity": "im3_screen",
@@ -80234,38 +80130,6 @@
       "zacks_rank": null
     },
     {
-      "ticker": "NAT",
-      "name": "NAT",
-      "sector": "Transportation",
-      "rev_growth": -16.6,
-      "op_growth": -38.2,
-      "np_growth": -73.7,
-      "pbt_growth": -73.6,
-      "eps_growth": 993.0,
-      "op_np_ratio": null,
-      "signal_a": false,
-      "signal_b": false,
-      "conditions": {
-        "g1": false,
-        "g2": false,
-        "a1": false,
-        "a2": null,
-        "c1": null,
-        "c3": null
-      },
-      "forward": {
-        "f1": false,
-        "fr": null
-      },
-      "forward_boost": false,
-      "verdict": "NOT EXPLOSIVE \u2014 OP declining",
-      "cash_guardrails": "na_confirm_im3",
-      "growth_source": "tv",
-      "fidelity": "im3_screen",
-      "is_financial": false,
-      "zacks_rank": null
-    },
-    {
       "ticker": "MRLN",
       "name": "MRLN",
       "sector": "Technology Services",
@@ -80584,6 +80448,38 @@
       "fidelity": "im3_screen",
       "is_financial": false,
       "zacks_rank": 2
+    },
+    {
+      "ticker": "NAT",
+      "name": "NAT",
+      "sector": "Transportation",
+      "rev_growth": -16.6,
+      "op_growth": -61.6,
+      "np_growth": -73.7,
+      "pbt_growth": -73.6,
+      "eps_growth": 993.0,
+      "op_np_ratio": null,
+      "signal_a": false,
+      "signal_b": false,
+      "conditions": {
+        "g1": false,
+        "g2": false,
+        "a1": false,
+        "a2": null,
+        "c1": null,
+        "c3": null
+      },
+      "forward": {
+        "f1": false,
+        "fr": null
+      },
+      "forward_boost": false,
+      "verdict": "NOT EXPLOSIVE \u2014 OP declining",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "tv",
+      "fidelity": "im3_screen",
+      "is_financial": false,
+      "zacks_rank": null
     },
     {
       "ticker": "WELL",
@@ -81414,7 +81310,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.865,
+        "price": 6.845,
         "score": 77,
         "pct": 47.5,
         "grade": "FAIL",
@@ -81661,7 +81557,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -82131,7 +82027,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 26.2007,
+        "price": 25.95,
         "score": 81,
         "pct": 50.0,
         "grade": "C",
@@ -82378,7 +82274,7 @@
           }
         ],
         "max": 162,
-        "ver": "2.14.2",
+        "ver": "2.14.3",
         "bank_coverage": null,
         "bank_inputs": null,
         "src": {
@@ -82423,7 +82319,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 77.6
+          "mos_cash_pct": 77.8
         }
       }
     },
@@ -82750,28 +82646,28 @@
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-06-15T18:44:32.317977Z",
+    "_fetched_utc": "2026-06-15T18:56:24.952612Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
   },
   "sector_medians": {
     "Electronic Technology": {
-      "pe": 43.337,
+      "pe": 43.3269,
       "op_margin": 0.1223,
       "net_margin": 0.1023,
       "roe": 0.1486,
       "n": 162
     },
     "Technology Services": {
-      "pe": 26.3276,
+      "pe": 26.3397,
       "op_margin": 0.1547,
       "net_margin": 0.1237,
       "roe": 0.1367,
       "n": 143
     },
     "Retail Trade": {
-      "pe": 23.7542,
+      "pe": 23.7389,
       "op_margin": 0.0757,
       "net_margin": 0.0455,
       "roe": 0.206,
@@ -82786,10 +82682,10 @@
     },
     "Consumer Durables": {
       "pe": 14.8854,
-      "op_margin": 0.0748,
-      "net_margin": 0.0506,
-      "roe": 0.0934,
-      "n": 66
+      "op_margin": 0.0753,
+      "net_margin": 0.0522,
+      "roe": 0.0946,
+      "n": 65
     },
     "Finance": {
       "pe": 12.279,
@@ -82799,7 +82695,7 @@
       "n": 540
     },
     "Health Technology": {
-      "pe": 26.93,
+      "pe": 26.9308,
       "op_margin": 0.1991,
       "net_margin": 0.1334,
       "roe": 0.1165,
@@ -82820,18 +82716,18 @@
       "n": 140
     },
     "Health Services": {
-      "pe": 22.1737,
+      "pe": 22.177,
       "op_margin": 0.0908,
       "net_margin": 0.0548,
       "roe": 0.1231,
       "n": 20
     },
     "Consumer Non-Durables": {
-      "pe": 21.3404,
-      "op_margin": 0.1552,
-      "net_margin": 0.0912,
-      "roe": 0.1612,
-      "n": 97
+      "pe": 21.001,
+      "op_margin": 0.1536,
+      "net_margin": 0.0904,
+      "roe": 0.1607,
+      "n": 98
     },
     "Process Industries": {
       "pe": 23.8057,
@@ -82841,49 +82737,49 @@
       "n": 60
     },
     "Non-Energy Minerals": {
-      "pe": 19.6684,
+      "pe": 19.692,
       "op_margin": 0.244,
       "net_margin": 0.171,
       "roe": 0.1535,
       "n": 86
     },
     "Consumer Services": {
-      "pe": 23.9578,
+      "pe": 23.9419,
       "op_margin": 0.1597,
       "net_margin": 0.092,
       "roe": 0.1955,
       "n": 62
     },
     "Utilities": {
-      "pe": 20.7742,
+      "pe": 20.759,
       "op_margin": 0.2127,
       "net_margin": 0.1255,
       "roe": 0.1021,
       "n": 88
     },
     "Transportation": {
-      "pe": 23.2029,
+      "pe": 23.2328,
       "op_margin": 0.0974,
       "net_margin": 0.0684,
       "roe": 0.1401,
       "n": 61
     },
     "Commercial Services": {
-      "pe": 26.6554,
+      "pe": 26.6494,
       "op_margin": 0.1893,
       "net_margin": 0.1226,
       "roe": 0.2512,
       "n": 37
     },
     "Industrial Services": {
-      "pe": 24.8304,
+      "pe": 24.8408,
       "op_margin": 0.1198,
       "net_margin": 0.0811,
       "roe": 0.1479,
       "n": 70
     },
     "Distribution Services": {
-      "pe": 22.4022,
+      "pe": 22.3931,
       "op_margin": 0.0526,
       "net_margin": 0.0354,
       "roe": 0.157,
@@ -84823,7 +84719,7 @@
     "XERS",
     "ZVRA"
   ],
-  "im3_last_scored_utc": "2026-06-15T18:45:32.063594+00:00",
+  "im3_last_scored_utc": "2026-06-15T18:57:30.321472+00:00",
   "im3_psx_tickers": [
     "ABL",
     "AGP",
