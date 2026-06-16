@@ -1,7 +1,7 @@
 {
   "meta": {
-    "scan_version": "1.59.0",
-    "last_scan_utc": "2026-06-16T17:18:56.894591Z",
+    "scan_version": "1.61.0",
+    "last_scan_utc": "2026-06-16T17:29:06.514444Z",
     "errors": [],
     "warnings": []
   },
@@ -96,25 +96,25 @@
       "permits_yoy": -3.0,
       "permits_yoy_dir": "down",
       "us_2s10s": 0.39,
-      "wti": 75.19,
+      "wti": 75.02,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-16",
-      "wti_wow": -13.01,
+      "wti_wow": -13.18,
       "wti_wow_dir": "down",
-      "wti_mom": -30.23,
+      "wti_mom": -30.4,
       "wti_mom_dir": "down",
-      "wti_qoq": -21.02,
+      "wti_qoq": -21.19,
       "wti_qoq_dir": "down",
-      "brent": 78.82,
+      "brent": 78.62,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-16",
-      "brent_wow": -12.63,
+      "brent_wow": -12.83,
       "brent_wow_dir": "down",
-      "brent_mom": -30.44,
+      "brent_mom": -30.64,
       "brent_mom_dir": "down",
-      "brent_qoq": -24.6,
+      "brent_qoq": -24.8,
       "brent_qoq_dir": "down",
-      "brent_wti_spread": 3.63,
+      "brent_wti_spread": 3.6,
       "us_oil_rigs": 545,
       "us_rigs_utc": "2026-06-10T17:19:50.414589Z",
       "fomc": {
@@ -157,8 +157,8 @@
       "sbp_rate_source": "tradingeconomics.com",
       "usd_pkr": 278.02,
       "sbp_reserves": 21.27,
-      "kse100": 178182.07,
-      "kse100_source": "psx-dps:int (last session close)",
+      "kse100": 180392.98,
+      "kse100_source": "tradingview:KSE100 (official close)",
       "kse100_date": "2026-06-16",
       "pak_cpi": 7.3,
       "pak_ca": 1369.0,
@@ -202,20 +202,20 @@
         },
         {
           "d": "2026-06-16",
-          "v": 178182.07
+          "v": 180392.98
         }
       ],
-      "kse100_wow": 1367.59,
+      "kse100_wow": 3578.5,
       "kse100_wow_dir": "up",
-      "kse100_mom": 7739.93,
+      "kse100_mom": 9950.84,
       "kse100_mom_dir": "up"
     },
     "metals": {
-      "gold_px": 4360.9,
+      "gold_px": 4352.1,
       "gold_px_date": "2026-06-16",
-      "silver_px": 70.14,
+      "silver_px": 69.96,
       "silver_px_date": "2026-06-16",
-      "platinum_px": 1816.3,
+      "platinum_px": 1815.5,
       "platinum_px_date": "2026-06-16",
       "palladium_px": 1370.0,
       "palladium_px_date": "2026-06-16",
@@ -334,23 +334,23 @@
       "cot_silver_pct_wow_dir": "down",
       "cot_copper_pct_wow": -1.4,
       "cot_copper_pct_wow_dir": "down",
-      "gold_px_wow": 100.9,
+      "gold_px_wow": 92.1,
       "gold_px_wow_dir": "up",
-      "gold_px_mom": -194.9,
+      "gold_px_mom": -203.7,
       "gold_px_mom_dir": "down",
-      "gold_px_qoq": -640.1,
+      "gold_px_qoq": -648.9,
       "gold_px_qoq_dir": "down",
-      "silver_px_wow": 5.05,
+      "silver_px_wow": 4.87,
       "silver_px_wow_dir": "up",
-      "silver_px_mom": -7.02,
+      "silver_px_mom": -7.2,
       "silver_px_mom_dir": "down",
-      "silver_px_qoq": -9.39,
+      "silver_px_qoq": -9.57,
       "silver_px_qoq_dir": "down",
-      "platinum_px_wow": 107.7,
+      "platinum_px_wow": 106.9,
       "platinum_px_wow_dir": "up",
-      "platinum_px_mom": -165.0,
+      "platinum_px_mom": -165.8,
       "platinum_px_mom_dir": "down",
-      "platinum_px_qoq": -315.5,
+      "platinum_px_qoq": -316.3,
       "platinum_px_qoq_dir": "down",
       "palladium_px_wow": 156.4,
       "palladium_px_wow_dir": "up",
@@ -434,17 +434,17 @@
     ],
     [
       "Active US universe (NASDAQ-sourced)",
-      5184,
+      5185,
       "After ETFs/funds removed"
     ],
     [
       "Small-cap zone ($300M-$2bn) PRE-FILTERED",
-      684,
+      685,
       "TradingView market-cap pre-filter"
     ],
     [
       "+ Revenue Growth >15% YoY",
-      551,
+      552,
       "TV rev-growth (FactSet); financials gated on ROE>=8%"
     ],
     [
@@ -8677,8 +8677,8 @@
         "is_bank": false,
         "is_psx": true,
         "price": 327.64,
-        "score": 125,
-        "pct": 77.2,
+        "score": 126,
+        "pct": 77.8,
         "grade": "B",
         "metrics": [
           {
@@ -8767,8 +8767,8 @@
           },
           {
             "key": "roe",
-            "verdict": "WATCH",
-            "pts": 2,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
@@ -12953,23 +12953,25 @@
       "name": "VOXR",
       "sector": "Finance",
       "industry": "",
-      "market_cap": 373440557.2713858,
+      "market_cap": 373102938.7303371,
       "market_cap_m": 373.0,
-      "price": 5.4199,
+      "price": 5.415,
       "rev_growth": 498.3,
       "eps_growth": 433.3,
       "growth_source": "yf_stmt",
       "roe": 34.9,
       "debt_equity": 0.0,
-      "pe": 12.508423724901915,
+      "pe": 12.497115162704823,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": 9.173387096774196,
+      "perf_3m": -5.497382198952886,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "HIGH-CONVICTION",
       "analyst_row": {
         "name": "VOXR",
-        "close": 5.4199,
+        "close": 5.415,
         "price_target_average": 7.69907,
         "recommendation_mark": 1,
         "recommendation_buy": 6,
@@ -12985,9 +12987,9 @@
       "name": "HYLN",
       "sector": "Producer Manufacturing",
       "industry": "",
-      "market_cap": 1308921914.4588397,
-      "market_cap_m": 1309.0,
-      "price": 7.34,
+      "market_cap": 1308030278.277328,
+      "market_cap_m": 1308.0,
+      "price": 7.335,
       "rev_growth": 479.1,
       "eps_growth": 33.2,
       "growth_source": "tv",
@@ -12996,12 +12998,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": 305.2486187845304,
+      "perf_3m": 278.09278350515467,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "HIGH-CONVICTION",
       "analyst_row": {
         "name": "HYLN",
-        "close": 7.34,
+        "close": 7.32,
         "price_target_average": 7,
         "recommendation_mark": 1.333333,
         "recommendation_buy": 2,
@@ -13017,23 +13021,25 @@
       "name": "RJET",
       "sector": "Transportation",
       "industry": "",
-      "market_cap": 868686783.1416168,
-      "market_cap_m": 869.0,
-      "price": 18.55,
+      "market_cap": 867750193.6180141,
+      "market_cap_m": 868.0,
+      "price": 18.53,
       "rev_growth": 456.6,
       "eps_growth": 15.4,
       "growth_source": "yf_stmt",
       "roe": 6.0,
       "debt_equity": 0.92,
-      "pe": 5.894315401480728,
+      "pe": 5.8879603444440916,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": -3.9896373056994796,
+      "perf_3m": 6.6168009205984015,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "HIGH-CONVICTION",
       "analyst_row": {
         "name": "RJET",
-        "close": 18.55,
+        "close": 18.53,
         "price_target_average": null,
         "recommendation_mark": null,
         "recommendation_buy": null,
@@ -13049,9 +13055,9 @@
       "name": "DVLT",
       "sector": "Electronic Technology",
       "industry": "",
-      "market_cap": 337861443.848346,
+      "market_cap": 337690331.443257,
       "market_cap_m": 338.0,
-      "price": 0.3949,
+      "price": 0.3947,
       "rev_growth": 443.1,
       "eps_growth": 48.1,
       "growth_source": "tv",
@@ -13060,12 +13066,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": -69.87022900763358,
+      "perf_3m": -57.093162300250036,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "STRONG",
       "analyst_row": {
         "name": "DVLT",
-        "close": 0.3943,
+        "close": 0.3951,
         "price_target_average": 3,
         "recommendation_mark": 1,
         "recommendation_buy": 2,
@@ -13081,9 +13089,9 @@
       "name": "ABTC",
       "sector": "Technology Services",
       "industry": "",
-      "market_cap": 893568923.9662606,
-      "market_cap_m": 894.0,
-      "price": 0.8406,
+      "market_cap": 893462622.6429242,
+      "market_cap_m": 893.0,
+      "price": 0.8405,
       "rev_growth": 403.5,
       "eps_growth": 28.7,
       "growth_source": "tv",
@@ -13092,6 +13100,8 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": -51.556195965417864,
+      "perf_3m": -19.18269230769231,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "STRONG",
@@ -13113,9 +13123,9 @@
       "name": "VSTM",
       "sector": "Health Technology",
       "industry": "",
-      "market_cap": 347540254.11,
-      "market_cap_m": 348.0,
-      "price": 3.955,
+      "market_cap": 350176463.37,
+      "market_cap_m": 350.0,
+      "price": 3.985,
       "rev_growth": 395.8,
       "eps_growth": 61.3,
       "growth_source": "tv",
@@ -13124,12 +13134,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": -50.74165636588381,
+      "perf_3m": -29.717813051146386,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "STRONG",
       "analyst_row": {
         "name": "VSTM",
-        "close": 3.96,
+        "close": 3.985,
         "price_target_average": 16,
         "recommendation_mark": 1,
         "recommendation_buy": 9,
@@ -13145,9 +13157,9 @@
       "name": "BTGO",
       "sector": "Technology Services",
       "industry": "",
-      "market_cap": 649952504.1797854,
-      "market_cap_m": 650.0,
-      "price": 5.605,
+      "market_cap": 649384303.0610555,
+      "market_cap_m": 649.0,
+      "price": 5.6001,
       "rev_growth": 361.4,
       "eps_growth": -1747.2,
       "growth_source": "tv",
@@ -13156,12 +13168,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": -75.03299152920195,
+      "perf_3m": -47.21866163996229,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "STRONG",
       "analyst_row": {
         "name": "BTGO",
-        "close": 5.605,
+        "close": 5.6001,
         "price_target_average": 14.538462,
         "recommendation_mark": 1.153846,
         "recommendation_buy": 11,
@@ -13170,16 +13184,16 @@
         "earnings_per_share_forecast_fq": -0.155632,
         "earnings_per_share_fq": -0.62
       },
-      "prev_fwd_eps": 0.012981
+      "prev_fwd_eps": 0.010981
     },
     {
       "ticker": "ARQQ",
       "name": "ARQQ",
       "sector": "Technology Services",
       "industry": "",
-      "market_cap": 310396718.82343745,
-      "market_cap_m": 310.0,
-      "price": 19.8313,
+      "market_cap": 311628520.15624994,
+      "market_cap_m": 312.0,
+      "price": 19.91,
       "rev_growth": 350.6,
       "eps_growth": -69.9,
       "growth_source": "tv",
@@ -13188,12 +13202,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": -14.032815198618307,
+      "perf_3m": 42.214285714285715,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "STRONG",
       "analyst_row": {
         "name": "ARQQ",
-        "close": 19.985,
+        "close": 19.85,
         "price_target_average": null,
         "recommendation_mark": null,
         "recommendation_buy": null,
@@ -13209,9 +13225,9 @@
       "name": "WVE",
       "sector": "Health Technology",
       "industry": "",
-      "market_cap": 1128438941.1225,
-      "market_cap_m": 1128.0,
-      "price": 5.865,
+      "market_cap": 1131324974.22,
+      "market_cap_m": 1131.0,
+      "price": 5.88,
       "rev_growth": 316.9,
       "eps_growth": 54.8,
       "growth_source": "tv",
@@ -13220,12 +13236,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": -64.03669724770643,
+      "perf_3m": -52.311435523114355,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "WATCH",
       "analyst_row": {
         "name": "WVE",
-        "close": 5.865,
+        "close": 5.875,
         "price_target_average": 23.833333,
         "recommendation_mark": 1.027778,
         "recommendation_buy": 17,
@@ -13241,9 +13259,9 @@
       "name": "FWDI",
       "sector": "Consumer Durables",
       "industry": "",
-      "market_cap": 366303917.30601656,
-      "market_cap_m": 366.0,
-      "price": 4.905,
+      "market_cap": 367050714.28319496,
+      "market_cap_m": 367.0,
+      "price": 4.915,
       "rev_growth": 315.0,
       "eps_growth": -126.2,
       "growth_source": "tv",
@@ -13252,12 +13270,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": -29.280575539568346,
+      "perf_3m": -6.558935361216725,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "WATCH",
       "analyst_row": {
         "name": "FWDI",
-        "close": 4.91,
+        "close": 4.915,
         "price_target_average": 8.25,
         "recommendation_mark": 1,
         "recommendation_buy": 2,
@@ -13273,9 +13293,9 @@
       "name": "MRLN",
       "sector": "Technology Services",
       "industry": "",
-      "market_cap": 610022358.5132188,
-      "market_cap_m": 610.0,
-      "price": 6.3199,
+      "market_cap": 610514631.1802574,
+      "market_cap_m": 611.0,
+      "price": 6.325,
       "rev_growth": 297.8,
       "eps_growth": -606.5,
       "growth_source": "tv",
@@ -13284,12 +13304,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": -41.16279069767442,
+      "perf_3m": -29.250559284116328,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "WATCH",
       "analyst_row": {
         "name": "MRLN",
-        "close": 6.31,
+        "close": 6.325,
         "price_target_average": 13,
         "recommendation_mark": 1,
         "recommendation_buy": 2,
@@ -13305,9 +13327,9 @@
       "name": "UMAC",
       "sector": "Electronic Technology",
       "industry": "",
-      "market_cap": 1161631263.3400729,
-      "market_cap_m": 1162.0,
-      "price": 24.305,
+      "market_cap": 1168561381.9652243,
+      "market_cap_m": 1169.0,
+      "price": 24.45,
       "rev_growth": 296.4,
       "eps_growth": 91.1,
       "growth_source": "tv",
@@ -13316,12 +13338,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": 171.66666666666666,
+      "perf_3m": 18.115942028985508,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "WATCH",
       "analyst_row": {
         "name": "UMAC",
-        "close": 24.3993,
+        "close": 24.31,
         "price_target_average": 33.666667,
         "recommendation_mark": 1,
         "recommendation_buy": 6,
@@ -13337,23 +13361,25 @@
       "name": "RHLD",
       "sector": "Commercial Services",
       "industry": "",
-      "market_cap": 1065622926.9434323,
-      "market_cap_m": 1066.0,
-      "price": 129.05,
+      "market_cap": 1063228268.680638,
+      "market_cap_m": 1063.0,
+      "price": 128.76,
       "rev_growth": 292.5,
       "eps_growth": -150.9,
       "growth_source": "yf_stmt",
       "roe": 301.0,
       "debt_equity": 72.19,
-      "pe": 18.71646120377085,
+      "pe": 18.674401740391588,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": -37.5709090909091,
+      "perf_3m": -8.028571428571436,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "WATCH",
       "analyst_row": {
         "name": "RHLD",
-        "close": 129.05,
+        "close": 128.74,
         "price_target_average": null,
         "recommendation_mark": null,
         "recommendation_buy": null,
@@ -13369,9 +13395,9 @@
       "name": "TRX",
       "sector": "Non-Energy Minerals",
       "industry": "",
-      "market_cap": 321987897.07934785,
-      "market_cap_m": 322.0,
-      "price": 0.9879,
+      "market_cap": 321303440.5717392,
+      "market_cap_m": 321.0,
+      "price": 0.9858,
       "rev_growth": 281.3,
       "eps_growth": -681.0,
       "growth_source": "tv",
@@ -13380,12 +13406,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": 14.202965708989812,
+      "perf_3m": -36.4,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "WATCH",
       "analyst_row": {
         "name": "TRX",
-        "close": 0.9827,
+        "close": 0.98195,
         "price_target_average": 2.337530418,
         "recommendation_mark": 1,
         "recommendation_buy": 3,
@@ -13401,9 +13429,9 @@
       "name": "ASPI",
       "sector": "Health Technology",
       "industry": "",
-      "market_cap": 808929601.4194276,
-      "market_cap_m": 809.0,
-      "price": 6.425,
+      "market_cap": 810188635.818524,
+      "market_cap_m": 810.0,
+      "price": 6.435,
       "rev_growth": 279.4,
       "eps_growth": 53.3,
       "growth_source": "tv",
@@ -13412,12 +13440,14 @@
       "pe": null,
       "forward_pe": null,
       "insider_pct": null,
+      "perf_6m": 9.252971137521222,
+      "perf_3m": 27.932405566600384,
       "ocf_ni": null,
       "rev_growth_artifact": false,
       "status": "WATCH",
       "analyst_row": {
         "name": "ASPI",
-        "close": 6.435,
+        "close": 6.43,
         "price_target_average": 13,
         "recommendation_mark": 1,
         "recommendation_buy": 3,
@@ -15282,7 +15312,7 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s2_sponsor": 1,
-        "s1_news_count": 18,
+        "s1_news_count": 13,
         "s5_volume_ratio": 1.37,
         "price": 15.31,
         "s6_momentum_pct": 125.8,
@@ -16317,8 +16347,8 @@
         "is_bank": false,
         "is_psx": true,
         "price": 327.64,
-        "score": 125,
-        "pct": 77.2,
+        "score": 126,
+        "pct": 77.8,
         "grade": "B",
         "metrics": [
           {
@@ -16407,8 +16437,8 @@
           },
           {
             "key": "roe",
-            "verdict": "WATCH",
-            "pts": 2,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
@@ -26837,10 +26867,10 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s2_sponsor": 1,
-        "s1_news_count": 9,
+        "s2_sponsor": 0,
+        "s1_news_count": 6,
         "s5_volume_ratio": 2.63,
-        "price": 24.34,
+        "price": 24.335,
         "s6_momentum_pct": 30.8,
         "rs_vs_spy": 150.3,
         "rs_ok": true,
@@ -26852,7 +26882,7 @@
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 38.0,
+          "target_upside_pct": 38.5,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": -0.13,
@@ -27186,11 +27216,11 @@
         "s11_target_upside": 0,
         "s12_recommendation": 1,
         "s2_sponsor": 1,
-        "s1_news_count": 30,
+        "s1_news_count": 29,
         "s5_volume_ratio": 1.46,
-        "price": 1044.0601,
+        "price": 1043.705,
         "s6_momentum_pct": 126.2,
-        "rs_vs_spy": 338.0,
+        "rs_vs_spy": 337.9,
         "rs_ok": true,
         "s7_margin_spread_pct": 559.7,
         "s8_capital_short_pct": 3.3,
@@ -27216,7 +27246,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 1042.03,
+        "price": 1042.9801,
         "score": 104,
         "pct": 66.7,
         "grade": "B",
@@ -27509,8 +27539,8 @@
           "central": 189.75,
           "peg": 0.2,
           "mos_pct": -81.8,
-          "mos_fcf_pct": -648.3,
-          "mos_cash_pct": -457.0
+          "mos_fcf_pct": -649.0,
+          "mos_cash_pct": -457.5
         }
       }
     },
@@ -27537,9 +27567,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 9,
         "s5_volume_ratio": 0.45,
-        "price": 0.3944,
-        "s6_momentum_pct": -49.4,
-        "rs_vs_spy": -83.0,
+        "price": 0.3921,
+        "s6_momentum_pct": -49.7,
+        "rs_vs_spy": -83.2,
         "rs_ok": false,
         "s8_capital_short_pct": 15.3,
         "s9_eps_rev_net": 1,
@@ -27549,7 +27579,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 660.8,
+          "target_upside_pct": 659.3,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": -0.02,
@@ -27582,9 +27612,9 @@
         "s2_sponsor": 0,
         "s1_news_count": 5,
         "s5_volume_ratio": 1.18,
-        "price": 3.98,
-        "s6_momentum_pct": -29.8,
-        "rs_vs_spy": -65.3,
+        "price": 3.9969,
+        "s6_momentum_pct": -29.5,
+        "rs_vs_spy": -65.1,
         "rs_ok": false,
         "s8_capital_short_pct": 24.3,
         "s9_eps_rev_net": 1,
@@ -27594,7 +27624,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 304.0,
+          "target_upside_pct": 301.5,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": -0.427988,
@@ -27639,7 +27669,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 306.4,
+          "target_upside_pct": 305.7,
           "buy_ratio": 0.94,
           "rec_mark": 1.027778,
           "fwd_eps": -0.299737,
@@ -27671,10 +27701,10 @@
         "s12_recommendation": 1,
         "s2_sponsor": 1,
         "s1_news_count": 10,
-        "s5_volume_ratio": 1.05,
-        "price": 6.425,
-        "s6_momentum_pct": 29.3,
-        "rs_vs_spy": 1.5,
+        "s5_volume_ratio": 1.06,
+        "price": 6.4172,
+        "s6_momentum_pct": 29.1,
+        "rs_vs_spy": 1.4,
         "rs_ok": true,
         "s8_capital_short_pct": 20.0,
         "s9_eps_rev_net": -1,
@@ -27684,7 +27714,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 102.0,
+          "target_upside_pct": 102.2,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": -0.306667,
@@ -27699,7 +27729,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.42,
+        "price": 6.43,
         "score": 77,
         "pct": 58.8,
         "grade": "C",
@@ -28020,9 +28050,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 20,
         "s5_volume_ratio": 1.02,
-        "price": 208.98,
-        "s6_momentum_pct": 15.0,
-        "rs_vs_spy": 6.3,
+        "price": 209.12,
+        "s6_momentum_pct": 15.1,
+        "rs_vs_spy": 6.4,
         "rs_ok": true,
         "s7_margin_spread_pct": 129.3,
         "s8_capital_short_pct": 1.2,
@@ -28048,7 +28078,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 208.9739,
+        "price": 208.99,
         "score": 122,
         "pct": 76.7,
         "grade": "B",
@@ -28369,9 +28399,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 22,
         "s5_volume_ratio": 1.1,
-        "price": 578.96,
-        "s6_momentum_pct": 64.5,
-        "rs_vs_spy": 112.8,
+        "price": 579.74,
+        "s6_momentum_pct": 64.7,
+        "rs_vs_spy": 113.1,
         "rs_ok": true,
         "s7_margin_spread_pct": 22.1,
         "s8_capital_short_pct": 2.5,
@@ -28397,7 +28427,7 @@
         "sector": "Producer Manufacturing",
         "is_bank": false,
         "is_psx": false,
-        "price": 579.83,
+        "price": 579.71,
         "score": 114,
         "pct": 71.7,
         "grade": "B",
@@ -28690,7 +28720,7 @@
           "central": 133.02,
           "peg": 6.81,
           "mos_pct": -77.1,
-          "mos_fcf_pct": -344.5,
+          "mos_fcf_pct": -344.4,
           "mos_cash_pct": -134.7
         }
       }
@@ -28718,7 +28748,7 @@
         "s2_sponsor": 1,
         "s1_news_count": 25,
         "s5_volume_ratio": 0.77,
-        "price": 375.16,
+        "price": 375.165,
         "s6_momentum_pct": 71.0,
         "rs_vs_spy": 118.7,
         "rs_ok": true,
@@ -28731,7 +28761,7 @@
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -11.4,
+          "target_upside_pct": -11.3,
           "buy_ratio": 0.7,
           "rec_mark": 1.283784,
           "fwd_eps": 1.668309,
@@ -28746,7 +28776,7 @@
         "sector": "Producer Manufacturing",
         "is_bank": false,
         "is_psx": false,
-        "price": 375.22,
+        "price": 375.19,
         "score": 97,
         "pct": 71.3,
         "grade": "B",
@@ -29039,7 +29069,7 @@
           "central": null,
           "peg": null,
           "mos_pct": null,
-          "mos_fcf_pct": -926.7,
+          "mos_fcf_pct": -926.6,
           "mos_cash_pct": -364.9
         }
       }
@@ -29066,10 +29096,10 @@
         "s12_recommendation": 1,
         "s2_sponsor": 1,
         "s1_news_count": 27,
-        "s5_volume_ratio": 0.99,
-        "price": 379.04,
-        "s6_momentum_pct": 16.9,
-        "rs_vs_spy": 0.1,
+        "s5_volume_ratio": 1.02,
+        "price": 379.28,
+        "s6_momentum_pct": 18.3,
+        "rs_vs_spy": 0.2,
         "rs_ok": true,
         "s7_margin_spread_pct": 37.5,
         "s8_capital_short_pct": 1.2,
@@ -29080,7 +29110,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 38.0,
+          "target_upside_pct": 37.9,
           "buy_ratio": 0.75,
           "rec_mark": 1.163636,
           "fwd_eps": 3.211664,
@@ -29095,7 +29125,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 379.825,
+        "price": 379.36,
         "score": 117,
         "pct": 76.0,
         "grade": "B",
@@ -29388,8 +29418,8 @@
           "central": 187.92,
           "peg": 0.86,
           "mos_pct": -50.5,
-          "mos_fcf_pct": -158.3,
-          "mos_cash_pct": -314.0
+          "mos_fcf_pct": -157.9,
+          "mos_cash_pct": -313.5
         }
       }
     },
@@ -29416,9 +29446,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 27,
         "s5_volume_ratio": 0.67,
-        "price": 697.95,
-        "s6_momentum_pct": 122.5,
-        "rs_vs_spy": 288.7,
+        "price": 693.51,
+        "s6_momentum_pct": 121.1,
+        "rs_vs_spy": 286.1,
         "rs_ok": true,
         "s7_margin_spread_pct": 437.4,
         "s8_capital_short_pct": 10.4,
@@ -29429,7 +29459,7 @@
         "total": 6,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -19.7,
+          "target_upside_pct": -19.9,
           "buy_ratio": 0.62,
           "rec_mark": 1.344828,
           "fwd_eps": 3.286583,
@@ -29444,7 +29474,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 697,
+        "price": 698.045,
         "score": 113,
         "pct": 71.5,
         "grade": "B",
@@ -29735,10 +29765,10 @@
           "intrinsic_cash": 128.71,
           "composite": 105.94,
           "central": 128.0,
-          "peg": 0.78,
-          "mos_pct": -81.6,
-          "mos_fcf_pct": -578.0,
-          "mos_cash_pct": -441.5
+          "peg": 0.79,
+          "mos_pct": -81.7,
+          "mos_fcf_pct": -579.0,
+          "mos_cash_pct": -442.3
         }
       }
     },
@@ -29765,9 +29795,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 27,
         "s5_volume_ratio": 4.1,
-        "price": 293.235,
-        "s6_momentum_pct": 223.1,
-        "rs_vs_spy": 237.8,
+        "price": 292.425,
+        "s6_momentum_pct": 222.3,
+        "rs_vs_spy": 236.9,
         "rs_ok": true,
         "s7_margin_spread_pct": -108.0,
         "s8_capital_short_pct": 4.7,
@@ -29778,7 +29808,7 @@
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -16.8,
+          "target_upside_pct": -16.6,
           "buy_ratio": 0.74,
           "rec_mark": 1.217391,
           "fwd_eps": 0.926244,
@@ -29811,7 +29841,7 @@
         "s2_sponsor": 1,
         "s1_news_count": 30,
         "s5_volume_ratio": 0.86,
-        "price": 520.855,
+        "price": 520.765,
         "s6_momentum_pct": 165.3,
         "rs_vs_spy": 137.6,
         "rs_ok": true,
@@ -29824,7 +29854,7 @@
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -5.2,
+          "target_upside_pct": -5.1,
           "buy_ratio": 0.67,
           "rec_mark": 1.245614,
           "fwd_eps": 1.602401,
@@ -29839,7 +29869,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 519.8636,
+        "price": 520.975,
         "score": 103,
         "pct": 66.9,
         "grade": "B",
@@ -30117,7 +30147,7 @@
         "piotroski": 6,
         "altman_z": 30.27,
         "beneish_m": 4.05,
-        "shareholder_yield_pct": 0.16,
+        "shareholder_yield_pct": 0.15,
         "iv": {
           "dcf_eps": 104.4,
           "dcf_fcf": 168.6,
@@ -30130,10 +30160,10 @@
           "intrinsic_cash": 131.88,
           "composite": 130.28,
           "central": 104.4,
-          "peg": 4.57,
-          "mos_pct": -79.9,
-          "mos_fcf_pct": -405.0,
-          "mos_cash_pct": -294.2
+          "peg": 4.58,
+          "mos_pct": -80.0,
+          "mos_fcf_pct": -406.1,
+          "mos_cash_pct": -295.0
         }
       }
     },
@@ -30160,20 +30190,20 @@
         "s2_sponsor": 1,
         "s1_news_count": 19,
         "s5_volume_ratio": 1.05,
-        "price": 119.64,
-        "s6_momentum_pct": 52.5,
-        "rs_vs_spy": 44.5,
+        "price": 119.55,
+        "s6_momentum_pct": 52.3,
+        "rs_vs_spy": 44.4,
         "rs_ok": true,
         "s7_margin_spread_pct": 25.1,
         "s8_capital_short_pct": 1.6,
         "s9_eps_rev_net": 18,
         "rev_est": 16827317250.0,
         "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 31,
+        "s3_insider_count": 32,
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 9.4,
+          "target_upside_pct": 9.3,
           "buy_ratio": 0.54,
           "rec_mark": 1.464286,
           "fwd_eps": 1.166537,
@@ -30204,11 +30234,11 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s2_sponsor": 1,
-        "s1_news_count": 11,
+        "s1_news_count": 12,
         "s5_volume_ratio": 0.98,
-        "price": 309.87,
-        "s6_momentum_pct": 60.2,
-        "rs_vs_spy": 65.1,
+        "price": 309.38,
+        "s6_momentum_pct": 59.9,
+        "rs_vs_spy": 64.9,
         "rs_ok": true,
         "s7_margin_spread_pct": 12.7,
         "s8_capital_short_pct": 2.3,
@@ -30252,9 +30282,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 22,
         "s5_volume_ratio": 0.99,
-        "price": 242.55,
+        "price": 242.42,
         "s6_momentum_pct": 63.9,
-        "rs_vs_spy": 87.4,
+        "rs_vs_spy": 87.3,
         "rs_ok": true,
         "s7_margin_spread_pct": 0.3,
         "s8_capital_short_pct": 3.0,
@@ -30265,7 +30295,7 @@
         "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -19.5,
+          "target_upside_pct": -19.3,
           "buy_ratio": 0.47,
           "rec_mark": 1.515625,
           "fwd_eps": 0.996233,
@@ -30298,9 +30328,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 24,
         "s5_volume_ratio": 1.06,
-        "price": 391.795,
-        "s6_momentum_pct": -1.7,
-        "rs_vs_spy": -28.8,
+        "price": 391.4,
+        "s6_momentum_pct": -1.8,
+        "rs_vs_spy": -28.9,
         "rs_ok": false,
         "s7_margin_spread_pct": 5.1,
         "s8_capital_short_pct": 1.2,
@@ -30344,9 +30374,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 21,
         "s5_volume_ratio": 0.94,
-        "price": 370.155,
-        "s6_momentum_pct": 19.1,
-        "rs_vs_spy": 9.5,
+        "price": 370.51,
+        "s6_momentum_pct": 19.2,
+        "rs_vs_spy": 9.6,
         "rs_ok": true,
         "s7_margin_spread_pct": 60.2,
         "s8_capital_short_pct": 1.4,
@@ -30357,7 +30387,7 @@
         "total": 3,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 17.3,
+          "target_upside_pct": 17.4,
           "buy_ratio": 0.75,
           "rec_mark": 1.194444,
           "fwd_eps": 2.876441,
@@ -30388,11 +30418,11 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s2_sponsor": 1,
-        "s1_news_count": 27,
+        "s1_news_count": 26,
         "s5_volume_ratio": 0.68,
-        "price": 2028.6,
-        "s6_momentum_pct": 188.3,
-        "rs_vs_spy": 857.8,
+        "price": 2023.0,
+        "s6_momentum_pct": 187.5,
+        "rs_vs_spy": 855.1,
         "rs_ok": true,
         "s8_capital_short_pct": 9.7,
         "s9_eps_rev_net": 12,
@@ -30435,9 +30465,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 28,
         "s5_volume_ratio": 0.69,
-        "price": 1042.035,
-        "s6_momentum_pct": 147.9,
-        "rs_vs_spy": 251.8,
+        "price": 1039.225,
+        "s6_momentum_pct": 147.2,
+        "rs_vs_spy": 250.9,
         "rs_ok": true,
         "s7_margin_spread_pct": 64.2,
         "s8_capital_short_pct": 4.6,
@@ -30463,7 +30493,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 1040.83,
+        "price": 1041.725,
         "score": 101,
         "pct": 63.5,
         "grade": "B",
@@ -30755,9 +30785,9 @@
           "composite": 135.57,
           "central": 169.25,
           "peg": 1.01,
-          "mos_pct": -83.7,
-          "mos_fcf_pct": -663.4,
-          "mos_cash_pct": -643.9
+          "mos_pct": -83.8,
+          "mos_fcf_pct": -664.1,
+          "mos_cash_pct": -644.6
         }
       }
     },
@@ -30784,7 +30814,7 @@
         "s2_sponsor": 1,
         "s1_news_count": 25,
         "s5_volume_ratio": 0.97,
-        "price": 958.975,
+        "price": 959.115,
         "s6_momentum_pct": 36.9,
         "rs_vs_spy": 52.1,
         "rs_ok": true,
@@ -30801,7 +30831,7 @@
           "buy_ratio": 0.47,
           "rec_mark": 1.55,
           "fwd_eps": 6.171322,
-          "eps_rev_pct": -0.0,
+          "eps_rev_pct": 0.0,
           "eps_surprise_pct": 19.2
         },
         "fwd_eps": 6.171322
@@ -30828,11 +30858,11 @@
         "s11_target_upside": 1,
         "s12_recommendation": 1,
         "s2_sponsor": 1,
-        "s1_news_count": 12,
+        "s1_news_count": 11,
         "s5_volume_ratio": 1.56,
-        "price": 5.58,
-        "s6_momentum_pct": -46.9,
-        "rs_vs_spy": -80.4,
+        "price": 5.55,
+        "s6_momentum_pct": -47.2,
+        "rs_vs_spy": -80.6,
         "rs_ok": false,
         "s8_capital_short_pct": 3.0,
         "s9_eps_rev_net": 0,
@@ -30842,11 +30872,11 @@
         "total": 3,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 159.4,
+          "target_upside_pct": 159.6,
           "buy_ratio": 0.85,
           "rec_mark": 1.153846,
           "fwd_eps": 0.010981,
-          "eps_rev_pct": -15.4,
+          "eps_rev_pct": 0.0,
           "eps_surprise_pct": -298.4
         },
         "fwd_eps": 0.010981
@@ -30874,10 +30904,10 @@
         "s12_recommendation": 0,
         "s2_sponsor": 1,
         "s1_news_count": 11,
-        "s5_volume_ratio": 2.97,
-        "price": 19.96,
-        "s6_momentum_pct": 41.0,
-        "rs_vs_spy": -30.7,
+        "s5_volume_ratio": 2.98,
+        "price": 19.83,
+        "s6_momentum_pct": 40.0,
+        "rs_vs_spy": -31.2,
         "rs_ok": false,
         "s8_capital_short_pct": 13.5,
         "s9_eps_rev_net": 0,
@@ -30886,50 +30916,6 @@
         "total": 5,
         "analyst_covered": false,
         "analyst_detail": {}
-      }
-    },
-    {
-      "ticker": "MRLN",
-      "name": "MRLN",
-      "sector": "Technology Services",
-      "src": "screen",
-      "tce_score": 5,
-      "conviction": 2,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s3_insider": 1,
-        "s5_volume": 1,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 1,
-        "s12_recommendation": 1,
-        "s2_sponsor": 1,
-        "s1_news_count": 17,
-        "s5_volume_ratio": 18.13,
-        "price": 6.3299,
-        "s6_momentum_pct": -17.6,
-        "rs_vs_spy": -53.0,
-        "rs_ok": false,
-        "s9_eps_rev_net": -1,
-        "rev_est": 5750000.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 11,
-        "total": 3,
-        "analyst_covered": true,
-        "analyst_detail": {
-          "target_upside_pct": 106.0,
-          "buy_ratio": 1.0,
-          "rec_mark": 1.0,
-          "fwd_eps": -0.175,
-          "eps_rev_pct": 0.0,
-          "eps_surprise_pct": -620.0
-        },
-        "fwd_eps": -0.175
       }
     },
     {
@@ -30955,7 +30941,7 @@
         "s2_sponsor": 1,
         "s1_news_count": 28,
         "s5_volume_ratio": 2.2,
-        "price": 219.16,
+        "price": 219.125,
         "s6_momentum_pct": 70.0,
         "rs_vs_spy": 14.3,
         "rs_ok": true,
@@ -30999,10 +30985,10 @@
         "s11_target_upside": 1,
         "s12_recommendation": 1,
         "s2_sponsor": 1,
-        "s1_news_count": 15,
+        "s1_news_count": 14,
         "s5_volume_ratio": 1.01,
-        "price": 4.885,
-        "s6_momentum_pct": -11.7,
+        "price": 4.88,
+        "s6_momentum_pct": -11.8,
         "rs_vs_spy": -43.1,
         "rs_ok": false,
         "s8_capital_short_pct": 3.1,
@@ -31013,7 +30999,7 @@
         "total": 2,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 68.0,
+          "target_upside_pct": 67.9,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": 0.025,
@@ -31021,6 +31007,49 @@
           "eps_surprise_pct": -3825.0
         },
         "fwd_eps": 0.025
+      }
+    },
+    {
+      "ticker": "MRLN",
+      "name": "MRLN",
+      "sector": "Technology Services",
+      "src": "screen",
+      "tce_score": 4,
+      "conviction": 2,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 1,
+        "s12_recommendation": 1,
+        "s2_sponsor": 1,
+        "s1_news_count": 15,
+        "s5_volume_ratio": 18.14,
+        "price": 6.345,
+        "s6_momentum_pct": -17.4,
+        "rs_vs_spy": -52.8,
+        "rs_ok": false,
+        "s9_eps_rev_net": -1,
+        "rev_est": 5750000.0,
+        "s10_rev_rev_pct": 0.0,
+        "total": 2,
+        "analyst_covered": true,
+        "analyst_detail": {
+          "target_upside_pct": 105.5,
+          "buy_ratio": 1.0,
+          "rec_mark": 1.0,
+          "fwd_eps": -0.175,
+          "eps_rev_pct": 0.0,
+          "eps_surprise_pct": -620.0
+        },
+        "fwd_eps": -0.175
       }
     },
     {
@@ -31046,9 +31075,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 29,
         "s5_volume_ratio": 1.11,
-        "price": 119.755,
-        "s6_momentum_pct": 171.8,
-        "rs_vs_spy": 209.6,
+        "price": 119.8,
+        "s6_momentum_pct": 171.9,
+        "rs_vs_spy": 209.7,
         "rs_ok": true,
         "s8_capital_short_pct": 2.7,
         "s9_eps_rev_net": 31,
@@ -31058,7 +31087,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -16.6,
+          "target_upside_pct": -16.5,
           "buy_ratio": 0.26,
           "rec_mark": 1.764151,
           "fwd_eps": 0.210181,
@@ -31091,9 +31120,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 25,
         "s5_volume_ratio": 0.96,
-        "price": 300.295,
+        "price": 300.18,
         "s6_momentum_pct": 18.2,
-        "rs_vs_spy": -1.8,
+        "rs_vs_spy": -1.9,
         "rs_ok": false,
         "s7_margin_spread_pct": 5.2,
         "s8_capital_short_pct": 1.1,
@@ -31104,7 +31133,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 6.4,
+          "target_upside_pct": 6.3,
           "buy_ratio": 0.46,
           "rec_mark": 1.49,
           "fwd_eps": 1.888622,
@@ -31137,7 +31166,7 @@
         "s2_sponsor": 1,
         "s1_news_count": 13,
         "s5_volume_ratio": 6.99,
-        "price": 7.41,
+        "price": 7.4091,
         "s6_momentum_pct": 283.9,
         "rs_vs_spy": 295.7,
         "rs_ok": true,
@@ -31149,7 +31178,7 @@
         "total": 4,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": -4.6,
+          "target_upside_pct": -4.4,
           "buy_ratio": 0.67,
           "rec_mark": 1.333333,
           "fwd_eps": -0.0757,
@@ -31182,9 +31211,9 @@
         "s2_sponsor": 0,
         "s1_news_count": 5,
         "s5_volume_ratio": 0.57,
-        "price": 5.415,
-        "s6_momentum_pct": -8.6,
-        "rs_vs_spy": -3.3,
+        "price": 5.39,
+        "s6_momentum_pct": -9.0,
+        "rs_vs_spy": -3.8,
         "rs_ok": false,
         "s8_capital_short_pct": 2.0,
         "s9_eps_rev_net": 0,
@@ -31194,7 +31223,7 @@
         "total": 1,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 42.1,
+          "target_upside_pct": 42.2,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": 0.0625,
@@ -31209,7 +31238,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 5.404,
+        "price": 5.415,
         "score": 105,
         "pct": 67.3,
         "grade": "B",
@@ -31501,9 +31530,9 @@
           "composite": 4.47,
           "central": 3.22,
           "peg": 0.03,
-          "mos_pct": -40.4,
-          "mos_fcf_pct": -67.8,
-          "mos_cash_pct": -5.4
+          "mos_pct": -40.5,
+          "mos_fcf_pct": -68.2,
+          "mos_cash_pct": -5.6
         }
       }
     },
@@ -31530,9 +31559,9 @@
         "s2_sponsor": 1,
         "s1_news_count": 23,
         "s5_volume_ratio": 0.81,
-        "price": 141.08,
+        "price": 140.9627,
         "s6_momentum_pct": -10.6,
-        "rs_vs_spy": 13.3,
+        "rs_vs_spy": 13.2,
         "rs_ok": true,
         "s7_margin_spread_pct": -46.0,
         "s8_capital_short_pct": 1.1,
@@ -31543,7 +31572,7 @@
         "total": 2,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 20.6,
+          "target_upside_pct": 20.5,
           "buy_ratio": 0.38,
           "rec_mark": 1.62069,
           "fwd_eps": 3.636628,
@@ -31551,41 +31580,6 @@
           "eps_surprise_pct": 17.9
         },
         "fwd_eps": 3.636628
-      }
-    },
-    {
-      "ticker": "RHLD",
-      "name": "RHLD",
-      "sector": "Commercial Services",
-      "src": "screen",
-      "tce_score": 3,
-      "conviction": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s3_insider": 1,
-        "s5_volume": 1,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 1,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 0,
-        "s12_recommendation": 0,
-        "s2_sponsor": 0,
-        "s1_news_count": 1,
-        "s5_volume_ratio": 1.46,
-        "price": 128.91,
-        "s6_momentum_pct": 3.6,
-        "rs_vs_spy": -47.4,
-        "rs_ok": false,
-        "s8_capital_short_pct": 11.5,
-        "rev_est": 0.0,
-        "s3_insider_count": 15,
-        "total": 3,
-        "analyst_covered": false,
-        "analyst_detail": {}
       }
     },
     {
@@ -31611,9 +31605,9 @@
         "s2_sponsor": 0,
         "s1_news_count": 2,
         "s5_volume_ratio": 0.31,
-        "price": 0.9862,
-        "s6_momentum_pct": -38.4,
-        "rs_vs_spy": 0.7,
+        "price": 0.9884,
+        "s6_momentum_pct": -38.2,
+        "rs_vs_spy": 0.9,
         "rs_ok": true,
         "s8_capital_short_pct": 0.4,
         "s9_eps_rev_net": -1,
@@ -31623,7 +31617,7 @@
         "total": 0,
         "analyst_covered": true,
         "analyst_detail": {
-          "target_upside_pct": 137.9,
+          "target_upside_pct": 138.0,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": 0.035038269000000004,
@@ -31638,7 +31632,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 0.9825,
+        "price": 0.9836,
         "score": 87,
         "pct": 72.5,
         "grade": "B",
@@ -31930,10 +31924,44 @@
           "composite": 0.49,
           "central": 0.32,
           "peg": null,
-          "mos_pct": -67.1,
-          "mos_fcf_pct": -204.3,
-          "mos_cash_pct": -94.6
+          "mos_pct": -67.2,
+          "mos_fcf_pct": -204.6,
+          "mos_cash_pct": -94.8
         }
+      }
+    },
+    {
+      "ticker": "RHLD",
+      "name": "RHLD",
+      "sector": "Commercial Services",
+      "src": "screen",
+      "tce_score": 2,
+      "conviction": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s3_insider": 0,
+        "s5_volume": 1,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 0,
+        "s12_recommendation": 0,
+        "s2_sponsor": 0,
+        "s1_news_count": 1,
+        "s5_volume_ratio": 1.46,
+        "price": 128.91,
+        "s6_momentum_pct": 3.6,
+        "rs_vs_spy": -47.4,
+        "rs_ok": false,
+        "s8_capital_short_pct": 11.5,
+        "rev_est": 0.0,
+        "total": 2,
+        "analyst_covered": false,
+        "analyst_detail": {}
       }
     },
     {
@@ -31995,9 +32023,9 @@
         "s2_sponsor": 0,
         "s1_news_count": 2,
         "s5_volume_ratio": 0.86,
-        "price": 0.838,
-        "s6_momentum_pct": -20.9,
-        "rs_vs_spy": -60.6,
+        "price": 0.8368,
+        "s6_momentum_pct": -21.1,
+        "rs_vs_spy": -60.7,
         "rs_ok": false,
         "s8_capital_short_pct": 2.3,
         "s9_eps_rev_net": 0,
@@ -32014,7 +32042,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 0.8404,
+        "price": 0.838,
         "score": 72,
         "pct": 57.6,
         "grade": "C",
@@ -32308,7 +32336,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": -295.7
+          "mos_cash_pct": -294.5
         }
       }
     }
@@ -32321,9 +32349,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 6.765,
-        "last_price": 5.95,
+        "last_price": 5.93,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -12.0,
+        "fwd_ret_pct": -12.3,
         "peak_ret_pct": 0.0,
         "days_open": 12,
         "resolved": false
@@ -32334,9 +32362,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 7.65,
-        "last_price": 6.425,
+        "last_price": 6.4172,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -16.0,
+        "fwd_ret_pct": -16.1,
         "peak_ret_pct": 4.2,
         "days_open": 12,
         "resolved": false
@@ -32347,7 +32375,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 31.475,
-        "last_price": 24.34,
+        "last_price": 24.335,
         "last_date": "2026-06-16",
         "fwd_ret_pct": -22.7,
         "peak_ret_pct": 2.6,
@@ -32360,9 +32388,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 3.88,
-        "last_price": 4.765,
+        "last_price": 4.775,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 22.8,
+        "fwd_ret_pct": 23.1,
         "peak_ret_pct": 23.7,
         "days_open": 12,
         "resolved": false
@@ -32373,9 +32401,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 7.135,
-        "last_price": 7.41,
+        "last_price": 7.4091,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 3.9,
+        "fwd_ret_pct": 3.8,
         "peak_ret_pct": 10.0,
         "days_open": 12,
         "resolved": false
@@ -32399,7 +32427,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 2098.8301,
-        "last_price": 242.55,
+        "last_price": 242.42,
         "last_date": "2026-06-16",
         "fwd_ret_pct": -88.4,
         "peak_ret_pct": 14.9,
@@ -32412,9 +32440,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 1013.84,
-        "last_price": 1044.0601,
+        "last_price": 1043.705,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 3.0,
+        "fwd_ret_pct": 2.9,
         "peak_ret_pct": 8.1,
         "days_open": 12,
         "resolved": false
@@ -32425,7 +32453,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 128.89,
-        "last_price": 119.64,
+        "last_price": 119.55,
         "last_date": "2026-06-16",
         "fwd_ret_pct": -7.2,
         "peak_ret_pct": 0.9,
@@ -32438,7 +32466,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 521.87,
-        "last_price": 520.855,
+        "last_price": 520.765,
         "last_date": "2026-06-16",
         "fwd_ret_pct": -0.2,
         "peak_ret_pct": 6.7,
@@ -32451,9 +32479,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 498.41,
-        "last_price": 578.96,
+        "last_price": 579.74,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 16.2,
+        "fwd_ret_pct": 16.3,
         "peak_ret_pct": 18.8,
         "days_open": 12,
         "resolved": false
@@ -32464,7 +32492,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 335.82,
-        "last_price": 375.16,
+        "last_price": 375.165,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 11.7,
         "peak_ret_pct": 16.4,
@@ -32477,7 +32505,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 371.82,
-        "last_price": 370.155,
+        "last_price": 370.51,
         "last_date": "2026-06-16",
         "fwd_ret_pct": -0.4,
         "peak_ret_pct": 0.1,
@@ -32490,9 +32518,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 1637.15,
-        "last_price": 1556.17,
+        "last_price": 1553.3,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -4.9,
+        "fwd_ret_pct": -5.1,
         "peak_ret_pct": 1.4,
         "days_open": 12,
         "resolved": false
@@ -32503,9 +32531,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 1820.585,
-        "last_price": 2028.6,
+        "last_price": 2023.0,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 11.4,
+        "fwd_ret_pct": 11.1,
         "peak_ret_pct": 15.8,
         "days_open": 12,
         "resolved": false
@@ -32516,7 +32544,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 240.56,
-        "last_price": 219.16,
+        "last_price": 219.125,
         "last_date": "2026-06-16",
         "fwd_ret_pct": -8.9,
         "peak_ret_pct": 0.8,
@@ -32529,9 +32557,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 307.88,
-        "last_price": 309.87,
+        "last_price": 309.38,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 0.6,
+        "fwd_ret_pct": 0.5,
         "peak_ret_pct": 1.9,
         "days_open": 12,
         "resolved": false
@@ -32542,9 +32570,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 0.4671,
-        "last_price": 0.3944,
+        "last_price": 0.3921,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -15.6,
+        "fwd_ret_pct": -16.1,
         "peak_ret_pct": 0.6,
         "days_open": 12,
         "resolved": false
@@ -32555,9 +32583,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 218.16,
-        "last_price": 208.98,
+        "last_price": 209.12,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -4.2,
+        "fwd_ret_pct": -4.1,
         "peak_ret_pct": 0.2,
         "days_open": 12,
         "resolved": false
@@ -32568,7 +32596,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 409.86,
-        "last_price": 379.04,
+        "last_price": 379.28,
         "last_date": "2026-06-16",
         "fwd_ret_pct": -7.5,
         "peak_ret_pct": 2.2,
@@ -32581,9 +32609,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 310.925,
-        "last_price": 300.295,
+        "last_price": 300.18,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -3.4,
+        "fwd_ret_pct": -3.5,
         "peak_ret_pct": 1.2,
         "days_open": 12,
         "resolved": false
@@ -32594,7 +32622,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 110.89,
-        "last_price": 119.755,
+        "last_price": 119.8,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 8.0,
         "peak_ret_pct": 19.0,
@@ -32607,9 +32635,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 313.41,
-        "last_price": 293.235,
+        "last_price": 292.425,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -6.4,
+        "fwd_ret_pct": -6.7,
         "peak_ret_pct": 1.0,
         "days_open": 12,
         "resolved": false
@@ -32620,7 +32648,7 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 165.65,
-        "last_price": 168.28,
+        "last_price": 168.23,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 1.6,
         "peak_ret_pct": 2.2,
@@ -32633,9 +32661,9 @@
         "market": "us",
         "date": "2026-06-04",
         "entry": 40.94,
-        "last_price": 43.78,
+        "last_price": 43.63,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 6.9,
+        "fwd_ret_pct": 6.6,
         "peak_ret_pct": 11.0,
         "days_open": 12,
         "resolved": false
@@ -32653,8 +32681,8 @@
         "days_open": 7,
         "resolved": false,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": -6.2,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": -7.5,
         "peak_alpha_pct": 0.9,
         "rebaselined": true
       },
@@ -32671,8 +32699,8 @@
         "days_open": 7,
         "resolved": false,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": 8.6,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": 7.3,
         "peak_alpha_pct": 10.0,
         "rebaselined": true
       },
@@ -32689,8 +32717,8 @@
         "days_open": 7,
         "resolved": false,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": -5.2,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": -6.5,
         "peak_alpha_pct": 0.4,
         "rebaselined": true
       },
@@ -32720,8 +32748,8 @@
         "days_open": 7,
         "resolved": false,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": -5.7,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": -7.0,
         "peak_alpha_pct": 1.3,
         "rebaselined": true
       },
@@ -32731,7 +32759,7 @@
         "market": "us",
         "date": "2026-06-05",
         "entry": 609.7,
-        "last_price": 596.09,
+        "last_price": 596.5499,
         "last_date": "2026-06-16",
         "fwd_ret_pct": -2.2,
         "peak_ret_pct": 0.0,
@@ -32775,9 +32803,9 @@
         "market": "us",
         "date": "2026-06-06",
         "entry": 401.39,
-        "last_price": 424.86,
+        "last_price": 424.965,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 5.8,
+        "fwd_ret_pct": 5.9,
         "peak_ret_pct": 7.4,
         "days_open": 10,
         "resolved": false
@@ -32788,9 +32816,9 @@
         "market": "us",
         "date": "2026-06-06",
         "entry": 8.36,
-        "last_price": 8.63,
+        "last_price": 8.655,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 3.2,
+        "fwd_ret_pct": 3.5,
         "peak_ret_pct": 8.1,
         "days_open": 10,
         "resolved": false
@@ -32839,8 +32867,8 @@
         "days_open": 7,
         "resolved": false,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": -5.7,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": -7.0,
         "peak_alpha_pct": 5.0,
         "rebaselined": true
       },
@@ -32857,8 +32885,8 @@
         "days_open": 7,
         "resolved": false,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": 3.8,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": 2.5,
         "peak_alpha_pct": 4.2,
         "rebaselined": true
       },
@@ -32875,8 +32903,8 @@
         "days_open": 7,
         "resolved": false,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": 3.8,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": 2.5,
         "peak_alpha_pct": 3.8,
         "rebaselined": true
       },
@@ -32920,7 +32948,7 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 396.6,
-        "last_price": 379.04,
+        "last_price": 379.28,
         "last_date": "2026-06-16",
         "fwd_ret_pct": -4.4,
         "peak_ret_pct": 0.0,
@@ -32937,13 +32965,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 411.74,
-        "last_price": 391.795,
+        "last_price": 391.4,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -4.8,
+        "fwd_ret_pct": -4.9,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -6.5,
+        "alpha_pct": -6.6,
         "peak_alpha_pct": 0.0,
         "days_open": 7,
         "resolved": false
@@ -32954,13 +32982,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 189.24,
-        "last_price": 179.585,
+        "last_price": 179.385,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -5.1,
+        "fwd_ret_pct": -5.2,
         "peak_ret_pct": 1.7,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -6.8,
+        "alpha_pct": -6.9,
         "peak_alpha_pct": 3.1,
         "days_open": 7,
         "resolved": false
@@ -32971,13 +32999,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 151.75,
-        "last_price": 141.08,
+        "last_price": 140.9627,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -7.0,
+        "fwd_ret_pct": -7.1,
         "peak_ret_pct": 0.3,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -8.7,
+        "alpha_pct": -8.8,
         "peak_alpha_pct": 1.7,
         "days_open": 7,
         "resolved": false
@@ -33022,13 +33050,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 4.15,
-        "last_price": 4.885,
+        "last_price": 4.88,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 17.7,
+        "fwd_ret_pct": 17.6,
         "peak_ret_pct": 18.3,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": 16.0,
+        "alpha_pct": 15.9,
         "peak_alpha_pct": 16.4,
         "days_open": 7,
         "resolved": false
@@ -33073,13 +33101,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 5.1,
-        "last_price": 5.415,
+        "last_price": 5.39,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 6.2,
+        "fwd_ret_pct": 5.7,
         "peak_ret_pct": 7.5,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": 4.5,
+        "alpha_pct": 4.0,
         "peak_alpha_pct": 5.5,
         "days_open": 7,
         "resolved": false
@@ -33090,13 +33118,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 14.9,
-        "last_price": 13.5001,
+        "last_price": 13.5601,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -9.4,
+        "fwd_ret_pct": -9.0,
         "peak_ret_pct": 2.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -11.1,
+        "alpha_pct": -10.7,
         "peak_alpha_pct": 2.8,
         "days_open": 7,
         "resolved": false
@@ -33165,8 +33193,8 @@
         "fwd_ret_pct": 0.0,
         "peak_ret_pct": 1.1,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": -4.5,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": -5.8,
         "peak_alpha_pct": 1.8,
         "days_open": 7,
         "resolved": false,
@@ -33201,8 +33229,8 @@
         "fwd_ret_pct": 3.6,
         "peak_ret_pct": 3.6,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": -0.9,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": -2.2,
         "peak_alpha_pct": 0.2,
         "days_open": 7,
         "resolved": false,
@@ -33219,8 +33247,8 @@
         "fwd_ret_pct": 19.9,
         "peak_ret_pct": 19.9,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": 15.4,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": 14.1,
         "peak_alpha_pct": 15.4,
         "days_open": 7,
         "resolved": false,
@@ -33255,8 +33283,8 @@
         "fwd_ret_pct": -0.4,
         "peak_ret_pct": 1.7,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": -4.9,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": -6.2,
         "peak_alpha_pct": 2.6,
         "days_open": 7,
         "resolved": false,
@@ -33291,8 +33319,8 @@
         "fwd_ret_pct": -2.3,
         "peak_ret_pct": 0.0,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": -6.8,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": -8.1,
         "peak_alpha_pct": 0.0,
         "days_open": 7,
         "resolved": false,
@@ -33309,8 +33337,8 @@
         "fwd_ret_pct": 5.9,
         "peak_ret_pct": 5.9,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": 1.4,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": 0.1,
         "peak_alpha_pct": 1.4,
         "days_open": 7,
         "resolved": false,
@@ -33327,8 +33355,8 @@
         "fwd_ret_pct": 6.8,
         "peak_ret_pct": 9.4,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": 2.3,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": 1.0,
         "peak_alpha_pct": 5.7,
         "days_open": 7,
         "resolved": false,
@@ -33362,8 +33390,8 @@
         "fwd_ret_pct": 13.7,
         "peak_ret_pct": 13.7,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": 9.2,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": 7.9,
         "peak_alpha_pct": 9.2,
         "days_open": 7,
         "resolved": false,
@@ -33375,7 +33403,7 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 7.22,
-        "last_price": 7.41,
+        "last_price": 7.4091,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 2.6,
         "peak_ret_pct": 8.7,
@@ -33427,13 +33455,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 0.42,
-        "last_price": 0.3944,
+        "last_price": 0.3921,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -6.1,
+        "fwd_ret_pct": -6.6,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -7.8,
+        "alpha_pct": -8.3,
         "peak_alpha_pct": 0.0,
         "days_open": 7,
         "resolved": false
@@ -33444,13 +33472,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 949.28,
-        "last_price": 1044.0601,
+        "last_price": 1043.705,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 10.0,
+        "fwd_ret_pct": 9.9,
         "peak_ret_pct": 15.5,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": 8.3,
+        "alpha_pct": 8.2,
         "peak_alpha_pct": 13.4,
         "days_open": 7,
         "resolved": false
@@ -33461,13 +33489,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 124.15,
-        "last_price": 119.64,
+        "last_price": 119.55,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -3.6,
+        "fwd_ret_pct": -3.7,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -5.3,
+        "alpha_pct": -5.4,
         "peak_alpha_pct": 0.0,
         "days_open": 7,
         "resolved": false
@@ -33478,13 +33506,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 40.46,
-        "last_price": 43.78,
+        "last_price": 43.63,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 8.2,
+        "fwd_ret_pct": 7.8,
         "peak_ret_pct": 12.3,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": 6.5,
+        "alpha_pct": 6.1,
         "peak_alpha_pct": 10.3,
         "days_open": 7,
         "resolved": false
@@ -33495,7 +33523,7 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 208.64,
-        "last_price": 208.98,
+        "last_price": 209.12,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 0.2,
         "peak_ret_pct": 1.8,
@@ -33512,7 +33540,7 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 490.33,
-        "last_price": 520.855,
+        "last_price": 520.765,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 6.2,
         "peak_ret_pct": 13.5,
@@ -33529,7 +33557,7 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 324.45,
-        "last_price": 375.16,
+        "last_price": 375.165,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 15.6,
         "peak_ret_pct": 20.4,
@@ -33546,13 +33574,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 492.17,
-        "last_price": 578.96,
+        "last_price": 579.74,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 17.6,
+        "fwd_ret_pct": 17.8,
         "peak_ret_pct": 20.3,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": 15.9,
+        "alpha_pct": 16.1,
         "peak_alpha_pct": 18.3,
         "days_open": 7,
         "resolved": false
@@ -33563,13 +33591,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 290.9,
-        "last_price": 309.87,
+        "last_price": 309.38,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 6.5,
+        "fwd_ret_pct": 6.4,
         "peak_ret_pct": 7.9,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": 4.8,
+        "alpha_pct": 4.7,
         "peak_alpha_pct": 5.9,
         "days_open": 7,
         "resolved": false
@@ -33580,13 +33608,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 1642.0,
-        "last_price": 2028.6,
+        "last_price": 2023.0,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 23.5,
+        "fwd_ret_pct": 23.2,
         "peak_ret_pct": 28.4,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": 21.8,
+        "alpha_pct": 21.5,
         "peak_alpha_pct": 26.3,
         "days_open": 7,
         "resolved": false
@@ -33597,13 +33625,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 411.74,
-        "last_price": 391.795,
+        "last_price": 391.4,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -4.8,
+        "fwd_ret_pct": -4.9,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -6.5,
+        "alpha_pct": -6.6,
         "peak_alpha_pct": 0.0,
         "days_open": 7,
         "resolved": false
@@ -33614,13 +33642,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 189.24,
-        "last_price": 179.585,
+        "last_price": 179.385,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -5.1,
+        "fwd_ret_pct": -5.2,
         "peak_ret_pct": 1.7,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -6.8,
+        "alpha_pct": -6.9,
         "peak_alpha_pct": 3.1,
         "days_open": 7,
         "resolved": false
@@ -33631,13 +33659,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 151.75,
-        "last_price": 141.08,
+        "last_price": 140.9627,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -7.0,
+        "fwd_ret_pct": -7.1,
         "peak_ret_pct": 0.3,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -8.7,
+        "alpha_pct": -8.8,
         "peak_alpha_pct": 1.7,
         "days_open": 7,
         "resolved": false
@@ -33670,8 +33698,8 @@
         "fwd_ret_pct": 4.2,
         "peak_ret_pct": 4.3,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": -0.3,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": -1.6,
         "peak_alpha_pct": 0.0,
         "days_open": 7,
         "resolved": false,
@@ -33706,8 +33734,8 @@
         "fwd_ret_pct": 8.3,
         "peak_ret_pct": 8.3,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": 3.8,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": 2.5,
         "peak_alpha_pct": 3.8,
         "days_open": 7,
         "resolved": false,
@@ -33719,7 +33747,7 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 22.91,
-        "last_price": 24.34,
+        "last_price": 24.335,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 6.2,
         "peak_ret_pct": 16.8,
@@ -33736,7 +33764,7 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 360.95,
-        "last_price": 370.155,
+        "last_price": 370.51,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 2.6,
         "peak_ret_pct": 3.1,
@@ -33753,13 +33781,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 14.35,
-        "last_price": 15.42,
+        "last_price": 15.39,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 7.5,
+        "fwd_ret_pct": 7.2,
         "peak_ret_pct": 9.8,
         "entry_bench": 730.44,
         "bench_ret_pct": 3.0,
-        "alpha_pct": 4.5,
+        "alpha_pct": 4.2,
         "peak_alpha_pct": 6.7,
         "days_open": 7,
         "resolved": false
@@ -33770,7 +33798,7 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 392.59,
-        "last_price": 424.86,
+        "last_price": 424.965,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 8.2,
         "peak_ret_pct": 9.8,
@@ -33787,13 +33815,13 @@
         "market": "us",
         "date": "2026-06-09",
         "entry": 1458.395,
-        "last_price": 1556.17,
+        "last_price": 1553.3,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 6.7,
+        "fwd_ret_pct": 6.5,
         "peak_ret_pct": 13.8,
         "entry_bench": 727.54,
         "bench_ret_pct": 3.4,
-        "alpha_pct": 3.3,
+        "alpha_pct": 3.1,
         "peak_alpha_pct": 10.1,
         "days_open": 7,
         "resolved": false
@@ -33809,8 +33837,8 @@
         "fwd_ret_pct": 16.8,
         "peak_ret_pct": 16.8,
         "entry_bench": 170442.14,
-        "bench_ret_pct": 4.5,
-        "alpha_pct": 12.3,
+        "bench_ret_pct": 5.8,
+        "alpha_pct": 11.0,
         "peak_alpha_pct": 12.3,
         "days_open": 7,
         "resolved": false
@@ -33945,8 +33973,8 @@
         "fwd_ret_pct": -1.5,
         "peak_ret_pct": 0.1,
         "entry_bench": 169734.3,
-        "bench_ret_pct": 5.0,
-        "alpha_pct": -6.5,
+        "bench_ret_pct": 6.3,
+        "alpha_pct": -7.8,
         "peak_alpha_pct": 0.1,
         "days_open": 6,
         "resolved": false
@@ -34025,7 +34053,7 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 915.64,
-        "last_price": 958.975,
+        "last_price": 959.115,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 4.7,
         "peak_ret_pct": 4.8,
@@ -34047,8 +34075,8 @@
         "fwd_ret_pct": 5.3,
         "peak_ret_pct": 5.3,
         "entry_bench": 169734.3,
-        "bench_ret_pct": 5.0,
-        "alpha_pct": 0.3,
+        "bench_ret_pct": 6.3,
+        "alpha_pct": -1.0,
         "peak_alpha_pct": 0.3,
         "days_open": 6,
         "resolved": false
@@ -34110,13 +34138,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 6.83,
-        "last_price": 6.425,
+        "last_price": 6.4172,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -5.9,
+        "fwd_ret_pct": -6.0,
         "peak_ret_pct": 0.2,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -7.6,
+        "alpha_pct": -7.7,
         "peak_alpha_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -34178,13 +34206,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 3.67,
-        "last_price": 3.98,
+        "last_price": 3.9969,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 8.4,
+        "fwd_ret_pct": 8.9,
         "peak_ret_pct": 13.1,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": 6.7,
+        "alpha_pct": 7.2,
         "peak_alpha_pct": 11.4,
         "days_open": 6,
         "resolved": false
@@ -34195,13 +34223,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 5.48,
-        "last_price": 5.58,
+        "last_price": 5.55,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 1.8,
+        "fwd_ret_pct": 1.3,
         "peak_ret_pct": 3.7,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": 0.1,
+        "alpha_pct": -0.4,
         "peak_alpha_pct": 1.6,
         "days_open": 6,
         "resolved": false
@@ -34212,13 +34240,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 9.7,
-        "last_price": 9.0401,
+        "last_price": 9.1,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -6.8,
+        "fwd_ret_pct": -6.2,
         "peak_ret_pct": 8.6,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -8.5,
+        "alpha_pct": -7.9,
         "peak_alpha_pct": 9.5,
         "days_open": 6,
         "resolved": false
@@ -34229,13 +34257,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 7.89,
-        "last_price": 6.3299,
+        "last_price": 6.345,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -19.8,
+        "fwd_ret_pct": -19.6,
         "peak_ret_pct": 0.0,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -21.5,
+        "alpha_pct": -21.3,
         "peak_alpha_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -34246,13 +34274,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 0.93,
-        "last_price": 0.9862,
+        "last_price": 0.9884,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 6.0,
+        "fwd_ret_pct": 6.3,
         "peak_ret_pct": 8.4,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": 4.3,
+        "alpha_pct": 4.6,
         "peak_alpha_pct": 6.5,
         "days_open": 6,
         "resolved": false
@@ -34280,13 +34308,13 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 0.901,
-        "last_price": 0.838,
+        "last_price": 0.8368,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -7.0,
+        "fwd_ret_pct": -7.1,
         "peak_ret_pct": 1.5,
         "entry_bench": 739.22,
         "bench_ret_pct": 1.7,
-        "alpha_pct": -8.7,
+        "alpha_pct": -8.8,
         "peak_alpha_pct": 0.0,
         "days_open": 6,
         "resolved": false
@@ -34302,8 +34330,8 @@
         "fwd_ret_pct": 6.6,
         "peak_ret_pct": 6.6,
         "entry_bench": 169734.3,
-        "bench_ret_pct": 5.0,
-        "alpha_pct": 1.6,
+        "bench_ret_pct": 6.3,
+        "alpha_pct": 0.3,
         "peak_alpha_pct": 1.6,
         "days_open": 6,
         "resolved": false
@@ -34319,8 +34347,8 @@
         "fwd_ret_pct": 3.3,
         "peak_ret_pct": 3.3,
         "entry_bench": 169734.3,
-        "bench_ret_pct": 5.0,
-        "alpha_pct": -1.7,
+        "bench_ret_pct": 6.3,
+        "alpha_pct": -3.0,
         "peak_alpha_pct": 1.2,
         "days_open": 6,
         "resolved": false
@@ -34336,8 +34364,8 @@
         "fwd_ret_pct": 3.5,
         "peak_ret_pct": 3.5,
         "entry_bench": 169734.3,
-        "bench_ret_pct": 5.0,
-        "alpha_pct": -1.5,
+        "bench_ret_pct": 6.3,
+        "alpha_pct": -2.8,
         "peak_alpha_pct": 0.8,
         "days_open": 6,
         "resolved": false
@@ -34353,8 +34381,8 @@
         "fwd_ret_pct": 2.4,
         "peak_ret_pct": 2.4,
         "entry_bench": 169734.3,
-        "bench_ret_pct": 5.0,
-        "alpha_pct": -2.6,
+        "bench_ret_pct": 6.3,
+        "alpha_pct": -3.9,
         "peak_alpha_pct": 0.4,
         "days_open": 6,
         "resolved": false
@@ -34370,8 +34398,8 @@
         "fwd_ret_pct": 7.8,
         "peak_ret_pct": 7.8,
         "entry_bench": 169734.3,
-        "bench_ret_pct": 5.0,
-        "alpha_pct": 2.8,
+        "bench_ret_pct": 6.3,
+        "alpha_pct": 1.5,
         "peak_alpha_pct": 3.3,
         "days_open": 6,
         "resolved": false
@@ -34399,7 +34427,7 @@
         "market": "us",
         "date": "2026-06-10",
         "entry": 13.82,
-        "last_price": 13.2001,
+        "last_price": 13.2,
         "last_date": "2026-06-16",
         "fwd_ret_pct": -4.5,
         "peak_ret_pct": 2.9,
@@ -34489,8 +34517,8 @@
         "fwd_ret_pct": 8.8,
         "peak_ret_pct": 9.0,
         "entry_bench": 168877.78,
-        "bench_ret_pct": 5.5,
-        "alpha_pct": 3.3,
+        "bench_ret_pct": 6.8,
+        "alpha_pct": 2.0,
         "peak_alpha_pct": 3.5,
         "days_open": 5,
         "resolved": false
@@ -34506,8 +34534,8 @@
         "fwd_ret_pct": -0.2,
         "peak_ret_pct": 0.0,
         "entry_bench": 168877.78,
-        "bench_ret_pct": 5.5,
-        "alpha_pct": -5.7,
+        "bench_ret_pct": 6.8,
+        "alpha_pct": -7.0,
         "peak_alpha_pct": 0.0,
         "days_open": 5,
         "resolved": false
@@ -34518,7 +34546,7 @@
         "market": "us",
         "date": "2026-06-12",
         "entry": 914.49,
-        "last_price": 958.975,
+        "last_price": 959.115,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 4.9,
         "peak_ret_pct": 4.9,
@@ -34540,8 +34568,8 @@
         "fwd_ret_pct": 12.6,
         "peak_ret_pct": 13.0,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": 8.7,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": 7.5,
         "peak_alpha_pct": 9.1,
         "days_open": 4,
         "resolved": false
@@ -34591,8 +34619,8 @@
         "fwd_ret_pct": 2.5,
         "peak_ret_pct": 2.7,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": -1.4,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": -2.6,
         "peak_alpha_pct": 0.0,
         "days_open": 4,
         "resolved": false
@@ -34603,13 +34631,13 @@
         "market": "us",
         "date": "2026-06-12",
         "entry": 382.07,
-        "last_price": 379.04,
+        "last_price": 379.28,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -0.8,
+        "fwd_ret_pct": -0.7,
         "peak_ret_pct": 3.4,
         "entry_bench": 741.75,
         "bench_ret_pct": 1.4,
-        "alpha_pct": -2.2,
+        "alpha_pct": -2.1,
         "peak_alpha_pct": 1.7,
         "days_open": 4,
         "resolved": false
@@ -34625,8 +34653,8 @@
         "fwd_ret_pct": 8.6,
         "peak_ret_pct": 8.7,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": 4.7,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": 3.5,
         "peak_alpha_pct": 4.8,
         "days_open": 3,
         "resolved": false
@@ -34642,8 +34670,8 @@
         "fwd_ret_pct": 1.6,
         "peak_ret_pct": 1.6,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": -2.3,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": -3.5,
         "peak_alpha_pct": 0.0,
         "days_open": 3,
         "resolved": false
@@ -34659,8 +34687,8 @@
         "fwd_ret_pct": 12.2,
         "peak_ret_pct": 12.2,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": 8.3,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": 7.1,
         "peak_alpha_pct": 8.3,
         "days_open": 3,
         "resolved": false
@@ -34676,8 +34704,8 @@
         "fwd_ret_pct": 4.9,
         "peak_ret_pct": 4.9,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": 1.0,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": -0.2,
         "peak_alpha_pct": 1.0,
         "days_open": 3,
         "resolved": false
@@ -34693,8 +34721,8 @@
         "fwd_ret_pct": 7.6,
         "peak_ret_pct": 7.6,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": 3.7,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": 2.5,
         "peak_alpha_pct": 3.7,
         "days_open": 3,
         "resolved": false
@@ -34710,8 +34738,8 @@
         "fwd_ret_pct": 7.2,
         "peak_ret_pct": 7.2,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": 3.3,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": 2.1,
         "peak_alpha_pct": 3.3,
         "days_open": 3,
         "resolved": false
@@ -34727,8 +34755,8 @@
         "fwd_ret_pct": 2.0,
         "peak_ret_pct": 2.1,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": -1.9,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": -3.1,
         "peak_alpha_pct": 0.0,
         "days_open": 3,
         "resolved": false
@@ -34744,8 +34772,8 @@
         "fwd_ret_pct": 4.6,
         "peak_ret_pct": 4.6,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": 0.7,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": -0.5,
         "peak_alpha_pct": 0.7,
         "days_open": 3,
         "resolved": false
@@ -34761,8 +34789,8 @@
         "fwd_ret_pct": 3.4,
         "peak_ret_pct": 3.4,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": -0.5,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": -1.7,
         "peak_alpha_pct": 0.0,
         "days_open": 3,
         "resolved": false
@@ -34778,8 +34806,8 @@
         "fwd_ret_pct": 5.1,
         "peak_ret_pct": 5.1,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": 1.2,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": 0.0,
         "peak_alpha_pct": 1.2,
         "days_open": 3,
         "resolved": false
@@ -34795,8 +34823,8 @@
         "fwd_ret_pct": 7.7,
         "peak_ret_pct": 7.7,
         "entry_bench": 171562.22,
-        "bench_ret_pct": 3.9,
-        "alpha_pct": 3.8,
+        "bench_ret_pct": 5.1,
+        "alpha_pct": 2.6,
         "peak_alpha_pct": 3.8,
         "days_open": 3,
         "resolved": false
@@ -34807,13 +34835,13 @@
         "market": "us",
         "date": "2026-06-14",
         "entry": 562.93,
-        "last_price": 697.95,
+        "last_price": 693.51,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 24.0,
+        "fwd_ret_pct": 23.2,
         "peak_ret_pct": 24.6,
         "entry_bench": 741.75,
         "bench_ret_pct": 1.4,
-        "alpha_pct": 22.6,
+        "alpha_pct": 21.8,
         "peak_alpha_pct": 23.0,
         "days_open": 2,
         "resolved": false
@@ -34824,13 +34852,13 @@
         "market": "us",
         "date": "2026-06-14",
         "entry": 931.04,
-        "last_price": 1042.035,
+        "last_price": 1039.225,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 11.9,
+        "fwd_ret_pct": 11.6,
         "peak_ret_pct": 13.2,
         "entry_bench": 741.75,
         "bench_ret_pct": 1.4,
-        "alpha_pct": 10.5,
+        "alpha_pct": 10.2,
         "peak_alpha_pct": 11.6,
         "days_open": 2,
         "resolved": false
@@ -34846,8 +34874,8 @@
         "fwd_ret_pct": 11.7,
         "peak_ret_pct": 13.1,
         "entry_bench": 176814.48,
-        "bench_ret_pct": 0.8,
-        "alpha_pct": 10.9,
+        "bench_ret_pct": 2.0,
+        "alpha_pct": 9.7,
         "peak_alpha_pct": 12.3,
         "days_open": 1,
         "resolved": false
@@ -34863,8 +34891,8 @@
         "fwd_ret_pct": 5.3,
         "peak_ret_pct": 5.3,
         "entry_bench": 176814.48,
-        "bench_ret_pct": 0.8,
-        "alpha_pct": 4.5,
+        "bench_ret_pct": 2.0,
+        "alpha_pct": 3.3,
         "peak_alpha_pct": 4.5,
         "days_open": 1,
         "resolved": false
@@ -34880,8 +34908,8 @@
         "fwd_ret_pct": 1.1,
         "peak_ret_pct": 1.1,
         "entry_bench": 176814.48,
-        "bench_ret_pct": 0.8,
-        "alpha_pct": 0.3,
+        "bench_ret_pct": 2.0,
+        "alpha_pct": -0.9,
         "peak_alpha_pct": 0.3,
         "days_open": 1,
         "resolved": false
@@ -34897,8 +34925,8 @@
         "fwd_ret_pct": 2.6,
         "peak_ret_pct": 2.8,
         "entry_bench": 176814.48,
-        "bench_ret_pct": 0.8,
-        "alpha_pct": 1.8,
+        "bench_ret_pct": 2.0,
+        "alpha_pct": 0.6,
         "peak_alpha_pct": 2.0,
         "days_open": 1,
         "resolved": false
@@ -34914,8 +34942,8 @@
         "fwd_ret_pct": 0.4,
         "peak_ret_pct": 0.4,
         "entry_bench": 176814.48,
-        "bench_ret_pct": 0.8,
-        "alpha_pct": -0.4,
+        "bench_ret_pct": 2.0,
+        "alpha_pct": -1.6,
         "peak_alpha_pct": 0.0,
         "days_open": 1,
         "resolved": false
@@ -34960,13 +34988,13 @@
         "market": "us",
         "date": "2026-06-15",
         "entry": 4.81,
-        "last_price": 4.885,
+        "last_price": 4.88,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 1.6,
+        "fwd_ret_pct": 1.5,
         "peak_ret_pct": 2.1,
         "entry_bench": 754.98,
         "bench_ret_pct": -0.4,
-        "alpha_pct": 2.0,
+        "alpha_pct": 1.9,
         "peak_alpha_pct": 2.3,
         "days_open": 1,
         "resolved": false
@@ -34982,8 +35010,8 @@
         "fwd_ret_pct": 3.0,
         "peak_ret_pct": 3.0,
         "entry_bench": 176814.48,
-        "bench_ret_pct": 0.8,
-        "alpha_pct": 2.2,
+        "bench_ret_pct": 2.0,
+        "alpha_pct": 1.0,
         "peak_alpha_pct": 2.2,
         "days_open": 1,
         "resolved": false
@@ -34994,13 +35022,13 @@
         "market": "us",
         "date": "2026-06-16",
         "entry": 6.81,
-        "last_price": 6.3299,
+        "last_price": 6.345,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": -7.0,
+        "fwd_ret_pct": -6.8,
         "peak_ret_pct": 0.0,
         "entry_bench": 741.75,
         "bench_ret_pct": 1.4,
-        "alpha_pct": -8.4,
+        "alpha_pct": -8.2,
         "peak_alpha_pct": 0.0,
         "days_open": 0,
         "resolved": false
@@ -35011,7 +35039,7 @@
         "market": "us",
         "date": "2026-06-16",
         "entry": 291.13,
-        "last_price": 300.295,
+        "last_price": 300.18,
         "last_date": "2026-06-16",
         "fwd_ret_pct": 3.1,
         "peak_ret_pct": 3.1,
@@ -35033,8 +35061,8 @@
         "fwd_ret_pct": 0.1,
         "peak_ret_pct": 0.1,
         "entry_bench": 178182.07,
-        "bench_ret_pct": 0.0,
-        "alpha_pct": 0.1,
+        "bench_ret_pct": 1.2,
+        "alpha_pct": -1.1,
         "peak_alpha_pct": 0.1,
         "days_open": 0,
         "resolved": false
@@ -35050,8 +35078,8 @@
         "fwd_ret_pct": 0.3,
         "peak_ret_pct": 0.3,
         "entry_bench": 178182.07,
-        "bench_ret_pct": 0.0,
-        "alpha_pct": 0.3,
+        "bench_ret_pct": 1.2,
+        "alpha_pct": -0.9,
         "peak_alpha_pct": 0.3,
         "days_open": 0,
         "resolved": false
@@ -35062,13 +35090,13 @@
         "market": "us",
         "date": "2026-06-16",
         "entry": 19.48,
-        "last_price": 19.96,
+        "last_price": 19.83,
         "last_date": "2026-06-16",
-        "fwd_ret_pct": 2.5,
+        "fwd_ret_pct": 1.8,
         "peak_ret_pct": 2.5,
         "entry_bench": 753.395,
         "bench_ret_pct": -0.2,
-        "alpha_pct": 2.7,
+        "alpha_pct": 2.0,
         "peak_alpha_pct": 2.7,
         "days_open": 0,
         "resolved": false
@@ -35141,6 +35169,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 17.298507462686572,
       "forward": {
         "f1": null,
         "fr": null
@@ -35484,6 +35514,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 54.95774647887325,
       "forward": {
         "f1": null,
         "fr": null
@@ -35827,6 +35859,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 8.172774869109954,
       "forward": {
         "f1": null,
         "fr": null
@@ -36084,6 +36118,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 46.393175074183986,
       "forward": {
         "f1": null,
         "fr": null
@@ -36427,6 +36463,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 42.04230069863144,
       "forward": {
         "f1": null,
         "fr": null
@@ -36770,6 +36808,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 27.178303519907683,
       "forward": {
         "f1": null,
         "fr": null
@@ -37113,6 +37153,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 23.297322686707382,
       "forward": {
         "f1": null,
         "fr": null
@@ -37456,6 +37498,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 21.743991056456125,
       "forward": {
         "f1": null,
         "fr": null
@@ -37799,6 +37843,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 51.57124408092983,
       "forward": {
         "f1": null,
         "fr": null
@@ -38142,6 +38188,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 24.5013698630137,
       "forward": {
         "f1": null,
         "fr": null
@@ -38399,6 +38447,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 41.88767550702029,
       "forward": {
         "f1": null,
         "fr": null
@@ -38656,6 +38706,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 13.337837837837844,
       "forward": {
         "f1": null,
         "fr": null
@@ -38999,6 +39051,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 7.951612903225802,
       "forward": {
         "f1": null,
         "fr": null
@@ -39342,6 +39396,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 62.56441717791412,
       "forward": {
         "f1": null,
         "fr": null
@@ -39685,6 +39741,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 56.62889518413599,
       "forward": {
         "f1": null,
         "fr": null
@@ -40028,6 +40086,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 141.64179104477614,
       "forward": {
         "f1": null,
         "fr": null
@@ -40371,6 +40431,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 16.43571978444957,
       "forward": {
         "f1": null,
         "fr": null
@@ -40628,6 +40690,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 16.238095238095237,
       "forward": {
         "f1": null,
         "fr": null
@@ -40885,6 +40949,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 45.93430656934307,
       "forward": {
         "f1": null,
         "fr": null
@@ -41228,6 +41294,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 18.072289156626507,
       "forward": {
         "f1": null,
         "fr": null
@@ -41571,6 +41639,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 13.23273840721636,
       "forward": {
         "f1": null,
         "fr": null
@@ -41828,6 +41898,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 24.1060606060606,
       "forward": {
         "f1": null,
         "fr": null
@@ -41845,8 +41917,8 @@
         "is_bank": false,
         "is_psx": true,
         "price": 327.64,
-        "score": 125,
-        "pct": 77.2,
+        "score": 126,
+        "pct": 77.8,
         "grade": "B",
         "metrics": [
           {
@@ -41935,8 +42007,8 @@
           },
           {
             "key": "roe",
-            "verdict": "WATCH",
-            "pts": 2,
+            "verdict": "GOOD",
+            "pts": 3,
             "max": 3
           },
           {
@@ -42171,6 +42243,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 21.01162790697675,
       "forward": {
         "f1": null,
         "fr": null
@@ -42428,6 +42502,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 32.12500000000001,
       "forward": {
         "f1": null,
         "fr": null
@@ -42685,6 +42761,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 17.271410839884155,
       "forward": {
         "f1": null,
         "fr": null
@@ -43028,6 +43106,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 14.850961538461531,
       "forward": {
         "f1": null,
         "fr": null
@@ -43371,6 +43451,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 6.184618921715151,
       "forward": {
         "f1": null,
         "fr": null
@@ -43628,6 +43710,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 13.85362210604928,
       "forward": {
         "f1": null,
         "fr": null
@@ -43885,6 +43969,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 19.104554865424447,
       "forward": {
         "f1": null,
         "fr": null
@@ -44228,6 +44314,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 26.755555555555556,
       "forward": {
         "f1": null,
         "fr": null
@@ -44571,6 +44659,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 40.94089264173703,
       "forward": {
         "f1": null,
         "fr": null
@@ -44914,6 +45004,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 63.808139534883715,
       "forward": {
         "f1": null,
         "fr": null
@@ -45257,6 +45349,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 17.095709570957098,
       "forward": {
         "f1": null,
         "fr": null
@@ -45514,6 +45608,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 11.19613370922272,
       "forward": {
         "f1": null,
         "fr": null
@@ -45771,6 +45867,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 33.52347520842475,
       "forward": {
         "f1": null,
         "fr": null
@@ -46114,6 +46212,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 35.92592592592593,
       "forward": {
         "f1": null,
         "fr": null
@@ -46457,6 +46557,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 1670.5942028985507,
       "forward": {
         "f1": null,
         "fr": null
@@ -46800,6 +46902,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 28.885941644562333,
       "forward": {
         "f1": null,
         "fr": null
@@ -47143,6 +47247,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 13.588059701492531,
       "forward": {
         "f1": null,
         "fr": null
@@ -47486,6 +47592,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 12.148900169204737,
       "forward": {
         "f1": null,
         "fr": null
@@ -47829,6 +47937,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": 27.847411444141684,
       "forward": {
         "f1": null,
         "fr": null
@@ -48174,6 +48284,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": 307.9016099481543,
+      "perf_3m": 125.14631207504952,
       "forward": {
         "f1": true,
         "fr": false
@@ -48191,7 +48303,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 1042.03,
+        "price": 1042.9801,
         "score": 104,
         "pct": 66.7,
         "grade": "B",
@@ -48484,8 +48596,8 @@
           "central": 189.75,
           "peg": 0.2,
           "mos_pct": -81.8,
-          "mos_fcf_pct": -648.3,
-          "mos_cash_pct": -457.0
+          "mos_fcf_pct": -649.0,
+          "mos_cash_pct": -457.5
         }
       }
     },
@@ -48518,6 +48630,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": 12.254901960784313,
+      "perf_3m": 5.529953917050696,
       "forward": {
         "f1": true,
         "fr": null
@@ -48535,7 +48649,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.865,
+        "price": 6.86,
         "score": 104,
         "pct": 66.7,
         "grade": "B",
@@ -48827,8 +48941,8 @@
           "composite": 12.47,
           "central": 4.25,
           "peg": 0.07,
-          "mos_pct": -38.1,
-          "mos_fcf_pct": -123.4,
+          "mos_pct": -38.0,
+          "mos_fcf_pct": -123.3,
           "mos_cash_pct": 59.8
         }
       }
@@ -48862,6 +48976,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": -7.439824945295401,
+      "perf_3m": -7.287671232876703,
       "forward": {
         "f1": false,
         "fr": null
@@ -48879,7 +48995,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 16.9,
+        "price": 16.91,
         "score": 127,
         "pct": 88.8,
         "grade": "A",
@@ -49206,6 +49322,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": 9.173387096774196,
+      "perf_3m": -5.497382198952886,
       "forward": {
         "f1": false,
         "fr": false
@@ -49223,7 +49341,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 5.404,
+        "price": 5.415,
         "score": 105,
         "pct": 67.3,
         "grade": "B",
@@ -49515,9 +49633,9 @@
           "composite": 4.47,
           "central": 3.22,
           "peg": 0.03,
-          "mos_pct": -40.4,
-          "mos_fcf_pct": -67.8,
-          "mos_cash_pct": -5.4
+          "mos_pct": -40.5,
+          "mos_fcf_pct": -68.2,
+          "mos_cash_pct": -5.6
         }
       }
     },
@@ -49550,6 +49668,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": 65.77369052379048,
+      "perf_3m": 30.295411690760528,
       "forward": {
         "f1": false,
         "fr": null
@@ -49567,7 +49687,7 @@
         "sector": "Transportation",
         "is_bank": false,
         "is_psx": false,
-        "price": 41.375,
+        "price": 41.45,
         "score": 131,
         "pct": 86.8,
         "grade": "A",
@@ -49845,7 +49965,7 @@
         "piotroski": 7,
         "altman_z": 4.58,
         "beneish_m": 6.57,
-        "shareholder_yield_pct": 5.93,
+        "shareholder_yield_pct": 5.92,
         "iv": {
           "dcf_eps": 178.85,
           "dcf_fcf": 134.88,
@@ -49894,6 +50014,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": 10.222651484343237,
+      "perf_3m": 1.388759001215748,
       "forward": {
         "f1": false,
         "fr": null
@@ -49911,7 +50033,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 108.4099,
+        "price": 108.27,
         "score": 95,
         "pct": 79.2,
         "grade": "B",
@@ -50189,7 +50311,7 @@
         "piotroski": 7,
         "altman_z": null,
         "beneish_m": 1.31,
-        "shareholder_yield_pct": 2.36,
+        "shareholder_yield_pct": 2.37,
         "iv": {
           "dcf_eps": 55.58,
           "dcf_fcf": null,
@@ -50204,8 +50326,8 @@
           "central": 43.76,
           "peg": null,
           "mos_pct": -59.6,
-          "mos_fcf_pct": -147.7,
-          "mos_cash_pct": 25.1
+          "mos_fcf_pct": -147.4,
+          "mos_cash_pct": 25.2
         }
       }
     },
@@ -50238,6 +50360,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": 155.66611878419155,
+      "perf_3m": 165.8601530612245,
       "forward": {
         "f1": false,
         "fr": false
@@ -50255,7 +50379,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 519.8636,
+        "price": 520.975,
         "score": 103,
         "pct": 66.9,
         "grade": "B",
@@ -50533,7 +50657,7 @@
         "piotroski": 6,
         "altman_z": 30.27,
         "beneish_m": 4.05,
-        "shareholder_yield_pct": 0.16,
+        "shareholder_yield_pct": 0.15,
         "iv": {
           "dcf_eps": 104.4,
           "dcf_fcf": 168.6,
@@ -50546,10 +50670,10 @@
           "intrinsic_cash": 131.88,
           "composite": 130.28,
           "central": 104.4,
-          "peg": 4.57,
-          "mos_pct": -79.9,
-          "mos_fcf_pct": -405.0,
-          "mos_cash_pct": -294.2
+          "peg": 4.58,
+          "mos_pct": -80.0,
+          "mos_fcf_pct": -406.1,
+          "mos_cash_pct": -295.0
         }
       }
     },
@@ -50582,6 +50706,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": 13.223214285714288,
+      "perf_3m": 18.72669111336506,
       "forward": {
         "f1": true,
         "fr": false
@@ -50599,7 +50725,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 379.825,
+        "price": 379.36,
         "score": 117,
         "pct": 76.0,
         "grade": "B",
@@ -50892,8 +51018,8 @@
           "central": 187.92,
           "peg": 0.86,
           "mos_pct": -50.5,
-          "mos_fcf_pct": -158.3,
-          "mos_cash_pct": -314.0
+          "mos_fcf_pct": -157.9,
+          "mos_cash_pct": -313.5
         }
       }
     },
@@ -50926,6 +51052,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": -25.87338351669562,
+      "perf_3m": -5.592428711897735,
       "forward": {
         "f1": false,
         "fr": null
@@ -50943,7 +51071,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 37.97,
+        "price": 38.405,
         "score": 88,
         "pct": 68.8,
         "grade": "B",
@@ -51235,9 +51363,9 @@
           "composite": 211.58,
           "central": 347.09,
           "peg": 0.08,
-          "mos_pct": 89.1,
-          "mos_fcf_pct": 89.1,
-          "mos_cash_pct": 83.9
+          "mos_pct": 88.9,
+          "mos_fcf_pct": 88.9,
+          "mos_cash_pct": 83.7
         }
       }
     },
@@ -51270,6 +51398,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": 42.01837985023826,
+      "perf_3m": 24.366616989567817,
       "forward": {
         "f1": null,
         "fr": null
@@ -51287,7 +51417,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 8.37,
+        "price": 8.3,
         "score": 110,
         "pct": 80.9,
         "grade": "A",
@@ -51578,10 +51708,10 @@
           "intrinsic_cash": 27.37,
           "composite": 24.3,
           "central": 16.15,
-          "peg": 0.13,
-          "mos_pct": 48.2,
-          "mos_fcf_pct": 38.4,
-          "mos_cash_pct": 69.4
+          "peg": 0.12,
+          "mos_pct": 48.6,
+          "mos_fcf_pct": 39.0,
+          "mos_cash_pct": 69.7
         }
       }
     },
@@ -51614,6 +51744,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": 2.2995145631067833,
+      "perf_3m": 3.454590083456052,
       "forward": {
         "f1": false,
         "fr": null
@@ -51958,6 +52090,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": -21.964423820572314,
+      "perf_3m": -2.2286821705426396,
       "forward": {
         "f1": true,
         "fr": null
@@ -52274,350 +52408,6 @@
       }
     },
     {
-      "ticker": "VMD",
-      "name": "VMD",
-      "sector": "Health Services",
-      "rev_growth": 20.5,
-      "op_growth": 29.5,
-      "np_growth": 32.6,
-      "pbt_growth": 34.6,
-      "eps_growth": 1.1,
-      "op_np_ratio": 1.11,
-      "signal_a": true,
-      "signal_b": true,
-      "conditions": {
-        "g1": true,
-        "g2": true,
-        "a1": true,
-        "a2": true,
-        "c1": true,
-        "c3": true
-      },
-      "indicators": {
-        "growth": true,
-        "acceleration": true,
-        "pbt_accel": true,
-        "cash_backed": true,
-        "op_declining": false
-      },
-      "strength_score": 4,
-      "cash_backed": true,
-      "forward": {
-        "f1": true,
-        "fr": null
-      },
-      "forward_boost": true,
-      "verdict": "EXPLOSIVE \u2014 both signals",
-      "cash_guardrails": "confirmed",
-      "growth_source": "tv",
-      "fidelity": "im3_screen",
-      "is_financial": false,
-      "zacks_rank": null,
-      "im3": {
-        "ticker": "VMD",
-        "name": "Viemed Healthcare, Inc.",
-        "sector": "Health Services",
-        "is_bank": false,
-        "is_psx": false,
-        "price": 10.365,
-        "score": 113,
-        "pct": 74.3,
-        "grade": "B",
-        "metrics": [
-          {
-            "key": "rev_cagr",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "op_cagr",
-            "verdict": "GOOD",
-            "pts": 1,
-            "max": 1
-          },
-          {
-            "key": "np_cagr",
-            "verdict": "GOOD",
-            "pts": 1,
-            "max": 1
-          },
-          {
-            "key": "op_margin",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5
-          },
-          {
-            "key": "np_margin",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "tax_rate",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3
-          },
-          {
-            "key": "int_coverage",
-            "verdict": "GOOD",
-            "pts": 2,
-            "max": 2
-          },
-          {
-            "key": "de_ratio",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "total_debt",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "current_ratio",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5
-          },
-          {
-            "key": "cfo_trend",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "net_cash",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 3
-          },
-          {
-            "key": "ccfo_cpat",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "nfa_turn",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "roe",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "eps_trend",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "pe_ratio",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5
-          },
-          {
-            "key": "peg_ratio",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "earn_yield",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 3
-          },
-          {
-            "key": "pb_ratio",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "graham_val",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 3
-          },
-          {
-            "key": "ps_ratio",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "div_yield",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "ev_ebitda",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3
-          },
-          {
-            "key": "mos",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "val_shareholders",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 5
-          },
-          {
-            "key": "inv_turn",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "dro",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3
-          },
-          {
-            "key": "fat",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3
-          },
-          {
-            "key": "ccc",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3
-          },
-          {
-            "key": "fcf_trend",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "croic",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5
-          },
-          {
-            "key": "fcf_sale",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 5
-          },
-          {
-            "key": "fcf_cfo",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3
-          },
-          {
-            "key": "cash_debt",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5
-          },
-          {
-            "key": "cash_share",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5
-          },
-          {
-            "key": "altman_z",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5
-          },
-          {
-            "key": "beneish_m",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 5
-          },
-          {
-            "key": "piotroski_f",
-            "verdict": "WATCH",
-            "pts": 6,
-            "max": 10
-          },
-          {
-            "key": "roic_wacc",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3
-          }
-        ],
-        "max": 152,
-        "ver": "2.15.0",
-        "bank_coverage": null,
-        "bank_inputs": null,
-        "coverage": 0.95,
-        "partial": false,
-        "src": {
-          "fund": "tv",
-          "hist": "yahoo"
-        },
-        "explosive": {
-          "verdict": "EXPLOSIVE \u2014 both signals",
-          "rev_growth": 20.5,
-          "op_growth": 28.2,
-          "np_growth": 32.6,
-          "pbt_growth": 34.6,
-          "op_np_ratio": 1.16,
-          "signal_a": true,
-          "signal_b": true,
-          "conditions": {
-            "g1": true,
-            "g2": true,
-            "a1": true,
-            "a2": true,
-            "c1": true,
-            "c3": true
-          },
-          "source": "im3_statements"
-        },
-        "piotroski": 5,
-        "altman_z": null,
-        "beneish_m": 8.34,
-        "shareholder_yield_pct": 0.0,
-        "iv": {
-          "dcf_eps": 14.58,
-          "dcf_fcf": 12.7,
-          "dcf_cash": 9.83,
-          "proj_fcf": 9.91,
-          "proj_cash": 5.53,
-          "graham": 5.57,
-          "peter_lynch": 9.25,
-          "intrinsic_fcf": 11.61,
-          "intrinsic_cash": 9.8,
-          "composite": 10.38,
-          "central": 12.7,
-          "peg": 0.82,
-          "mos_pct": 18.4,
-          "mos_fcf_pct": 10.7,
-          "mos_cash_pct": -5.8
-        }
-      }
-    },
-    {
       "ticker": "TWFG",
       "name": "TWFG",
       "sector": "Finance",
@@ -52646,6 +52436,8 @@
       },
       "strength_score": 4,
       "cash_backed": true,
+      "perf_6m": -23.13697657913414,
+      "perf_3m": 8.4626940410616,
       "forward": {
         "f1": false,
         "fr": null
@@ -52663,7 +52455,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 21.62,
+        "price": 21.605,
         "score": 99,
         "pct": 65.6,
         "grade": "B",
@@ -52941,7 +52733,7 @@
         "piotroski": 7,
         "altman_z": 20.8,
         "beneish_m": 0.94,
-        "shareholder_yield_pct": 1.35,
+        "shareholder_yield_pct": 1.36,
         "iv": {
           "dcf_eps": 20.09,
           "dcf_fcf": null,
@@ -52956,7 +52748,7 @@
           "central": 16.42,
           "peg": 0.24,
           "mos_pct": -24.0,
-          "mos_fcf_pct": -53.9,
+          "mos_fcf_pct": -53.8,
           "mos_cash_pct": 93.5
         }
       }
@@ -52990,6 +52782,8 @@
       },
       "strength_score": 3,
       "cash_backed": false,
+      "perf_6m": 1182.4707846410683,
+      "perf_3m": 803.7753385333945,
       "forward": {
         "f1": null,
         "fr": null
@@ -53334,6 +53128,8 @@
       },
       "strength_score": 3,
       "cash_backed": false,
+      "perf_6m": 35.5263157894737,
+      "perf_3m": 32.47588424437299,
       "forward": {
         "f1": false,
         "fr": null
@@ -53351,7 +53147,7 @@
         "sector": "Producer Manufacturing",
         "is_bank": false,
         "is_psx": false,
-        "price": 41.21,
+        "price": 41.41,
         "score": 116,
         "pct": 76.3,
         "grade": "B",
@@ -53643,9 +53439,9 @@
           "composite": 61.67,
           "central": 76.25,
           "peg": 0.03,
-          "mos_pct": 46.0,
-          "mos_fcf_pct": 24.5,
-          "mos_cash_pct": 47.9
+          "mos_pct": 45.7,
+          "mos_fcf_pct": 24.1,
+          "mos_cash_pct": 47.6
         }
       }
     },
@@ -53678,6 +53474,8 @@
       },
       "strength_score": 3,
       "cash_backed": false,
+      "perf_6m": 8.386926473411403,
+      "perf_3m": 22.07297297297297,
       "forward": {
         "f1": false,
         "fr": null
@@ -53695,7 +53493,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 1128.945,
+        "price": 1127.14,
         "score": 72,
         "pct": 57.6,
         "grade": "C",
@@ -53987,9 +53785,9 @@
           "composite": 365.26,
           "central": 509.44,
           "peg": 0.83,
-          "mos_pct": -54.9,
-          "mos_fcf_pct": -121.6,
-          "mos_cash_pct": -199.8
+          "mos_pct": -54.8,
+          "mos_fcf_pct": -121.3,
+          "mos_cash_pct": -199.4
         }
       }
     },
@@ -54022,6 +53820,8 @@
       },
       "strength_score": 3,
       "cash_backed": false,
+      "perf_6m": 19.921503466452762,
+      "perf_3m": 14.69695309074968,
       "forward": {
         "f1": false,
         "fr": false
@@ -54039,7 +53839,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 208.9739,
+        "price": 208.99,
         "score": 122,
         "pct": 76.7,
         "grade": "B",
@@ -54366,6 +54166,8 @@
       },
       "strength_score": 3,
       "cash_backed": true,
+      "perf_6m": 14.202965708989812,
+      "perf_3m": -36.4,
       "forward": {
         "f1": true,
         "fr": false
@@ -54383,7 +54185,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 0.9825,
+        "price": 0.9836,
         "score": 87,
         "pct": 72.5,
         "grade": "B",
@@ -54675,9 +54477,9 @@
           "composite": 0.49,
           "central": 0.32,
           "peg": null,
-          "mos_pct": -67.1,
-          "mos_fcf_pct": -204.3,
-          "mos_cash_pct": -94.6
+          "mos_pct": -67.2,
+          "mos_fcf_pct": -204.6,
+          "mos_cash_pct": -94.8
         }
       }
     },
@@ -54710,6 +54512,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": -25.367329299913575,
+      "perf_3m": 34.921874999999986,
       "forward": {
         "f1": false,
         "fr": null
@@ -55054,6 +54858,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": 8.841672378341336,
+      "perf_3m": 27.34562951082598,
       "forward": {
         "f1": false,
         "fr": null
@@ -55398,6 +55204,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": -7.172131147540976,
+      "perf_3m": -8.669354838709673,
       "forward": {
         "f1": false,
         "fr": null
@@ -55742,6 +55550,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": 54.14634146341465,
+      "perf_3m": 27.676767676767675,
       "forward": {
         "f1": false,
         "fr": null
@@ -55759,7 +55569,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 12.61,
+        "price": 12.63,
         "score": 94,
         "pct": 63.9,
         "grade": "B",
@@ -56051,9 +55861,9 @@
           "composite": 11.85,
           "central": 11.74,
           "peg": null,
-          "mos_pct": -6.9,
-          "mos_fcf_pct": -7.4,
-          "mos_cash_pct": 3.3
+          "mos_pct": -7.0,
+          "mos_fcf_pct": -7.6,
+          "mos_cash_pct": 3.1
         }
       }
     },
@@ -56086,6 +55896,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": -10.324074074074076,
+      "perf_3m": 18.616044090630762,
       "forward": {
         "f1": false,
         "fr": null
@@ -56103,7 +55915,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 38.6,
+        "price": 38.51,
         "score": 112,
         "pct": 77.8,
         "grade": "B",
@@ -56394,10 +56206,10 @@
           "intrinsic_cash": 20.14,
           "composite": 24.58,
           "central": 31.98,
-          "peg": 0.4,
-          "mos_pct": -17.1,
-          "mos_fcf_pct": -36.6,
-          "mos_cash_pct": -91.7
+          "peg": 0.39,
+          "mos_pct": -16.9,
+          "mos_fcf_pct": -36.3,
+          "mos_cash_pct": -91.3
         }
       }
     },
@@ -56430,6 +56242,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": 177.61087267525036,
+      "perf_3m": 95.41792547834845,
       "forward": {
         "f1": false,
         "fr": null
@@ -56447,7 +56261,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 19.345,
+        "price": 19.3941,
         "score": 95,
         "pct": 63.3,
         "grade": "B",
@@ -56740,8 +56554,8 @@
           "central": null,
           "peg": null,
           "mos_pct": null,
-          "mos_fcf_pct": -911.0,
-          "mos_cash_pct": 52.9
+          "mos_fcf_pct": -913.5,
+          "mos_cash_pct": 52.8
         }
       }
     },
@@ -56774,6 +56588,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": 18.347050754458152,
+      "perf_3m": 18.83608815426997,
       "forward": {
         "f1": true,
         "fr": null
@@ -56791,7 +56607,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 17.25,
+        "price": 17.26,
         "score": 83,
         "pct": 70.3,
         "grade": "B",
@@ -57084,7 +56900,7 @@
           "central": 8.53,
           "peg": null,
           "mos_pct": -50.6,
-          "mos_fcf_pct": -102.3,
+          "mos_fcf_pct": -102.4,
           "mos_cash_pct": 91.5
         }
       }
@@ -57118,6 +56934,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": -39.024390243902445,
+      "perf_3m": -26.701570680628276,
       "forward": {
         "f1": true,
         "fr": null
@@ -57462,6 +57280,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": -23.87387387387388,
+      "perf_3m": -16.625555007400106,
       "forward": {
         "f1": false,
         "fr": null
@@ -57479,7 +57299,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 16.87,
+        "price": 16.9,
         "score": 119,
         "pct": 77.3,
         "grade": "B",
@@ -57757,7 +57577,7 @@
         "piotroski": 6,
         "altman_z": -2.33,
         "beneish_m": 4.35,
-        "shareholder_yield_pct": 6.79,
+        "shareholder_yield_pct": 6.78,
         "iv": {
           "dcf_eps": 222.19,
           "dcf_fcf": 197.2,
@@ -57773,7 +57593,7 @@
           "peg": 0.07,
           "mos_pct": null,
           "mos_fcf_pct": 90.3,
-          "mos_cash_pct": 83.8
+          "mos_cash_pct": 83.7
         }
       }
     },
@@ -57806,6 +57626,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": -55.82901554404145,
+      "perf_3m": -30.122950819672127,
       "forward": {
         "f1": true,
         "fr": null
@@ -57823,7 +57645,7 @@
         "sector": "Commercial Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 1.7085,
+        "price": 1.705,
         "score": 75,
         "pct": 67.0,
         "grade": "B",
@@ -58101,7 +57923,7 @@
         "piotroski": 4,
         "altman_z": null,
         "beneish_m": 1365958347.41,
-        "shareholder_yield_pct": 10.74,
+        "shareholder_yield_pct": 10.76,
         "iv": {
           "dcf_eps": null,
           "dcf_fcf": 11.81,
@@ -58115,8 +57937,8 @@
           "composite": 13.81,
           "central": 11.81,
           "peg": null,
-          "mos_pct": 85.5,
-          "mos_fcf_pct": 81.1,
+          "mos_pct": 85.6,
+          "mos_fcf_pct": 81.2,
           "mos_cash_pct": 82.7
         }
       }
@@ -58150,6 +57972,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": 60.582141095214595,
+      "perf_3m": 16.042780748663088,
       "forward": {
         "f1": false,
         "fr": null
@@ -58167,7 +57991,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 32.4542,
+        "price": 32.47,
         "score": 110,
         "pct": 70.1,
         "grade": "B",
@@ -58458,10 +58282,10 @@
           "intrinsic_cash": 24.58,
           "composite": 19.13,
           "central": 18.5,
-          "peg": 0.88,
+          "peg": 0.89,
           "mos_pct": -43.0,
-          "mos_fcf_pct": -136.6,
-          "mos_cash_pct": -32.0
+          "mos_fcf_pct": -136.7,
+          "mos_cash_pct": -32.1
         }
       }
     },
@@ -58494,6 +58318,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": 236.82795698924727,
+      "perf_3m": 112.37288135593218,
       "forward": {
         "f1": true,
         "fr": null
@@ -58511,7 +58337,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.2601,
+        "price": 6.315,
         "score": 62,
         "pct": 63.9,
         "grade": "B",
@@ -58805,7 +58631,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 71.6
+          "mos_cash_pct": 71.3
         }
       }
     },
@@ -58838,6 +58664,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": 91.61290322580645,
+      "perf_3m": 36.11365719523373,
       "forward": {
         "f1": false,
         "fr": null
@@ -58855,7 +58683,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 14.87,
+        "price": 14.89,
         "score": 100,
         "pct": 65.8,
         "grade": "B",
@@ -59147,9 +58975,9 @@
           "composite": 30.27,
           "central": 8.7,
           "peg": null,
-          "mos_pct": -41.5,
-          "mos_fcf_pct": -53.7,
-          "mos_cash_pct": 68.7
+          "mos_pct": -41.6,
+          "mos_fcf_pct": -53.9,
+          "mos_cash_pct": 68.6
         }
       }
     },
@@ -59182,6 +59010,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": 13.407632556568723,
+      "perf_3m": 2.8483920367534448,
       "forward": {
         "f1": false,
         "fr": null
@@ -59199,7 +59029,7 @@
         "sector": "Health Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 33.72,
+        "price": 33.65,
         "score": 88,
         "pct": 59.5,
         "grade": "C",
@@ -59491,9 +59321,9 @@
           "composite": 22.42,
           "central": 33.09,
           "peg": 0.49,
-          "mos_pct": -1.9,
-          "mos_fcf_pct": -15.1,
-          "mos_cash_pct": -80.4
+          "mos_pct": -1.7,
+          "mos_fcf_pct": -14.9,
+          "mos_cash_pct": -80.1
         }
       }
     },
@@ -59526,6 +59356,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": 221.09991406921338,
+      "perf_3m": 169.16377447449415,
       "forward": {
         "f1": false,
         "fr": null
@@ -59543,7 +59375,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 409.4899,
+        "price": 411.369,
         "score": 94,
         "pct": 62.3,
         "grade": "B",
@@ -59821,7 +59653,7 @@
         "piotroski": 5,
         "altman_z": 0.17,
         "beneish_m": 3.27,
-        "shareholder_yield_pct": 2.81,
+        "shareholder_yield_pct": 2.8,
         "iv": {
           "dcf_eps": 341.95,
           "dcf_fcf": 1074.55,
@@ -59835,9 +59667,9 @@
           "composite": 728.0,
           "central": 341.95,
           "peg": 1.71,
-          "mos_pct": -16.5,
-          "mos_fcf_pct": 24.5,
-          "mos_cash_pct": 45.1
+          "mos_pct": -16.9,
+          "mos_fcf_pct": 24.2,
+          "mos_cash_pct": 44.9
         }
       }
     },
@@ -59870,6 +59702,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": -9.242418477226897,
+      "perf_3m": -3.2514521205828077,
       "forward": {
         "f1": false,
         "fr": null
@@ -59887,7 +59721,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 596.71,
+        "price": 596.38,
         "score": 127,
         "pct": 83.0,
         "grade": "A",
@@ -60165,7 +59999,7 @@
         "piotroski": 4,
         "altman_z": 7.69,
         "beneish_m": 5.61,
-        "shareholder_yield_pct": 2.08,
+        "shareholder_yield_pct": 2.09,
         "iv": {
           "dcf_eps": 925.4,
           "dcf_fcf": 857.07,
@@ -60180,8 +60014,8 @@
           "central": 857.07,
           "peg": 0.92,
           "mos_pct": 30.4,
-          "mos_fcf_pct": 20.6,
-          "mos_cash_pct": 9.7
+          "mos_fcf_pct": 20.7,
+          "mos_cash_pct": 9.8
         }
       }
     },
@@ -60214,6 +60048,8 @@
       },
       "strength_score": 2,
       "cash_backed": false,
+      "perf_6m": -34.789644012944976,
+      "perf_3m": -1.707317073170717,
       "forward": {
         "f1": false,
         "fr": null
@@ -60231,7 +60067,7 @@
         "sector": "Retail Trade",
         "is_bank": false,
         "is_psx": false,
-        "price": 2.015,
+        "price": 2.02,
         "score": 89,
         "pct": 71.2,
         "grade": "B",
@@ -60525,7 +60361,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 91.6
+          "mos_cash_pct": 91.5
         }
       }
     },
@@ -60558,6 +60394,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 16.646919431279635,
+      "perf_3m": -1.7465069860279336,
       "forward": {
         "f1": false,
         "fr": null
@@ -60575,7 +60413,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 9.83,
+        "price": 9.845,
         "score": 82,
         "pct": 56.9,
         "grade": "C",
@@ -60853,7 +60691,7 @@
         "piotroski": 3,
         "altman_z": 1.45,
         "beneish_m": 1314208429008.43,
-        "shareholder_yield_pct": 6.72,
+        "shareholder_yield_pct": 6.71,
         "iv": {
           "dcf_eps": 3.13,
           "dcf_fcf": null,
@@ -60867,9 +60705,9 @@
           "composite": 8.56,
           "central": 6.07,
           "peg": null,
-          "mos_pct": -38.3,
-          "mos_fcf_pct": -62.1,
-          "mos_cash_pct": 29.9
+          "mos_pct": -38.4,
+          "mos_fcf_pct": -62.3,
+          "mos_cash_pct": 29.8
         }
       }
     },
@@ -60902,6 +60740,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 12.274849899933276,
+      "perf_3m": -21.57502329916124,
       "forward": {
         "f1": true,
         "fr": null
@@ -60919,7 +60759,7 @@
         "sector": "Non-Energy Minerals",
         "is_bank": false,
         "is_psx": false,
-        "price": 16.85,
+        "price": 16.86,
         "score": 88,
         "pct": 60.7,
         "grade": "B",
@@ -61210,10 +61050,10 @@
           "intrinsic_cash": 60.3,
           "composite": 52.41,
           "central": 1.93,
-          "peg": 11.47,
+          "peg": 11.48,
           "mos_pct": -88.5,
-          "mos_fcf_pct": -772.2,
-          "mos_cash_pct": 72.1
+          "mos_fcf_pct": -772.7,
+          "mos_cash_pct": 72.0
         }
       }
     },
@@ -61246,6 +61086,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 300.44044622425633,
+      "perf_3m": 126.12498788564046,
       "forward": {
         "f1": true,
         "fr": false
@@ -61263,7 +61105,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 697,
+        "price": 698.045,
         "score": 113,
         "pct": 71.5,
         "grade": "B",
@@ -61554,10 +61396,10 @@
           "intrinsic_cash": 128.71,
           "composite": 105.94,
           "central": 128.0,
-          "peg": 0.78,
-          "mos_pct": -81.6,
-          "mos_fcf_pct": -578.0,
-          "mos_cash_pct": -441.5
+          "peg": 0.79,
+          "mos_pct": -81.7,
+          "mos_fcf_pct": -579.0,
+          "mos_cash_pct": -442.3
         }
       }
     },
@@ -61590,6 +61432,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -23.81196733746821,
+      "perf_3m": 1.2002133712660061,
       "forward": {
         "f1": false,
         "fr": null
@@ -61607,7 +61451,7 @@
         "sector": "Transportation",
         "is_bank": false,
         "is_psx": false,
-        "price": 171.08,
+        "price": 170.63,
         "score": 80,
         "pct": 65.6,
         "grade": "B",
@@ -61899,9 +61743,9 @@
           "composite": 154.67,
           "central": 83.91,
           "peg": 0.5,
-          "mos_pct": -51.0,
-          "mos_fcf_pct": -47.8,
-          "mos_cash_pct": 16.3
+          "mos_pct": -50.8,
+          "mos_fcf_pct": -47.4,
+          "mos_cash_pct": 16.5
         }
       }
     },
@@ -61934,6 +61778,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 30.258302583025824,
+      "perf_3m": 107.64705882352939,
       "forward": {
         "f1": false,
         "fr": null
@@ -61951,7 +61797,7 @@
         "sector": "Commercial Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 7.06,
+        "price": 7.035,
         "score": 100,
         "pct": 68.5,
         "grade": "B",
@@ -62243,9 +62089,9 @@
           "composite": 18.44,
           "central": 5.12,
           "peg": 0.24,
-          "mos_pct": -27.5,
-          "mos_fcf_pct": 56.2,
-          "mos_cash_pct": 60.2
+          "mos_pct": -27.2,
+          "mos_fcf_pct": 56.4,
+          "mos_cash_pct": 60.3
         }
       }
     },
@@ -62278,6 +62124,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 261.1403812824957,
+      "perf_3m": 148.34695969298983,
       "forward": {
         "f1": true,
         "fr": false
@@ -62295,7 +62143,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 1040.83,
+        "price": 1041.725,
         "score": 101,
         "pct": 63.5,
         "grade": "B",
@@ -62587,9 +62435,9 @@
           "composite": 135.57,
           "central": 169.25,
           "peg": 1.01,
-          "mos_pct": -83.7,
-          "mos_fcf_pct": -663.4,
-          "mos_cash_pct": -643.9
+          "mos_pct": -83.8,
+          "mos_fcf_pct": -664.1,
+          "mos_cash_pct": -644.6
         }
       }
     },
@@ -62622,6 +62470,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 3.184713375796186,
+      "perf_3m": -5.996131528046414,
       "forward": {
         "f1": true,
         "fr": null
@@ -62639,9 +62489,9 @@
         "sector": "Consumer Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 4.855,
-        "score": 65,
-        "pct": 58.0,
+        "price": 4.845,
+        "score": 67,
+        "pct": 59.8,
         "grade": "C",
         "metrics": [
           {
@@ -62856,8 +62706,8 @@
           },
           {
             "key": "cash_share",
-            "verdict": "WATCH",
-            "pts": 3,
+            "verdict": "GOOD",
+            "pts": 5,
             "max": 5
           },
           {
@@ -62917,7 +62767,7 @@
         "piotroski": 4,
         "altman_z": null,
         "beneish_m": 2.28,
-        "shareholder_yield_pct": 2.41,
+        "shareholder_yield_pct": 2.42,
         "iv": {
           "dcf_eps": null,
           "dcf_fcf": null,
@@ -62933,7 +62783,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 70.4
+          "mos_cash_pct": 70.5
         }
       }
     },
@@ -62966,6 +62816,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 32.27556278817468,
+      "perf_3m": 32.635300516725586,
       "forward": {
         "f1": true,
         "fr": null
@@ -62983,7 +62835,7 @@
         "sector": "Consumer Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 48.77,
+        "price": 48.76,
         "score": 90,
         "pct": 67.2,
         "grade": "B",
@@ -63277,7 +63129,7 @@
           "peg": 0.04,
           "mos_pct": -47.2,
           "mos_fcf_pct": -89.3,
-          "mos_cash_pct": -111.0
+          "mos_cash_pct": -110.9
         }
       }
     },
@@ -63310,6 +63162,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -3.5915492957746467,
+      "perf_3m": 23.111510791366907,
       "forward": {
         "f1": true,
         "fr": null
@@ -63654,6 +63508,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -23.5,
+      "perf_3m": -18.83289124668435,
       "forward": {
         "f1": true,
         "fr": null
@@ -63998,6 +63854,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -14.46708987637821,
+      "perf_3m": 5.960264900662256,
       "forward": {
         "f1": true,
         "fr": null
@@ -64015,9 +63873,9 @@
         "sector": "Commercial Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 12.81,
-        "score": 82,
-        "pct": 60.3,
+        "price": 12.76,
+        "score": 83,
+        "pct": 61.0,
         "grade": "B",
         "metrics": [
           {
@@ -64136,8 +63994,8 @@
           },
           {
             "key": "pb_ratio",
-            "verdict": "BAD",
-            "pts": 1,
+            "verdict": "WATCH",
+            "pts": 2,
             "max": 3
           },
           {
@@ -64308,8 +64166,8 @@
           "central": 1.62,
           "peg": null,
           "mos_pct": -87.3,
-          "mos_fcf_pct": -199.0,
-          "mos_cash_pct": 21.3
+          "mos_fcf_pct": -197.8,
+          "mos_cash_pct": 21.6
         }
       }
     },
@@ -64342,6 +64200,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 126.31802721088434,
+      "perf_3m": 123.84356602186709,
       "forward": {
         "f1": false,
         "fr": null
@@ -64686,6 +64546,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 95.20833333333333,
+      "perf_3m": 27.482993197278905,
       "forward": {
         "f1": null,
         "fr": null
@@ -64727,6 +64589,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 42.977056519306096,
+      "perf_3m": 25.214408233276156,
       "forward": {
         "f1": true,
         "fr": null
@@ -64744,7 +64608,7 @@
         "sector": "Producer Manufacturing",
         "is_bank": false,
         "is_psx": false,
-        "price": 51.23,
+        "price": 51.05,
         "score": 125,
         "pct": 78.6,
         "grade": "B",
@@ -65022,7 +64886,7 @@
         "piotroski": 7,
         "altman_z": 163.76,
         "beneish_m": -1.33,
-        "shareholder_yield_pct": 7.43,
+        "shareholder_yield_pct": 7.46,
         "iv": {
           "dcf_eps": 564.14,
           "dcf_fcf": 2248.87,
@@ -65037,7 +64901,7 @@
           "central": null,
           "peg": 0.63,
           "mos_pct": null,
-          "mos_fcf_pct": 94.5,
+          "mos_fcf_pct": 94.6,
           "mos_cash_pct": 99.1
         }
       }
@@ -65071,6 +64935,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -15.67164179104478,
+      "perf_3m": 5.160744500846019,
       "forward": {
         "f1": true,
         "fr": null
@@ -65088,7 +64954,7 @@
         "sector": "Finance",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.215,
+        "price": 6.22,
         "score": 49,
         "pct": 59.8,
         "grade": "C",
@@ -65380,8 +65246,8 @@
           "composite": 27.12,
           "central": 10.41,
           "peg": null,
-          "mos_pct": 40.3,
-          "mos_fcf_pct": 40.3,
+          "mos_pct": 40.2,
+          "mos_fcf_pct": 40.2,
           "mos_cash_pct": 90.5
         }
       }
@@ -65415,6 +65281,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -51.556195965417864,
+      "perf_3m": -19.18269230769231,
       "forward": {
         "f1": null,
         "fr": null
@@ -65432,7 +65300,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 0.8404,
+        "price": 0.838,
         "score": 72,
         "pct": 57.6,
         "grade": "C",
@@ -65726,7 +65594,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": -295.7
+          "mos_cash_pct": -294.5
         }
       }
     },
@@ -65759,6 +65627,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -30.60747663551402,
+      "perf_3m": -36.538461538461526,
       "forward": {
         "f1": true,
         "fr": null
@@ -65776,7 +65646,7 @@
         "sector": "Process Industries",
         "is_bank": false,
         "is_psx": false,
-        "price": 1.485,
+        "price": 1.4885,
         "score": 83,
         "pct": 64.8,
         "grade": "B",
@@ -66103,6 +65973,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -16.785714285714278,
+      "perf_3m": -28.527607361963184,
       "forward": {
         "f1": true,
         "fr": null
@@ -66120,7 +65992,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 1.145,
+        "price": 1.17,
         "score": 73,
         "pct": 57.0,
         "grade": "C",
@@ -66414,7 +66286,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 86.8
+          "mos_cash_pct": 86.5
         }
       }
     },
@@ -66447,6 +66319,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 103.60275689223054,
+      "perf_3m": 72.66206163655684,
       "forward": {
         "f1": false,
         "fr": null
@@ -66464,7 +66338,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 32.51,
+        "price": 32.47,
         "score": 85,
         "pct": 64.9,
         "grade": "B",
@@ -66756,9 +66630,9 @@
           "composite": 26.92,
           "central": 15.19,
           "peg": null,
-          "mos_pct": -53.3,
-          "mos_fcf_pct": -114.1,
-          "mos_cash_pct": 3.0
+          "mos_pct": -53.2,
+          "mos_fcf_pct": -113.8,
+          "mos_cash_pct": 3.1
         }
       }
     },
@@ -66791,6 +66665,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -15.533980582524272,
+      "perf_3m": 1.162790697674411,
       "forward": {
         "f1": false,
         "fr": null
@@ -66808,7 +66684,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 2.615,
+        "price": 2.625,
         "score": 79,
         "pct": 68.7,
         "grade": "B",
@@ -67086,7 +66962,7 @@
         "piotroski": 4,
         "altman_z": null,
         "beneish_m": -0.96,
-        "shareholder_yield_pct": 1.0,
+        "shareholder_yield_pct": 0.99,
         "iv": {
           "dcf_eps": null,
           "dcf_fcf": 0.02,
@@ -67101,7 +66977,7 @@
           "central": null,
           "peg": null,
           "mos_pct": null,
-          "mos_fcf_pct": -15965.4,
+          "mos_fcf_pct": -16026.8,
           "mos_cash_pct": 91.6
         }
       }
@@ -67135,6 +67011,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -14.736842105263161,
+      "perf_3m": 36.70886075949367,
       "forward": {
         "f1": true,
         "fr": null
@@ -67152,7 +67030,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 16.23,
+        "price": 16.2,
         "score": 94,
         "pct": 73.4,
         "grade": "B",
@@ -67445,7 +67323,7 @@
           "central": 39.54,
           "peg": null,
           "mos_pct": 59.0,
-          "mos_fcf_pct": 56.8,
+          "mos_fcf_pct": 56.9,
           "mos_cash_pct": 84.8
         }
       }
@@ -67479,6 +67357,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -14.540337711069423,
+      "perf_3m": 19.868421052631575,
       "forward": {
         "f1": false,
         "fr": null
@@ -67496,7 +67376,7 @@
         "sector": "Technology Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 4.555,
+        "price": 4.545,
         "score": 89,
         "pct": 69.5,
         "grade": "B",
@@ -67774,7 +67654,7 @@
         "piotroski": 5,
         "altman_z": 1.65,
         "beneish_m": 3.54,
-        "shareholder_yield_pct": 4.0,
+        "shareholder_yield_pct": 4.01,
         "iv": {
           "dcf_eps": null,
           "dcf_fcf": 5.49,
@@ -67788,9 +67668,9 @@
           "composite": 7.7,
           "central": 5.49,
           "peg": null,
-          "mos_pct": 17.0,
-          "mos_fcf_pct": -50.1,
-          "mos_cash_pct": 66.6
+          "mos_pct": 17.2,
+          "mos_fcf_pct": -49.8,
+          "mos_cash_pct": 66.7
         }
       }
     },
@@ -67823,6 +67703,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": null,
+      "perf_3m": null,
       "forward": {
         "f1": null,
         "fr": null
@@ -67840,7 +67722,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 431.44,
+        "price": 431.59,
         "score": 136,
         "pct": 84.0,
         "grade": "A",
@@ -68167,6 +68049,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 7.79783393501805,
+      "perf_3m": -9.074299634591972,
       "forward": {
         "f1": false,
         "fr": null
@@ -68184,7 +68068,7 @@
         "sector": "Consumer Non-Durables",
         "is_bank": false,
         "is_psx": false,
-        "price": 14.9399,
+        "price": 14.91,
         "score": 103,
         "pct": 65.6,
         "grade": "B",
@@ -68477,8 +68361,8 @@
           "central": 5.12,
           "peg": 1.68,
           "mos_pct": -65.7,
-          "mos_fcf_pct": -143.1,
-          "mos_cash_pct": -1.2
+          "mos_fcf_pct": -142.6,
+          "mos_cash_pct": -1.0
         }
       }
     },
@@ -68511,6 +68395,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -14.417613636363633,
+      "perf_3m": 14.32637571157497,
       "forward": {
         "f1": false,
         "fr": null
@@ -68528,7 +68414,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.02,
+        "price": 6.035,
         "score": 91,
         "pct": 69.5,
         "grade": "B",
@@ -68822,7 +68708,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 27.4
+          "mos_cash_pct": 27.3
         }
       }
     },
@@ -68855,6 +68741,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -14.123711340206178,
+      "perf_3m": 15.694444444444443,
       "forward": {
         "f1": false,
         "fr": null
@@ -68872,7 +68760,7 @@
         "sector": "Producer Manufacturing",
         "is_bank": false,
         "is_psx": false,
-        "price": 4.16,
+        "price": 4.135,
         "score": 81,
         "pct": 61.8,
         "grade": "B",
@@ -69166,7 +69054,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 50.9
+          "mos_cash_pct": 51.2
         }
       }
     },
@@ -69199,6 +69087,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -32.58642765685019,
+      "perf_3m": -0.7540056550424136,
       "forward": {
         "f1": true,
         "fr": null
@@ -69216,7 +69106,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 10.545,
+        "price": 10.52,
         "score": 72,
         "pct": 64.9,
         "grade": "B",
@@ -69510,7 +69400,7 @@
           "peg": null,
           "mos_pct": null,
           "mos_fcf_pct": null,
-          "mos_cash_pct": 81.5
+          "mos_cash_pct": 81.6
         }
       }
     },
@@ -69543,6 +69433,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 29.58927074601845,
+      "perf_3m": 9.25795053003534,
       "forward": {
         "f1": false,
         "fr": null
@@ -69584,6 +69476,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 50.42857142857142,
+      "perf_3m": 39.655172413793096,
       "forward": {
         "f1": false,
         "fr": null
@@ -69601,7 +69495,7 @@
         "sector": "Health Services",
         "is_bank": false,
         "is_psx": false,
-        "price": 5.26,
+        "price": 5.265,
         "score": 77,
         "pct": 62.6,
         "grade": "B",
@@ -69928,6 +69822,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -71.91011235955057,
+      "perf_3m": -35.3448275862069,
       "forward": {
         "f1": false,
         "fr": null
@@ -69969,6 +69865,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 51.88953488372092,
+      "perf_3m": 49.28571428571428,
       "forward": {
         "f1": false,
         "fr": null
@@ -69986,7 +69884,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 5.22,
+        "price": 5.2274,
         "score": 78,
         "pct": 61.9,
         "grade": "B",
@@ -70313,6 +70211,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 34.88399999999999,
+      "perf_3m": 26.295880149812728,
       "forward": {
         "f1": false,
         "fr": null
@@ -70330,7 +70230,7 @@
         "sector": "Electronic Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 168.46,
+        "price": 168.13,
         "score": 104,
         "pct": 72.2,
         "grade": "B",
@@ -70622,9 +70522,9 @@
           "composite": 81.33,
           "central": 108.34,
           "peg": 3.13,
-          "mos_pct": -35.7,
-          "mos_fcf_pct": -75.3,
-          "mos_cash_pct": -133.5
+          "mos_pct": -35.6,
+          "mos_fcf_pct": -74.9,
+          "mos_cash_pct": -133.1
         }
       }
     },
@@ -70657,6 +70557,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 108.33333333333333,
+      "perf_3m": 20.26239067055393,
       "forward": {
         "f1": false,
         "fr": null
@@ -70674,7 +70576,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 4.155,
+        "price": 4.14,
         "score": 74,
         "pct": 66.1,
         "grade": "B",
@@ -71001,6 +70903,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 10.766961651917397,
+      "perf_3m": 16.614906832298125,
       "forward": {
         "f1": true,
         "fr": null
@@ -71018,7 +70922,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 3.755,
+        "price": 3.735,
         "score": 111,
         "pct": 76.0,
         "grade": "B",
@@ -71310,9 +71214,9 @@
           "composite": 17.84,
           "central": 8.34,
           "peg": 0.02,
-          "mos_pct": 55.0,
-          "mos_fcf_pct": 65.3,
-          "mos_cash_pct": 88.8
+          "mos_pct": 55.2,
+          "mos_fcf_pct": 65.5,
+          "mos_cash_pct": 88.9
         }
       }
     },
@@ -71345,6 +71249,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -10.05342399222924,
+      "perf_3m": -21.558661584074546,
       "forward": {
         "f1": false,
         "fr": null
@@ -71362,7 +71268,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 18.52,
+        "price": 18.54,
         "score": 64,
         "pct": 59.8,
         "grade": "C",
@@ -71689,6 +71595,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 1.9016122364613364,
+      "perf_3m": 28.586332811684905,
       "forward": {
         "f1": false,
         "fr": null
@@ -71730,6 +71638,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -37.5709090909091,
+      "perf_3m": -8.028571428571436,
       "forward": {
         "f1": null,
         "fr": null
@@ -71771,6 +71681,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -7.4966532797858045,
+      "perf_3m": 36.29191321499014,
       "forward": {
         "f1": false,
         "fr": null
@@ -71812,6 +71724,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": -17.04990215264189,
+      "perf_3m": -21.776239907727806,
       "forward": {
         "f1": false,
         "fr": null
@@ -71853,6 +71767,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 16.41791044776119,
+      "perf_3m": 64.34359805510536,
       "forward": {
         "f1": true,
         "fr": null
@@ -71894,6 +71810,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 19.032258064516125,
+      "perf_3m": 14.064914992272028,
       "forward": {
         "f1": false,
         "fr": null
@@ -71935,6 +71853,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 0.23404255319148815,
+      "perf_3m": -2.220838522208386,
       "forward": {
         "f1": false,
         "fr": null
@@ -71976,6 +71896,8 @@
       },
       "strength_score": 1,
       "cash_backed": false,
+      "perf_6m": 203.5688405797101,
+      "perf_3m": 220.89237839908083,
       "forward": {
         "f1": false,
         "fr": null
@@ -72017,6 +71939,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 45.75518262586377,
+      "perf_3m": 49.51898734177216,
       "forward": {
         "f1": false,
         "fr": null
@@ -72034,7 +71958,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 29.52,
+        "price": 29.53,
         "score": 40,
         "pct": 83.3,
         "grade": "A",
@@ -72399,6 +72323,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -29.08514013749339,
+      "perf_3m": -14.857142857142858,
       "forward": {
         "f1": false,
         "fr": null
@@ -72440,6 +72366,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 45.05604395604397,
+      "perf_3m": 30.82358771060457,
       "forward": {
         "f1": false,
         "fr": null
@@ -72481,6 +72409,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -0.45454545454545325,
+      "perf_3m": 16.61770106500183,
       "forward": {
         "f1": false,
         "fr": null
@@ -72498,7 +72428,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 31.755,
+        "price": 31.78,
         "score": 43,
         "pct": 78.2,
         "grade": "B",
@@ -72828,8 +72758,8 @@
           "composite": 138.86,
           "central": 17.48,
           "peg": null,
-          "mos_pct": -44.9,
-          "mos_fcf_pct": -45.5,
+          "mos_pct": -45.0,
+          "mos_fcf_pct": -45.6,
           "mos_cash_pct": 84.6
         }
       }
@@ -72863,6 +72793,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -17.173913043478255,
+      "perf_3m": -8.742514970059876,
       "forward": {
         "f1": false,
         "fr": null
@@ -72904,6 +72836,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 6.923076923076932,
+      "perf_3m": 21.397379912663755,
       "forward": {
         "f1": true,
         "fr": null
@@ -72945,6 +72879,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -1.0507246376811692,
+      "perf_3m": 14.459346186085497,
       "forward": {
         "f1": false,
         "fr": null
@@ -72986,6 +72922,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 22.909896602658776,
+      "perf_3m": 1.3149884329721153,
       "forward": {
         "f1": false,
         "fr": null
@@ -73027,6 +72965,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -43.53846153846154,
+      "perf_3m": -26.20643431635389,
       "forward": {
         "f1": true,
         "fr": null
@@ -73068,6 +73008,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 15.4094827586207,
+      "perf_3m": 17.73543422499085,
       "forward": {
         "f1": false,
         "fr": null
@@ -73085,7 +73027,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 32.16,
+        "price": 32.13,
         "score": 41,
         "pct": 74.5,
         "grade": "B",
@@ -73401,7 +73343,7 @@
         "piotroski": 4,
         "altman_z": null,
         "beneish_m": 0.85,
-        "shareholder_yield_pct": 1.94,
+        "shareholder_yield_pct": 1.95,
         "iv": {
           "dcf_eps": 18.25,
           "dcf_fcf": 38.55,
@@ -73415,8 +73357,8 @@
           "composite": 280.49,
           "central": 18.25,
           "peg": null,
-          "mos_pct": -43.3,
-          "mos_fcf_pct": -28.1,
+          "mos_pct": -43.2,
+          "mos_fcf_pct": -28.0,
           "mos_cash_pct": 92.8
         }
       }
@@ -73450,6 +73392,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 22.391084093211763,
+      "perf_3m": 39.41142527409119,
       "forward": {
         "f1": false,
         "fr": null
@@ -73491,6 +73435,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -3.9896373056994796,
+      "perf_3m": 6.6168009205984015,
       "forward": {
         "f1": null,
         "fr": null
@@ -73532,6 +73478,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 40.42021745518659,
+      "perf_3m": 79.44048066090873,
       "forward": {
         "f1": false,
         "fr": null
@@ -73573,6 +73521,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 0.8275862068965464,
+      "perf_3m": 16.031746031746028,
       "forward": {
         "f1": null,
         "fr": null
@@ -73614,6 +73564,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 6.5366972477064245,
+      "perf_3m": 6.2929061784897025,
       "forward": {
         "f1": false,
         "fr": null
@@ -73655,6 +73607,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 55.51672491263104,
+      "perf_3m": 19.120458891013385,
       "forward": {
         "f1": false,
         "fr": null
@@ -73696,6 +73650,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 156.7375886524823,
+      "perf_3m": 70.29569892473118,
       "forward": {
         "f1": false,
         "fr": null
@@ -73737,6 +73693,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 15.169002473206923,
+      "perf_3m": 18.289585097375106,
       "forward": {
         "f1": true,
         "fr": null
@@ -73778,6 +73736,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -16.340721425467194,
+      "perf_3m": 6.3535911602209865,
       "forward": {
         "f1": true,
         "fr": null
@@ -73819,6 +73779,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 18.061366806136682,
+      "perf_3m": 20.54111783552866,
       "forward": {
         "f1": false,
         "fr": null
@@ -74201,6 +74163,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 25.601604278074852,
+      "perf_3m": 18.02763819095477,
       "forward": {
         "f1": false,
         "fr": null
@@ -74242,6 +74206,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 6.326383896477347,
+      "perf_3m": 10.003718854592776,
       "forward": {
         "f1": false,
         "fr": null
@@ -74259,7 +74225,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 29.58,
+        "price": 29.635,
         "score": 37,
         "pct": 77.1,
         "grade": "B",
@@ -74588,10 +74554,10 @@
           "intrinsic_cash": 37.64,
           "composite": 34.6,
           "central": 13.43,
-          "peg": 0.16,
-          "mos_pct": -54.6,
-          "mos_fcf_pct": 5.1,
-          "mos_cash_pct": 21.4
+          "peg": 0.17,
+          "mos_pct": -54.7,
+          "mos_fcf_pct": 4.9,
+          "mos_cash_pct": 21.3
         }
       }
     },
@@ -74624,6 +74590,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 19.642470205850497,
+      "perf_3m": 14.435233160621769,
       "forward": {
         "f1": false,
         "fr": null
@@ -74641,7 +74609,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 55.215,
+        "price": 55.46,
         "score": 46,
         "pct": 83.6,
         "grade": "A",
@@ -74798,7 +74766,7 @@
           },
           {
             "key": "val_shareholders",
-            "verdict": "WATCH",
+            "verdict": "BAD",
             "pts": 0,
             "max": 0
           },
@@ -74957,7 +74925,7 @@
         "piotroski": 5,
         "altman_z": null,
         "beneish_m": 1.77,
-        "shareholder_yield_pct": 2.01,
+        "shareholder_yield_pct": 2.0,
         "iv": {
           "dcf_eps": 47.25,
           "dcf_fcf": 40.6,
@@ -74970,10 +74938,10 @@
           "intrinsic_cash": 306.42,
           "composite": 222.42,
           "central": 40.6,
-          "peg": 14.0,
-          "mos_pct": -26.5,
-          "mos_fcf_pct": -22.3,
-          "mos_cash_pct": 82.0
+          "peg": 14.06,
+          "mos_pct": -26.8,
+          "mos_fcf_pct": -22.8,
+          "mos_cash_pct": 81.9
         }
       }
     },
@@ -75006,6 +74974,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 84.15841584158416,
+      "perf_3m": 54.603580562659836,
       "forward": {
         "f1": false,
         "fr": null
@@ -75047,6 +75017,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -8.95674300254452,
+      "perf_3m": 1.9373219373219364,
       "forward": {
         "f1": false,
         "fr": null
@@ -75088,6 +75060,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 5.430081691494486,
+      "perf_3m": 13.38501291989664,
       "forward": {
         "f1": false,
         "fr": null
@@ -75105,7 +75079,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 21.94,
+        "price": 21.92,
         "score": 50,
         "pct": 90.9,
         "grade": "A",
@@ -75421,7 +75395,7 @@
         "piotroski": 5,
         "altman_z": null,
         "beneish_m": 1.75,
-        "shareholder_yield_pct": 1.08,
+        "shareholder_yield_pct": 1.09,
         "iv": {
           "dcf_eps": 30.42,
           "dcf_fcf": 40.92,
@@ -75470,6 +75444,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -56.25958883092973,
+      "perf_3m": 0.2461322081575256,
       "forward": {
         "f1": true,
         "fr": null
@@ -75481,6 +75457,49 @@
       "fidelity": "im3_screen",
       "is_financial": false,
       "zacks_rank": 3
+    },
+    {
+      "ticker": "OABI",
+      "name": "OABI",
+      "sector": "Commercial Services",
+      "rev_growth": -29.3,
+      "op_growth": 7.4,
+      "np_growth": -4.4,
+      "pbt_growth": 7.2,
+      "eps_growth": 65.1,
+      "op_np_ratio": null,
+      "signal_a": false,
+      "signal_b": false,
+      "conditions": {
+        "g1": false,
+        "g2": false,
+        "a1": false,
+        "a2": false,
+        "c1": null,
+        "c3": null
+      },
+      "indicators": {
+        "growth": false,
+        "acceleration": false,
+        "pbt_accel": false,
+        "cash_backed": false,
+        "op_declining": false
+      },
+      "strength_score": 0,
+      "cash_backed": false,
+      "perf_6m": -0.7177033492822814,
+      "perf_3m": 15.921787709497215,
+      "forward": {
+        "f1": false,
+        "fr": null
+      },
+      "forward_boost": false,
+      "verdict": "NOT EXPLOSIVE",
+      "cash_guardrails": "na_confirm_im3",
+      "growth_source": "tv",
+      "fidelity": "im3_screen",
+      "is_financial": false,
+      "zacks_rank": null
     },
     {
       "ticker": "AEBI",
@@ -75511,6 +75530,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -9.888888888888895,
+      "perf_3m": -6.42307692307693,
       "forward": {
         "f1": true,
         "fr": null
@@ -75552,6 +75573,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 273.3115975780159,
+      "perf_3m": 108.88715142038053,
       "forward": {
         "f1": false,
         "fr": null
@@ -75593,6 +75616,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -14.032815198618307,
+      "perf_3m": 42.214285714285715,
       "forward": {
         "f1": true,
         "fr": null
@@ -75634,6 +75659,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 26.919967663702508,
+      "perf_3m": 102.5806451612903,
       "forward": {
         "f1": null,
         "fr": null
@@ -75675,6 +75702,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 71.42231947483589,
+      "perf_3m": 12.10646823125359,
       "forward": {
         "f1": false,
         "fr": null
@@ -75716,6 +75745,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -18.12121212121212,
+      "perf_3m": 16.25452898550724,
       "forward": {
         "f1": false,
         "fr": null
@@ -75757,6 +75788,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 71.49253731343283,
+      "perf_3m": 3.513513513513519,
       "forward": {
         "f1": true,
         "fr": null
@@ -75798,6 +75831,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 64.30180180180179,
+      "perf_3m": 13.188518231186961,
       "forward": {
         "f1": true,
         "fr": null
@@ -75839,6 +75874,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 8.148148148148138,
+      "perf_3m": -18.321678321678327,
       "forward": {
         "f1": false,
         "fr": null
@@ -75880,6 +75917,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 14.03846153846153,
+      "perf_3m": 30.329670329670332,
       "forward": {
         "f1": false,
         "fr": null
@@ -75921,6 +75960,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 52.7093023255814,
+      "perf_3m": 3.409448818897641,
       "forward": {
         "f1": true,
         "fr": null
@@ -75962,6 +76003,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -16.848857168669248,
+      "perf_3m": 15.338345864661665,
       "forward": {
         "f1": true,
         "fr": null
@@ -76003,6 +76046,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 7.843137254901963,
+      "perf_3m": -5.392840539284054,
       "forward": {
         "f1": false,
         "fr": null
@@ -76044,6 +76089,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 17.164816396242525,
+      "perf_3m": 76.34961439588689,
       "forward": {
         "f1": false,
         "fr": null
@@ -76085,6 +76132,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -17.27849676455948,
+      "perf_3m": 9.550098879367182,
       "forward": {
         "f1": false,
         "fr": null
@@ -76102,7 +76151,7 @@
         "sector": "Finance",
         "is_bank": true,
         "is_psx": false,
-        "price": 199.3975,
+        "price": 199.345,
         "score": 35,
         "pct": 72.9,
         "grade": "B",
@@ -76433,8 +76482,8 @@
           "central": 35.05,
           "peg": null,
           "mos_pct": -82.4,
-          "mos_fcf_pct": 72.7,
-          "mos_cash_pct": -622.4
+          "mos_fcf_pct": 72.8,
+          "mos_cash_pct": -622.2
         }
       }
     },
@@ -76467,6 +76516,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 163.40625000000003,
+      "perf_3m": 174.2029928432011,
       "forward": {
         "f1": false,
         "fr": null
@@ -76508,6 +76559,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 305.2486187845304,
+      "perf_3m": 278.09278350515467,
       "forward": {
         "f1": false,
         "fr": false
@@ -76549,6 +76602,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 6.954505940307153,
+      "perf_3m": -4.625322997416037,
       "forward": {
         "f1": false,
         "fr": null
@@ -76590,6 +76645,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 290.8898305084746,
+      "perf_3m": 95.44491525423729,
       "forward": {
         "f1": true,
         "fr": null
@@ -76631,6 +76688,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -31.735463826009763,
+      "perf_3m": -12.364672364672364,
       "forward": {
         "f1": false,
         "fr": null
@@ -76672,6 +76731,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 2.5974025974025996,
+      "perf_3m": 6.756756756756763,
       "forward": {
         "f1": false,
         "fr": null
@@ -76713,6 +76774,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 114.18439716312055,
+      "perf_3m": 96.95652173913047,
       "forward": {
         "f1": false,
         "fr": null
@@ -76754,6 +76817,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 24.127230411171446,
+      "perf_3m": 12.005600280014,
       "forward": {
         "f1": false,
         "fr": null
@@ -76795,6 +76860,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 36.32523759239704,
+      "perf_3m": 6.4303380049464085,
       "forward": {
         "f1": true,
         "fr": null
@@ -76836,6 +76903,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 69.75010960105217,
+      "perf_3m": 57.462383082553885,
       "forward": {
         "f1": false,
         "fr": null
@@ -76877,6 +76946,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -1.7397881996974314,
+      "perf_3m": 19.174311926605505,
       "forward": {
         "f1": false,
         "fr": null
@@ -76918,6 +76989,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 2.7295285359801347,
+      "perf_3m": 54.1899441340782,
       "forward": {
         "f1": false,
         "fr": null
@@ -76959,6 +77032,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -18.069935534284042,
+      "perf_3m": 1.6973811833171575,
       "forward": {
         "f1": true,
         "fr": null
@@ -77000,6 +77075,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 10.879478827361563,
+      "perf_3m": 16.975945017182124,
       "forward": {
         "f1": false,
         "fr": null
@@ -77041,6 +77118,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 21.801566579634468,
+      "perf_3m": 5.074667207243733,
       "forward": {
         "f1": false,
         "fr": null
@@ -77082,6 +77161,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 69.71887550200803,
+      "perf_3m": 0.18966334755808037,
       "forward": {
         "f1": false,
         "fr": null
@@ -77123,6 +77204,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -10.53887195121951,
+      "perf_3m": -10.742965779467687,
       "forward": {
         "f1": false,
         "fr": null
@@ -77164,6 +77247,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -49.67340590979782,
+      "perf_3m": -42.94781382228491,
       "forward": {
         "f1": false,
         "fr": null
@@ -77205,6 +77290,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 3.360768175582992,
+      "perf_3m": 8.573487031700283,
       "forward": {
         "f1": true,
         "fr": null
@@ -77246,6 +77333,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -2.25290697674419,
+      "perf_3m": 25.700934579439252,
       "forward": {
         "f1": false,
         "fr": null
@@ -77287,6 +77376,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 34.95916334661355,
+      "perf_3m": -15.154038822792746,
       "forward": {
         "f1": null,
         "fr": null
@@ -77328,6 +77419,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -27.10865561694291,
+      "perf_3m": -6.385998107852419,
       "forward": {
         "f1": false,
         "fr": null
@@ -77369,6 +77462,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -7.848837209302324,
+      "perf_3m": 49.10630291627468,
       "forward": {
         "f1": true,
         "fr": null
@@ -77410,6 +77505,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 8.601998696502276,
+      "perf_3m": 1.0910010111223392,
       "forward": {
         "f1": true,
         "fr": null
@@ -77451,6 +77548,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 36.99383802816902,
+      "perf_3m": 69.43385955362002,
       "forward": {
         "f1": true,
         "fr": null
@@ -77492,6 +77591,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 104.98595505617978,
+      "perf_3m": 23.791348600508922,
       "forward": {
         "f1": true,
         "fr": null
@@ -77533,6 +77634,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 32.57575757575758,
+      "perf_3m": -7.013815090329431,
       "forward": {
         "f1": false,
         "fr": null
@@ -77574,6 +77677,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 61.93415637860082,
+      "perf_3m": 26.629123089300087,
       "forward": {
         "f1": true,
         "fr": null
@@ -77615,6 +77720,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 18.650088809946713,
+      "perf_3m": -3.746397694524505,
       "forward": {
         "f1": true,
         "fr": null
@@ -77656,6 +77763,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 4.804469273743034,
+      "perf_3m": -1.2631578947368338,
       "forward": {
         "f1": false,
         "fr": null
@@ -77697,6 +77806,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 17.162162162162172,
+      "perf_3m": -3.4521158129175933,
       "forward": {
         "f1": null,
         "fr": null
@@ -77738,6 +77849,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 62.46376811594203,
+      "perf_3m": 6.76190476190477,
       "forward": {
         "f1": false,
         "fr": null
@@ -77779,6 +77892,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -41.16279069767442,
+      "perf_3m": -29.250559284116328,
       "forward": {
         "f1": true,
         "fr": false
@@ -77820,6 +77935,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 42.244224422442244,
+      "perf_3m": 11.658031088082895,
       "forward": {
         "f1": false,
         "fr": null
@@ -77861,6 +77978,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -1.640759930915367,
+      "perf_3m": -1.4705882352941169,
       "forward": {
         "f1": true,
         "fr": null
@@ -77902,6 +78021,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -17.11009174311927,
+      "perf_3m": -6.855670103092775,
       "forward": {
         "f1": false,
         "fr": null
@@ -77943,6 +78064,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -50.74165636588381,
+      "perf_3m": -29.717813051146386,
       "forward": {
         "f1": false,
         "fr": false
@@ -77984,6 +78107,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 12.684887459807074,
+      "perf_3m": -2.490261547022805,
       "forward": {
         "f1": true,
         "fr": null
@@ -78025,6 +78150,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -69.87022900763358,
+      "perf_3m": -57.093162300250036,
       "forward": {
         "f1": true,
         "fr": false
@@ -78066,6 +78193,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -9.1976516634051,
+      "perf_3m": 8.920187793427226,
       "forward": {
         "f1": false,
         "fr": null
@@ -78107,6 +78236,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -54.176039933444265,
+      "perf_3m": 31.143809523809516,
       "forward": {
         "f1": false,
         "fr": null
@@ -78148,6 +78279,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 42.09225700164744,
+      "perf_3m": 53.60641139804096,
       "forward": {
         "f1": true,
         "fr": null
@@ -78189,6 +78322,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -2.6093088857545785,
+      "perf_3m": -0.36075036075035305,
       "forward": {
         "f1": true,
         "fr": null
@@ -78230,6 +78365,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 13.137138621200888,
+      "perf_3m": 0.4328084606345542,
       "forward": {
         "f1": false,
         "fr": null
@@ -78271,6 +78408,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 94.31192660550457,
+      "perf_3m": 75.0413223140496,
       "forward": {
         "f1": false,
         "fr": null
@@ -78312,6 +78451,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 51.26811594202899,
+      "perf_3m": 89.77272727272725,
       "forward": {
         "f1": true,
         "fr": null
@@ -78353,6 +78494,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 46.43874643874644,
+      "perf_3m": 66.88311688311687,
       "forward": {
         "f1": false,
         "fr": null
@@ -78394,6 +78537,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 247.92631578947368,
+      "perf_3m": 43.708695652173915,
       "forward": {
         "f1": null,
         "fr": null
@@ -78435,6 +78580,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 20.940170940170933,
+      "perf_3m": 20.150228608752442,
       "forward": {
         "f1": false,
         "fr": null
@@ -78476,6 +78623,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -6.594869312681513,
+      "perf_3m": -0.4128499548445457,
       "forward": {
         "f1": true,
         "fr": null
@@ -78517,6 +78666,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 41.94444444444446,
+      "perf_3m": 55.49842602308501,
       "forward": {
         "f1": false,
         "fr": null
@@ -78558,6 +78709,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -20.057034220532316,
+      "perf_3m": 8.516129032258066,
       "forward": {
         "f1": true,
         "fr": null
@@ -78599,6 +78752,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -12.448132780082991,
+      "perf_3m": -29.666666666666668,
       "forward": {
         "f1": false,
         "fr": null
@@ -78640,6 +78795,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -37.57281553398059,
+      "perf_3m": -6.81159420289856,
       "forward": {
         "f1": false,
         "fr": null
@@ -78681,6 +78838,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 29.01907356948228,
+      "perf_3m": 7.223731884057982,
       "forward": {
         "f1": true,
         "fr": null
@@ -78722,6 +78881,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 188.57142857142858,
+      "perf_3m": 191.34615384615384,
       "forward": {
         "f1": null,
         "fr": null
@@ -78763,6 +78924,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -31.632653061224488,
+      "perf_3m": -16.39928698752228,
       "forward": {
         "f1": true,
         "fr": null
@@ -78804,6 +78967,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -64.03669724770643,
+      "perf_3m": -52.311435523114355,
       "forward": {
         "f1": false,
         "fr": false
@@ -78845,6 +79010,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -79.15091096596768,
+      "perf_3m": -36.691022964509386,
       "forward": {
         "f1": false,
         "fr": null
@@ -78886,6 +79053,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 9.252971137521222,
+      "perf_3m": 27.932405566600384,
       "forward": {
         "f1": false,
         "fr": false
@@ -78903,7 +79072,7 @@
         "sector": "Health Technology",
         "is_bank": false,
         "is_psx": false,
-        "price": 6.42,
+        "price": 6.43,
         "score": 77,
         "pct": 58.8,
         "grade": "C",
@@ -79230,6 +79399,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -14.263565891472869,
+      "perf_3m": 0.1811594202898673,
       "forward": {
         "f1": false,
         "fr": null
@@ -79271,6 +79442,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -12.99638989169675,
+      "perf_3m": 13.322884012539195,
       "forward": {
         "f1": true,
         "fr": null
@@ -79312,6 +79485,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -27.10843373493975,
+      "perf_3m": 4.054054054054054,
       "forward": {
         "f1": false,
         "fr": null
@@ -79353,6 +79528,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -25.53699284009547,
+      "perf_3m": 1.960784313725492,
       "forward": {
         "f1": false,
         "fr": null
@@ -79394,6 +79571,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 135.34868841970567,
+      "perf_3m": 32.415406767458585,
       "forward": {
         "f1": false,
         "fr": null
@@ -79435,6 +79614,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -18.62857142857143,
+      "perf_3m": -1.4532871972318275,
       "forward": {
         "f1": false,
         "fr": null
@@ -79476,6 +79657,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -4.769230769230767,
+      "perf_3m": 0.48701298701298623,
       "forward": {
         "f1": true,
         "fr": null
@@ -79517,6 +79700,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -36.54377880184332,
+      "perf_3m": 38.81048387096774,
       "forward": {
         "f1": true,
         "fr": null
@@ -79558,6 +79743,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 175.8241758241758,
+      "perf_3m": 1.61943319838055,
       "forward": {
         "f1": true,
         "fr": null
@@ -79599,6 +79786,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 81.84009642426676,
+      "perf_3m": 100.08841732979661,
       "forward": {
         "f1": true,
         "fr": null
@@ -79640,6 +79829,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 14.860557768924288,
+      "perf_3m": 36.95961995249405,
       "forward": {
         "f1": true,
         "fr": null
@@ -79681,6 +79872,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -29.280575539568346,
+      "perf_3m": -6.558935361216725,
       "forward": {
         "f1": true,
         "fr": false
@@ -79722,6 +79915,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 171.66666666666666,
+      "perf_3m": 18.115942028985508,
       "forward": {
         "f1": false,
         "fr": false
@@ -80066,6 +80261,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 9.591134887275498,
+      "perf_3m": 60.67226890756301,
       "forward": {
         "f1": false,
         "fr": null
@@ -80107,6 +80304,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 19.81627296587927,
+      "perf_3m": 18.417639429312594,
       "forward": {
         "f1": true,
         "fr": null
@@ -80148,6 +80347,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 209.02049180327867,
+      "perf_3m": 44.446360153256705,
       "forward": {
         "f1": null,
         "fr": null
@@ -80189,6 +80390,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -75.03299152920195,
+      "perf_3m": -47.21866163996229,
       "forward": {
         "f1": true,
         "fr": false
@@ -80230,6 +80433,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": 142.42214532871972,
+      "perf_3m": 133.53333333333333,
       "forward": {
         "f1": false,
         "fr": null
@@ -80271,6 +80476,8 @@
       },
       "strength_score": 0,
       "cash_backed": false,
+      "perf_6m": -4.496578690127086,
+      "perf_3m": 11.5296803652968,
       "forward": {
         "f1": true,
         "fr": null
@@ -80414,7 +80621,7 @@
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-06-16T17:24:15.252419Z",
+    "_fetched_utc": "2026-06-16T17:34:14.301522Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
@@ -80428,7 +80635,7 @@
       "n": 162
     },
     "Technology Services": {
-      "pe": 26.4503,
+      "pe": 26.4936,
       "op_margin": 0.1511,
       "net_margin": 0.1204,
       "roe": 0.1394,
@@ -80449,18 +80656,18 @@
       "n": 70
     },
     "Consumer Durables": {
-      "pe": 14.9291,
+      "pe": 14.7752,
       "op_margin": 0.0808,
       "net_margin": 0.0554,
       "roe": 0.0946,
-      "n": 61
+      "n": 63
     },
     "Finance": {
       "pe": 12.3809,
       "op_margin": 0.3174,
       "net_margin": 0.2464,
       "roe": 0.1233,
-      "n": 547
+      "n": 546
     },
     "Health Technology": {
       "pe": 27.0048,
@@ -80470,18 +80677,18 @@
       "n": 127
     },
     "Energy Minerals": {
-      "pe": 14.5859,
-      "op_margin": 0.1647,
-      "net_margin": 0.0793,
-      "roe": 0.1165,
-      "n": 44
+      "pe": 14.5914,
+      "op_margin": 0.1674,
+      "net_margin": 0.0769,
+      "roe": 0.1125,
+      "n": 45
     },
     "Producer Manufacturing": {
-      "pe": 30.2635,
-      "op_margin": 0.1468,
-      "net_margin": 0.0937,
-      "roe": 0.1536,
-      "n": 141
+      "pe": 30.1605,
+      "op_margin": 0.1452,
+      "net_margin": 0.0932,
+      "roe": 0.157,
+      "n": 140
     },
     "Health Services": {
       "pe": 22.191,
@@ -80491,21 +80698,21 @@
       "n": 20
     },
     "Consumer Non-Durables": {
-      "pe": 21.808,
+      "pe": 21.8398,
       "op_margin": 0.1554,
       "net_margin": 0.0913,
       "roe": 0.1588,
       "n": 96
     },
     "Process Industries": {
-      "pe": 23.8298,
-      "op_margin": 0.1147,
-      "net_margin": 0.0626,
-      "roe": 0.0804,
-      "n": 61
+      "pe": 23.8057,
+      "op_margin": 0.1087,
+      "net_margin": 0.0642,
+      "roe": 0.084,
+      "n": 60
     },
     "Non-Energy Minerals": {
-      "pe": 19.7544,
+      "pe": 19.8633,
       "op_margin": 0.244,
       "net_margin": 0.171,
       "roe": 0.1535,
@@ -80526,7 +80733,7 @@
       "n": 87
     },
     "Transportation": {
-      "pe": 23.306,
+      "pe": 23.3549,
       "op_margin": 0.103,
       "net_margin": 0.0687,
       "roe": 0.1401,
@@ -80540,7 +80747,7 @@
       "n": 39
     },
     "Industrial Services": {
-      "pe": 24.7138,
+      "pe": 24.8635,
       "op_margin": 0.1295,
       "net_margin": 0.0895,
       "roe": 0.1476,
@@ -81720,8 +81927,8 @@
     "ZVRA": 3
   },
   "etf_overlap": {
-    "_scraped_utc": "2026-06-16T12:41:30.632970Z",
-    "_scan_version": "1.59.0",
+    "_scraped_utc": "2026-06-16T17:34:50.523613Z",
+    "_scan_version": "1.61.0",
     "etfs_scanned": 30,
     "etfs_with_holdings": 30,
     "source_etfs": [
@@ -81730,7 +81937,7 @@
         "name": "First Trust NASDAQ Semiconductor ETF",
         "ytd": 100.1,
         "y1": 215.4,
-        "y3": 307.6,
+        "y3": 293.2,
         "expense": 0.6
       },
       {
@@ -81738,7 +81945,7 @@
         "name": "Invesco Semiconductors ETF",
         "ytd": 94.8,
         "y1": 201.9,
-        "y3": 280.9,
+        "y3": 287.6,
         "expense": 0.56
       },
       {
@@ -81746,7 +81953,7 @@
         "name": "iShares Semiconductor ETF",
         "ytd": 90.0,
         "y1": 179.9,
-        "y3": 259.4,
+        "y3": 265.2,
         "expense": 0.34
       },
       {
@@ -81754,7 +81961,7 @@
         "name": "Invesco PHLX Semiconductor ETF",
         "ytd": 83.1,
         "y1": 173.0,
-        "y3": 290.7,
+        "y3": 277.1,
         "expense": 0.19
       },
       {
@@ -81762,7 +81969,7 @@
         "name": "SPDR S&P Semiconductor ETF",
         "ytd": 87.0,
         "y1": 172.2,
-        "y3": 180.6,
+        "y3": 181.9,
         "expense": 0.35
       },
       {
@@ -81770,7 +81977,7 @@
         "name": "Invesco AI and Next Gen Software ETF",
         "ytd": 71.3,
         "y1": 127.9,
-        "y3": 171.7,
+        "y3": 182.1,
         "expense": 0.56
       },
       {
@@ -81778,7 +81985,7 @@
         "name": "Invesco S&P SmallCap Info Technology ETF",
         "ytd": 50.8,
         "y1": 100.8,
-        "y3": 81.3,
+        "y3": 82.3,
         "expense": 0.29
       },
       {
@@ -81786,7 +81993,7 @@
         "name": "Invesco Next Gen Connectivity ETF",
         "ytd": 60.8,
         "y1": 99.2,
-        "y3": 167.8,
+        "y3": 171.4,
         "expense": 0.4
       },
       {
@@ -81794,7 +82001,7 @@
         "name": "iShares MSCI USA Value Factor ETF",
         "ytd": 47.8,
         "y1": 91.0,
-        "y3": 131.3,
+        "y3": 128.6,
         "expense": 0.15
       },
       {
@@ -81802,7 +82009,7 @@
         "name": "Invesco S&P 500 Equal Weight Technology ETF",
         "ytd": 45.9,
         "y1": 77.9,
-        "y3": 116.3,
+        "y3": 119.5,
         "expense": 0.4
       },
       {
@@ -81810,7 +82017,7 @@
         "name": "SPDR NYSE Technology ETF",
         "ytd": 35.8,
         "y1": 74.9,
-        "y3": 175.9,
+        "y3": 169.3,
         "expense": 0.35
       },
       {
@@ -81818,7 +82025,7 @@
         "name": "Technology Select Sector SPDR ETF",
         "ytd": 36.1,
         "y1": 70.2,
-        "y3": 117.9,
+        "y3": 121.9,
         "expense": 0.08
       },
       {
@@ -81826,7 +82033,7 @@
         "name": "First Trust NASDAQ-100 Technology ETF",
         "ytd": 42.7,
         "y1": 70.0,
-        "y3": 116.0,
+        "y3": 121.6,
         "expense": 0.55
       },
       {
@@ -81834,7 +82041,7 @@
         "name": "iShares U.S. Digital Infrastructure & RE ETF",
         "ytd": 53.3,
         "y1": 66.0,
-        "y3": 85.1,
+        "y3": 83.3,
         "expense": 0.39
       },
       {
@@ -81842,7 +82049,7 @@
         "name": "iShares Expanded Tech Sector ETF",
         "ytd": 31.0,
         "y1": 65.0,
-        "y3": 154.7,
+        "y3": 150.2,
         "expense": 0.39
       },
       {
@@ -81850,7 +82057,7 @@
         "name": "Fidelity MSCI Info Technology Index ETF",
         "ytd": 32.1,
         "y1": 65.0,
-        "y3": 125.6,
+        "y3": 122.0,
         "expense": 0.08
       },
       {
@@ -81858,7 +82065,7 @@
         "name": "Vanguard Information Technology ETF",
         "ytd": 31.9,
         "y1": 64.4,
-        "y3": 116.2,
+        "y3": 120.1,
         "expense": 0.09
       },
       {
@@ -81866,7 +82073,7 @@
         "name": "iShares U.S. Technology ETF",
         "ytd": 29.2,
         "y1": 63.2,
-        "y3": 136.1,
+        "y3": 132.4,
         "expense": 0.38
       },
       {
@@ -81874,7 +82081,7 @@
         "name": "Invesco Large Cap Growth ETF",
         "ytd": 27.8,
         "y1": 47.1,
-        "y3": 131.2,
+        "y3": 136.9,
         "expense": 0.55
       },
       {
@@ -81882,7 +82089,7 @@
         "name": "Vanguard Energy ETF",
         "ytd": 29.3,
         "y1": 45.1,
-        "y3": 58.8,
+        "y3": 52.2,
         "expense": 0.09
       },
       {
@@ -81890,7 +82097,7 @@
         "name": "Energy Select Sector SPDR ETF",
         "ytd": 29.0,
         "y1": 44.2,
-        "y3": 57.0,
+        "y3": 50.5,
         "expense": 0.08
       },
       {
@@ -81898,7 +82105,7 @@
         "name": "Invesco NASDAQ 100 ETF",
         "ytd": 21.0,
         "y1": 43.7,
-        "y3": 106.2,
+        "y3": 103.4,
         "expense": 0.15
       },
       {
@@ -81906,7 +82113,7 @@
         "name": "Invesco QQQ",
         "ytd": 21.0,
         "y1": 43.6,
-        "y3": 105.8,
+        "y3": 103.0,
         "expense": 0.18
       },
       {
@@ -81914,7 +82121,7 @@
         "name": "Vanguard Russell 2000 ETF",
         "ytd": 17.6,
         "y1": 42.2,
-        "y3": 63.9,
+        "y3": 64.7,
         "expense": 0.06
       },
       {
@@ -81922,7 +82129,7 @@
         "name": "Invesco S&P 500 Pure Growth ETF",
         "ytd": 30.0,
         "y1": 41.8,
-        "y3": 104.2,
+        "y3": 108.1,
         "expense": 0.35
       },
       {
@@ -81930,7 +82137,7 @@
         "name": "Inspire 100 ETF",
         "ytd": 20.9,
         "y1": 38.5,
-        "y3": 80.7,
+        "y3": 80.0,
         "expense": 0.35
       },
       {
@@ -81946,7 +82153,7 @@
         "name": "Vanguard Small-Cap ETF",
         "ytd": 14.0,
         "y1": 30.0,
-        "y3": 57.1,
+        "y3": 58.1,
         "expense": 0.03
       },
       {
@@ -81954,7 +82161,7 @@
         "name": "Vanguard Russell 1000 Value ETF",
         "ytd": 13.3,
         "y1": 27.9,
-        "y3": 63.6,
+        "y3": 65.2,
         "expense": 0.06
       },
       {
@@ -81962,7 +82169,7 @@
         "name": "iShares Russell 1000 Value ETF",
         "ytd": 13.3,
         "y1": 27.8,
-        "y3": 64.6,
+        "y3": 64.7,
         "expense": 0.18
       }
     ],
@@ -82481,13 +82688,12 @@
     "TWFG",
     "UMAC",
     "VINP",
-    "VMD",
     "VOXR",
     "WDC",
     "XERS",
     "ZVRA"
   ],
-  "im3_last_scored_utc": "2026-06-16T17:25:18.883888+00:00",
+  "im3_last_scored_utc": "2026-06-16T17:35:41.600857+00:00",
   "im3_psx_tickers": [
     "ABL",
     "AGP",
