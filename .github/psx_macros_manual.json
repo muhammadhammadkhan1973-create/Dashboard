@@ -1,0 +1,15 @@
+{
+  "_README": "PSX slow-macro manual overrides for the dashboard's Pakistan-economy tab. The scanner reads this file FIRST: a non-null value here WINS over the free TheGlobalEconomy/TradingEconomics fetch and over last-good. Update quarterly from the AKD / Topline Pakistan economy report (or SBP). Leave a field null to let the scanner's own fetch + last-good handle it. Only the macro keys below are read; _README / _sources are ignored. kse100 is also supported (optional) if you ever need to pin the official close.",
+  "_sources": {
+    "reer": "Real Effective Exchange Rate index — SBP REER/NEER monthly statistical release, or the AKD/Topline economy report. This is the one field currently blank (no reliable free feed); enter it here to light up the panel.",
+    "pak_ca": "Current-account balance, USD million, latest month — SBP / AKD-Topline economy report.",
+    "pak_fiscal": "Fiscal balance as % of GDP — AKD/Topline / Ministry of Finance.",
+    "pak_cpi": "CPI YoY % — normally auto-fetched (TheGlobalEconomy); set only to correct it.",
+    "sbp_reserves": "SBP FX reserves, USD billion — normally auto-fetched/last-good; set only to correct it."
+  },
+  "reer": null,
+  "pak_ca": null,
+  "pak_fiscal": null,
+  "pak_cpi": null,
+  "sbp_reserves": null
+}
