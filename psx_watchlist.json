@@ -1,11 +1,15 @@
 {
-  "_README": "see above",
-  "_example": [
-    "SYS",
-    "SEARL",
-    "MARI",
-    "LUCK",
-    "ENGRO"
-  ],
-  "psx_watchlist": []
+  "_README": "PSX broker/research conviction watchlist. Any listed name present in the TradingView Pakistan scan is force-included into the PSX candidate set with its analyst block + TCE/IM3 scoring, even if it sits outside the auto-screen's market-cap band. This only SCREENS the names (surfaces them for your own analysis + the IM3 strength read) — it does NOT buy, rank, or recommend them. Mega-caps OGDC/PPL/MCB/FFC/HUBC are already force-included; banks auto-admit to the System-B model — neither needs listing here. Edit freely. Accepts a bare list or this {\"psx_watchlist\":[...]} form; only 'psx_watchlist' (or 'tickers') is read.",
+  "_source": "Seeded from Standard Capital (SCS) Pakistan Market Valuation Matrix, dated 16-Apr-2026 (scstrade.com REP-033). Rule: name appears in >=2 of SCS's quality/income screens (High ROE, High ROA, High EBITDA Margin, High Dividend Yield), liquid, excluding the 5 mega-caps + banks. These are factor-screen outputs, NOT broker buy calls or recommendations — verify against your AKD/Topline note and refresh as the matrix updates. Replace with your own conviction names anytime.",
+  "_rationale": {
+    "MTL": "High ROE + High ROA + 11.6% div yield (Millat Tractors)",
+    "POL": "71% EBITDA margin + 11.4% div yield (Pakistan Oilfields; E&P)",
+    "THCCL": "High ROE + High ROA + EBITDA margin, liquid",
+    "DOL": "EBITDA margin + 13.5% div yield (Descon Oxychem)",
+    "CLOV": "High ROE + High ROA (Clover Pakistan)",
+    "AHL": "High ROE + 10% div yield (Arif Habib Ltd)",
+    "PAKT": "High ROE + ROA + EBITDA + 11.3% div (Pakistan Tobacco; lower liquidity, defensive staple)",
+    "HALEON": "High ROE + High ROA (Haleon Pakistan; lower liquidity)"
+  },
+  "psx_watchlist": ["MTL", "POL", "THCCL", "DOL", "CLOV", "AHL", "PAKT", "HALEON"]
 }
