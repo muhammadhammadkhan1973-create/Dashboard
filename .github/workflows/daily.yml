@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests yfinance pandas feedparser python-dateutil fredapi pdfplumber
+          pip install requests yfinance pandas feedparser python-dateutil fredapi pdfplumber openpyxl
 
       - name: Run scanner
         env:
