@@ -1,0 +1,18 @@
+# bench.yml — one-off Wave DH-0 benchmark. Commit to .github/workflows/,
+# then Actions -> "DH-0 benchmark" -> Run workflow. Read the [DH-0] log lines.
+# Delete this file once you've read the numbers. Touches nothing in production.
+name: DH-0 benchmark
+on:
+  workflow_dispatch:
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install yfinance
+        run: pip install --quiet yfinance
+      - name: Run DH-0 benchmark
+        run: python bench_dh0.py
