@@ -1,14 +1,14 @@
 {
   "meta": {
     "scan_version": "1.112.1",
-    "last_scan_utc": "2026-06-25T11:59:54.332470Z",
+    "last_scan_utc": "2026-06-25T12:25:35.633259Z",
     "errors": [],
     "warnings": []
   },
   "macros": {
     "us": {
       "fed_rate": 3.75,
-      "fed_rate_date": "2026-06-24",
+      "fed_rate_date": "2026-06-25",
       "core_pce": 3.29,
       "core_pce_date": "2026-04-01",
       "core_pce_mom": 0.05,
@@ -190,25 +190,25 @@
         "2026-06-22": 7472.79,
         "2026-06-23": 7365.46
       },
-      "wti": 69.92,
+      "wti": 69.67,
       "wti_source": "yahoo:CL=F",
       "wti_date": "2026-06-25",
-      "wti_wow": -6.87,
+      "wti_wow": -7.12,
       "wti_wow_dir": "down",
-      "wti_mom": -23.97,
+      "wti_mom": -24.22,
       "wti_mom_dir": "down",
-      "wti_qoq": -20.4,
+      "wti_qoq": -20.65,
       "wti_qoq_dir": "down",
-      "brent": 73.48,
+      "brent": 73.27,
       "brent_source": "yahoo:BZ=F",
       "brent_date": "2026-06-25",
-      "brent_wow": -6.07,
+      "brent_wow": -6.28,
       "brent_wow_dir": "down",
-      "brent_mom": -26.1,
+      "brent_mom": -26.31,
       "brent_mom_dir": "down",
-      "brent_qoq": -28.74,
+      "brent_qoq": -28.95,
       "brent_qoq_dir": "down",
-      "brent_wti_spread": 3.56,
+      "brent_wti_spread": 3.6,
       "ndx": 29220.06,
       "ndx_date": "2026-06-24",
       "dow": 51848.9,
@@ -359,17 +359,17 @@
       "pak_cpi_source": "pbs_sdmx"
     },
     "metals": {
-      "gold_px": 4001.5,
+      "gold_px": 3997.1,
       "gold_px_date": "2026-06-25",
-      "silver_px": 57.37,
+      "silver_px": 57.19,
       "silver_px_date": "2026-06-25",
-      "platinum_px": 1600.4,
+      "platinum_px": 1599.9,
       "platinum_px_date": "2026-06-25",
-      "palladium_px": 1194.5,
+      "palladium_px": 1196.0,
       "palladium_px_date": "2026-06-25",
-      "dxy": 101.73,
+      "dxy": 101.69,
       "dxy_date": "2026-06-25",
-      "gs_ratio": 69.7,
+      "gs_ratio": 69.9,
       "cot_date": "06/16/26",
       "cot_gold_net": 180220,
       "cot_gold_oi": 339330,
@@ -494,35 +494,35 @@
       "cot_silver_pct_wow_dir": "up",
       "cot_copper_pct_wow": 0.7,
       "cot_copper_pct_wow_dir": "up",
-      "gold_px_wow": -357.4,
+      "gold_px_wow": -361.8,
       "gold_px_wow_dir": "down",
-      "gold_px_mom": -498.9,
+      "gold_px_mom": -503.3,
       "gold_px_mom_dir": "down",
-      "gold_px_qoq": -548.3,
+      "gold_px_qoq": -552.7,
       "gold_px_qoq_dir": "down",
-      "silver_px_wow": -13.33,
+      "silver_px_wow": -13.51,
       "silver_px_wow_dir": "down",
-      "silver_px_mom": -18.94,
+      "silver_px_mom": -19.12,
       "silver_px_mom_dir": "down",
-      "silver_px_qoq": -14.99,
+      "silver_px_qoq": -15.17,
       "silver_px_qoq_dir": "down",
-      "platinum_px_wow": -190.3,
+      "platinum_px_wow": -190.8,
       "platinum_px_wow_dir": "down",
-      "platinum_px_mom": -341.8,
+      "platinum_px_mom": -342.3,
       "platinum_px_mom_dir": "down",
-      "platinum_px_qoq": -324.8,
+      "platinum_px_qoq": -325.3,
       "platinum_px_qoq_dir": "down",
-      "palladium_px_wow": -154.6,
+      "palladium_px_wow": -153.1,
       "palladium_px_wow_dir": "down",
-      "palladium_px_mom": -191.3,
+      "palladium_px_mom": -189.8,
       "palladium_px_mom_dir": "down",
-      "palladium_px_qoq": -221.5,
+      "palladium_px_qoq": -220.0,
       "palladium_px_qoq_dir": "down",
-      "dxy_wow": 1.64,
+      "dxy_wow": 1.6,
       "dxy_wow_dir": "up",
-      "dxy_mom": 2.56,
+      "dxy_mom": 2.52,
       "dxy_mom_dir": "up",
-      "dxy_qoq": 2.13,
+      "dxy_qoq": 2.09,
       "dxy_qoq_dir": "up",
       "dfii10_wow": 0.14,
       "dfii10_wow_dir": "up",
@@ -548,11 +548,11 @@
       "cot_silver_pct_mom_dir": "down",
       "cot_copper_pct_mom": -0.7,
       "cot_copper_pct_mom_dir": "down",
-      "gold_px_sma50": 4501.95,
-      "gold_px_sma200": 4445.89,
-      "gold_px_rsi14": 30.3,
+      "gold_px_sma50": 4501.86,
+      "gold_px_sma200": 4445.86,
+      "gold_px_rsi14": 29.9,
       "gold_px_ma_trend": "down",
-      "gold_px_ext_200_pct": -10.0,
+      "gold_px_ext_200_pct": -10.1,
       "gold_px_cross": "golden",
       "gold_px_hist": [
         4314.4,
@@ -615,13 +615,13 @@
         4358.9,
         4181.9,
         3990.3,
-        4001.5
+        3997.1
       ],
-      "silver_px_sma50": 73.97,
+      "silver_px_sma50": 73.96,
       "silver_px_sma200": 68.17,
-      "silver_px_rsi14": 27.0,
+      "silver_px_rsi14": 26.8,
       "silver_px_ma_trend": "down",
-      "silver_px_ext_200_pct": -15.8,
+      "silver_px_ext_200_pct": -16.1,
       "silver_px_cross": "golden",
       "silver_px_hist": [
         70.56,
@@ -684,9 +684,9 @@
         70.7,
         65.53,
         58.05,
-        57.37
+        57.19
       ],
-      "platinum_px_sma50": 1916.31,
+      "platinum_px_sma50": 1916.3,
       "platinum_px_sma200": 1898.33,
       "platinum_px_rsi14": 31.3,
       "platinum_px_ma_trend": "down",
@@ -753,13 +753,13 @@
         1790.7,
         1670.3,
         1580.6,
-        1600.4
+        1599.9
       ],
-      "palladium_px_sma50": 1402.47,
-      "palladium_px_sma200": 1516.35,
-      "palladium_px_rsi14": 36.2,
+      "palladium_px_sma50": 1402.5,
+      "palladium_px_sma200": 1516.36,
+      "palladium_px_rsi14": 36.4,
       "palladium_px_ma_trend": "down",
-      "palladium_px_ext_200_pct": -21.2,
+      "palladium_px_ext_200_pct": -21.1,
       "palladium_px_cross": "death",
       "palladium_px_hist": [
         1668.0,
@@ -822,11 +822,11 @@
         1349.1,
         1257.1,
         1161.3,
-        1194.5
+        1196.0
       ],
       "dxy_sma50": 99.16,
       "dxy_sma200": 98.75,
-      "dxy_rsi14": 77.6,
+      "dxy_rsi14": 77.4,
       "dxy_ma_trend": "up",
       "dxy_ext_200_pct": 3.0,
       "dxy_cross": "golden",
@@ -891,7 +891,7 @@
         100.09,
         101.02,
         101.61,
-        101.73
+        101.69
       ]
     }
   },
@@ -1284,7 +1284,7 @@
           }
         ],
         "max": 121,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -1887,7 +1887,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -2506,7 +2506,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -3117,7 +3117,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -3725,7 +3725,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -4336,7 +4336,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -4951,7 +4951,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -5566,7 +5566,7 @@
           }
         ],
         "max": 113,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -6157,7 +6157,7 @@
           }
         ],
         "max": 100,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.77,
         "bank_inputs": null,
         "coverage": 0.77,
@@ -6721,7 +6721,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -7332,7 +7332,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -7931,7 +7931,7 @@
           }
         ],
         "max": 43,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.27,
         "bank_inputs": null,
         "coverage": 0.27,
@@ -8440,7 +8440,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -9051,7 +9051,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -9656,7 +9656,7 @@
           }
         ],
         "max": 43,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.27,
         "bank_inputs": null,
         "coverage": 0.27,
@@ -10145,7 +10145,7 @@
           }
         ],
         "max": 114,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.93,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -10752,7 +10752,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -11363,7 +11363,7 @@
           }
         ],
         "max": 108,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.87,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -11942,7 +11942,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -12549,7 +12549,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -13164,7 +13164,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -13763,7 +13763,7 @@
           }
         ],
         "max": 105,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.83,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -14330,7 +14330,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -14923,7 +14923,7 @@
           }
         ],
         "max": 121,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -15534,7 +15534,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -16154,7 +16154,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -16774,7 +16774,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -17262,7 +17262,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -17761,7 +17761,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -18389,7 +18389,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -19008,7 +19008,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -19623,7 +19623,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -20221,7 +20221,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -20832,7 +20832,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -21451,7 +21451,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.87,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -22045,7 +22045,7 @@
           }
         ],
         "max": 98,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.77,
         "bank_inputs": null,
         "coverage": 0.77,
@@ -22629,7 +22629,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -23244,7 +23244,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -23728,7 +23728,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -24049,7 +24049,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -24366,7 +24366,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -24678,7 +24678,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -24990,7 +24990,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -25311,7 +25311,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -25632,7 +25632,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -25953,7 +25953,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -26274,7 +26274,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -26586,7 +26586,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -26898,7 +26898,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -27063,7 +27063,7 @@
         "earnings_per_share_fq": 0.34,
         "sector": "Finance"
       },
-      "prev_fwd_eps": 0.0625
+      "prev_fwd_eps": 0.065
     },
     {
       "ticker": "HYLN",
@@ -27351,7 +27351,7 @@
         "earnings_per_share_fq": 25.11,
         "sector": "Electronic Technology"
       },
-      "prev_fwd_eps": 26.576845
+      "prev_fwd_eps": 28.467826
     },
     {
       "ticker": "WVE",
@@ -31649,7 +31649,7 @@
     "as_of_age_days": 139,
     "stale": true,
     "stale_days": 139,
-    "last_fetch_utc": "2026-06-25T12:02:20.851032Z"
+    "last_fetch_utc": "2026-06-25T12:27:14.289911Z"
   },
   "psx_msci": {},
   "psx_market": {
@@ -31979,7 +31979,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -32432,7 +32432,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -32912,7 +32912,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -33056,7 +33056,7 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s2_sponsor": 1,
-        "s1_news_count": 12,
+        "s1_news_count": 13,
         "s5_volume_ratio": 1.55,
         "price": 64.4,
         "s6_momentum_pct": 39.0,
@@ -33360,7 +33360,7 @@
           }
         ],
         "max": 100,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.77,
         "bank_inputs": null,
         "coverage": 0.77,
@@ -33620,7 +33620,7 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s2_sponsor": 0,
-        "s1_news_count": 6,
+        "s1_news_count": 5,
         "s5_volume_ratio": 3.76,
         "price": 16.42,
         "s6_momentum_pct": 134.6,
@@ -33924,7 +33924,7 @@
           }
         ],
         "max": 108,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.87,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -34508,7 +34508,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -35126,7 +35126,7 @@
           }
         ],
         "max": 121,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -35733,7 +35733,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -36356,7 +36356,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -36970,7 +36970,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -37454,7 +37454,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -37771,7 +37771,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -38219,7 +38219,7 @@
           }
         ],
         "max": 43,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.27,
         "bank_inputs": null,
         "coverage": 0.27,
@@ -38728,7 +38728,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -39344,7 +39344,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -39828,7 +39828,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -40323,7 +40323,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -40921,7 +40921,7 @@
           }
         ],
         "max": 98,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.77,
         "bank_inputs": null,
         "coverage": 0.77,
@@ -41374,7 +41374,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -41691,7 +41691,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -42139,7 +42139,7 @@
           }
         ],
         "max": 114,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.93,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -42746,7 +42746,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -43358,7 +43358,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -43846,7 +43846,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -44163,7 +44163,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -44475,7 +44475,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -44923,7 +44923,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -45522,7 +45522,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -46137,7 +46137,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -46747,7 +46747,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -47357,7 +47357,7 @@
           }
         ],
         "max": 105,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.83,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -47924,7 +47924,7 @@
           }
         ],
         "max": 121,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -48535,7 +48535,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -48818,6 +48818,617 @@
           "mos_pct": 20.1,
           "mos_fcf_pct": 30.3,
           "mos_cash_pct": 66.5
+        }
+      }
+    },
+    {
+      "ticker": "HALEON",
+      "name": "HALEON",
+      "sector": "Health Technology",
+      "src": "screen",
+      "tce_score": 2,
+      "conviction": 1,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 1,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 0,
+        "s12_recommendation": 0,
+        "s2_sponsor": 0,
+        "s1_news_count": 6,
+        "s5_volume_ratio": 0.95,
+        "price": 802.92,
+        "s6_momentum_pct": 14.6,
+        "rs_vs_spy": -7.9,
+        "rs_ok": false,
+        "s7_margin_spread_pct": 15.5,
+        "total": 2,
+        "analyst_covered": false,
+        "analyst_detail": {}
+      },
+      "im3": {
+        "ticker": "PSX:HALEON",
+        "name": "Haleon Pakistan Limited",
+        "sector": "Health Technology",
+        "is_bank": false,
+        "is_psx": true,
+        "price": 802.92,
+        "score": 102,
+        "pct": 83.6,
+        "grade": "A",
+        "metrics": [
+          {
+            "key": "rev_cagr",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "op_cagr",
+            "verdict": "GOOD",
+            "pts": 1,
+            "max": 1,
+            "bucket": "strength"
+          },
+          {
+            "key": "np_cagr",
+            "verdict": "GOOD",
+            "pts": 1,
+            "max": 1,
+            "bucket": "strength"
+          },
+          {
+            "key": "op_margin",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "np_margin",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "tax_rate",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "int_coverage",
+            "verdict": "GOOD",
+            "pts": 2,
+            "max": 2,
+            "bucket": "strength"
+          },
+          {
+            "key": "de_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "total_debt",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "current_ratio",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "cfo_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "net_cash",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "ccfo_cpat",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "nfa_turn",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "roe",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "eps_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "pe_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "valuation"
+          },
+          {
+            "key": "peg_ratio",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "valuation"
+          },
+          {
+            "key": "earn_yield",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3,
+            "bucket": "valuation"
+          },
+          {
+            "key": "pb_ratio",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3,
+            "bucket": "valuation"
+          },
+          {
+            "key": "graham_val",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3,
+            "bucket": "valuation"
+          },
+          {
+            "key": "ps_ratio",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3,
+            "bucket": "valuation"
+          },
+          {
+            "key": "div_yield",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5,
+            "bucket": "valuation"
+          },
+          {
+            "key": "ev_ebitda",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3,
+            "bucket": "valuation"
+          },
+          {
+            "key": "val_shareholders",
+            "verdict": "NA",
+            "pts": 0,
+            "max": 5,
+            "bucket": "valuation"
+          },
+          {
+            "key": "inv_turn",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "dro",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "fat",
+            "verdict": "WATCH",
+            "pts": 2,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "ccc",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "fcf_trend",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "croic",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "fcf_sale",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "fcf_cfo",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "cash_debt",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "cash_share",
+            "verdict": "WATCH",
+            "pts": 3,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "altman_z",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "beneish_m",
+            "verdict": "BAD",
+            "pts": 1,
+            "max": 5,
+            "bucket": "strength"
+          },
+          {
+            "key": "piotroski_f",
+            "verdict": "WATCH",
+            "pts": 6,
+            "max": 10,
+            "bucket": "strength"
+          },
+          {
+            "key": "roic_wacc",
+            "verdict": "GOOD",
+            "pts": 3,
+            "max": 3,
+            "bucket": "strength"
+          },
+          {
+            "key": "mos",
+            "verdict": "GOOD",
+            "pts": 5,
+            "max": 5,
+            "bucket": "valuation"
+          }
+        ],
+        "max": 122,
+        "ver": "2.24.0",
+        "bank_coverage": 1.0,
+        "bank_inputs": null,
+        "coverage": 1.0,
+        "partial": false,
+        "valuation": {
+          "score": 27,
+          "max": 35,
+          "pct": 77.1,
+          "label": "Attractive",
+          "metrics": [
+            {
+              "key": "pe_ratio",
+              "verdict": "GOOD",
+              "pts": 5,
+              "max": 5
+            },
+            {
+              "key": "peg_ratio",
+              "verdict": "GOOD",
+              "pts": 5,
+              "max": 5
+            },
+            {
+              "key": "earn_yield",
+              "verdict": "WATCH",
+              "pts": 2,
+              "max": 3
+            },
+            {
+              "key": "pb_ratio",
+              "verdict": "BAD",
+              "pts": 1,
+              "max": 3
+            },
+            {
+              "key": "graham_val",
+              "verdict": "BAD",
+              "pts": 1,
+              "max": 3
+            },
+            {
+              "key": "ps_ratio",
+              "verdict": "WATCH",
+              "pts": 2,
+              "max": 3
+            },
+            {
+              "key": "div_yield",
+              "verdict": "WATCH",
+              "pts": 3,
+              "max": 5
+            },
+            {
+              "key": "ev_ebitda",
+              "verdict": "GOOD",
+              "pts": 3,
+              "max": 3
+            },
+            {
+              "key": "val_shareholders",
+              "verdict": "NA",
+              "pts": 0,
+              "max": 5
+            },
+            {
+              "key": "mos",
+              "verdict": "GOOD",
+              "pts": 5,
+              "max": 5
+            }
+          ]
+        },
+        "blended_pct": 82.2,
+        "src": {
+          "fund": "tv",
+          "hist": "psx-sa"
+        },
+        "explosive": {
+          "verdict": "NOT EXPLOSIVE",
+          "rev_growth": 15.9,
+          "op_growth": 47.3,
+          "np_growth": 39.2,
+          "pbt_growth": 39.5,
+          "op_np_ratio": 0.83,
+          "signal_a": false,
+          "signal_b": false,
+          "conditions": {
+            "g1": false,
+            "g2": true,
+            "a1": false,
+            "a2": false,
+            "c1": false,
+            "c3": true
+          },
+          "source": "im3_statements"
+        },
+        "cagr_pct": {
+          "rev_cagr": 15.6,
+          "op_cagr": 35.6,
+          "np_cagr": 31.5
+        },
+        "metric_values": {
+          "rev_cagr": {
+            "v": 15.6,
+            "u": "%/yr"
+          },
+          "op_cagr": {
+            "v": 35.6,
+            "u": "%/yr"
+          },
+          "np_cagr": {
+            "v": 31.5,
+            "u": "%/yr"
+          },
+          "op_margin": {
+            "v": 23.18,
+            "u": "%"
+          },
+          "np_margin": {
+            "v": 14.78,
+            "u": "%"
+          },
+          "tax_rate": {
+            "v": 40.21,
+            "u": "%"
+          },
+          "int_coverage": {
+            "v": 201.94,
+            "u": "x"
+          },
+          "de_ratio": {
+            "v": 0.02,
+            "u": "x"
+          },
+          "total_debt": {
+            "v": 19.7,
+            "u": "% vs 5y avg",
+            "dir": "lower better"
+          },
+          "current_ratio": {
+            "v": 1.42,
+            "u": "x"
+          },
+          "cfo_trend": {
+            "v": 41.3,
+            "u": "% vs 5y avg",
+            "dir": "higher better"
+          },
+          "net_cash": {
+            "v": 610090000.0,
+            "u": ""
+          },
+          "ccfo_cpat": {
+            "v": 1.17,
+            "u": "x CFO/PAT"
+          },
+          "nfa_turn": {
+            "v": -6.5,
+            "u": "% vs 5y avg",
+            "dir": "higher better"
+          },
+          "roe": {
+            "v": 50.11,
+            "u": "%"
+          },
+          "eps_trend": {
+            "v": 38.2,
+            "u": "% vs 5y avg",
+            "dir": "higher better"
+          },
+          "pe_ratio": {
+            "v": 14.35,
+            "u": "x"
+          },
+          "peg_ratio": {
+            "v": 0.11,
+            "u": "x"
+          },
+          "earn_yield": {
+            "v": 6.97,
+            "u": "%"
+          },
+          "pb_ratio": {
+            "v": 6.35,
+            "u": "x"
+          },
+          "graham_val": {
+            "v": 91.14,
+            "u": "x PE*PB"
+          },
+          "ps_ratio": {
+            "v": 2.18,
+            "u": "x"
+          },
+          "div_yield": {
+            "v": 3.74,
+            "u": "%"
+          },
+          "ev_ebitda": {
+            "v": 7.4,
+            "u": "x"
+          },
+          "inv_turn": {
+            "v": 2.6,
+            "u": "% vs 5y avg",
+            "dir": "higher better"
+          },
+          "dro": {
+            "v": -20.1,
+            "u": "% vs 5y avg",
+            "dir": "lower better"
+          },
+          "fat": {
+            "v": -6.5,
+            "u": "% vs 5y avg",
+            "dir": "higher better"
+          },
+          "ccc": {
+            "v": -7.5,
+            "u": "% vs 5y avg",
+            "dir": "lower better"
+          },
+          "fcf_trend": {
+            "v": 38.0,
+            "u": "% vs 5y avg",
+            "dir": "higher better"
+          },
+          "croic": {
+            "v": 33.21,
+            "u": "%"
+          },
+          "fcf_sale": {
+            "v": 8.29,
+            "u": "%"
+          },
+          "fcf_cfo": {
+            "v": -11.4,
+            "u": "% vs 5y avg",
+            "dir": "higher better"
+          },
+          "cash_debt": {
+            "v": 15.8,
+            "u": "x"
+          },
+          "cash_share": {
+            "v": 36.79,
+            "u": "/sh"
+          },
+          "beneish_m": {
+            "v": -1.61,
+            "u": "M"
+          },
+          "piotroski_f": {
+            "v": 5.0,
+            "u": "/9"
+          },
+          "roic_wacc": {
+            "v": 55.5,
+            "u": "% ROIC",
+            "wacc": 17.7
+          }
+        },
+        "piotroski": 5,
+        "altman_z": null,
+        "beneish_m": -1.61,
+        "shareholder_yield_pct": null,
+        "iv": {
+          "dcf_eps": 802.07,
+          "dcf_fcf": 1246.69,
+          "dcf_cash": 1501.61,
+          "proj_fcf": 616.08,
+          "proj_cash": 1297.4,
+          "graham": 393.54,
+          "peter_lynch": 1361.25,
+          "intrinsic_fcf": 1006.53,
+          "intrinsic_cash": 1240.58,
+          "composite": 1061.03,
+          "central": 1246.69,
+          "peg": 0.11,
+          "mos_pct": 35.6,
+          "mos_fcf_pct": 20.2,
+          "mos_cash_pct": 35.3
         }
       }
     },
@@ -49151,7 +49762,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -49766,7 +50377,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -50381,7 +50992,7 @@
           }
         ],
         "max": 113,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -50972,7 +51583,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -51580,7 +52191,7 @@
           }
         ],
         "max": 43,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.27,
         "bank_inputs": null,
         "coverage": 0.27,
@@ -51741,617 +52352,6 @@
           "mos_pct": null,
           "mos_fcf_pct": null,
           "mos_cash_pct": null
-        }
-      }
-    },
-    {
-      "ticker": "HALEON",
-      "name": "HALEON",
-      "sector": "Health Technology",
-      "src": "screen",
-      "tce_score": 1,
-      "conviction": 1,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 1,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 0,
-        "s12_recommendation": 0,
-        "s2_sponsor": 0,
-        "s1_news_count": 0,
-        "s5_volume_ratio": 0.95,
-        "price": 802.92,
-        "s6_momentum_pct": 14.6,
-        "rs_vs_spy": -7.9,
-        "rs_ok": false,
-        "s7_margin_spread_pct": 15.5,
-        "total": 1,
-        "analyst_covered": false,
-        "analyst_detail": {}
-      },
-      "im3": {
-        "ticker": "PSX:HALEON",
-        "name": "Haleon Pakistan Limited",
-        "sector": "Health Technology",
-        "is_bank": false,
-        "is_psx": true,
-        "price": 802.92,
-        "score": 102,
-        "pct": 83.6,
-        "grade": "A",
-        "metrics": [
-          {
-            "key": "rev_cagr",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "op_cagr",
-            "verdict": "GOOD",
-            "pts": 1,
-            "max": 1,
-            "bucket": "strength"
-          },
-          {
-            "key": "np_cagr",
-            "verdict": "GOOD",
-            "pts": 1,
-            "max": 1,
-            "bucket": "strength"
-          },
-          {
-            "key": "op_margin",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "np_margin",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "tax_rate",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "int_coverage",
-            "verdict": "GOOD",
-            "pts": 2,
-            "max": 2,
-            "bucket": "strength"
-          },
-          {
-            "key": "de_ratio",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "total_debt",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "current_ratio",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "cfo_trend",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "net_cash",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "ccfo_cpat",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "nfa_turn",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "roe",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "eps_trend",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "pe_ratio",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "valuation"
-          },
-          {
-            "key": "peg_ratio",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "valuation"
-          },
-          {
-            "key": "earn_yield",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3,
-            "bucket": "valuation"
-          },
-          {
-            "key": "pb_ratio",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 3,
-            "bucket": "valuation"
-          },
-          {
-            "key": "graham_val",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 3,
-            "bucket": "valuation"
-          },
-          {
-            "key": "ps_ratio",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3,
-            "bucket": "valuation"
-          },
-          {
-            "key": "div_yield",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5,
-            "bucket": "valuation"
-          },
-          {
-            "key": "ev_ebitda",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3,
-            "bucket": "valuation"
-          },
-          {
-            "key": "val_shareholders",
-            "verdict": "NA",
-            "pts": 0,
-            "max": 5,
-            "bucket": "valuation"
-          },
-          {
-            "key": "inv_turn",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "dro",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "fat",
-            "verdict": "WATCH",
-            "pts": 2,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "ccc",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "fcf_trend",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "croic",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "fcf_sale",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "fcf_cfo",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "cash_debt",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "cash_share",
-            "verdict": "WATCH",
-            "pts": 3,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "altman_z",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "beneish_m",
-            "verdict": "BAD",
-            "pts": 1,
-            "max": 5,
-            "bucket": "strength"
-          },
-          {
-            "key": "piotroski_f",
-            "verdict": "WATCH",
-            "pts": 6,
-            "max": 10,
-            "bucket": "strength"
-          },
-          {
-            "key": "roic_wacc",
-            "verdict": "GOOD",
-            "pts": 3,
-            "max": 3,
-            "bucket": "strength"
-          },
-          {
-            "key": "mos",
-            "verdict": "GOOD",
-            "pts": 5,
-            "max": 5,
-            "bucket": "valuation"
-          }
-        ],
-        "max": 122,
-        "ver": "2.23.0",
-        "bank_coverage": 1.0,
-        "bank_inputs": null,
-        "coverage": 1.0,
-        "partial": false,
-        "valuation": {
-          "score": 27,
-          "max": 35,
-          "pct": 77.1,
-          "label": "Attractive",
-          "metrics": [
-            {
-              "key": "pe_ratio",
-              "verdict": "GOOD",
-              "pts": 5,
-              "max": 5
-            },
-            {
-              "key": "peg_ratio",
-              "verdict": "GOOD",
-              "pts": 5,
-              "max": 5
-            },
-            {
-              "key": "earn_yield",
-              "verdict": "WATCH",
-              "pts": 2,
-              "max": 3
-            },
-            {
-              "key": "pb_ratio",
-              "verdict": "BAD",
-              "pts": 1,
-              "max": 3
-            },
-            {
-              "key": "graham_val",
-              "verdict": "BAD",
-              "pts": 1,
-              "max": 3
-            },
-            {
-              "key": "ps_ratio",
-              "verdict": "WATCH",
-              "pts": 2,
-              "max": 3
-            },
-            {
-              "key": "div_yield",
-              "verdict": "WATCH",
-              "pts": 3,
-              "max": 5
-            },
-            {
-              "key": "ev_ebitda",
-              "verdict": "GOOD",
-              "pts": 3,
-              "max": 3
-            },
-            {
-              "key": "val_shareholders",
-              "verdict": "NA",
-              "pts": 0,
-              "max": 5
-            },
-            {
-              "key": "mos",
-              "verdict": "GOOD",
-              "pts": 5,
-              "max": 5
-            }
-          ]
-        },
-        "blended_pct": 82.2,
-        "src": {
-          "fund": "tv",
-          "hist": "psx-sa"
-        },
-        "explosive": {
-          "verdict": "NOT EXPLOSIVE",
-          "rev_growth": 15.9,
-          "op_growth": 47.3,
-          "np_growth": 39.2,
-          "pbt_growth": 39.5,
-          "op_np_ratio": 0.83,
-          "signal_a": false,
-          "signal_b": false,
-          "conditions": {
-            "g1": false,
-            "g2": true,
-            "a1": false,
-            "a2": false,
-            "c1": false,
-            "c3": true
-          },
-          "source": "im3_statements"
-        },
-        "cagr_pct": {
-          "rev_cagr": 15.6,
-          "op_cagr": 35.6,
-          "np_cagr": 31.5
-        },
-        "metric_values": {
-          "rev_cagr": {
-            "v": 15.6,
-            "u": "%/yr"
-          },
-          "op_cagr": {
-            "v": 35.6,
-            "u": "%/yr"
-          },
-          "np_cagr": {
-            "v": 31.5,
-            "u": "%/yr"
-          },
-          "op_margin": {
-            "v": 23.18,
-            "u": "%"
-          },
-          "np_margin": {
-            "v": 14.78,
-            "u": "%"
-          },
-          "tax_rate": {
-            "v": 40.21,
-            "u": "%"
-          },
-          "int_coverage": {
-            "v": 201.94,
-            "u": "x"
-          },
-          "de_ratio": {
-            "v": 0.02,
-            "u": "x"
-          },
-          "total_debt": {
-            "v": 19.7,
-            "u": "% vs 5y avg",
-            "dir": "lower better"
-          },
-          "current_ratio": {
-            "v": 1.42,
-            "u": "x"
-          },
-          "cfo_trend": {
-            "v": 41.3,
-            "u": "% vs 5y avg",
-            "dir": "higher better"
-          },
-          "net_cash": {
-            "v": 610090000.0,
-            "u": ""
-          },
-          "ccfo_cpat": {
-            "v": 1.17,
-            "u": "x CFO/PAT"
-          },
-          "nfa_turn": {
-            "v": -6.5,
-            "u": "% vs 5y avg",
-            "dir": "higher better"
-          },
-          "roe": {
-            "v": 50.11,
-            "u": "%"
-          },
-          "eps_trend": {
-            "v": 38.2,
-            "u": "% vs 5y avg",
-            "dir": "higher better"
-          },
-          "pe_ratio": {
-            "v": 14.35,
-            "u": "x"
-          },
-          "peg_ratio": {
-            "v": 0.11,
-            "u": "x"
-          },
-          "earn_yield": {
-            "v": 6.97,
-            "u": "%"
-          },
-          "pb_ratio": {
-            "v": 6.35,
-            "u": "x"
-          },
-          "graham_val": {
-            "v": 91.14,
-            "u": "x PE*PB"
-          },
-          "ps_ratio": {
-            "v": 2.18,
-            "u": "x"
-          },
-          "div_yield": {
-            "v": 3.74,
-            "u": "%"
-          },
-          "ev_ebitda": {
-            "v": 7.4,
-            "u": "x"
-          },
-          "inv_turn": {
-            "v": 2.6,
-            "u": "% vs 5y avg",
-            "dir": "higher better"
-          },
-          "dro": {
-            "v": -20.1,
-            "u": "% vs 5y avg",
-            "dir": "lower better"
-          },
-          "fat": {
-            "v": -6.5,
-            "u": "% vs 5y avg",
-            "dir": "higher better"
-          },
-          "ccc": {
-            "v": -7.5,
-            "u": "% vs 5y avg",
-            "dir": "lower better"
-          },
-          "fcf_trend": {
-            "v": 38.0,
-            "u": "% vs 5y avg",
-            "dir": "higher better"
-          },
-          "croic": {
-            "v": 33.21,
-            "u": "%"
-          },
-          "fcf_sale": {
-            "v": 8.29,
-            "u": "%"
-          },
-          "fcf_cfo": {
-            "v": -11.4,
-            "u": "% vs 5y avg",
-            "dir": "higher better"
-          },
-          "cash_debt": {
-            "v": 15.8,
-            "u": "x"
-          },
-          "cash_share": {
-            "v": 36.79,
-            "u": "/sh"
-          },
-          "beneish_m": {
-            "v": -1.61,
-            "u": "M"
-          },
-          "piotroski_f": {
-            "v": 5.0,
-            "u": "/9"
-          },
-          "roic_wacc": {
-            "v": 55.5,
-            "u": "% ROIC",
-            "wacc": 17.7
-          }
-        },
-        "piotroski": 5,
-        "altman_z": null,
-        "beneish_m": -1.61,
-        "shareholder_yield_pct": null,
-        "iv": {
-          "dcf_eps": 802.07,
-          "dcf_fcf": 1246.69,
-          "dcf_cash": 1501.61,
-          "proj_fcf": 616.08,
-          "proj_cash": 1297.4,
-          "graham": 393.54,
-          "peter_lynch": 1361.25,
-          "intrinsic_fcf": 1006.53,
-          "intrinsic_cash": 1240.58,
-          "composite": 1061.03,
-          "central": 1246.69,
-          "peg": 0.11,
-          "mos_pct": 35.6,
-          "mos_fcf_pct": 20.2,
-          "mos_cash_pct": 35.3
         }
       }
     },
@@ -52549,7 +52549,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -52992,7 +52992,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -53585,7 +53585,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -54201,7 +54201,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -54820,7 +54820,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -55134,8 +55134,8 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 0,
         "s12_recommendation": 0,
-        "s2_sponsor": 1,
-        "s1_news_count": 8,
+        "s2_sponsor": 0,
+        "s1_news_count": 6,
         "s5_volume_ratio": 1.17,
         "price": 8.28,
         "s6_momentum_pct": -86.9,
@@ -55439,7 +55439,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.87,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -56032,7 +56032,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -56630,7 +56630,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -57229,7 +57229,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -57540,7 +57540,7 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s2_sponsor": 0,
-        "s1_news_count": 1,
+        "s1_news_count": 0,
         "s5_volume_ratio": 0.76,
         "price": 26.82,
         "s6_momentum_pct": 8.6,
@@ -57708,7 +57708,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -57873,7 +57873,7 @@
           "buy_ratio": 0.76,
           "rec_mark": 1.147059,
           "fwd_eps": 28.467826,
-          "eps_rev_pct": 7.1,
+          "eps_rev_pct": 0.0,
           "eps_surprise_pct": 20.4
         },
         "fwd_eps": 28.467826
@@ -58171,7 +58171,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -58522,7 +58522,7 @@
         "s11_target_upside": 1,
         "s12_recommendation": 1,
         "s2_sponsor": 0,
-        "s1_news_count": 7,
+        "s1_news_count": 5,
         "s5_volume_ratio": 2.76,
         "price": 19.52,
         "s6_momentum_pct": 29.4,
@@ -58838,7 +58838,7 @@
           }
         ],
         "max": 107,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -59417,7 +59417,7 @@
           }
         ],
         "max": 119,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -60045,7 +60045,7 @@
           }
         ],
         "max": 114,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -60668,7 +60668,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -61260,7 +61260,7 @@
           }
         ],
         "max": 119,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -61884,7 +61884,7 @@
           }
         ],
         "max": 96,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.8,
@@ -62490,7 +62490,7 @@
           }
         ],
         "max": 113,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -63249,7 +63249,7 @@
           }
         ],
         "max": 114,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -63532,6 +63532,52 @@
       }
     },
     {
+      "ticker": "CSCO",
+      "name": "CSCO",
+      "sector": "Electronic Technology",
+      "src": "etf",
+      "tce_score": 5,
+      "conviction": 3,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s3_insider": 1,
+        "s5_volume": 0,
+        "s6_momentum": 1,
+        "s7_margin": 1,
+        "s8_capital": 0,
+        "s9_eps_rev": 1,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 0,
+        "s12_recommendation": 0,
+        "s2_sponsor": 1,
+        "s1_news_count": 20,
+        "s5_volume_ratio": 1.09,
+        "price": 119.73,
+        "s6_momentum_pct": 48.9,
+        "rs_vs_spy": 48.0,
+        "rs_ok": true,
+        "s7_margin_spread_pct": 25.1,
+        "s8_capital_short_pct": 1.6,
+        "s9_eps_rev_net": 18,
+        "rev_est": 16827317250.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 31,
+        "total": 5,
+        "analyst_covered": true,
+        "analyst_detail": {
+          "target_upside_pct": 9.5,
+          "buy_ratio": 0.54,
+          "rec_mark": 1.464286,
+          "fwd_eps": 1.166552,
+          "eps_rev_pct": 0.0,
+          "eps_surprise_pct": 2.4
+        },
+        "fwd_eps": 1.166552
+      }
+    },
+    {
       "ticker": "TXN",
       "name": "TXN",
       "sector": "Electronic Technology",
@@ -63644,7 +63690,7 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s2_sponsor": 1,
-        "s1_news_count": 29,
+        "s1_news_count": 30,
         "s5_volume_ratio": 0.58,
         "price": 1914.46,
         "s6_momentum_pct": 172.5,
@@ -63689,7 +63735,7 @@
         "s11_target_upside": 1,
         "s12_recommendation": 1,
         "s2_sponsor": 1,
-        "s1_news_count": 28,
+        "s1_news_count": 27,
         "s5_volume_ratio": 1.17,
         "price": 365.46,
         "s6_momentum_pct": -1.7,
@@ -63715,243 +63761,16 @@
       }
     },
     {
-      "ticker": "GOOGL",
-      "name": "GOOGL",
-      "sector": "Technology Services",
-      "src": "etf",
-      "tce_score": 5,
-      "conviction": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s3_insider": 1,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 1,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 1,
-        "s12_recommendation": 1,
-        "s2_sponsor": 1,
-        "s1_news_count": 29,
-        "s5_volume_ratio": 1.03,
-        "price": 345.29,
-        "s6_momentum_pct": 19.0,
-        "rs_vs_spy": 3.5,
-        "rs_ok": true,
-        "s7_margin_spread_pct": 60.2,
-        "s8_capital_short_pct": 1.4,
-        "s9_eps_rev_net": -2,
-        "rev_est": 116678355480.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 43,
-        "total": 3,
-        "analyst_covered": true,
-        "analyst_detail": {
-          "target_upside_pct": 25.7,
-          "buy_ratio": 0.75,
-          "rec_mark": 1.191781,
-          "fwd_eps": 2.87559,
-          "eps_rev_pct": 0.0,
-          "eps_surprise_pct": 90.5
-        },
-        "fwd_eps": 2.87559
-      }
-    },
-    {
-      "ticker": "CAT",
-      "name": "CAT",
-      "sector": "Producer Manufacturing",
-      "src": "etf",
-      "tce_score": 5,
-      "conviction": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s3_insider": 1,
-        "s5_volume": 0,
-        "s6_momentum": 1,
-        "s7_margin": 1,
-        "s8_capital": 0,
-        "s9_eps_rev": 1,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 0,
-        "s12_recommendation": 0,
-        "s2_sponsor": 1,
-        "s1_news_count": 20,
-        "s5_volume_ratio": 1.16,
-        "price": 994.45,
-        "s6_momentum_pct": 39.0,
-        "rs_vs_spy": 64.5,
-        "rs_ok": true,
-        "s7_margin_spread_pct": 8.0,
-        "s8_capital_short_pct": 2.0,
-        "s9_eps_rev_net": 5,
-        "rev_est": 19093928130.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 41,
-        "total": 5,
-        "analyst_covered": true,
-        "analyst_detail": {
-          "target_upside_pct": -1.7,
-          "buy_ratio": 0.47,
-          "rec_mark": 1.55,
-          "fwd_eps": 6.181903,
-          "eps_rev_pct": 0.0,
-          "eps_surprise_pct": 19.2
-        },
-        "fwd_eps": 6.181903
-      }
-    },
-    {
-      "ticker": "QCOM",
-      "name": "QCOM",
-      "sector": "Electronic Technology",
-      "src": "etf",
-      "tce_score": 5,
-      "conviction": 2,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s3_insider": 1,
-        "s5_volume": 1,
-        "s6_momentum": 1,
-        "s7_margin": 1,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 0,
-        "s12_recommendation": 0,
-        "s2_sponsor": 1,
-        "s1_news_count": 30,
-        "s5_volume_ratio": 2.15,
-        "price": 197.41,
-        "s6_momentum_pct": 54.0,
-        "rs_vs_spy": 7.3,
-        "rs_ok": true,
-        "s7_margin_spread_pct": 176.5,
-        "s8_capital_short_pct": 4.8,
-        "s9_eps_rev_net": -23,
-        "rev_est": 9662646960.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 11,
-        "total": 5,
-        "analyst_covered": true,
-        "analyst_detail": {
-          "target_upside_pct": 6.4,
-          "buy_ratio": 0.21,
-          "rec_mark": 1.794872,
-          "fwd_eps": 2.228219,
-          "eps_rev_pct": 0.1,
-          "eps_surprise_pct": 3.6
-        },
-        "fwd_eps": 2.228219
-      }
-    },
-    {
-      "ticker": "FUBO",
-      "name": "FUBO",
-      "sector": "Technology Services",
-      "src": "screen",
-      "tce_score": 4,
-      "conviction": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 1,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 1,
-        "s12_recommendation": 1,
-        "s2_sponsor": 1,
-        "s1_news_count": 12,
-        "s5_volume_ratio": 1.07,
-        "price": 8.75,
-        "s6_momentum_pct": -27.2,
-        "rs_vs_spy": -79.3,
-        "rs_ok": false,
-        "s8_capital_short_pct": 24.3,
-        "s9_eps_rev_net": -3,
-        "rev_est": 1497756700.0,
-        "s10_rev_rev_pct": 0.0,
-        "total": 2,
-        "analyst_covered": true,
-        "analyst_detail": {
-          "target_upside_pct": 94.3,
-          "buy_ratio": 0.8,
-          "rec_mark": 1.2,
-          "fwd_eps": -0.273333,
-          "eps_rev_pct": 0.0,
-          "eps_surprise_pct": 80.3
-        },
-        "fwd_eps": -0.273333
-      }
-    },
-    {
-      "ticker": "CSCO",
-      "name": "CSCO",
-      "sector": "Electronic Technology",
-      "src": "etf",
-      "tce_score": 4,
-      "conviction": 3,
-      "tier": "WATCH",
-      "streams": {
-        "s1_news": 1,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 1,
-        "s7_margin": 1,
-        "s8_capital": 0,
-        "s9_eps_rev": 1,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 0,
-        "s12_recommendation": 0,
-        "s2_sponsor": 1,
-        "s1_news_count": 20,
-        "s5_volume_ratio": 1.09,
-        "price": 119.73,
-        "s6_momentum_pct": 48.9,
-        "rs_vs_spy": 48.0,
-        "rs_ok": true,
-        "s7_margin_spread_pct": 25.1,
-        "s8_capital_short_pct": 1.6,
-        "s9_eps_rev_net": 18,
-        "rev_est": 16827317250.0,
-        "s10_rev_rev_pct": 0.0,
-        "total": 4,
-        "analyst_covered": true,
-        "analyst_detail": {
-          "target_upside_pct": 9.5,
-          "buy_ratio": 0.54,
-          "rec_mark": 1.464286,
-          "fwd_eps": 1.166552,
-          "eps_rev_pct": 0.0,
-          "eps_surprise_pct": 2.4
-        },
-        "fwd_eps": 1.166552
-      }
-    },
-    {
       "ticker": "STX",
       "name": "STX",
       "sector": "Electronic Technology",
       "src": "etf",
-      "tce_score": 4,
+      "tce_score": 5,
       "conviction": 3,
       "tier": "WATCH",
       "streams": {
         "s1_news": 1,
-        "s3_insider": 0,
+        "s3_insider": 1,
         "s5_volume": 0,
         "s6_momentum": 1,
         "s7_margin": 1,
@@ -63973,7 +63792,8 @@
         "s9_eps_rev_net": 1,
         "rev_est": 3482060330.0,
         "s10_rev_rev_pct": 0.0,
-        "total": 4,
+        "s3_insider_count": 24,
+        "total": 5,
         "analyst_covered": true,
         "analyst_detail": {
           "target_upside_pct": -8.5,
@@ -64278,7 +64098,7 @@
           }
         ],
         "max": 114,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -64569,6 +64389,225 @@
       }
     },
     {
+      "ticker": "GOOGL",
+      "name": "GOOGL",
+      "sector": "Technology Services",
+      "src": "etf",
+      "tce_score": 5,
+      "conviction": 3,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s3_insider": 1,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 1,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 1,
+        "s12_recommendation": 1,
+        "s2_sponsor": 1,
+        "s1_news_count": 29,
+        "s5_volume_ratio": 1.03,
+        "price": 345.29,
+        "s6_momentum_pct": 19.0,
+        "rs_vs_spy": 3.5,
+        "rs_ok": true,
+        "s7_margin_spread_pct": 60.2,
+        "s8_capital_short_pct": 1.4,
+        "s9_eps_rev_net": -2,
+        "rev_est": 116678355480.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 43,
+        "total": 3,
+        "analyst_covered": true,
+        "analyst_detail": {
+          "target_upside_pct": 25.7,
+          "buy_ratio": 0.75,
+          "rec_mark": 1.191781,
+          "fwd_eps": 2.87559,
+          "eps_rev_pct": 0.0,
+          "eps_surprise_pct": 90.5
+        },
+        "fwd_eps": 2.87559
+      }
+    },
+    {
+      "ticker": "CAT",
+      "name": "CAT",
+      "sector": "Producer Manufacturing",
+      "src": "etf",
+      "tce_score": 5,
+      "conviction": 3,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s3_insider": 1,
+        "s5_volume": 0,
+        "s6_momentum": 1,
+        "s7_margin": 1,
+        "s8_capital": 0,
+        "s9_eps_rev": 1,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 0,
+        "s12_recommendation": 0,
+        "s2_sponsor": 1,
+        "s1_news_count": 20,
+        "s5_volume_ratio": 1.16,
+        "price": 994.45,
+        "s6_momentum_pct": 39.0,
+        "rs_vs_spy": 64.5,
+        "rs_ok": true,
+        "s7_margin_spread_pct": 8.0,
+        "s8_capital_short_pct": 2.0,
+        "s9_eps_rev_net": 5,
+        "rev_est": 19093928130.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 41,
+        "total": 5,
+        "analyst_covered": true,
+        "analyst_detail": {
+          "target_upside_pct": -1.7,
+          "buy_ratio": 0.47,
+          "rec_mark": 1.55,
+          "fwd_eps": 6.181903,
+          "eps_rev_pct": 0.0,
+          "eps_surprise_pct": 19.2
+        },
+        "fwd_eps": 6.181903
+      }
+    },
+    {
+      "ticker": "ARQQ",
+      "name": "ARQQ",
+      "sector": "Technology Services",
+      "src": "screen",
+      "tce_score": 5,
+      "conviction": 2,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s3_insider": 1,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 0,
+        "s12_recommendation": 0,
+        "s2_sponsor": 1,
+        "s1_news_count": 17,
+        "s5_volume_ratio": 4.9,
+        "price": 28.64,
+        "s6_momentum_pct": 111.1,
+        "rs_vs_spy": 18.8,
+        "rs_ok": true,
+        "s8_capital_short_pct": 13.5,
+        "s9_eps_rev_net": 0,
+        "rev_est": 0.0,
+        "s3_insider_count": 43,
+        "total": 5,
+        "analyst_covered": false,
+        "analyst_detail": {}
+      }
+    },
+    {
+      "ticker": "QCOM",
+      "name": "QCOM",
+      "sector": "Electronic Technology",
+      "src": "etf",
+      "tce_score": 5,
+      "conviction": 2,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s3_insider": 1,
+        "s5_volume": 1,
+        "s6_momentum": 1,
+        "s7_margin": 1,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 0,
+        "s12_recommendation": 0,
+        "s2_sponsor": 1,
+        "s1_news_count": 30,
+        "s5_volume_ratio": 2.15,
+        "price": 197.41,
+        "s6_momentum_pct": 54.0,
+        "rs_vs_spy": 7.3,
+        "rs_ok": true,
+        "s7_margin_spread_pct": 176.5,
+        "s8_capital_short_pct": 4.8,
+        "s9_eps_rev_net": -23,
+        "rev_est": 9662646960.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 11,
+        "total": 5,
+        "analyst_covered": true,
+        "analyst_detail": {
+          "target_upside_pct": 6.4,
+          "buy_ratio": 0.21,
+          "rec_mark": 1.794872,
+          "fwd_eps": 2.228219,
+          "eps_rev_pct": 0.0,
+          "eps_surprise_pct": 3.6
+        },
+        "fwd_eps": 2.228219
+      }
+    },
+    {
+      "ticker": "FUBO",
+      "name": "FUBO",
+      "sector": "Technology Services",
+      "src": "screen",
+      "tce_score": 4,
+      "conviction": 3,
+      "tier": "WATCH",
+      "streams": {
+        "s1_news": 1,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 1,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 1,
+        "s12_recommendation": 1,
+        "s2_sponsor": 1,
+        "s1_news_count": 12,
+        "s5_volume_ratio": 1.07,
+        "price": 8.75,
+        "s6_momentum_pct": -27.2,
+        "rs_vs_spy": -79.3,
+        "rs_ok": false,
+        "s8_capital_short_pct": 24.3,
+        "s9_eps_rev_net": -3,
+        "rev_est": 1497756700.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 1,
+        "total": 2,
+        "analyst_covered": true,
+        "analyst_detail": {
+          "target_upside_pct": 94.3,
+          "buy_ratio": 0.8,
+          "rec_mark": 1.2,
+          "fwd_eps": -0.273333,
+          "eps_rev_pct": 0.0,
+          "eps_surprise_pct": 80.3
+        },
+        "fwd_eps": -0.273333
+      }
+    },
+    {
       "ticker": "HYLN",
       "name": "HYLN",
       "sector": "Producer Manufacturing",
@@ -64633,7 +64672,7 @@
         "s11_target_upside": 1,
         "s12_recommendation": 1,
         "s2_sponsor": 1,
-        "s1_news_count": 11,
+        "s1_news_count": 16,
         "s5_volume_ratio": 1.03,
         "price": 5.04,
         "s6_momentum_pct": -48.0,
@@ -64658,38 +64697,46 @@
       }
     },
     {
-      "ticker": "ARQQ",
-      "name": "ARQQ",
-      "sector": "Technology Services",
+      "ticker": "AVEX",
+      "name": "AVEX",
+      "sector": "Electronic Technology",
       "src": "screen",
       "tce_score": 4,
       "conviction": 2,
       "tier": "IGNORE",
       "streams": {
         "s1_news": 1,
-        "s3_insider": 0,
-        "s5_volume": 1,
-        "s6_momentum": 1,
+        "s3_insider": 1,
+        "s5_volume": 0,
+        "s6_momentum": 0,
         "s7_margin": 0,
-        "s8_capital": 1,
+        "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
         "s9_eps_revision": 0,
-        "s11_target_upside": 0,
-        "s12_recommendation": 0,
-        "s2_sponsor": 1,
-        "s1_news_count": 17,
-        "s5_volume_ratio": 4.9,
-        "price": 28.64,
-        "s6_momentum_pct": 111.1,
-        "rs_vs_spy": 18.8,
-        "rs_ok": true,
-        "s8_capital_short_pct": 13.5,
+        "s11_target_upside": 1,
+        "s12_recommendation": 1,
+        "s2_sponsor": 0,
+        "s1_news_count": 5,
+        "price": 15.34,
+        "rs_vs_spy": -49.8,
+        "rs_ok": false,
+        "s8_capital_short_pct": 5.4,
         "s9_eps_rev_net": 0,
-        "rev_est": 0.0,
-        "total": 4,
-        "analyst_covered": false,
-        "analyst_detail": {}
+        "rev_est": 159706620.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 19,
+        "total": 2,
+        "analyst_covered": true,
+        "analyst_detail": {
+          "target_upside_pct": 133.1,
+          "buy_ratio": 0.78,
+          "rec_mark": 1.111111,
+          "fwd_eps": 0.07,
+          "eps_rev_pct": 0.0,
+          "eps_surprise_pct": 40.4
+        },
+        "fwd_eps": 0.07
       }
     },
     {
@@ -64819,10 +64866,10 @@
       }
     },
     {
-      "ticker": "VOXR",
-      "name": "VOXR",
-      "sector": "Finance",
-      "src": "screen",
+      "ticker": "XOM",
+      "name": "XOM",
+      "sector": "Energy Minerals",
+      "src": "etf",
       "tce_score": 3,
       "conviction": 2,
       "tier": "IGNORE",
@@ -64833,13 +64880,95 @@
         "s6_momentum": 0,
         "s7_margin": 0,
         "s8_capital": 0,
+        "s9_eps_rev": 1,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 1,
+        "s12_recommendation": 0,
+        "s2_sponsor": 1,
+        "s1_news_count": 22,
+        "s5_volume_ratio": 0.9,
+        "price": 136.9,
+        "s6_momentum_pct": -16.7,
+        "rs_vs_spy": 9.7,
+        "rs_ok": true,
+        "s7_margin_spread_pct": -46.0,
+        "s8_capital_short_pct": 1.1,
+        "s9_eps_rev_net": 1,
+        "rev_est": 103009637490.0,
+        "s10_rev_rev_pct": 0.0,
+        "s3_insider_count": 1,
+        "total": 2,
+        "analyst_covered": true,
+        "analyst_detail": {
+          "target_upside_pct": 24.6,
+          "buy_ratio": 0.36,
+          "rec_mark": 1.642857,
+          "fwd_eps": 3.663677,
+          "eps_rev_pct": 0.0,
+          "eps_surprise_pct": 17.9
+        },
+        "fwd_eps": 3.663677
+      }
+    },
+    {
+      "ticker": "RJET",
+      "name": "RJET",
+      "sector": "Transportation",
+      "src": "screen",
+      "tce_score": 3,
+      "conviction": 0,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 1,
+        "s3_insider": 1,
+        "s5_volume": 1,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 0,
+        "s9_eps_rev": 0,
+        "s10_rev_rev": 0,
+        "s9_eps_revision": 0,
+        "s11_target_upside": 0,
+        "s12_recommendation": 0,
+        "s2_sponsor": 0,
+        "s1_news_count": 7,
+        "s5_volume_ratio": 2.26,
+        "price": 18.28,
+        "s6_momentum_pct": 3.0,
+        "rs_vs_spy": -14.1,
+        "rs_ok": false,
+        "s7_margin_spread_pct": -48.3,
+        "s8_capital_short_pct": 3.0,
+        "rev_est": 0.0,
+        "s3_insider_count": 16,
+        "total": 3,
+        "analyst_covered": false,
+        "analyst_detail": {}
+      }
+    },
+    {
+      "ticker": "VOXR",
+      "name": "VOXR",
+      "sector": "Finance",
+      "src": "screen",
+      "tce_score": 2,
+      "conviction": 2,
+      "tier": "IGNORE",
+      "streams": {
+        "s1_news": 0,
+        "s3_insider": 0,
+        "s5_volume": 0,
+        "s6_momentum": 0,
+        "s7_margin": 0,
+        "s8_capital": 0,
         "s9_eps_rev": 0,
         "s10_rev_rev": 0,
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s2_sponsor": 1,
-        "s1_news_count": 8,
+        "s2_sponsor": 0,
+        "s1_news_count": 1,
         "s5_volume_ratio": 0.72,
         "price": 4.75,
         "s6_momentum_pct": -1.1,
@@ -64849,14 +64978,15 @@
         "s9_eps_rev_net": 0,
         "rev_est": 8766670.0,
         "s10_rev_rev_pct": 0.0,
-        "total": 1,
+        "s3_insider_count": 0,
+        "total": 0,
         "analyst_covered": true,
         "analyst_detail": {
           "target_upside_pct": 62.1,
           "buy_ratio": 1.0,
           "rec_mark": 1.0,
           "fwd_eps": 0.065,
-          "eps_rev_pct": 4.0,
+          "eps_rev_pct": 0.0,
           "eps_surprise_pct": 827.3
         },
         "fwd_eps": 0.065
@@ -65154,7 +65284,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -65435,138 +65565,15 @@
       }
     },
     {
-      "ticker": "AVEX",
-      "name": "AVEX",
-      "sector": "Electronic Technology",
-      "src": "screen",
-      "tce_score": 3,
-      "conviction": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 1,
-        "s12_recommendation": 1,
-        "s2_sponsor": 0,
-        "s1_news_count": 5,
-        "price": 15.34,
-        "rs_vs_spy": -49.8,
-        "rs_ok": false,
-        "s8_capital_short_pct": 5.4,
-        "s9_eps_rev_net": 0,
-        "rev_est": 159706620.0,
-        "s10_rev_rev_pct": 0.0,
-        "total": 1,
-        "analyst_covered": true,
-        "analyst_detail": {
-          "target_upside_pct": 133.1,
-          "buy_ratio": 0.78,
-          "rec_mark": 1.111111,
-          "fwd_eps": 0.07,
-          "eps_rev_pct": 0.0,
-          "eps_surprise_pct": 40.4
-        },
-        "fwd_eps": 0.07
-      }
-    },
-    {
-      "ticker": "XOM",
-      "name": "XOM",
-      "sector": "Energy Minerals",
-      "src": "etf",
-      "tce_score": 3,
-      "conviction": 2,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 1,
-        "s3_insider": 0,
-        "s5_volume": 0,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 1,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 1,
-        "s12_recommendation": 0,
-        "s2_sponsor": 1,
-        "s1_news_count": 22,
-        "s5_volume_ratio": 0.9,
-        "price": 136.9,
-        "s6_momentum_pct": -16.7,
-        "rs_vs_spy": 9.7,
-        "rs_ok": true,
-        "s7_margin_spread_pct": -46.0,
-        "s8_capital_short_pct": 1.1,
-        "s9_eps_rev_net": 1,
-        "rev_est": 103009637490.0,
-        "s10_rev_rev_pct": 0.0,
-        "s3_insider_count": 1,
-        "total": 2,
-        "analyst_covered": true,
-        "analyst_detail": {
-          "target_upside_pct": 24.6,
-          "buy_ratio": 0.36,
-          "rec_mark": 1.642857,
-          "fwd_eps": 3.663677,
-          "eps_rev_pct": 0.0,
-          "eps_surprise_pct": 17.9
-        },
-        "fwd_eps": 3.663677
-      }
-    },
-    {
-      "ticker": "RJET",
-      "name": "RJET",
-      "sector": "Transportation",
+      "ticker": "ABTC",
+      "name": "ABTC",
+      "sector": "Technology Services",
       "src": "screen",
       "tce_score": 2,
       "conviction": 0,
       "tier": "IGNORE",
       "streams": {
         "s1_news": 1,
-        "s3_insider": 0,
-        "s5_volume": 1,
-        "s6_momentum": 0,
-        "s7_margin": 0,
-        "s8_capital": 0,
-        "s9_eps_rev": 0,
-        "s10_rev_rev": 0,
-        "s9_eps_revision": 0,
-        "s11_target_upside": 0,
-        "s12_recommendation": 0,
-        "s2_sponsor": 0,
-        "s1_news_count": 7,
-        "s5_volume_ratio": 2.26,
-        "price": 18.28,
-        "s6_momentum_pct": 3.0,
-        "rs_vs_spy": -14.1,
-        "rs_ok": false,
-        "s7_margin_spread_pct": -48.3,
-        "s8_capital_short_pct": 3.0,
-        "rev_est": 0.0,
-        "total": 2,
-        "analyst_covered": false,
-        "analyst_detail": {}
-      }
-    },
-    {
-      "ticker": "ABTC",
-      "name": "ABTC",
-      "sector": "Technology Services",
-      "src": "screen",
-      "tce_score": 1,
-      "conviction": 0,
-      "tier": "IGNORE",
-      "streams": {
-        "s1_news": 0,
         "s3_insider": 1,
         "s5_volume": 0,
         "s6_momentum": 0,
@@ -65578,7 +65585,7 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s2_sponsor": 0,
-        "s1_news_count": 2,
+        "s1_news_count": 7,
         "s5_volume_ratio": 1.07,
         "price": 0.741,
         "s6_momentum_pct": -21.9,
@@ -65589,7 +65596,7 @@
         "rev_est": 73800000.0,
         "s10_rev_rev_pct": 0.0,
         "s3_insider_count": 4,
-        "total": 1,
+        "total": 2,
         "analyst_covered": false,
         "analyst_detail": {}
       },
@@ -65886,7 +65893,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -69901,7 +69908,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -70529,7 +70536,7 @@
           }
         ],
         "max": 98,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.77,
         "bank_inputs": null,
         "coverage": 0.77,
@@ -71130,7 +71137,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -71762,7 +71769,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -72254,7 +72261,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -72719,7 +72726,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -73347,7 +73354,7 @@
           }
         ],
         "max": 43,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.27,
         "bank_inputs": null,
         "coverage": 0.27,
@@ -73873,7 +73880,7 @@
           }
         ],
         "max": 114,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.93,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -74497,7 +74504,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -75133,7 +75140,7 @@
           }
         ],
         "max": 100,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.77,
         "bank_inputs": null,
         "coverage": 0.77,
@@ -75714,7 +75721,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -76206,7 +76213,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -76535,7 +76542,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -77000,7 +77007,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -77624,7 +77631,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -78252,7 +78259,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -78884,7 +78891,7 @@
           }
         ],
         "max": 108,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.87,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -79480,7 +79487,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -80112,7 +80119,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -80591,7 +80598,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -80920,7 +80927,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -81385,7 +81392,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -82017,7 +82024,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -82649,7 +82656,7 @@
           }
         ],
         "max": 113,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -83121,7 +83128,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -83628,7 +83635,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -84120,7 +84127,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -84445,7 +84452,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -84910,7 +84917,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -85546,7 +85553,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -86042,7 +86049,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -86371,7 +86378,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -86836,7 +86843,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -87472,7 +87479,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -88100,7 +88107,7 @@
           }
         ],
         "max": 105,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.83,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -88684,7 +88691,7 @@
           }
         ],
         "max": 121,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -89312,7 +89319,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.87,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -89787,7 +89794,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -90252,7 +90259,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -90888,7 +90895,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -91516,7 +91523,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -92008,7 +92015,7 @@
           }
         ],
         "max": 48,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "IG2 24-ratio (psx)",
         "bank_inputs": {
           "source": "IG2 24-ratio inputs (psx)",
@@ -92467,7 +92474,7 @@
           }
         ],
         "max": 43,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.27,
         "bank_inputs": null,
         "coverage": 0.27,
@@ -92973,7 +92980,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -93589,7 +93596,7 @@
           }
         ],
         "max": 121,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.97,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -94209,7 +94216,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -94825,7 +94832,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 1.0,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -95453,7 +95460,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -96069,7 +96076,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": 0.9,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -96380,9 +96387,9 @@
       },
       "forward": {
         "f1": false,
-        "fr": true
+        "fr": false
       },
-      "forward_boost": true,
+      "forward_boost": false,
       "verdict": "EXPLOSIVE \u2014 both signals",
       "cash_guardrails": "confirmed",
       "growth_source": "tv",
@@ -96682,7 +96689,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -97310,7 +97317,7 @@
           }
         ],
         "max": 116,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -97633,9 +97640,9 @@
       },
       "forward": {
         "f1": false,
-        "fr": true
+        "fr": false
       },
-      "forward_boost": true,
+      "forward_boost": false,
       "verdict": "EXPLOSIVE \u2014 both signals",
       "cash_guardrails": "confirmed",
       "growth_source": "yf_stmt",
@@ -97935,7 +97942,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -98558,7 +98565,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -99187,7 +99194,7 @@
           }
         ],
         "max": 80,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.63,
@@ -99777,7 +99784,7 @@
           }
         ],
         "max": 114,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -100402,7 +100409,7 @@
           }
         ],
         "max": 114,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -101031,7 +101038,7 @@
           }
         ],
         "max": 88,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.67,
@@ -101624,7 +101631,7 @@
           }
         ],
         "max": 101,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.8,
@@ -102232,7 +102239,7 @@
           }
         ],
         "max": 92,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.73,
@@ -102824,7 +102831,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -103451,7 +103458,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -104076,7 +104083,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -104699,7 +104706,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -105314,7 +105321,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -105927,7 +105934,7 @@
           }
         ],
         "max": 85,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.67,
@@ -106521,7 +106528,7 @@
           }
         ],
         "max": 119,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -107150,7 +107157,7 @@
           }
         ],
         "max": 106,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -107757,7 +107764,7 @@
           }
         ],
         "max": 99,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.77,
@@ -108357,7 +108364,7 @@
           }
         ],
         "max": 100,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.77,
@@ -108953,7 +108960,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -109570,7 +109577,7 @@
           }
         ],
         "max": 104,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.77,
@@ -110169,7 +110176,7 @@
           }
         ],
         "max": 120,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -110782,7 +110789,7 @@
           }
         ],
         "max": 107,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -111371,7 +111378,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -111964,7 +111971,7 @@
           }
         ],
         "max": 109,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -112587,7 +112594,7 @@
           }
         ],
         "max": 96,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.73,
@@ -113165,7 +113172,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -113794,7 +113801,7 @@
           }
         ],
         "max": 86,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.63,
@@ -114361,7 +114368,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.97,
@@ -114994,7 +115001,7 @@
           }
         ],
         "max": 108,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -115609,7 +115616,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -116234,7 +116241,7 @@
           }
         ],
         "max": 113,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -116857,7 +116864,7 @@
           }
         ],
         "max": 109,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -117444,7 +117451,7 @@
           }
         ],
         "max": 104,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.8,
@@ -118044,7 +118051,7 @@
           }
         ],
         "max": 100,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.8,
@@ -118659,7 +118666,7 @@
           }
         ],
         "max": 113,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -119288,7 +119295,7 @@
           }
         ],
         "max": 87,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.63,
@@ -119872,7 +119879,7 @@
           }
         ],
         "max": 106,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.8,
@@ -120479,7 +120486,7 @@
           }
         ],
         "max": 114,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -121112,7 +121119,7 @@
           }
         ],
         "max": 93,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.67,
@@ -121689,7 +121696,7 @@
           }
         ],
         "max": 85,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.63,
@@ -122258,7 +122265,7 @@
           }
         ],
         "max": 94,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.73,
@@ -122857,7 +122864,7 @@
           }
         ],
         "max": 106,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.8,
@@ -123466,7 +123473,7 @@
           }
         ],
         "max": 109,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -124061,7 +124068,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -124668,7 +124675,7 @@
           }
         ],
         "max": 114,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.93,
@@ -125344,7 +125351,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -125973,7 +125980,7 @@
           }
         ],
         "max": 71,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.47,
@@ -126516,7 +126523,7 @@
           }
         ],
         "max": 111,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -127103,7 +127110,7 @@
           }
         ],
         "max": 109,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -127700,7 +127707,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -128297,7 +128304,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -128898,7 +128905,7 @@
           }
         ],
         "max": 104,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.8,
@@ -129480,7 +129487,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -130067,7 +130074,7 @@
           }
         ],
         "max": 117,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -130668,7 +130675,7 @@
           }
         ],
         "max": 99,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.73,
@@ -131238,7 +131245,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -131875,7 +131882,7 @@
           }
         ],
         "max": 122,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 1.0,
@@ -132508,7 +132515,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -133105,7 +133112,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -133702,7 +133709,7 @@
           }
         ],
         "max": 100,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.73,
@@ -134324,7 +134331,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -134917,7 +134924,7 @@
           }
         ],
         "max": 106,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -135584,7 +135591,7 @@
           }
         ],
         "max": 110,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -136172,7 +136179,7 @@
           }
         ],
         "max": 109,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -136788,7 +136795,7 @@
           }
         ],
         "max": 112,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -137401,7 +137408,7 @@
           }
         ],
         "max": 101,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.73,
@@ -137975,7 +137982,7 @@
           }
         ],
         "max": 106,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.87,
@@ -138592,7 +138599,7 @@
           }
         ],
         "max": 96,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.73,
@@ -139422,7 +139429,7 @@
           }
         ],
         "max": 42,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "US scorecard (CAMELS) (us)",
         "bank_inputs": {
           "source": "US scorecard (CAMELS) inputs (us)",
@@ -139682,7 +139689,7 @@
       },
       "forward": {
         "f1": false,
-        "fr": false
+        "fr": null
       },
       "forward_boost": false,
       "verdict": "NOT EXPLOSIVE",
@@ -139881,7 +139888,7 @@
           }
         ],
         "max": 42,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "US scorecard (CAMELS) (us)",
         "bank_inputs": {
           "source": "US scorecard (CAMELS) inputs (us)",
@@ -140451,7 +140458,7 @@
           }
         ],
         "max": 42,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "US scorecard (CAMELS) (us)",
         "bank_inputs": {
           "source": "US scorecard (CAMELS) inputs (us)",
@@ -141327,7 +141334,7 @@
           }
         ],
         "max": 42,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "US scorecard (CAMELS) (us)",
         "bank_inputs": {
           "source": "US scorecard (CAMELS) inputs (us)",
@@ -141754,7 +141761,7 @@
           }
         ],
         "max": 42,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "US scorecard (CAMELS) (us)",
         "bank_inputs": {
           "source": "US scorecard (CAMELS) inputs (us)",
@@ -142117,7 +142124,7 @@
           }
         ],
         "max": 42,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "US scorecard (CAMELS) (us)",
         "bank_inputs": {
           "source": "US scorecard (CAMELS) inputs (us)",
@@ -142646,7 +142653,7 @@
           }
         ],
         "max": 42,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "US scorecard (CAMELS) (us)",
         "bank_inputs": {
           "source": "US scorecard (CAMELS) inputs (us)",
@@ -143781,7 +143788,7 @@
           }
         ],
         "max": 42,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": "US scorecard (CAMELS) (us)",
         "bank_inputs": {
           "source": "US scorecard (CAMELS) inputs (us)",
@@ -147127,7 +147134,7 @@
           }
         ],
         "max": 115,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.9,
@@ -148336,7 +148343,7 @@
           }
         ],
         "max": 107,
-        "ver": "2.23.0",
+        "ver": "2.24.0",
         "bank_coverage": null,
         "bank_inputs": null,
         "coverage": 0.83,
@@ -149015,7 +149022,7 @@
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-06-25T12:04:54.412800Z",
+    "_fetched_utc": "2026-06-25T12:29:39.285721Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
@@ -155135,9 +155142,9 @@
       "sbp_rate": 11.5,
       "mts_total_mn": 28747.6,
       "mts_change_pct": -0.06,
-      "gold_px": 4001.5,
-      "dxy": 101.73,
-      "wti": 69.92,
+      "gold_px": 3997.1,
+      "dxy": 101.69,
+      "wti": 69.67,
       "us_10y": 4.5,
       "recession_score": 0,
       "us_candidates_n": 15,
@@ -156604,7 +156611,7 @@
         "last_date": "2026-06-25",
         "last_price": 28.64,
         "pct_since": 14.1,
-        "still_listed": false,
+        "still_listed": true,
         "entry_tier": "WATCH",
         "entry_bench": 7500.58,
         "signal_date": "2026-06-23",
@@ -159625,7 +159632,7 @@
     },
     "last_run": "2026-06-25"
   },
-  "im3_last_scored_utc": "2026-06-25T12:06:00.801261+00:00",
+  "im3_last_scored_utc": "2026-06-25T12:30:40.441989+00:00",
   "im3_psx_tickers": [
     "ABL",
     "AHL",
