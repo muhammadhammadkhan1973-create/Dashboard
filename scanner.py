@@ -1,5 +1,5 @@
 """
-PSX + US Active Macro Dashboard - Data Scanner v1.114.0
+PSX + US Active Macro Dashboard - Data Scanner v1.115.0
 ======================================================
 Runs daily via GitHub Actions, scans US and PSX universes, runs TCE convergence,
 fetches macro data, writes data.json for the HTML dashboard.
@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.114.0'
+SCAN_VERSION = '1.115.0'
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -538,7 +538,9 @@ def _gics_from_yahoo(sec):
 
 def fetch_zacks_sectors(survivors=None):
     """Scrape per-ticker Zacks rank for the fixed S&P universe + scan survivors (deduped),
-    keep #1/#2, group by GICS sector. Returns {sector:{rank1,rank2,top,total,pct_top,top_tickers}}."""
+    keep #1/#2, group by GICS sector. Returns {sector:{rank1,rank2,top,total,pct_top,top_tickers}}.
+    v1.115.0: uses a persistent session + 0.4s sleep (was 2.5s) to cut 16min → ~3min.
+    """
     # Build universe: fixed list (with known sector) + survivors (sector from their record)
     uni = {}  # ticker -> gics sector
     for sec, tickers in ZACKS_SECTOR_UNIVERSE.items():
@@ -550,18 +552,21 @@ def fetch_zacks_sectors(survivors=None):
             if tk and g and tk not in uni:
                 uni[tk] = g
     tickers = sorted(uni.keys())
-    log(f'=== Zacks sector scrape: {len(tickers)} tickers (~{len(tickers)*2.5/60:.0f} min) ===')
+    est_min = len(tickers) * 0.4 / 60
+    log(f'=== Zacks sector scrape: {len(tickers)} tickers (~{est_min:.0f} min) ===')
     sectors = {s: {'rank1':0,'rank2':0,'top':0,'total':0,'pct_top':0.0,'top_tickers':[]}
                for s in ZACKS_SECTOR_UNIVERSE}
     fails = 0
+    # Persistent session — avoids TCP handshake overhead on every request
+    sess = requests.Session()
+    sess.headers.update({'User-Agent': 'Mozilla/5.0'})
     for i, tk in enumerate(tickers):
         sec = uni[tk]
         if sec not in sectors:
             sectors[sec] = {'rank1':0,'rank2':0,'top':0,'total':0,'pct_top':0.0,'top_tickers':[]}
         try:
-            time.sleep(2.5)
-            d = requests.get(f'https://quote-feed.zacks.com/index?t={tk}',
-                             headers={'User-Agent':'Mozilla/5.0'}, timeout=15).json()
+            time.sleep(0.4)   # was 2.5s — 6× faster, still polite
+            d = sess.get(f'https://quote-feed.zacks.com/index?t={tk}', timeout=15).json()
             rec = d.get(tk, {}) or {}
             rank = rec.get('zacks_rank')
             rank = int(rank) if rank not in (None,'','null') else None
@@ -2348,83 +2353,74 @@ def run_im3_on_explosives(explosive_list, max_stocks=30):
 def fetch_world_lei():
     """
     Returns dict: {
-      'economies': { code: { 'name','lei_level','lei_mom','phase','trend' } },
-      'consolidated': { 'level', 'mom', 'regime' },
+      'economies': { code: { 'name','lei_level','lei_mom','phase','trend6' } },
+      'consolidated': { 'level','mom','regime' },
       'source': str, 'as_of': str
     }
-    Uses OECD SDMX JSON (no key required).  Falls back to last good values.
+    v1.115.0: uses FRED OECD CLI series (runner can already reach FRED).
+    OECD direct endpoint returns 403 on GitHub Actions runner.
+    FRED series IDs: OECDCLIAUS, OECDCLICAN, OECDCLICHN, OECDCLIEA19,
+                     OECDCLIJPN, OECDCLENZO, OECDCLICHE, OECDCLIGBR, OECDCLIUSA
     """
+    FRED_BASE = 'https://api.stlouisfed.org/fred/series/observations'
+    FRED_KEY  = 'annualreviews'   # public demo key — no auth needed for these series
+
+    ECON_FRED = {
+        'AUS': ('Australia',    'OECDCLIAUS'),
+        'CAN': ('Canada',       'OECDCLICAN'),
+        'CHN': ('China',        'OECDCLICHN'),
+        'EA19':('Euro Area',    'OECDCLIEA19'),
+        'JPN': ('Japan',        'OECDCLIJPN'),
+        'NZL': ('New Zealand',  'OECDCLINZL'),
+        'CHE': ('Switzerland',  'OECDCLICHE'),
+        'GBR': ('UK',           'OECDCLIGBR'),
+        'USA': ('USA',          'OECDCLIUSA'),
+    }
+
     import urllib.request, json as _json, datetime as _dt
 
-    ECON_MAP = {
-        'AUS': 'Australia', 'CAN': 'Canada',  'CHN': 'China',
-        'EA19':'Euro Area', 'JPN': 'Japan',   'NZL': 'New Zealand',
-        'CHE': 'Switzerland','GBR':'UK',       'USA': 'USA',
-    }
-    # We pull the OECD CLI series (LOLITOAA = normalised, trend-restored)
-    # subject=LOLITOAA, measure=IX (index), frequency=M
-    codes = '+'.join(ECON_MAP.keys())
-    url = (
-        'https://sdmx.oecd.org/public/rest/data/OECD.SDD.STES,DSD_STES@DF_CLI,4.0/'
-        f'AUS+CAN+CHN+EA19+JPN+NZL+CHE+GBR+USA.M.LI..AA.R/'
-        '?startPeriod=2024-01&format=jsondata&dimensionAtObservation=TIME_PERIOD'
-    )
-    try:
-        req = urllib.request.Request(url, headers={'Accept': 'application/json'})
-        with urllib.request.urlopen(req, timeout=20) as r:
+    def _fred_obs(series_id, limit=14):
+        url = (
+            f'{FRED_BASE}?series_id={series_id}'
+            f'&sort_order=desc&limit={limit}'
+            f'&file_type=json'
+        )
+        req = urllib.request.Request(url,
+            headers={'Accept': 'application/json'})
+        with urllib.request.urlopen(req, timeout=15) as r:
             raw = _json.loads(r.read())
+        obs = [(o['date'], float(o['value']))
+               for o in raw.get('observations', [])
+               if o['value'] not in ('.', '')]
+        obs.sort(key=lambda x: x[0])   # oldest first
+        return obs
 
-        # Navigate SDMX-JSON structure
-        structure = raw['data']['structures'][0]
-        dimensions = {d['id']: d['values'] for d in structure['dimensions']['observation']}
-        attrs = structure.get('attributes', {}).get('observation', [])
-        datasets = raw['data']['dataSets'][0]
+    def _phase(level, trend6, mom):
+        above = level > trend6
+        rising = mom > 0
+        if above and rising:     return 'Expansion'
+        if above and not rising: return 'Slowdown'
+        if not above and rising: return 'Recovery'
+        return 'Contraction'
 
-        # Build series: key → list of (period, value)
-        series_map = {}
-        dim_ids = [d['id'] for d in structure['dimensions']['series']]
-        ref_dim = structure['dimensions']['observation'][0]['id']  # TIME_PERIOD
+    result = {'economies': {}, 'source': 'FRED-OECD-CLI', 'as_of': ''}
+    consolidated_level = 0.0
+    consolidated_prev  = 0.0
+    n_econ = 0
 
-        for s_key, s_data in datasets.get('series', {}).items():
-            parts = s_key.split(':')
-            # find REF_AREA index
-            ref_area_idx = dim_ids.index('REF_AREA') if 'REF_AREA' in dim_ids else 0
-            area_code = structure['dimensions']['series'][ref_area_idx]['values'][int(parts[ref_area_idx])]['id']
-            obs = s_data.get('observations', {})
-            vals = []
-            for t_idx, o in obs.items():
-                period = structure['dimensions']['observation'][0]['values'][int(t_idx)]['id']
-                v = o[0]
-                if v is not None:
-                    vals.append((period, float(v)))
-            if area_code not in series_map:
-                series_map[area_code] = []
-            series_map[area_code].extend(vals)
-
-        def _phase(level, trend6, mom):
-            above = level > trend6
-            rising = mom > 0
-            if above and rising:   return 'Expansion'
-            if above and not rising: return 'Slowdown'
-            if not above and rising: return 'Recovery'
-            return 'Contraction'
-
-        result = {'economies': {}, 'source': 'OECD-CLI', 'as_of': ''}
-        consolidated_level = 0.0
-        consolidated_prev  = 0.0
-        n_econ = 0
-
-        for code, name in ECON_MAP.items():
-            pts = sorted(series_map.get(code, []))
+    for code, (name, fred_id) in ECON_FRED.items():
+        try:
+            pts = _fred_obs(fred_id, limit=14)
             if len(pts) < 7:
+                warn(f'  World LEI: insufficient FRED data for {code}')
                 continue
             levels  = [v for _, v in pts]
             periods = [p for p, _ in pts]
-            cur   = levels[-1]
-            prev  = levels[-2]
-            mom   = round(cur - prev, 3)
-            trend6 = round(sum(levels[-6:]) / 6, 3)
-            phase = _phase(cur, trend6, mom)
+            cur     = levels[-1]
+            prev    = levels[-2]
+            mom     = round(cur - prev, 3)
+            trend6  = round(sum(levels[-6:]) / 6, 3)
+            phase   = _phase(cur, trend6, mom)
             result['economies'][code] = {
                 'name':      name,
                 'lei_level': round(cur, 2),
@@ -2439,22 +2435,21 @@ def fetch_world_lei():
             n_econ += 1
             if not result['as_of'] and periods:
                 result['as_of'] = periods[-1]
+        except Exception as e:
+            warn(f'  World LEI FRED {code} ({fred_id}): {e}')
+            continue
 
-        if n_econ:
-            cons_mom = round(consolidated_level - consolidated_prev, 2)
-            result['consolidated'] = {
-                'level': round(consolidated_level, 2),
-                'prev':  round(consolidated_prev, 2),
-                'mom':   cons_mom,
-                'regime': ('Expansion' if cons_mom > 0 else 'Contraction'),
-            }
-        log(f'World LEI: {n_econ} economies fetched via OECD, '
-            f'consolidated={result.get("consolidated",{}).get("regime","?")}')
-        return result
-
-    except Exception as e:
-        warn(f'World LEI OECD fetch failed: {e}')
-        return {}
+    if n_econ:
+        cons_mom = round(consolidated_level - consolidated_prev, 2)
+        result['consolidated'] = {
+            'level': round(consolidated_level, 2),
+            'prev':  round(consolidated_prev, 2),
+            'mom':   cons_mom,
+            'regime': 'Expansion' if cons_mom > 0 else 'Contraction',
+        }
+    log(f'World LEI: {n_econ} economies via FRED-OECD-CLI, '
+        f'regime={result.get("consolidated", {}).get("regime", "?")}')
+    return result
 
 
 # ── Phase 0-B: US DIFFUSION COMPOSITE ─────────────────────────────────────
