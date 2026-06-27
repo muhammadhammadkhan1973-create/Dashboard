@@ -1,5 +1,5 @@
 """
-PSX + US Active Macro Dashboard - Data Scanner v1.115.0
+PSX + US Active Macro Dashboard - Data Scanner v1.116.0
 ======================================================
 Runs daily via GitHub Actions, scans US and PSX universes, runs TCE convergence,
 fetches macro data, writes data.json for the HTML dashboard.
@@ -55,7 +55,7 @@ import numpy as np
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.115.0'
+SCAN_VERSION = '1.116.0'
 
 YF_DELAY          = 0.35
 US_SMALL_CAP_MIN  = 300_000_000
@@ -2352,48 +2352,36 @@ def run_im3_on_explosives(explosive_list, max_stocks=30):
 # ───────────────────────────────────────────────────────────────────────────
 def fetch_world_lei():
     """
-    Returns dict: {
-      'economies': { code: { 'name','lei_level','lei_mom','phase','trend6' } },
-      'consolidated': { 'level','mom','regime' },
-      'source': str, 'as_of': str
-    }
-    v1.115.0: uses FRED OECD CLI series (runner can already reach FRED).
-    OECD direct endpoint returns 403 on GitHub Actions runner.
-    FRED series IDs: OECDCLIAUS, OECDCLICAN, OECDCLICHN, OECDCLIEA19,
-                     OECDCLIJPN, OECDCLENZO, OECDCLICHE, OECDCLIGBR, OECDCLIUSA
+    Fetches OECD Composite Leading Indicators for 9 economies via fredapi,
+    using the same FRED_KEY + fredapi pattern as fetch_us_macros().
+    v1.116.0 fix: was using raw urllib (no key) → 400. Now uses fredapi like
+    the rest of the scanner.
+    Series: {COUNTRY}LOLITONOSTSAM  (normalised, amplitude-adjusted)
+    Returns: { 'economies': {code: {...}}, 'consolidated': {...},
+               'source': str, 'as_of': str }
     """
-    FRED_BASE = 'https://api.stlouisfed.org/fred/series/observations'
-    FRED_KEY  = 'annualreviews'   # public demo key — no auth needed for these series
-
     ECON_FRED = {
-        'AUS': ('Australia',    'OECDCLIAUS'),
-        'CAN': ('Canada',       'OECDCLICAN'),
-        'CHN': ('China',        'OECDCLICHN'),
-        'EA19':('Euro Area',    'OECDCLIEA19'),
-        'JPN': ('Japan',        'OECDCLIJPN'),
-        'NZL': ('New Zealand',  'OECDCLINZL'),
-        'CHE': ('Switzerland',  'OECDCLICHE'),
-        'GBR': ('UK',           'OECDCLIGBR'),
-        'USA': ('USA',          'OECDCLIUSA'),
+        'AUS': ('Australia',   'AUSLOLITONOSTSAM'),
+        'CAN': ('Canada',      'CANLOLITONOSTSAM'),
+        'CHN': ('China',       'CHNLOLITONOSTSAM'),
+        'EA19':('Euro Area',   'EA19LOLITONOSTSAM'),
+        'JPN': ('Japan',       'JPNLOLITONOSTSAM'),
+        'NZL': ('New Zealand', 'NZLLOLITONOSTSAM'),
+        'CHE': ('Switzerland', 'CHELOLITONOSTSAM'),
+        'GBR': ('UK',          'GBRLOLITONOSTSAM'),
+        'USA': ('USA',         'USALOLITONOSTSAM'),
     }
 
-    import urllib.request, json as _json, datetime as _dt
+    if not FRED_KEY:
+        warn('World LEI: FRED_API_KEY not set in env — skipping')
+        return {}
 
-    def _fred_obs(series_id, limit=14):
-        url = (
-            f'{FRED_BASE}?series_id={series_id}'
-            f'&sort_order=desc&limit={limit}'
-            f'&file_type=json'
-        )
-        req = urllib.request.Request(url,
-            headers={'Accept': 'application/json'})
-        with urllib.request.urlopen(req, timeout=15) as r:
-            raw = _json.loads(r.read())
-        obs = [(o['date'], float(o['value']))
-               for o in raw.get('observations', [])
-               if o['value'] not in ('.', '')]
-        obs.sort(key=lambda x: x[0])   # oldest first
-        return obs
+    try:
+        from fredapi import Fred
+        fred = Fred(api_key=FRED_KEY)
+    except ImportError:
+        warn('World LEI: fredapi not installed — skipping')
+        return {}
 
     def _phase(level, trend6, mom):
         above = level > trend6
@@ -2408,36 +2396,52 @@ def fetch_world_lei():
     consolidated_prev  = 0.0
     n_econ = 0
 
-    for code, (name, fred_id) in ECON_FRED.items():
-        try:
-            pts = _fred_obs(fred_id, limit=14)
-            if len(pts) < 7:
-                warn(f'  World LEI: insufficient FRED data for {code}')
-                continue
-            levels  = [v for _, v in pts]
-            periods = [p for p, _ in pts]
-            cur     = levels[-1]
-            prev    = levels[-2]
-            mom     = round(cur - prev, 3)
-            trend6  = round(sum(levels[-6:]) / 6, 3)
-            phase   = _phase(cur, trend6, mom)
-            result['economies'][code] = {
-                'name':      name,
-                'lei_level': round(cur, 2),
-                'lei_prev':  round(prev, 2),
-                'lei_mom':   mom,
-                'trend6':    trend6,
-                'phase':     phase,
-                'as_of':     periods[-1],
-            }
-            consolidated_level += cur
-            consolidated_prev  += prev
-            n_econ += 1
-            if not result['as_of'] and periods:
-                result['as_of'] = periods[-1]
-        except Exception as e:
-            warn(f'  World LEI FRED {code} ({fred_id}): {e}')
+    for code, (name, sid) in ECON_FRED.items():
+        last = None
+        for attempt, backoff in enumerate((0, 1.5, 4.0)):
+            if backoff:
+                time.sleep(backoff)
+            try:
+                series = fred.get_series(sid).dropna()
+                break
+            except Exception as e:
+                last = e
+                if 'Too Many' in str(e) or '429' in str(e):
+                    continue
+                warn(f'  World LEI FRED {code} ({sid}): {e}')
+                series = None
+                break
+        else:
+            warn(f'  World LEI FRED {code} ({sid}): {last}')
+            series = None
+
+        if series is None or len(series) < 7:
+            warn(f'  World LEI: insufficient data for {code}')
             continue
+
+        levels  = list(series.values[-14:])   # last 14 months
+        periods = [str(d)[:10] for d in series.index[-14:]]
+        cur     = levels[-1]
+        prev    = levels[-2]
+        mom     = round(cur - prev, 3)
+        trend6  = round(sum(levels[-6:]) / 6, 3)
+        phase   = _phase(cur, trend6, mom)
+
+        result['economies'][code] = {
+            'name':      name,
+            'lei_level': round(cur, 2),
+            'lei_prev':  round(prev, 2),
+            'lei_mom':   mom,
+            'trend6':    trend6,
+            'phase':     phase,
+            'as_of':     periods[-1],
+        }
+        consolidated_level += cur
+        consolidated_prev  += prev
+        n_econ += 1
+        if not result['as_of']:
+            result['as_of'] = periods[-1]
+        time.sleep(0.5)   # gentle FRED throttle
 
     if n_econ:
         cons_mom = round(consolidated_level - consolidated_prev, 2)
@@ -2561,7 +2565,7 @@ def fetch_country_rs():
 
     COUNTRIES = [
         # (code, name, index_ticker, fx_ticker(USD per unit), signal_door)
-        ('AUS', 'Australia',    '^AXJO',   'AUDUSD=X',  'Country LEI'),
+        ('AUS', 'Australia',    '^AXJO',    'AUDUSD=X',  'Country'),      # currency-driven; not in LEI set
         ('CAN', 'Canada',       '^GSPTSE',  'CADUSD=X',  'Country LEI'),
         ('CHN', 'China',        '000001.SS','CNYUSD=X',  'Country'),
         ('CHE', 'Switzerland',  '^SSMI',    'CHFUSD=X',  'Country'),
