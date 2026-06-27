@@ -546,7 +546,7 @@
     <div id="prof_detail" style="margin-top:14px;"></div>
   </div>
 
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.105b</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.106a</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -579,7 +579,7 @@
 
     <!-- Sector Booming -->
     <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#B45309;text-transform:uppercase;margin-bottom:10px;">US Sector Composite Rankings</div>
-    <p style="font-size:12px;color:#64748B;margin:-4px 0 12px;line-height:1.4;">0–100 score from six signals: price momentum 25% · 200-DMA breadth 20% · forward targets + Zacks 20% · regime fit 15% · RS vs market 10% · COT 10%. COT weight only where a real futures contract exists.</p>
+    <p style="font-size:12px;color:#64748B;margin:-4px 0 12px;line-height:1.4;">0–100 score from six signals: price momentum 25% · 200-DMA breadth 20% · forward targets + Zacks 20% · regime fit 15% · RS vs market 10% · COT 10%. COT mapped to 8 real contracts (Energy/Utilities/Staples/Materials/IT/CommSvcs/Financials/Industrials) — 3 sectors correctly show n/a (no tradeable proxy).</p>
     <div id="we_sector_booming_table" style="margin-bottom:8px;"></div>
 
   </div>
@@ -5182,7 +5182,7 @@ function _renderWeSectorBooming(){
       </div>
     </div>`;
   });
-  html+='</div><p style="font-size:11px;color:#94A3B8;margin:10px 0 0;line-height:1.4;">Booming ≥80 · Favoured ≥62 · Neutral ≥45 · Lagging ≥30 · Avoid &lt;30. COT weight applied only where a real futures contract exists (Energy/Utilities/Staples/Materials/Financials/IT).</p>';
+  html+='</div><p style="font-size:11px;color:#94A3B8;margin:10px 0 0;line-height:1.4;">Booming ≥80 · Favoured ≥62 · Neutral ≥45 · Lagging ≥30 · Avoid &lt;30. COT weight applied only where a real futures contract exists: Energy (Crude) · Utilities (NatGas) · Staples (Agriculture) · Materials (gold+copper net) · IT (NASDAQ) · Comm Services (NASDAQ) · Financials (10yr Treasury) · Industrials (DJIA). Health Care / Consumer Discretionary / Real Estate have no tradeable proxy — correctly excluded.</p>';
   el.innerHTML=html;
 }
 
