@@ -546,18 +546,18 @@
     <div id="prof_detail" style="margin-top:14px;"></div>
   </div>
 
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.108</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.110</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
 
     <!-- Hero header bar -->
-    <div style="background:linear-gradient(135deg,#0F172A 0%,#1E3A5F 60%,#0C4A6E 100%);border-radius:14px;padding:24px 28px 20px;margin-bottom:24px;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:-40px;right:-30px;width:180px;height:180px;background:rgba(56,189,248,0.08);border-radius:50%;"></div>
-      <div style="position:absolute;bottom:-60px;left:40%;width:240px;height:240px;background:rgba(139,92,246,0.06);border-radius:50%;"></div>
-      <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#38BDF8;text-transform:uppercase;margin-bottom:8px;">Live macro intelligence</div>
-      <h2 style="font-size:26px;font-weight:800;color:#F0F9FF;margin:0 0 6px;letter-spacing:-0.5px;font-family:var(--font-head);">World Economy</h2>
-      <p style="font-size:13px;color:#94A3B8;margin:0;max-width:640px;line-height:1.5;">Four live scanner feeds: US economic breadth &middot; OECD leading indicators &middot; USD-adjusted equity momentum by country &middot; US sector composite rankings. Freeze-safe, display-only.</p>
+    <div style="background:linear-gradient(135deg,#EFF6FF 0%,#F0FDF4 50%,#FEFCE8 100%);border:1px solid #E2E8F0;border-radius:14px;padding:22px 28px 18px;margin-bottom:24px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-30px;right:-20px;width:160px;height:160px;background:rgba(16,185,129,0.07);border-radius:50%;"></div>
+      <div style="position:absolute;bottom:-50px;left:45%;width:200px;height:200px;background:rgba(59,130,246,0.05);border-radius:50%;"></div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#0284C7;text-transform:uppercase;margin-bottom:6px;">Live macro intelligence</div>
+      <h2 style="font-size:24px;font-weight:800;color:#0F172A;margin:0 0 5px;letter-spacing:-0.5px;font-family:var(--font-head);">World Economy</h2>
+      <p style="font-size:12px;color:#64748B;margin:0;max-width:640px;line-height:1.5;">Four live scanner feeds: US economic breadth &middot; OECD leading indicators &middot; USD-adjusted equity momentum by country &middot; US sector composite rankings. Freeze-safe, display-only.</p>
       <div id="we_hero_strip" style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;"></div>
     </div>
 
@@ -5008,22 +5008,22 @@ function _renderWeHeroStrip(){
   if(d){
     const phase=d.phase||d.regime||'?';
     const col=phase==='Expansion'?'#34D399':'#F87171';
-    chips.push(`<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 14px;"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">US Diffusion</div><div style="font-size:16px;font-weight:800;color:${col};">${phase}</div></div>`);
+    chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">US Diffusion</div><div style="font-size:16px;font-weight:800;color:${col};">${phase}</div></div>`);
   }
   if(crs&&crs.length>0){
     const top=crs[0];
-    chips.push(`<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 14px;"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">Top Market (6M USD)</div><div style="font-size:16px;font-weight:800;color:#34D399;">${top.country} ${top.ret_6m!=null?(top.ret_6m>0?'+':'')+top.ret_6m.toFixed(1)+'%':''}</div></div>`);
+    chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">Top Market (6M USD)</div><div style="font-size:16px;font-weight:800;color:#34D399;">${top.country} ${top.ret_6m!=null?(top.ret_6m>0?'+':'')+top.ret_6m.toFixed(1)+'%':''}</div></div>`);
   }
   if(sb&&sb.length>0){
     const top=sb[0];
     const bc={'Booming':'#34D399','Favoured':'#38BDF8','Neutral':'#FCD34D','Lagging':'#F97316','Avoid':'#F87171'};
-    chips.push(`<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 14px;"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">Top US Sector</div><div style="font-size:16px;font-weight:800;color:${bc[top.band]||'#94A3B8'};">${top.sector.replace('Information Technology','IT').replace('Consumer ','')}</div></div>`);
+    chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">Top US Sector</div><div style="font-size:16px;font-weight:800;color:${bc[top.band]||'#94A3B8'};">${top.sector.replace('Information Technology','IT').replace('Consumer ','')}</div></div>`);
   }
   if(lei){
     const expCount=Object.values(lei).filter(v=>v.signal==='expansion').length;
     const total=Object.keys(lei).length;
-    chips.push(`<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 14px;"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">LEI Expanding</div><div style="font-size:16px;font-weight:800;color:#A78BFA;">${expCount}/${total} countries</div></div>`);
-  if(crs&&crs.length>0){const abv200=crs.filter(r=>r.above_200dma===true).length;const tot200=crs.filter(r=>r.above_200dma!=null).length;if(tot200>0){const col200=abv200/tot200>=0.6?'#34D399':abv200/tot200>=0.4?'#FCD34D':'#F87171';chips.push(`<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 14px;"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">Above 200-DMA</div><div style="font-size:16px;font-weight:800;color:${col200};">${abv200}/${tot200} markets</div></div>`);}}
+    chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">LEI Expanding</div><div style="font-size:16px;font-weight:800;color:#A78BFA;">${expCount}/${total} countries</div></div>`);
+  if(crs&&crs.length>0){const abv200=crs.filter(r=>r.above_200dma===true).length;const tot200=crs.filter(r=>r.above_200dma!=null).length;if(tot200>0){const col200=abv200/tot200>=0.6?'#34D399':abv200/tot200>=0.4?'#FCD34D':'#F87171';chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">Above 200-DMA</div><div style="font-size:16px;font-weight:800;color:${col200};">${abv200}/${tot200} markets</div></div>`);}}
   }
   el.innerHTML = chips.join('');
 }
@@ -5116,12 +5116,12 @@ function _renderWeCountryRs(){
       <div style="display:flex;flex-direction:column;gap:3px;min-width:110px;">
         ${r.fx_drag_6m!=null?`<div style="font-size:10px;"><span style="color:#94A3B8;">FX </span><span style="font-weight:700;color:${r.fx_drag_6m>=0?'#059669':'#DC2626'}">${r.fx_drag_6m>=0?'+':''}${r.fx_drag_6m.toFixed(1)}%</span><span style="color:#94A3B8;"> drag 6M</span></div>`:''}
         ${r.local_ret_6m!=null?`<div style="font-size:10px;"><span style="color:#94A3B8;">Local </span><span style="font-weight:700;color:${numCol(r.local_ret_6m)}">${fmt(r.local_ret_6m)}</span></div>`:''}
-        ${r.above_200dma!=null?`<div style="font-size:10px;"><span style="color:#94A3B8;">200d </span><span style="font-weight:700;color:${r.above_200dma?'#059669':'#DC2626'}">${r.above_200dma?'▲ above':'▼ below'}</span></div>`:''}
+        ${r.above_200dma!=null?`<div style="font-size:10px;"><span style="color:#94A3B8;">200d </span><span style="font-weight:700;color:${r.above_200dma?'#059669':'#DC2626'}">${r.above_200dma?'▲ above':'▼ below'}</span>${r.ma_trend&&r.ma_trend!=='unknown'&&r.ma_trend!=='partial'?` <span style="color:#94A3B8;font-size:9px;">(${r.ma_trend})</span>`:''}</div>`:''}
       </div>
       <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;${sigStyle}">${r.signal||'—'}</span>
     </div>`;
   });
-  html+='</div><p style="font-size:11px;color:#94A3B8;margin:10px 0 0;line-height:1.4;">Overweight >+15% 6M · Neutral −5% to +5% · Avoid <−10% · Hedge for the band between. Sorted by 6M USD return. FX drag = USD return minus local currency return (negative = currency hurt you). 200d = index above/below its 200-day average.</p>';
+  html+='</div><p style="font-size:11px;color:#94A3B8;margin:10px 0 0;line-height:1.4;">Signal: Overweight >+15% 6M (add) · Hedge +5%↔+15% or -10%↔-5% (hold/watch) · Neutral -5%↔+5% (balanced) · Avoid <-10% (reduce). Sorted by 6M USD return. FX drag = USD return minus local return. 200d = above/below 200-day average.</p>';
   el.innerHTML=html;
 }
 
@@ -5130,7 +5130,12 @@ function _renderWeLei(){
   if(!el) return;
   const lei=LIVE&&LIVE.world_lei;
   if(!lei||Object.keys(lei).length===0){ el.innerHTML='<p style="color:#64748B;font-size:13px;">No LEI data.</p>'; return; }
-  const entries=Object.entries(lei).sort((a,b)=>(b[1].lei||0)-(a[1].lei||0));
+  const entries=Object.entries(lei).sort((a,b)=>{
+    const aExp=a[1].signal==='expansion'?1:0;
+    const bExp=b[1].signal==='expansion'?1:0;
+    if(bExp!==aExp) return bExp-aExp;  // expansion first
+    return (b[1].lei||0)-(a[1].lei||0);  // then by LEI value desc
+  });
   let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">';
   entries.forEach(([country,v])=>{
     const isExp=v.signal==='expansion';
@@ -5203,6 +5208,8 @@ function _renderWeSectorBooming(){
         <div style="text-align:center;"><div style="font-size:9px;color:#94A3B8;font-weight:700;letter-spacing:1px;">ZACKS</div><div style="font-size:13px;font-weight:700;color:#0F172A;">${zacks}</div></div>
         <div style="text-align:center;"><div style="font-size:9px;color:#94A3B8;font-weight:700;letter-spacing:1px;">BREADTH</div><div style="font-size:13px;font-weight:700;color:#0F172A;">${breadth}</div></div>
         <div style="text-align:center;"><div style="font-size:9px;color:#94A3B8;font-weight:700;letter-spacing:1px;">COT</div><div style="font-size:13px;font-weight:700;color:${sig.cot!=null?'#0F172A':'#CBD5E1'};">${cotStr}</div></div>
+        ${sig.rel_strength!=null?`<div style="text-align:center;"><div style="font-size:9px;color:#94A3B8;font-weight:700;letter-spacing:1px;">RS</div><div style="font-size:13px;font-weight:700;color:${sig.rel_strength>=50?'#059669':'#DC2626'};">${sig.rel_strength.toFixed(0)}</div></div>`:`<div style="text-align:center;"><div style="font-size:9px;color:#94A3B8;font-weight:700;letter-spacing:1px;">RS</div><div style="font-size:13px;font-weight:700;color:#CBD5E1;">—</div></div>`}
+        ${sig.regime_fit!=null?`<div style="text-align:center;"><div style="font-size:9px;color:#94A3B8;font-weight:700;letter-spacing:1px;">REGIME</div><div style="font-size:13px;font-weight:700;color:${sig.regime_fit>=50?'#059669':'#94A3B8'};">${sig.regime_fit.toFixed(0)}</div></div>`:''}
       </div>
     </div>`;
   });
