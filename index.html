@@ -546,7 +546,7 @@
     <div id="prof_detail" style="margin-top:14px;"></div>
   </div>
 
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.113</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.114</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5275,8 +5275,17 @@ function _renderWeEtfRecs(){
   const recs=(LIVE&&LIVE.etf_recommendations)||[];
   if(!recs.length){el.innerHTML='';return;}
   const doorLabel=function(d){if(d.indexOf('+')>=0)return 'Double-confirmed';return d==='country'?'Country door':d==='sector'?'Sector door':'Global theme door';};
-  const doorIcon=function(d){if(d.indexOf('+')>=0)return '✅';return d==='country'?'🌍':d==='sector'?'🏭':'🔭';};
-  el.innerHTML='<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#64748B;margin-bottom:8px;">BUYABLE — UCITS ETFs (IE/LU domiciled, no US estate tax)</div>'+
+  const doorIcon=function(d){if(d.indexOf('+')>=0)return '\u2705';return d==='country'?'\U0001f30d':d==='sector'?'\U0001f3ed':'\U0001f52d';};
+  const fmtPrice=function(f){
+    if(f.live_price==null||f.live_sym==null) return '<span style="color:#CBD5E1;font-size:11px;">price \u2014</span>';
+    var ccy=f.live_ccy||'';
+    var sym=f.live_sym||'';
+    var px=typeof f.live_price==='number'?f.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):f.live_price;
+    var ccySymbol=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':ccy==='GBX'?'p':'';
+    return '<span style="font-size:12px;font-weight:700;color:#0F172A;">'+ccySymbol+px+' '+ccy+'</span>'+
+           '<span style="font-size:10px;color:#94A3B8;font-family:monospace;margin-left:4px;">'+sym+'</span>';
+  };
+  el.innerHTML='<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#64748B;margin-bottom:8px;">BUYABLE \u2014 UCITS ETFs (IE/LU domiciled, no US estate tax)</div>'+
     '<div style="display:flex;flex-direction:column;gap:8px;">'+
     recs.map(function(r){
       var f=r.fund;
@@ -5284,15 +5293,17 @@ function _renderWeEtfRecs(){
       return '<div style="background:#FFFFFF;border:1px solid '+(cc>1?'#059669':'#E2E8F0')+';border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">'+
         '<div style="font-size:18px;">'+doorIcon(r.door)+'</div>'+
         '<div style="flex:1;min-width:0;">'+
-        '<div style="font-size:10px;color:'+(cc>1?'#059669':'#94A3B8')+';font-weight:700;letter-spacing:0.5px;">'+doorLabel(r.door)+(cc>1?' ('+cc+' signals)':'')+' · '+r.signal+'</div>'+
+        '<div style="font-size:10px;color:'+(cc>1?'#059669':'#94A3B8')+';font-weight:700;letter-spacing:0.5px;">'+doorLabel(r.door)+(cc>1?' ('+cc+' signals)':'')+' \u00b7 '+r.signal+'</div>'+
         '<div style="font-size:13px;font-weight:700;color:#0F172A;">'+f.name+'</div>'+
-        '<div style="font-size:11px;color:#64748B;">'+r.reason+(f._fallback_from?' · via '+f._resolved_via:'')+'</div></div>'+
+        '<div style="font-size:11px;color:#64748B;">'+r.reason+(f._fallback_from?' \u00b7 via '+f._resolved_via:'')+'</div>'+
+        '<div style="margin-top:4px;">'+fmtPrice(f)+'</div>'+
+        '</div>'+
         '<div style="text-align:right;flex-shrink:0;">'+
-        '<div style="font-size:11px;font-weight:700;color:#0F172A;">TER '+(f.ter!=null?f.ter+'%':'—')+'</div>'+
+        '<div style="font-size:11px;font-weight:700;color:#0F172A;">TER '+(f.ter!=null?f.ter+'%':'\u2014')+'</div>'+
         '<div style="font-size:10px;color:#94A3B8;font-family:monospace;">'+f.isin+'</div></div>'+
         '</div>';
     }).join('')+'</div>'+
-    '<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;line-height:1.4;">Resolved from the largest-by-size UCITS fund in the matching category (fund size ≥10m EUR quality floor, 134 funds / 28 categories). Not investment advice — verify current holdings and suitability before any trade.</p>';
+    '<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;line-height:1.4;">Resolved from the largest-by-size UCITS fund in the matching category (fund size \u226510m EUR quality floor, 134 funds / 28 categories). Live price via TradingView scanner ISIN-filter (uk/scan USD \u00b7 germany/scan EUR). Not investment advice \u2014 verify current holdings and suitability before any trade.</p>';
 }
 
 function _renderWeSectorBooming(){
@@ -5453,17 +5464,28 @@ function renderTceEtfPicks(){
   if(!el) return;
   const recs=(LIVE&&LIVE.etf_recommendations)||[];
   if(!recs.length){el.innerHTML='';return;}
-  const doorIcon=function(d){return d==='country'?'🌍':d==='sector'?'🏭':'🔭';};
+  const doorIcon=function(d){return d==='country'?'\U0001f30d':d==='sector'?'\U0001f3ed':'\U0001f52d';};
+  const fmtPrice=function(f){
+    if(f.live_price==null||f.live_sym==null) return '<div style="font-size:10px;color:#CBD5E1;">price \u2014</div>';
+    var ccy=f.live_ccy||'';
+    var sym=f.live_sym||'';
+    var px=typeof f.live_price==='number'?f.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):f.live_price;
+    var ccySymbol=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':ccy==='GBX'?'p':'';
+    return '<div style="font-size:12px;font-weight:700;color:#0F172A;">'+ccySymbol+px+' '+ccy+'</div>'+
+           '<div style="font-size:9px;color:#94A3B8;font-family:monospace;">'+sym+'</div>';
+  };
   el.innerHTML='<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 16px;">'+
-    '<div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1px;margin-bottom:8px;">WORLD ETF ENGINE — TOP BUYABLE PICKS (UAE/IBKR, UCITS)</div>'+
+    '<div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1px;margin-bottom:8px;">WORLD ETF ENGINE \u2014 TOP BUYABLE PICKS (UAE/IBKR, UCITS)</div>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap;">'+
     recs.map(function(r){var f=r.fund;
       return '<div style="background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:8px 12px;flex:1;min-width:200px;">'+
       '<div style="font-size:10px;color:#94A3B8;">'+doorIcon(r.door)+' '+r.signal+'</div>'+
       '<div style="font-size:12px;font-weight:700;color:#0F172A;">'+f.name+'</div>'+
-      '<div style="font-size:10px;color:#64748B;font-family:monospace;">'+f.isin+' · TER '+(f.ter!=null?f.ter+'%':'—')+'</div></div>';
+      '<div style="font-size:10px;color:#64748B;font-family:monospace;">'+f.isin+' \u00b7 TER '+(f.ter!=null?f.ter+'%':'\u2014')+'</div>'+
+      '<div style="margin-top:5px;">'+fmtPrice(f)+'</div>'+
+      '</div>';
     }).join('')+'</div>'+
-    '<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;">See Tab 15 World Economy → Global Sector Theme for the signal that fired each pick.</p></div>';
+    '<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;">See Tab 15 World Economy \u2192 Global Sector Theme for the signal that fired each pick. Live price via TradingView scanner.</p></div>';
 }
 
 function renderInstConsensus(){
