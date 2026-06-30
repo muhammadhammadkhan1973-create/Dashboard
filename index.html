@@ -361,7 +361,7 @@
   <div id="zone" class="panel"><div id="zone_global_breadth"></div><h2 class="section-title">IM3 Allocation Zone</h2><div id="zone_banner" class="alert-banner red"><h3>CURRENT ZONE: RED — 20% Stocks / 60% Bonds / 20% Cash</h3><p><b>SBP Rate:</b> 11.50% | <b>Mean:</b> 11.01% | <b>Direction:</b> Increasing</p></div><h3 class="subsection-title">Zone Quadrant</h3><div id="zone_quadrant_box"></div><h3 class="subsection-title">SBP Rate Path</h3><div id="zone_rate_path"></div><h3 class="subsection-title">KSE-100 Monthly</h3><div id="zone_kse_table"></div><h3 class="subsection-title">Asset Allocation by Zone</h3><div id="zone_alloc_table"></div></div>
   <div id="mbpsx" class="panel"><h2 class="section-title">PSX Multibagger Hunter</h2><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>What this tab is for:</b> finding Pakistani companies that could multiply your money many times over several years &mdash; the smaller, fast-growing names before they become household stocks. Read it top to bottom: the funnel narrows the whole market, then you grade a company, see the verdict, project the upside, and review the live and SCS-flagged candidates.</div><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>The funnel.</b> How the entire Pakistani market gets narrowed step by step down to a handful of names worth a serious look. Each row strips out what doesn&rsquo;t fit.</div><div id="psx_mb_funnel"></div><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>Where they cluster.</b> Which sectors today&rsquo;s candidates come from. Multibaggers tend to bunch up in a few areas at a time, so this shows where to focus.</div><div id="psx_mb_sector_table"></div><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>Grade one company.</b> Type a company&rsquo;s numbers here and the tool grades how &lsquo;multibagger-like&rsquo; it is. Strong growth, high returns on capital, low debt, profit backed by real cash, committed owners, room to keep reinvesting, and a cheap entry price all score well.</div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="psx_mb_rev" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="psx_mb_eps" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="psx_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROCE 5-yr avg (%)</label><input type="number" id="psx_mb_roce" value="24" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="psx_mb_de" value="0.3" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="psx_mb_ocf" value="1.1" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Sponsor %</label><input type="number" id="psx_mb_sponsor" value="45" step="1" oninput="recalc()"></div><div class="input-group"><label>Market Cap (PKR bn)</label><input type="number" id="psx_mb_mcap" value="8" step="0.5" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="psx_mb_ig" value="72" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="psx_mb_pe" value="6" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="psx_mb_wacc" value="20" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="psx_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3" selected>5-10x</option><option value="4">10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="psx_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3" selected>Cost/Switching</option><option value="4">Brand/Network</option><option value="5">Regulatory</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="psx_mb_reinv" onchange="recalc()"><option value="1">Returning all cash</option><option value="2">Limited</option><option value="3" selected>Moderate</option><option value="4">Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner-Operator</label><select id="psx_mb_owner" onchange="recalc()"><option value="1">Diluted</option><option value="2">Holding</option><option value="3" selected>Stable &gt;5yr</option><option value="4">Founder 10yr+</option><option value="5">Founder + rising</option></select></div></div><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>The grade.</b> The score your inputs produced, and what it means.</div><div id="psx_mb_score_box"></div><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>Buy, watch, or pass.</b> Combines the multibagger score with the quality (IG) score into one suggested action.</div><div id="psx_mb_decision_matrix"></div><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>How the money could grow.</b> A rough projection of what an investment could compound to at the growth rate you entered. An illustration, not a promise.</div><div id="psx_mb_compound_box"></div><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>Size tiers.</b> Which market-cap band a name sits in. The sweet spot for multibaggers is small-but-not-tiny; the biggest names belong on the other tracks.</div><div id="psx_mb_tiers_table"></div><h3 class="subsection-title">Standard Capital Securities (SCS) Suggested Names &mdash; review to add</h3><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;">The dashboard reads Standard Capital Securities&rsquo; (SCS) weekly Valuation Matrix and finds names that show up in at least two of its four quality screens (highest return on equity, highest return on assets, highest EBITDA margin, highest dividend yield). After filtering out the ones that are too big, too illiquid, or banks, it shows the rest as suggestions &mdash; &ldquo;SCS flags these, you decide.&rdquo; It will never add them to your watchlist on its own. You stay in control of what actually enters the screen. Nothing about these names &mdash; their P/E, dividend yield, ROE, and so on &mdash; ever changes a score or filters anything.</div><div id="psx_mb_scs_suggest"></div><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>Names on the radar now.</b> Broker-curated PSX candidates with a short thesis. Verify each one yourself before acting &mdash; this is a starting list, not advice.</div><div id="psx_mb_live_candidates"></div><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>Past winners.</b> Real PSX stocks that already multiplied, and why &mdash; pattern templates to help you recognise the next one.</div><div id="psx_mb_history_table"></div><div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 12px 0;border-left:3px solid #2563eb;padding-left:10px;"><b>Multibagger vs compounder.</b> How this hunt differs from buying steady quality names: different goals, different rules.</div><div id="psx_mb_comparison_table"></div></div>
   <div id="mbus" class="panel"><h2 class="section-title">US Multibagger Hunter</h2><div id="us_mb_funnel"></div><div id="us_mb_sector_table"></div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="us_mb_rev" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="us_mb_eps" value="30" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="us_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROIC 5-yr avg (%)</label><input type="number" id="us_mb_roic" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="us_mb_de" value="0.2" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="us_mb_ocf" value="1.15" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Insider %</label><input type="number" id="us_mb_insider" value="15" step="0.5" oninput="recalc()"></div><div class="input-group"><label>Market Cap (USD M)</label><input type="number" id="us_mb_mcap" value="500" step="50" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="us_mb_ig" value="75" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="us_mb_pe" value="35" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="us_mb_wacc" value="10" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="us_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3">5-10x</option><option value="4" selected>10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="us_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3">Cost/Switching</option><option value="4" selected>Brand/Network</option><option value="5">Regulatory/Platform</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="us_mb_reinv" onchange="recalc()"><option value="1">Returning cash</option><option value="2">Limited</option><option value="3">Moderate</option><option value="4" selected>Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner Alignment</label><select id="us_mb_owner" onchange="recalc()"><option value="1">Founder gone</option><option value="2">Stable CEO</option><option value="3">Founder active</option><option value="4" selected>Founder 10yr+</option><option value="5">Founder + rising</option></select></div><div class="input-group"><label>Zacks Rank</label><select id="us_mb_zacks" onchange="recalc()"><option value="1">1 — Strong Buy</option><option value="2" selected>2 — Buy</option><option value="3">3 — Hold</option><option value="4">4 — Sell</option><option value="5">5 — Strong Sell</option></select></div></div><div id="us_mb_score_box"></div><div id="us_mb_decision_matrix"></div><div id="us_mb_compound_box"></div><div id="us_mb_tiers_table"></div><div id="us_mb_live_candidates"></div><div id="us_mb_history_table"></div></div>
-  <div id="tce" class="panel"><h2 class="panel-title">Trend Convergence Engine (TCE) — Live Scan</h2><div id="inst_consensus_box" style="margin:0 0 18px 0;"></div><div class="card" id="tceMacroBanner" style="border-left:4px solid var(--blue);"><p style="margin:0; font-size:13px; color:var(--grey-d);"><strong>9-stream convergence model.</strong> Attention (news · sponsor · insider · volume) + <b>conviction</b> (momentum · margin inflection · short-interest capital · EPS-revision · revenue-revision), with an <b>RS guardrail</b> vs SPY. HIGH needs real conviction (≥4 conviction streams) AND the guardrail to hold — pure news/volume can no longer reach HIGH. WATCH = ≥3 conviction or ≥5 total.</p><div id="tce_regime_gate" style="margin-top:8px;font-size:12px;color:var(--grey-d);"></div></div><div class="card"><h3>US TCE Results</h3><div id="tce_us_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>PSX TCE Results</h3><div id="tce_psx_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>TCE Forward-Validation — Predictions Ledger</h3><div id="tce_predictions"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>Interim Read &mdash; Weekly &amp; Monthly Trend</h3><div id="tce_interim"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div></div>
+  <div id="tce" class="panel"><h2 class="panel-title">Trend Convergence Engine (TCE) — Live Scan</h2><div id="inst_consensus_box" style="margin:0 0 18px 0;"></div><div id="tce_etf_picks" style="margin:0 0 18px 0;"></div><div class="card" id="tceMacroBanner" style="border-left:4px solid var(--blue);"><p style="margin:0; font-size:13px; color:var(--grey-d);"><strong>9-stream convergence model.</strong> Attention (news · sponsor · insider · volume) + <b>conviction</b> (momentum · margin inflection · short-interest capital · EPS-revision · revenue-revision), with an <b>RS guardrail</b> vs SPY. HIGH needs real conviction (≥4 conviction streams) AND the guardrail to hold — pure news/volume can no longer reach HIGH. WATCH = ≥3 conviction or ≥5 total.</p><div id="tce_regime_gate" style="margin-top:8px;font-size:12px;color:var(--grey-d);"></div></div><div class="card"><h3>US TCE Results</h3><div id="tce_us_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>PSX TCE Results</h3><div id="tce_psx_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>TCE Forward-Validation — Predictions Ledger</h3><div id="tce_predictions"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>Interim Read &mdash; Weekly &amp; Monthly Trend</h3><div id="tce_interim"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div></div>
   <div id="explosive" class="panel">
     <h2 class="section-title">Explosive Stocks (US + PSX) — Live Scanner Feed</h2>
     <details open style="margin:6px 0 16px;border:1px solid #A7F3D0;border-radius:10px;background:#F0FDF4;">
@@ -546,7 +546,7 @@
     <div id="prof_detail" style="margin-top:14px;"></div>
   </div>
 
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.111</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.112</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -581,6 +581,14 @@
     <div style="margin-bottom:28px;">
       <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#0284C7;text-transform:uppercase;margin-bottom:12px;">Dollar &amp; Currency</div>
       <div id="we_currency_layer" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;"></div>
+    </div>
+    <div style="border-top:1px solid #E2E8F0;margin:8px 0 24px;"></div>
+
+    <!-- Phase 2/3: Global Sector Theme + ETF Recommendations -->
+    <div style="margin-bottom:28px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#0284C7;text-transform:uppercase;margin-bottom:12px;">Global Sector Theme</div>
+      <div id="we_global_theme" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;"></div>
+      <div id="we_etf_recs"></div>
     </div>
     <div style="border-top:1px solid #E2E8F0;margin:8px 0 24px;"></div>
 
@@ -5012,6 +5020,8 @@ function renderWorldEconomy(){
   _renderWeCountryRs();
   _renderWeLei();
   _renderWeCurrencyLayer();
+  _renderWeGlobalTheme();
+  _renderWeEtfRecs();
   _renderWeSectorBooming();
 }
 
@@ -5239,6 +5249,51 @@ function _renderWeCurrencyLayer(){
       '</div>'+
     '</div>';
 }
+function _renderWeGlobalTheme(){
+  const el=document.getElementById('we_global_theme');
+  if(!el) return;
+  const themes=(LIVE&&LIVE.global_theme)||[];
+  if(!themes.length){el.innerHTML='';return;}
+  const bandCol=function(b){return b==='Booming'?'#059669':b==='Favoured'?'#0D9488':b==='Neutral'?'#D97706':b==='Lagging'?'#EA580C':'#DC2626';};
+  const bandBg=function(b){return b==='Booming'?'#DCFCE7':b==='Favoured'?'#CCFBF1':b==='Neutral'?'#FEF3C7':b==='Lagging'?'#FFEDD5':'#FEE2E2';};
+  el.innerHTML=themes.map(function(t){
+    var c=bandCol(t.band),bg=bandBg(t.band);
+    return '<div style="background:'+bg+';border:1.5px solid '+c+'33;border-radius:12px;padding:12px 14px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">'+
+      '<div style="font-size:13px;font-weight:800;color:#0F172A;">'+t.theme+'</div>'+
+      '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+c+';color:#fff;">'+t.band+'</span></div>'+
+      '<div style="font-size:20px;font-weight:900;color:'+c+';margin-bottom:4px;">'+t.score+'</div>'+
+      '<div style="font-size:11px;color:#64748B;">Top: '+t.top_country+' <strong style="color:'+(t.top_country_ret6m>=0?'#059669':'#DC2626')+';">'+(t.top_country_ret6m>=0?'+':'')+t.top_country_ret6m+'%</strong></div>'+
+      '<div style="font-size:10px;color:#94A3B8;margin-top:2px;">'+t.pct_above_200dma+'% above 200-DMA · avg '+(t.avg_ret_6m>=0?'+':'')+t.avg_ret_6m+'% 6M</div>'+
+      '</div>';
+  }).join('');
+}
+
+function _renderWeEtfRecs(){
+  const el=document.getElementById('we_etf_recs');
+  if(!el) return;
+  const recs=(LIVE&&LIVE.etf_recommendations)||[];
+  if(!recs.length){el.innerHTML='';return;}
+  const doorLabel=function(d){return d==='country'?'Country door':d==='sector'?'Sector door':'Global theme door';};
+  const doorIcon=function(d){return d==='country'?'🌍':d==='sector'?'🏭':'🔭';};
+  el.innerHTML='<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#64748B;margin-bottom:8px;">BUYABLE — UCITS ETFs (IE/LU domiciled, no US estate tax)</div>'+
+    '<div style="display:flex;flex-direction:column;gap:8px;">'+
+    recs.map(function(r){
+      var f=r.fund;
+      return '<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">'+
+        '<div style="font-size:18px;">'+doorIcon(r.door)+'</div>'+
+        '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:10px;color:#94A3B8;font-weight:700;letter-spacing:0.5px;">'+doorLabel(r.door)+' · '+r.signal+'</div>'+
+        '<div style="font-size:13px;font-weight:700;color:#0F172A;">'+f.name+'</div>'+
+        '<div style="font-size:11px;color:#64748B;">'+r.reason+(f._fallback_from?' · via '+f._resolved_via:'')+'</div></div>'+
+        '<div style="text-align:right;flex-shrink:0;">'+
+        '<div style="font-size:11px;font-weight:700;color:#0F172A;">TER '+(f.ter!=null?f.ter+'%':'—')+'</div>'+
+        '<div style="font-size:10px;color:#94A3B8;font-family:monospace;">'+f.isin+'</div></div>'+
+        '</div>';
+    }).join('')+'</div>'+
+    '<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;line-height:1.4;">Resolved from the largest-by-size UCITS fund in the matching category (fund size ≥10m EUR quality floor, 134 funds / 28 categories). Not investment advice — verify current holdings and suitability before any trade.</p>';
+}
+
 function _renderWeSectorBooming(){
   const el=document.getElementById('we_sector_booming_table');
   if(!el) return;
@@ -5392,6 +5447,24 @@ function renderPsxSectorBoomingStrip(){
 
 
 // ─── Wave Z: Institutional Consensus (double-confirmed smart money) v5.107 ──
+function renderTceEtfPicks(){
+  const el=document.getElementById('tce_etf_picks');
+  if(!el) return;
+  const recs=(LIVE&&LIVE.etf_recommendations)||[];
+  if(!recs.length){el.innerHTML='';return;}
+  const doorIcon=function(d){return d==='country'?'🌍':d==='sector'?'🏭':'🔭';};
+  el.innerHTML='<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 16px;">'+
+    '<div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1px;margin-bottom:8px;">WORLD ETF ENGINE — TOP BUYABLE PICKS (UAE/IBKR, UCITS)</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;">'+
+    recs.map(function(r){var f=r.fund;
+      return '<div style="background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:8px 12px;flex:1;min-width:200px;">'+
+      '<div style="font-size:10px;color:#94A3B8;">'+doorIcon(r.door)+' '+r.signal+'</div>'+
+      '<div style="font-size:12px;font-weight:700;color:#0F172A;">'+f.name+'</div>'+
+      '<div style="font-size:10px;color:#64748B;font-family:monospace;">'+f.isin+' · TER '+(f.ter!=null?f.ter+'%':'—')+'</div></div>';
+    }).join('')+'</div>'+
+    '<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;">See Tab 15 World Economy → Global Sector Theme for the signal that fired each pick.</p></div>';
+}
+
 function renderInstConsensus(){
   const el = document.getElementById('inst_consensus_box');
   if(!el) return;
@@ -5456,6 +5529,7 @@ function recalc(){
   renderSectorsBoomingStrip();
   renderPsxSectorBoomingStrip();
   renderInstConsensus();
+  renderTceEtfPicks();
 }
 window.addEventListener('DOMContentLoaded',()=>{
   recalc();
