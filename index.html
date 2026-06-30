@@ -546,7 +546,7 @@
     <div id="prof_detail" style="margin-top:14px;"></div>
   </div>
 
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.112</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.113</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5274,16 +5274,17 @@ function _renderWeEtfRecs(){
   if(!el) return;
   const recs=(LIVE&&LIVE.etf_recommendations)||[];
   if(!recs.length){el.innerHTML='';return;}
-  const doorLabel=function(d){return d==='country'?'Country door':d==='sector'?'Sector door':'Global theme door';};
-  const doorIcon=function(d){return d==='country'?'🌍':d==='sector'?'🏭':'🔭';};
+  const doorLabel=function(d){if(d.indexOf('+')>=0)return 'Double-confirmed';return d==='country'?'Country door':d==='sector'?'Sector door':'Global theme door';};
+  const doorIcon=function(d){if(d.indexOf('+')>=0)return '✅';return d==='country'?'🌍':d==='sector'?'🏭':'🔭';};
   el.innerHTML='<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#64748B;margin-bottom:8px;">BUYABLE — UCITS ETFs (IE/LU domiciled, no US estate tax)</div>'+
     '<div style="display:flex;flex-direction:column;gap:8px;">'+
     recs.map(function(r){
       var f=r.fund;
-      return '<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">'+
+      var cc=r.confirmed_count||1;
+      return '<div style="background:#FFFFFF;border:1px solid '+(cc>1?'#059669':'#E2E8F0')+';border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">'+
         '<div style="font-size:18px;">'+doorIcon(r.door)+'</div>'+
         '<div style="flex:1;min-width:0;">'+
-        '<div style="font-size:10px;color:#94A3B8;font-weight:700;letter-spacing:0.5px;">'+doorLabel(r.door)+' · '+r.signal+'</div>'+
+        '<div style="font-size:10px;color:'+(cc>1?'#059669':'#94A3B8')+';font-weight:700;letter-spacing:0.5px;">'+doorLabel(r.door)+(cc>1?' ('+cc+' signals)':'')+' · '+r.signal+'</div>'+
         '<div style="font-size:13px;font-weight:700;color:#0F172A;">'+f.name+'</div>'+
         '<div style="font-size:11px;color:#64748B;">'+r.reason+(f._fallback_from?' · via '+f._resolved_via:'')+'</div></div>'+
         '<div style="text-align:right;flex-shrink:0;">'+
