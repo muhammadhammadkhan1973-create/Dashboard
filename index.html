@@ -536,7 +536,7 @@
   <div id="etf_compare"></div>
 </div>
 
-  <div id="results" class="panel"><h2 class="section-title">Results — Recommendation Tracker</h2><div id="results_box"><p style="color:var(--grey-d);">Loading…</p></div></div>
+  <div id="results" class="panel"><h2 class="section-title">Results — Recommendation Tracker</h2><div id="etf_results_box"></div><div id="results_box"><p style="color:var(--grey-d);">Loading…</p></div></div>
   <div id="backtest" class="panel">
     <h2 class="section-title">Strategy Backtest — IG+ Methodology vs KSE-100 (2010–2021)</h2>
     <div id="bt_intro"></div>
@@ -582,7 +582,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.127</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.128</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2892,11 +2892,13 @@ function renderExplosiveTable(elId, rows, market, mode) {
     const sigCell=_sigDot(r.signal_a,'A','Signal A \u2014 growing (revenue / operating-profit gate)')+_sigDot(r.signal_b,'B','Signal B \u2014 accelerating (net profit accelerating)');
     const why=explosiveWhy(r.verdict);
     const hidden=_rank(r.verdict)>=5;
+    const upx=r.ucits_proxy;
+    const proxyLine=upx?`<div style="font-size:9.5px;color:#0F766E;margin-top:2px;" title="${(upx.tier_label||'').replace(/"/g,'')}">🇮🇪 UCITS proxy: <b>${upx.name}</b> (${upx.isin}${upx.ter!=null?', TER '+upx.ter+'%':''})</div>`:'';
 
     // Main data row
     html+=`<tr class="${cls}"${hidden?' data-exphidden="1" style="display:none;"':''}>
       <td><b>${em(tk)}</b></td>
-      <td>${em(r.name)}</td>
+      <td>${em(r.name)}${proxyLine}</td>
       <td>${em(r.sector)}</td>
       <td>${pct(r.rev_growth)}</td>
       <td>${pct(r.op_growth)}</td>
@@ -3139,10 +3141,12 @@ function renderTceTable(elId, rows, market) {
     const tier=(r.tier||'').toUpperCase();
     const cls=tier==='HIGH'?'pos':tier==='WATCH'?'warn':'';
     const tk=r.ticker||'';
+    const up=r.ucits_proxy;
+    const proxyLine=up?`<div style="font-size:9.5px;color:#0F766E;margin-top:2px;" title="${(up.tier_label||'').replace(/"/g,'')}">🇮🇪 UCITS proxy: <b>${up.name}</b> (${up.isin}${up.ter!=null?', TER '+up.ter+'%':''})</div>`:'';
 
     html+=`<tr class="${cls}">
       <td><b>${tk||'—'}</b></td>
-      <td>${r.name||'—'}</td>
+      <td>${r.name||'—'}${proxyLine}</td>
       <td style="text-align:center;font-weight:700;">${(r.tce_score!=null?r.tce_score:(r.streams&&r.streams.total!=null?r.streams.total:(r.score!=null?r.score:'—')))}</td>
       <td style="text-align:center;font-weight:700;color:#4338CA;">${(r.conviction!=null?r.conviction:'\u2014')}</td>
       <td>${streamCellsHTML(r.streams, market)}</td>
@@ -4501,6 +4505,64 @@ function _rIdxRet(map,firstDate){
   if(entry==null||entry<=0)return null;
   return (now/entry-1)*100;
 }
+// =========================================================
+// WORLD ETF ENGINE — Phase 3(a) Results-tab live tracker vs ACWI
+// Reads LIVE.etf_results_tracker (scanner v1.142.0). Each Engine Recommendation pick is
+// tracked from first-seen date/price; return-since-entry is compared to ACWI's return over
+// the SAME window (the gap = alpha). A dropped pick freezes at its last-known figures rather
+// than disappearing. Separate from the existing stock tracker below -- this is ETFs, not stocks.
+// =========================================================
+function renderEtfResultsTracker(){
+  var el=document.getElementById('etf_results_box'); if(!el) return;
+  var T=(typeof LIVE!=='undefined'&&LIVE&&LIVE.etf_results_tracker)?LIVE.etf_results_tracker:null;
+  if(!T||!T.picks||!Object.keys(T.picks).length){
+    el.innerHTML='<p style="color:var(--grey-d);font-size:12px;margin-bottom:16px;">World ETF Engine live tracking fills in after the scanner (v1.142.0+) has run \u2014 each Engine Recommendation pick will be stamped with the date it first appeared and tracked vs ACWI from there.</p>';
+    return;
+  }
+  var rows=Object.keys(T.picks).map(function(k){var p=T.picks[k]; p.isin=p.isin||k; return p;});
+  var allToday=rows.every(function(r){return r.first_date===T.last_run;});
+  var arrow=function(pct){
+    if(typeof pct!=='number') return '<span style="color:#94A3B8;">\u2014</span>';
+    var up=pct>=0, col=up?'#15803D':'#B91C1C', ar=up?'\u25B2':'\u25BC';
+    return '<span style="color:'+col+';font-weight:700;">'+ar+' '+(up?'+':'')+pct.toFixed(2)+'%</span>';
+  };
+  rows.sort(function(a,b){
+    var aa=(typeof a.alpha_vs_acwi_pct==='number')?a.alpha_vs_acwi_pct:-999;
+    var bb=(typeof b.alpha_vs_acwi_pct==='number')?b.alpha_vs_acwi_pct:-999;
+    return bb-aa;
+  });
+  var n=rows.length, nAlpha=rows.filter(function(r){return typeof r.alpha_vs_acwi_pct==='number';}).length;
+  var nBeat=rows.filter(function(r){return typeof r.alpha_vs_acwi_pct==='number'&&r.alpha_vs_acwi_pct>=0;}).length;
+  var intro='<div style="background:linear-gradient(180deg,#F8FAFF 0%,#ffffff 100%);border:1px solid #E8EBF5;border-radius:14px;padding:16px 18px;margin:0 0 16px;">'
+    +'<div style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#6366F1;margin-bottom:6px;">World ETF Engine \u2014 Live Tracking vs ACWI</div>'
+    +'<div style="font-family:var(--font-body);font-size:13px;line-height:1.6;color:#475569;">Every UCITS pick the engine has recommended is stamped with the date it first appeared and tracked from there. <b style="color:#1E1B4B;">Alpha vs ACWI</b> is the pick\u2019s own return since entry minus the iShares MSCI ACWI UCITS ETF\u2019s return over the exact same window \u2014 the world-equity benchmark, priced live via the same resolver as every fund on Tab 16. A pick that drops out of the current recommendations freezes at its last known figures rather than disappearing. <b style="color:#1E1B4B;">'+nBeat+'/'+nAlpha+'</b> picks are currently beating ACWI (where alpha is computable).</div></div>';
+  if(allToday) intro+='<div style="font-size:12.5px;background:#fff7ed;border:1px solid #fed7aa;border-radius:11px;padding:11px 14px;margin:0 0 16px;color:#9a3412;"><b>Tracking just started.</b> Every pick was first recorded today, so returns read 0% and alpha cannot judge anything yet \u2014 this becomes meaningful as days pass.</div>';
+  var body=rows.map(function(r){
+    var dropped=r.still_recommended===false;
+    var op=dropped?'0.6':'1';
+    return '<tr style="border-bottom:1px solid #F1F5F9;opacity:'+op+';">'
+      +'<td style="padding:6px 8px;font-weight:600;color:#0F172A;">'+(r.name||r.isin)+(dropped?' <span style="font-size:9px;color:#94A3B8;font-weight:400;">(dropped from recs, frozen)</span>':'')+'</td>'
+      +'<td style="padding:6px 8px;font-size:10px;color:#64748B;font-family:var(--font-mono);">'+r.isin+'</td>'
+      +'<td style="padding:6px 8px;font-size:11px;color:#475569;">'+(r.signal||'\u2014')+'</td>'
+      +'<td style="padding:6px 8px;font-size:11px;color:#64748B;">'+(r.first_date||'\u2014')+'</td>'
+      +'<td style="padding:6px 8px;font-size:12px;">'+arrow(r.return_pct)+'</td>'
+      +'<td style="padding:6px 8px;font-size:12px;color:#475569;">'+(typeof r.acwi_return_pct==='number'?(r.acwi_return_pct>=0?'+':'')+r.acwi_return_pct.toFixed(2)+'%':'\u2014')+'</td>'
+      +'<td style="padding:6px 8px;font-size:12px;font-weight:700;">'+arrow(r.alpha_vs_acwi_pct)+'</td>'
+      +'</tr>';
+  }).join('');
+  el.innerHTML=intro+'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'
+    +'<thead><tr style="background:#EEF2F7;border-bottom:2px solid #CBD5E1;">'
+    +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">Fund</th>'
+    +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">ISIN</th>'
+    +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">Signal</th>'
+    +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">Entry Date</th>'
+    +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">Return</th>'
+    +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">ACWI (same window)</th>'
+    +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">Alpha vs ACWI</th>'
+    +'</tr></thead><tbody>'+body+'</tbody></table></div>'
+    +'<div style="margin:24px 0 4px;border-top:2px solid #E5E7EB;"></div>';
+}
+
 function renderResults(){
   var el=document.getElementById('results_box'); if(!el) return;
   var T=(typeof LIVE!=='undefined'&&LIVE&&LIVE.shortlist_tracking)?LIVE.shortlist_tracking:null;
@@ -4840,6 +4902,7 @@ function applyLive(){
   renderCandidates('us_candidates_table',(LIVE&&Array.isArray(LIVE.us_candidates))?LIVE.us_candidates:[],'us');
   renderCandidates('psx_candidates_table',(LIVE&&Array.isArray(LIVE.psx_candidates))?LIVE.psx_candidates:[],'psx');
   renderRecession((LIVE&&LIVE.recession)?LIVE.recession:null);
+  try{renderEtfResultsTracker();}catch(e){if(window.console)console.warn('etf results tracker render',e);}
   try{renderResults();}catch(e){if(window.console)console.warn('results render',e);}
   renderProfiles();
   renderWorldEconomy();
