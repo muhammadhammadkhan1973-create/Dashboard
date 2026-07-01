@@ -157,8 +157,8 @@
   .metals-header::after{content:'';position:absolute;top:-30%;right:-5%;width:300px;height:300px;background:radial-gradient(circle,rgba(253,224,71,0.3),transparent 65%);pointer-events:none;}
   .metals-header h2{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:4px;position:relative;z-index:1;}
   .metals-header p{font-size:13px;opacity:.9;position:relative;z-index:1;}
-  .metals-price-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
-  @media(max-width:900px){.metals-price-bar{grid-template-columns:repeat(2,1fr);}}
+  .metals-price-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:20px;}
+  @media(max-width:900px){.metals-price-bar{grid-template-columns:repeat(3,1fr);}}
   .metal-price-tile{background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:12px;padding:14px 16px;text-align:center;}
   .metal-price-tile .metal-name{font-size:11px;font-weight:700;color:#D97706;text-transform:uppercase;letter-spacing:.05em;}
   .metal-price-tile .metal-val{font-family:var(--font-mono);font-size:20px;font-weight:700;color:#78350F;margin:4px 0 2px;}
@@ -179,7 +179,7 @@
   .metals-gauge-bar{height:32px;border-radius:16px;background:#FEF3C7;overflow:hidden;position:relative;margin-bottom:8px;}
   .metals-gauge-fill{height:100%;transition:width .6s ease;border-radius:16px;}
   .metals-gauge-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--font-mono);font-weight:700;font-size:13px;color:white;text-shadow:0 1px 3px rgba(0,0,0,.6);}
-  .metals-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .metals-grid-4{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
   @media(max-width:900px){.metals-grid-4{grid-template-columns:repeat(2,1fr);}}
   .metal-card{background:var(--white);border:1.5px solid #FDE68A;border-radius:12px;padding:16px;}
   .metal-card .mc-name{font-family:var(--font-head);font-size:15px;font-weight:700;color:#D97706;margin-bottom:6px;}
@@ -288,7 +288,7 @@
       <b>Double-confirmed (&#9733;)</b> &mdash; the SAME fund was independently recommended by two different doors at once. This is not a stronger opinion from one signal &mdash; it is two separate calculations agreeing. Shown in plain text on each card (e.g. &ldquo;ranked #1 country by return AND is the top country driving a Booming theme&rdquo;).<br>
       <b>Momentum-Watch</b> &mdash; a separate list of the 55 non-leveraged UCITS funds already up 35% or more this year. This is <em>not</em> the engine&rsquo;s advice &mdash; it is an observation list of what is already running, so strong performers outside the engine&rsquo;s own doors don&rsquo;t go unseen.<br>
       <b>Hydrogen Watch</b> &mdash; 4 hydrogen-economy funds tracked separately because they were missing ISINs (fund ID codes) in the main data file and had to be sourced individually; shown as a distinct thematic list, not an engine recommendation.<br>
-      <b>Metals ETC Watch</b> &mdash; physical gold and silver ETCs (Exchange-Traded Commodities &mdash; the metal itself, held in a vault, not a company). Paired with the live gold/silver trend already shown on Tab 12 Metals.
+      <b>Metals ETC Watch</b> &mdash; gold, silver, platinum, palladium, and copper ETCs (Exchange-Traded Commodities &mdash; the metal itself, held in a vault, not a company; copper is the one synthetic/futures-based exception). Paired with the live trend, RSI, and (gold/silver/copper) COT positioning already shown on Tab 12 Metals.
     </div>
   </details>
 
@@ -423,6 +423,7 @@
       <div class="metal-price-tile"><div class="metal-name">Silver</div><div class="metal-val" id="m_silver_px">—</div><div id="m_silver_trend"></div><div class="metal-sub">SI=F Live</div></div>
       <div class="metal-price-tile"><div class="metal-name">Platinum</div><div class="metal-val" id="m_plat_px">—</div><div id="m_plat_trend"></div><div class="metal-sub">PL=F Live</div></div>
       <div class="metal-price-tile"><div class="metal-name">Palladium</div><div class="metal-val" id="m_pall_px">—</div><div id="m_pall_trend"></div><div class="metal-sub">PA=F Live</div></div>
+      <div class="metal-price-tile"><div class="metal-name">Copper</div><div class="metal-val" id="m_copper_px">—</div><div id="m_copper_trend"></div><div class="metal-sub">HG=F Live</div></div>
       <div class="metal-price-tile" style="border-color:#BFDBFE;">
         <div class="metal-name" style="color:#1D4ED8;">DXY</div>
         <div class="metal-val" id="m_dxy_px" style="color:#1e40af;">—</div>
@@ -575,10 +576,10 @@
     <div id="we_hydrogen_main"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Physical Metals ETC Watch</h3>
-    <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk. All 4 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver only) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.119</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.120</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -3207,6 +3208,7 @@ function calcMetals(){
   const silvPx  = M.silver_px    || null;
   const platPx  = M.platinum_px  || null;
   const pallPx  = M.palladium_px || null;
+  const copPx   = M.copper_px    || null;
   const dxy     = M.dxy          || val('dxy')  || null;
   const gsRatio = (goldPx&&silvPx) ? (goldPx/silvPx) : (M.gs_ratio||null);
   const fmt = (v,dec=0) => v ? '$'+v.toLocaleString(undefined,{maximumFractionDigits:dec}) : '—';
@@ -3214,6 +3216,7 @@ function calcMetals(){
   document.getElementById('m_silver_px').textContent = fmt(silvPx,2);
   document.getElementById('m_plat_px').textContent  = fmt(platPx);
   document.getElementById('m_pall_px').textContent  = fmt(pallPx);
+  document.getElementById('m_copper_px').textContent = fmt(copPx,2);
   document.getElementById('m_dxy_px').textContent   = dxy ? dxy.toFixed(1) : '—';
 
   // Macro inputs — live from scanner or fallback to Tab 1
@@ -3506,11 +3509,14 @@ function calcMetals(){
        detail:`66% auto-catalysts<br>76% supply: South Africa<br>Structural deficit 727k oz/yr<br>Seasonal (${CURRENT_MONTH}): ${METALS_SEASONAL.Platinum[CURRENT_MONTH].toFixed(2)}%`},
       {name:'PALLADIUM',px:pallPx,corr:0.7, score:Math.round(totalScore*0.7), pxw:M.palladium_px_wow, pxm:M.palladium_px_mom,
        detail:`72% auto-catalysts<br>42% supply: Russia (sanction risk)<br>38% supply: S. Africa<br>Seasonal (${CURRENT_MONTH}): ${METALS_SEASONAL.Palladium[CURRENT_MONTH].toFixed(2)}%`},
+      {name:'COPPER',  px:copPx, corr:0.25,score:Math.round(totalScore*0.25),pxw:M.copper_px_wow, pxm:M.copper_px_mom,
+       detail:`Industrial cycle / EM demand driven \u2014 independent of the gold framework (low corr weight, ${(0.25*100).toFixed(0)}% of backdrop score applied)<br>ICSG deficit/surplus + China PMI drive the buy/sell stance below<br>Seasonal: not yet sourced (no fabricated figure)`},
     ];
     metalCards.innerHTML=metals4.map(m=>{
       const b=metalsBiasColor(m.score);
-      const px=m.px?'$'+m.px.toLocaleString(undefined,{maximumFractionDigits:m.name==='SILVER'?2:0}):'—';
-      const trend=(m.pxw!=null||m.pxm!=null)?`<div style="margin-top:2px;">${mTrend(m.pxw,m.pxm,{pre:'$',dp:m.name==='SILVER'?2:0})}</div>`:'';
+      const dp2=(m.name==='SILVER'||m.name==='COPPER')?2:0;
+      const px=m.px?'$'+m.px.toLocaleString(undefined,{maximumFractionDigits:dp2}):'—';
+      const trend=(m.pxw!=null||m.pxm!=null)?`<div style="margin-top:2px;">${mTrend(m.pxw,m.pxm,{pre:'$',dp:dp2})}</div>`:'';
       return`<div class="metal-card"><div class="mc-name">${m.name}</div><div class="mc-price">${px}</div>${trend}<div class="mc-bias" style="background:${b.bg};color:${b.text};">${m.score>=0?'+':''}${m.score} — ${b.label}</div><div class="mc-detail">${m.detail}</div></div>`;
     }).join('');
   }
@@ -3590,7 +3596,7 @@ function calcMetals(){
       return '<div style="font-size:9px;font-family:var(--font-mono);line-height:1.4;margin-top:1px;display:flex;flex-direction:column;align-items:center;">'+bits.join('')+'</div>';
     }
     [['m_gold_trend','gold_px'],['m_silver_trend','silver_px'],['m_plat_trend','platinum_px'],
-     ['m_pall_trend','palladium_px'],['m_dxy_trend','dxy']].forEach(function(t){
+     ['m_pall_trend','palladium_px'],['m_copper_trend','copper_px'],['m_dxy_trend','dxy']].forEach(function(t){
       var el=document.getElementById(t[0]); if(el) el.innerHTML=histChart(t[1])+dmaChip(t[1]);
     });
   })();
@@ -3619,13 +3625,21 @@ function calcMetals(){
       {n:'PALLADIUM',pre:'palladium_px',px:pallPx,mom:M.palladium_px_mom,seas:METALS_SEASONAL.Palladium[CURRENT_MONTH],bias:Math.round(totalScore*0.7),beta:1.5,fl:-1,
        fund:'Secular EV headwind erodes its core auto-catalyst demand (~72% of use); Russia / South-Africa supply concentration is the only offset. Structurally bearish unless ICE-vehicle demand surprises up.',
        src:'industry'},
+      {n:'COPPER',pre:'copper_px',px:copPx,mom:M.copper_px_mom,seas:null,bias:0,beta:1.2,fl:0,
+       // seas deliberately null -- no fabricated monthly-seasonality table (see scanner v1.135.0 changelog:
+       // real sourced decimals weren't found, so this shows "not yet sourced" below rather than a guess).
+       // bias:0 and fl:0 are deliberate too -- copper is explicitly "independent of the gold framework"
+       // (same framing already used in the World Driver Map below), so it doesn't inherit gold's macro
+       // backdrop score or a fixed directional structural thesis the way the precious metals do.
+       fund:'Cyclical industrial demand (grid buildout, EV, AI-datacenter power) against a structural mine-supply deficit. Unlike gold, has no official-sector or monetary bid \u2014 moves with the global manufacturing cycle and Chinese demand, not real yields. The buy/sell stance below (China PMI + ICSG balance + COT) is the more relevant read for copper than this backdrop score.',
+       src:'ICSG; industry'},
     ];
     var fwdRows=FWD.map(function(m){
       if(m.px==null) return '';
       var b3=_band(m.px,m.beta,0.25), b6=_band(m.px,m.beta,0.5);
       var _matr=M[m.pre+'_ma_trend'], _maScore=(_matr==='up')?1:(_matr==='down')?-1:0;
       var lean=_lean(m.bias,(m.mom||0),(m.seas||0),m.fl,_maScore);
-      var dp=(m.n==='SILVER')?2:0;
+      var dp=(m.n==='SILVER'||m.n==='COPPER')?2:0;
       function rng(lo,hi){return '$'+Math.max(0,lo).toLocaleString(undefined,{maximumFractionDigits:dp})+' \u2013 $'+hi.toLocaleString(undefined,{maximumFractionDigits:dp});}
       var volNote=(m.n==='GOLD')?('live GVZ '+(_gvz!=null?_gvz.toFixed(1)+'%':'n/a')):('est. GVZ\u00d7'+m.beta);
       return '<div style="background:#fff;border:1px solid #FDE68A;border-left:5px solid #B8860B;border-radius:11px;padding:13px 16px;margin-bottom:10px;">'
@@ -3638,7 +3652,7 @@ function calcMetals(){
         +'<span style="color:#94a3b8;">vol: '+volNote+' \u00b7 base = spot</span></div>'
         +'<div style="margin:4px 0 8px;">'+_fwdCone(m.px,b3,b6,lean.a,dp)+'</div>'
         +'<div style="font-size:12px;line-height:1.55;color:#374151;"><b style="color:#78350F;">Fundamental:</b> '+m.fund+' <span style="color:#94a3b8;">('+m.src+')</span></div>'
-        +'<div style="font-size:11px;line-height:1.5;color:#64748b;margin-top:4px;"><b>Technical lean:</b> net of the bias score ('+(m.bias>=0?'+':'')+m.bias+'), 1-month momentum ('+(m.mom!=null?(m.mom>=0?'+':'')+m.mom.toFixed(dp):'n/a')+'), '+CURRENT_MONTH+' seasonality ('+(m.seas>=0?'+':'')+m.seas.toFixed(2)+'%) and the 200-DMA trend ('+(_matr||'n/a')+').</div>'
+        +'<div style="font-size:11px;line-height:1.5;color:#64748b;margin-top:4px;"><b>Technical lean:</b> net of the bias score ('+(m.bias>=0?'+':'')+m.bias+'), 1-month momentum ('+(m.mom!=null?(m.mom>=0?'+':'')+m.mom.toFixed(dp):'n/a')+'), '+CURRENT_MONTH+' seasonality ('+(typeof m.seas==='number'?((m.seas>=0?'+':'')+m.seas.toFixed(2)+'%'):'not yet sourced')+') and the 200-DMA trend ('+(_matr||'n/a')+').</div>'
         +(function(){
             var s50=M[m.pre+'_sma50'],s200=M[m.pre+'_sma200'],ext=M[m.pre+'_ext_200_pct'],cr=M[m.pre+'_cross'],rsi=M[m.pre+'_rsi14'];
             if(s200==null&&rsi==null) return '';
@@ -5681,17 +5695,18 @@ function renderWorldEtfTab(){
     var met=(LIVE&&LIVE.etf_metals_etc_watch)||[];
     var Mx=(LIVE&&LIVE.macros&&LIVE.macros.metals)?LIVE.macros.metals:{};
     if(!met.length){
-      elM.innerHTML='<p style="color:#94A3B8;font-size:12px;">Metals ETC Watch loading (scanner v1.134.0+).</p>';
+      elM.innerHTML='<p style="color:#94A3B8;font-size:12px;">Metals ETC Watch loading (scanner v1.135.0+).</p>';
     } else {
       var metalCol=function(m){
         if(m==='Gold') return '#B45309';
         if(m==='Silver') return '#64748B';
         if(m==='Platinum') return '#0891B2';
         if(m==='Palladium') return '#7C3AED';
+        if(m==='Copper') return '#C2410C';
         return '#64748B';
       };
-      var metalPrefix={'Gold':'gold_px','Silver':'silver_px','Platinum':'platinum_px','Palladium':'palladium_px'};
-      var cotPrefix={'Gold':'gold','Silver':'silver'};
+      var metalPrefix={'Gold':'gold_px','Silver':'silver_px','Platinum':'platinum_px','Palladium':'palladium_px','Copper':'copper_px'};
+      var cotPrefix={'Gold':'gold','Silver':'silver','Copper':'copper'};
       var fmtPriceM=function(w){
         if(w.live_price==null) return '<span style="font-size:9px;color:#CBD5E1;">price \u2014</span>';
         var ccy=w.live_ccy||''; var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
@@ -5734,7 +5749,7 @@ function renderWorldEtfTab(){
       // pre-compute each metal's signal once (shared across that metal's card(s), e.g. Gold's
       // 2 funds show the identical Gold signal -- same real number, not recomputed per fund)
       var techByMetal={}, cotByMetal={};
-      ['Gold','Silver','Platinum','Palladium'].forEach(function(m){
+      ['Gold','Silver','Platinum','Palladium','Copper'].forEach(function(m){
         techByMetal[m]=techSignal(m); cotByMetal[m]=cotSignal(m);
       });
       var cards=met.map(function(w){
