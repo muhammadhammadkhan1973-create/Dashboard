@@ -578,7 +578,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk. All 4 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver only) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.118</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.119</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5553,8 +5553,12 @@ function renderWorldEtfTab(){
     }
   }
 
-  // Momentum-Watch (35%+ YTD, 55 funds) -- grouped by category/country, each group
-  // ordered by that group's best (lowest) rank so the strongest-performing groups lead.
+  // Momentum-Watch (35%+ YTD, 55 funds) -- ONE continuous table so columns stay aligned
+  // down the whole page (the previous per-category <table> approach let each table size its
+  // own columns independently -- a long fund name in one category widened THAT table's Fund
+  // column while short names elsewhere kept theirs narrow, so YTD/1Y/TER/Holdings/ISIN jumped
+  // left-right between sections). Category boundaries are now full-width divider rows INSIDE
+  // the same table, with fixed column widths (colgroup) so every row lines up identically.
   var elMW=document.getElementById('we_momentum40_main');
   if(elMW){
     var mw=(LIVE&&LIVE.etf_momentum_watch)||[];
@@ -5588,40 +5592,44 @@ function renderWorldEtfTab(){
         var minB=Math.min.apply(null,groups[b].map(function(e){return e.rank;}));
         return minA-minB;
       });
-      var sections=groupKeys.map(function(catKey){
+      var bodyRows=groupKeys.map(function(catKey){
         var list=groups[catKey].slice().sort(function(a,b){return a.rank-b.rank;});
         var col=catColor(catKey);
-        var rows=list.map(function(e){
+        var headerRow='<tr><td colspan="7" style="padding:6px 8px;font-size:12px;font-weight:700;color:'+col+';background:'+col+'11;border-left:3px solid '+col+';">'
+          +catKey+' <span style="font-weight:400;color:#94A3B8;">('+list.length+' fund'+(list.length>1?'s':'')+')</span></td></tr>';
+        var dataRows=list.map(function(e){
           var ytdStr=typeof e.ytd==='number'?e.ytd.toFixed(2)+'%':'\u2014';
           var terStr=typeof e.ter==='number'?e.ter.toFixed(2)+'%':'\u2014';
           var y1Str=typeof e.ret_1y==='number'?e.ret_1y.toFixed(2)+'%':'\u2014';
           var note=e.note?'<span style="font-size:9px;color:#F59E0B;"> \u26a0 '+e.note+'</span>':'';
-          var tierBadge=e.rank<=34?'':'<span style="font-size:8px;background:#EEF2FF;color:#4F46E5;border-radius:3px;padding:0 4px;margin-left:4px;">35-40%</span>';
+          // leading literal space (not just CSS margin) so the badge stays visually AND
+          // text-copy separated from the fund name -- margin alone vanishes on copy/paste.
+          var tierBadge=e.rank<=34?'':' <span style="font-size:8px;background:#EEF2FF;color:#4F46E5;border-radius:3px;padding:0 4px;white-space:nowrap;">35-40%</span>';
           return '<tr style="border-bottom:1px solid #F1F5F9;">'
-            +'<td style="padding:5px 8px;font-size:11px;color:#64748B;font-weight:700;">'+e.rank+'</td>'
-            +'<td style="padding:5px 8px;font-size:11px;font-weight:600;color:#0F172A;">'+e.name+note+tierBadge+'</td>'
-            +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;">'+ytdStr+'</td>'
-            +'<td style="padding:5px 8px;font-size:11px;color:#0F172A;">'+y1Str+'</td>'
-            +'<td style="padding:5px 8px;font-size:11px;color:#64748B;">'+terStr+'</td>'
-            +'<td style="padding:5px 8px;font-size:10px;color:#94A3B8;max-width:220px;">'+(e.holdings||'\u2014')+'</td>'
-            +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#64748B;">'+(e.isin||'')+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;color:#64748B;font-weight:700;vertical-align:top;">'+e.rank+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;font-weight:600;color:#0F172A;vertical-align:top;word-break:break-word;">'+e.name+note+tierBadge+'</td>'
+            +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;vertical-align:top;white-space:nowrap;">'+ytdStr+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;color:#0F172A;vertical-align:top;white-space:nowrap;">'+y1Str+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;color:#64748B;vertical-align:top;white-space:nowrap;">'+terStr+'</td>'
+            +'<td style="padding:5px 8px;font-size:10px;color:#94A3B8;vertical-align:top;word-break:break-word;">'+(e.holdings||'\u2014')+'</td>'
+            +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#64748B;vertical-align:top;white-space:nowrap;">'+(e.isin||'')+'</td>'
             +'</tr>';
         }).join('');
-        return '<div style="margin-bottom:14px;">'
-          +'<div style="font-size:12px;font-weight:700;color:'+col+';background:'+col+'11;padding:5px 10px;border-radius:6px 6px 0 0;border-left:3px solid '+col+';">'
-          +catKey+' <span style="font-weight:400;color:#94A3B8;">('+list.length+' fund'+(list.length>1?'s':'')+')</span></div>'
-          +'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">'
-          +'<thead><tr style="background:#F8FAFC;">'
-          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">#</th>'
-          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Fund</th>'
-          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">YTD</th>'
-          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">1Y</th>'
-          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">TER</th>'
-          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Major Holdings</th>'
-          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">ISIN</th>'
-          +'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+        return headerRow+dataRows;
       }).join('');
-      elMW.innerHTML=sections
+      var table='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;table-layout:fixed;">'
+        +'<colgroup><col style="width:28px;"><col style="width:26%;"><col style="width:8%;"><col style="width:8%;">'
+        +'<col style="width:7%;"><col style="width:24%;"><col style="width:13%;"></colgroup>'
+        +'<thead><tr style="background:#F8FAFC;">'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">#</th>'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Fund</th>'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">YTD</th>'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">1Y</th>'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">TER</th>'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Major Holdings</th>'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">ISIN</th>'
+        +'</tr></thead><tbody>'+bodyRows+'</tbody></table></div>';
+      elMW.innerHTML=table
         +'<p style="font-size:10px;color:#94A3B8;margin:6px 0 0;">'
         +'\u26a0 Crypto ETP (rank 1) has different risk characteristics from equity ETFs. '
         +'Ranks 35-55 (badged) are the 35-39.99% YTD tier added when the threshold was lowered from 40%. '
@@ -5664,9 +5672,10 @@ function renderWorldEtfTab(){
     }
   }
 
-  // Physical Metals ETC Watch -- WIRED to Tab 12's live technical signal (SMA200/RSI/cross)
-  // and, for Gold/Silver, the same COT positioning. Same LIVE.macros.metals object Tab 12
-  // reads; zero new fetch, zero duplicated scoring -- this is a direct reuse of Tab 12's data.
+  // Physical Metals ETC Watch -- flat card grid (original aesthetic restored), each card
+  // wired to Tab 12's live technical signal (SMA200/RSI/cross) and, for Gold/Silver, the same
+  // COT positioning, shown as a compact footer inside the card itself rather than a separate
+  // outer group box. Same LIVE.macros.metals object Tab 12 reads -- zero new fetch.
   var elM=document.getElementById('we_metals_main');
   if(elM){
     var met=(LIVE&&LIVE.etf_metals_etc_watch)||[];
@@ -5681,15 +5690,13 @@ function renderWorldEtfTab(){
         if(m==='Palladium') return '#7C3AED';
         return '#64748B';
       };
-      // metal name -> macros.metals field prefix (exactly what Tab 12's calcMetals() uses)
       var metalPrefix={'Gold':'gold_px','Silver':'silver_px','Platinum':'platinum_px','Palladium':'palladium_px'};
-      // metal name -> COT prefix (Gold/Silver/Copper only -- Tab 12 has no Platinum/Palladium COT)
       var cotPrefix={'Gold':'gold','Silver':'silver'};
       var fmtPriceM=function(w){
         if(w.live_price==null) return '<span style="font-size:9px;color:#CBD5E1;">price \u2014</span>';
         var ccy=w.live_ccy||''; var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
         var px=typeof w.live_price==='number'?w.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):w.live_price;
-        return '<span style="font-size:12px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>';
+        return '<span style="font-size:14px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>';
       };
       // pulls the SAME 4 fields Tab 12's dmaChip() renders, direct from macros.metals
       function techSignal(metalName){
@@ -5719,40 +5726,35 @@ function renderWorldEtfTab(){
         if(net==null && pct==null) return {available:false};
         var parts=[];
         if(typeof net==='number') parts.push('net '+(net>=0?'+':'')+Math.round(net).toLocaleString());
-        if(typeof pct==='number') parts.push(pct.toFixed(1)+'% of OI');
-        if(typeof pctile==='number') parts.push(Math.round(pctile)+'th pctile (1-3yr)');
+        if(typeof pct==='number') parts.push(pct.toFixed(1)+'% OI');
+        if(typeof pctile==='number') parts.push(Math.round(pctile)+'th pctile');
         var arrow=(typeof wow==='number')?(wow>0?' \u25B2':wow<0?' \u25BC':''):'';
         return {available:true, text:parts.join(' \u00b7 ')+arrow};
       }
-      var groups={};
-      met.forEach(function(w){ (groups[w.metal]=groups[w.metal]||[]).push(w); });
-      var metalOrder=['Gold','Silver','Platinum','Palladium'];
-      var sections=metalOrder.filter(function(m){return groups[m];}).map(function(metalName){
-        var funds=groups[metalName];
-        var col=metalCol(metalName);
-        var tech=techSignal(metalName);
-        var cot=cotSignal(metalName);
+      // pre-compute each metal's signal once (shared across that metal's card(s), e.g. Gold's
+      // 2 funds show the identical Gold signal -- same real number, not recomputed per fund)
+      var techByMetal={}, cotByMetal={};
+      ['Gold','Silver','Platinum','Palladium'].forEach(function(m){
+        techByMetal[m]=techSignal(m); cotByMetal[m]=cotSignal(m);
+      });
+      var cards=met.map(function(w){
+        var col=metalCol(w.metal);
+        var tech=techByMetal[w.metal];
+        var cot=cotByMetal[w.metal];
         var cotLine=cot.available
-          ? '<span style="color:#374151;">COT positioning: '+cot.text+'</span>'
-          : '<span style="color:#94A3B8;">COT positioning: not tracked for this metal (scanner covers Gold/Silver/Copper only)</span>';
-        var fundCards=funds.map(function(w){
-          return '<div style="background:#fff;border:1px solid '+col+'55;border-radius:8px;padding:8px 12px;flex:1;min-width:200px;max-width:260px;">'
-            +'<div style="font-size:12px;font-weight:700;color:#0F172A;line-height:1.3;">'+w.name+'</div>'
-            +'<div style="font-size:10px;color:#64748B;font-family:monospace;margin:3px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 '+w.ticker_lse+'</div>'
-            +'<div style="margin-top:4px;">'+fmtPriceM(w)+'</div>'
-            +'</div>';
-        }).join('');
-        return '<div style="margin-bottom:14px;">'
-          +'<div style="font-size:12px;font-weight:700;color:'+col+';background:'+col+'11;padding:6px 10px;border-radius:6px;border-left:3px solid '+col+';margin-bottom:6px;">'
-          +metalName.toUpperCase()+' <span style="font-weight:400;color:#94A3B8;">('+funds.length+' fund'+(funds.length>1?'s':'')+')</span>'
-          +(tech?'<div style="font-size:11px;font-weight:400;margin-top:3px;font-family:var(--font-mono,monospace);">'+tech+'</div>':'<div style="font-size:10px;color:#94A3B8;margin-top:3px;">technical signal loading</div>')
-          +'<div style="font-size:11px;font-weight:400;margin-top:3px;">'+cotLine+'</div>'
-          +'</div>'
-          +'<div style="display:flex;gap:10px;flex-wrap:wrap;">'+fundCards+'</div>'
+          ? '<span style="color:#374151;">COT '+cot.text+'</span>'
+          : '<span style="color:#94A3B8;">COT not tracked (Gold/Silver/Copper only)</span>';
+        return '<div style="background:#FFFBEB;border:2px solid '+col+';border-radius:10px;padding:10px 14px;flex:1;min-width:220px;max-width:280px;">'
+          +'<div style="font-size:10px;color:'+col+';font-weight:700;letter-spacing:0.5px;">'+w.metal.toUpperCase()+' \u00b7 '+w.replication+'</div>'
+          +'<div style="font-size:13px;font-weight:700;color:#0F172A;line-height:1.3;margin-top:2px;">'+w.name+'</div>'
+          +'<div style="font-size:10px;color:#64748B;font-family:monospace;margin:3px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 '+w.ticker_lse+'</div>'
+          +'<div style="margin-top:6px;">'+fmtPriceM(w)+'</div>'
+          +(tech?'<div style="font-size:10px;font-family:monospace;margin-top:7px;padding-top:6px;border-top:1px solid '+col+'33;">'+tech+'</div>':'')
+          +'<div style="font-size:10px;margin-top:3px;">'+cotLine+'</div>'
           +'</div>';
       }).join('');
-      elM.innerHTML=sections
-        +'<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;">Technical signal (200-DMA trend, cross, RSI) and COT positioning are read live from Tab 12 Metals\u2019 own data \u2014 same numbers, same source, shown here next to the buyable fund. For the full forward-outlook cones, seasonal read, and world driver map, see Tab 12 directly.</p>';
+      elM.innerHTML='<div style="display:flex;gap:12px;flex-wrap:wrap;">'+cards+'</div>'
+        +'<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;">Technical signal and COT positioning are read live from Tab 12 Metals\u2019 own data \u2014 same numbers, same source. For the full forward-outlook cones, seasonal read, and world driver map, see Tab 12 directly.</p>';
     }
   }
 }
