@@ -259,6 +259,7 @@
     <button class="tab" onclick="showPanel('backtest', this)">13. Strategy Backtest</button>
     <button class="tab" onclick="showPanel('results', this)">14. Results</button>
     <button class="tab" onclick="showPanel('worldecon', this)">15. World Economy</button>
+    <button class="tab" onclick="showPanel('worldetf', this)">16. World ETF Engine</button>
   </div>
 
   <details style="margin:10px 0 6px;border:1px solid var(--line,#e5e7eb);border-radius:8px;background:#fff;">
@@ -546,7 +547,27 @@
     <div id="prof_detail" style="margin-top:14px;"></div>
   </div>
 
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.114</div>
+
+  <div id="worldetf" class="panel">
+    <h2 class="section-title">World ETF Engine &mdash; Global Macro Opportunities (UCITS)</h2>
+    <div class="reading-box" style="border-left:4px solid #0F766E;margin-bottom:16px;">
+      <p style="margin:0 0 6px;font-size:13px;"><strong>How the engine works (5-stage funnel):</strong> Country LEIs signal expansion &rarr; select booming countries + US sectors &rarr; select the relevant UCITS ETF &rarr; check past returns as confirmation &rarr; track in results. As a UAE resident you buy these on IBKR as Irish/Luxembourg UCITS funds, avoiding the US estate-tax exposure that comes with US-domiciled ETFs above $60k.</p>
+      <p style="margin:0;font-size:11px;color:#64748B;">Three doors: <strong>Country</strong> (top 3 by 6M USD return, Overweight/Hedge signal) &middot; <strong>US Sector</strong> (top 2 booming sectors) &middot; <strong>Global Theme</strong> (top 2 themes &times; top 2 countries &mdash; Korea <em>and</em> Taiwan both fire when Asia-Tech is booming). Same ISIN from multiple doors = double-confirmed badge.</p>
+    </div>
+
+    <h3 class="subsection-title">Engine Recommendations &mdash; Top Buyable UCITS Picks</h3>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #0F766E;padding-left:9px;margin:2px 0 12px;">Live prices via TradingView Scanner (LSE in USD, XETRA in EUR). YTD returns from ETF catalog (as of data collection date). Double-confirmed picks carry a &#9733; badge.</div>
+    <div id="we_engine_recs_main"></div>
+
+    <h3 class="subsection-title" style="margin-top:24px;">Momentum-40 &mdash; Non-Leveraged ETFs Already Up &ge;40% YTD</h3>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">Independent watchlist &mdash; these funds are tracked separately from the engine&rsquo;s own recommendations and are <strong>not</strong> engine picks. They are the 34 non-leveraged UCITS products (including 1 crypto ETP, owner-confirmed) with YTD &ge;40% from ETF_Universe_8.xlsx. Leveraged/short products excluded. Korea dominates ranks 2&ndash;8 (112&ndash;120% YTD), Taiwan ranks 9&ndash;13 (71% YTD).</div>
+    <div id="we_momentum40_main"></div>
+
+    <h3 class="subsection-title" style="margin-top:24px;">Pakistan UCITS Proxy</h3>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #2563EB;padding-left:9px;margin:2px 0 12px;">There is exactly one UCITS ETF covering Pakistan: the Xtrackers MSCI Pakistan Swap UCITS ETF 1C. Read the caveats before acting.</div>
+    <div id="we_pak_proxy_main"></div>
+  </div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.115</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5460,33 +5481,122 @@ function renderPsxSectorBoomingStrip(){
 
 // ─── Wave Z: Institutional Consensus (double-confirmed smart money) v5.107 ──
 function renderTceEtfPicks(){
-  const el=document.getElementById('tce_etf_picks');
-  if(!el) return;
-  const recs=(LIVE&&LIVE.etf_recommendations)||[];
-  if(!recs.length){el.innerHTML='';return;}
-  const doorIcon=function(d){return d==='country'?'\U0001f30d':d==='sector'?'\U0001f3ed':'\U0001f52d';};
-  const fmtPrice=function(f){
-    if(f.live_price==null||f.live_sym==null) return '<div style="font-size:10px;color:#CBD5E1;">price \u2014</div>';
-    var ccy=f.live_ccy||'';
-    var sym=f.live_sym||'';
-    var px=typeof f.live_price==='number'?f.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):f.live_price;
-    var ccySymbol=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':ccy==='GBX'?'p':'';
-    return '<div style="font-size:12px;font-weight:700;color:#0F172A;">'+ccySymbol+px+' '+ccy+'</div>'+
-           '<div style="font-size:9px;color:#94A3B8;font-family:monospace;">'+sym+'</div>';
-  };
-  el.innerHTML='<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 16px;">'+
-    '<div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1px;margin-bottom:8px;">WORLD ETF ENGINE \u2014 TOP BUYABLE PICKS (UAE/IBKR, UCITS)</div>'+
-    '<div style="display:flex;gap:10px;flex-wrap:wrap;">'+
-    recs.map(function(r){var f=r.fund;
-      return '<div style="background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:8px 12px;flex:1;min-width:200px;">'+
-      '<div style="font-size:10px;color:#94A3B8;">'+doorIcon(r.door)+' '+r.signal+'</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#0F172A;">'+f.name+'</div>'+
-      '<div style="font-size:10px;color:#64748B;font-family:monospace;">'+f.isin+' \u00b7 TER '+(f.ter!=null?f.ter+'%':'\u2014')+'</div>'+
-      '<div style="margin-top:5px;">'+fmtPrice(f)+'</div>'+
-      '</div>';
-    }).join('')+'</div>'+
-    '<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;">See Tab 15 World Economy \u2192 Global Sector Theme for the signal that fired each pick. Live price via TradingView scanner.</p></div>';
+  // v5.115: ETF picks moved to dedicated Tab 16 (World ETF Engine). Tab 9 shows TCE only.
+  var el=document.getElementById('tce_etf_picks');
+  if(el) el.innerHTML='';
 }
+
+
+function renderWorldEtfTab(){
+  // Engine Recommendations
+  var elRecs=document.getElementById('we_engine_recs_main');
+  if(elRecs){
+    var recs=(LIVE&&LIVE.etf_recommendations)||[];
+    if(!recs.length){
+      elRecs.innerHTML='<p style="color:#94A3B8;font-size:12px;">No recommendations yet \u2014 engine fires when at least one country is Overweight/Hedge or a sector is Booming/Favoured.</p>';
+    } else {
+      var doorIcon=function(d){
+        if(d.indexOf('country')>=0) return '\u{1F30D}';
+        if(d.indexOf('sector')>=0) return '\u{1F3ED}';
+        return '\u{1F52D}';
+      };
+      var fmtPrice=function(f){
+        if(f.live_price==null||f.live_sym==null) return '<div style="font-size:10px;color:#CBD5E1;">price \u2014</div>';
+        var ccy=f.live_ccy||''; var sym=f.live_sym||'';
+        var px=typeof f.live_price==='number'?f.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):f.live_price;
+        var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
+        return '<div style="font-size:13px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</div>'
+               +'<div style="font-size:9px;color:#94A3B8;font-family:monospace;">'+sym+'</div>';
+      };
+      elRecs.innerHTML='<div style="display:flex;gap:12px;flex-wrap:wrap;">'
+        +recs.map(function(r){
+          var f=r.fund; var conf=r.confirmed_count>1;
+          var borderCol=conf?'#0F766E':'#CBD5E1'; var bgCol=conf?'#F0FDFA':'#fff';
+          var ytdChip=f.ytd!=null?'<span style="font-size:10px;background:#D1FAE5;color:#065F46;border-radius:4px;padding:1px 5px;margin-left:4px;">YTD '+f.ytd+'%</span>':'';
+          return '<div style="background:'+bgCol+';border:2px solid '+borderCol+';border-radius:10px;padding:10px 14px;flex:1;min-width:220px;max-width:340px;">'
+            +'<div style="font-size:10px;color:#64748B;margin-bottom:3px;">'+doorIcon(r.door)+' '+r.signal+(conf?' <strong style="color:#0F766E">\u2605 double-confirmed</strong>':'')+'</div>'
+            +'<div style="font-size:13px;font-weight:700;color:#0F172A;line-height:1.3;">'+f.name+'</div>'
+            +'<div style="font-size:10px;color:#64748B;font-family:monospace;margin:3px 0;">'+f.isin+' \u00b7 TER '+(f.ter!=null?f.ter+'%':'\u2014')+ytdChip+'</div>'
+            +(f.holdings?'<div style="font-size:10px;color:#94A3B8;">Top: '+f.holdings+'</div>':'')
+            +'<div style="margin-top:6px;">'+fmtPrice(f)+'</div>'
+            +'<div style="font-size:9px;color:#94A3B8;margin-top:4px;">'+r.reason+'</div>'
+            +'</div>';
+        }).join('')+'</div>';
+    }
+  }
+
+  // Momentum-40 Watchlist
+  var elM40=document.getElementById('we_momentum40_main');
+  if(elM40){
+    var m40=(LIVE&&LIVE.etf_momentum_40)||[];
+    if(!m40.length){
+      elM40.innerHTML='<p style="color:#94A3B8;font-size:12px;">Momentum-40 list loading (scanner v1.131.0+).</p>';
+    } else {
+      var catColor=function(cat){
+        if(!cat) return '#64748B';
+        if(cat.indexOf('South Korea')>=0) return '#DC2626';
+        if(cat.indexOf('Taiwan')>=0) return '#2563EB';
+        if(cat.indexOf('Japan')>=0) return '#7C3AED';
+        if(cat.indexOf('Asia Pacific')>=0) return '#0891B2';
+        if(cat.indexOf('Emerging')>=0) return '#D97706';
+        if(cat.indexOf('Technology')>=0) return '#059669';
+        if(cat.indexOf('Crypto')>=0||cat.indexOf('crypto')>=0) return '#F59E0B';
+        return '#64748B';
+      };
+      var rows=m40.map(function(e){
+        var ytdStr=typeof e.ytd==='number'?e.ytd.toFixed(2)+'%':'\u2014';
+        var note=e.note?'<span style="font-size:9px;color:#F59E0B;"> \u26a0 '+e.note+'</span>':'';
+        var col=catColor(e.category);
+        return '<tr style="border-bottom:1px solid #F1F5F9;">'
+          +'<td style="padding:5px 8px;font-size:11px;color:#64748B;font-weight:700;">'+e.rank+'</td>'
+          +'<td style="padding:5px 8px;font-size:11px;font-weight:600;color:#0F172A;">'+e.name+note+'</td>'
+          +'<td style="padding:5px 8px;"><span style="font-size:10px;background:'+col+'22;color:'+col+';border-radius:4px;padding:1px 6px;white-space:nowrap;">'+(e.category||'')+'</span></td>'
+          +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;">'+ytdStr+'</td>'
+          +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#64748B;">'+(e.isin||'')+'</td>'
+          +'</tr>';
+      }).join('');
+      elM40.innerHTML='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">'
+        +'<thead><tr style="background:#F8FAFC;">'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">#</th>'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Fund</th>'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Category</th>'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">YTD</th>'
+        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">ISIN</th>'
+        +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
+        +'<p style="font-size:10px;color:#94A3B8;margin:6px 0 0;">'
+        +'\u26a0 Crypto ETP (rank 1) has different risk characteristics from equity ETFs. '
+        +'All others are buy-and-hold equity UCITS. Leveraged/short ETPs excluded. YTD as of data collection date.</p>';
+    }
+  }
+
+  // Pakistan UCITS Proxy
+  var elPak=document.getElementById('we_pak_proxy_main');
+  if(elPak){
+    var pakRec=null;
+    var recs2=(LIVE&&LIVE.etf_recommendations)||[];
+    for(var i=0;i<recs2.length;i++){if(recs2[i].fund&&recs2[i].fund.isin==='LU0659579147'){pakRec=recs2[i];break;}}
+    var pxBlock='<div style="font-size:10px;color:#94A3B8;">Live price not yet resolved</div>';
+    if(pakRec&&pakRec.fund&&pakRec.fund.live_price!=null){
+      var f2=pakRec.fund; var ccy2=f2.live_ccy||'';
+      var ccyS2=ccy2==='USD'?'$':ccy2==='EUR'?'\u20ac':'';
+      var px2=typeof f2.live_price==='number'?f2.live_price.toLocaleString(undefined,{minimumFractionDigits:3,maximumFractionDigits:3}):f2.live_price;
+      pxBlock='<div style="font-size:14px;font-weight:700;color:#0F172A;">'+ccyS2+px2+' '+ccy2+'</div>'
+              +'<div style="font-size:9px;color:#94A3B8;font-family:monospace;">'+(f2.live_sym||'')+'</div>';
+    }
+    elPak.innerHTML='<div style="background:#FFF7ED;border:2px solid #F59E0B;border-radius:10px;padding:12px 16px;max-width:480px;">'
+      +'<div style="font-size:12px;font-weight:700;color:#92400E;letter-spacing:0.5px;margin-bottom:6px;">\uD83C\uDDF5\uD83C\uDDF0 Xtrackers MSCI Pakistan Swap UCITS ETF 1C</div>'
+      +'<div style="font-size:10px;font-family:monospace;color:#64748B;margin-bottom:4px;">LU0659579147 \u00b7 TER 0.85% \u00b7 AUM ~\u20ac20m \u00b7 Accumulating \u00b7 XETR:XBAK / LSE:XBAK</div>'
+      +pxBlock
+      +'<div style="font-size:11px;color:#78350F;margin-top:8px;line-height:1.5;">'
+      +'<strong>Caveats:</strong> (1) <strong>Broad</strong> \u2014 tracks MSCI Pakistan index (KSE-100 proxy), not individual names. '
+      +'(2) <strong>Illiquid</strong> \u2014 ~\u20ac20m AUM, wide bid-ask spreads; use limit orders. '
+      +'(3) <strong>Synthetic</strong> \u2014 swap-based, not physical holdings; carries swap counterparty risk. '
+      +'(4) <strong>Only one</strong> \u2014 there is no alternative UCITS ETF for Pakistan. For single-stock PSX exposure, direct IBKR access to Pakistan market is required.</div>'
+      +'<div style="font-size:10px;color:#94A3B8;margin-top:6px;">Live price via TradingView Scanner. Always displayed here regardless of whether the engine recommends it.</div>'
+      +'</div>';
+  }
+}
+// end renderWorldEtfTab
 
 function renderInstConsensus(){
   const el = document.getElementById('inst_consensus_box');
@@ -5553,6 +5663,7 @@ function recalc(){
   renderPsxSectorBoomingStrip();
   renderInstConsensus();
   renderTceEtfPicks();
+  renderWorldEtfTab();
 }
 window.addEventListener('DOMContentLoaded',()=>{
   recalc();
