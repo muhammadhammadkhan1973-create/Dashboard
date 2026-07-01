@@ -567,7 +567,7 @@
     <div id="we_engine_recs_main"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Momentum-40 &mdash; Non-Leveraged ETFs Already Up &ge;40% YTD</h3>
-    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">Independent watchlist &mdash; these funds are tracked separately from the engine&rsquo;s own recommendations and are <strong>not</strong> engine picks. They are the 34 non-leveraged UCITS products (including 1 crypto ETP, owner-confirmed) with YTD &ge;40% from ETF_Universe_8.xlsx. Leveraged/short products excluded. Korea dominates ranks 2&ndash;8 (112&ndash;120% YTD), Taiwan ranks 9&ndash;13 (71% YTD).</div>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">Independent watchlist &mdash; tracked separately from the engine&rsquo;s own recommendations, <strong>not</strong> engine picks. 55 non-leveraged UCITS products (including 1 crypto ETP, owner-confirmed) with YTD &ge;35% from ETF_Universe_8.xlsx, grouped below by category so you can see at a glance which are country plays (Korea, Taiwan, Japan) versus sector/theme plays (Technology, Clean Energy, Emerging Markets ex-China). Each fund shows TER, 1-year return where the source data has it, and major holdings. Leveraged/short products excluded.</div>
     <div id="we_momentum40_main"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Hydrogen Economy Thematic Watch</h3>
@@ -578,7 +578,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed gold and silver ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk. Pair with Tab 12 Metals for the live trend, RSI, and COT positioning that tells you whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.116</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.117</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5553,12 +5553,13 @@ function renderWorldEtfTab(){
     }
   }
 
-  // Momentum-Watch (35%+ YTD, 55 funds)
+  // Momentum-Watch (35%+ YTD, 55 funds) -- grouped by category/country, each group
+  // ordered by that group's best (lowest) rank so the strongest-performing groups lead.
   var elMW=document.getElementById('we_momentum40_main');
   if(elMW){
     var mw=(LIVE&&LIVE.etf_momentum_watch)||[];
     if(!mw.length){
-      elMW.innerHTML='<p style="color:#94A3B8;font-size:12px;">Momentum-Watch list loading (scanner v1.132.0+).</p>';
+      elMW.innerHTML='<p style="color:#94A3B8;font-size:12px;">Momentum-Watch list loading (scanner v1.133.0+).</p>';
     } else {
       var catColor=function(cat){
         if(!cat) return '#64748B';
@@ -5569,34 +5570,67 @@ function renderWorldEtfTab(){
         if(cat.indexOf('Emerging')>=0) return '#D97706';
         if(cat.indexOf('Technology')>=0) return '#059669';
         if(cat.indexOf('Clean Energy')>=0||cat.indexOf('Climate')>=0) return '#16A34A';
+        if(cat.indexOf('Energy')>=0) return '#B45309';
+        if(cat.indexOf('Circular')>=0) return '#0D9488';
+        if(cat.indexOf('Active')>=0) return '#7C3AED';
         if(cat.indexOf('Crypto')>=0||cat.indexOf('crypto')>=0) return '#F59E0B';
         return '#64748B';
       };
-      var rows=mw.map(function(e){
-        var ytdStr=typeof e.ytd==='number'?e.ytd.toFixed(2)+'%':'\u2014';
-        var note=e.note?'<span style="font-size:9px;color:#F59E0B;"> \u26a0 '+e.note+'</span>':'';
-        var col=catColor(e.category);
-        var tierBadge=e.rank<=34?'':'<span style="font-size:8px;background:#EEF2FF;color:#4F46E5;border-radius:3px;padding:0 4px;margin-left:4px;">35-40%</span>';
-        return '<tr style="border-bottom:1px solid #F1F5F9;">'
-          +'<td style="padding:5px 8px;font-size:11px;color:#64748B;font-weight:700;">'+e.rank+'</td>'
-          +'<td style="padding:5px 8px;font-size:11px;font-weight:600;color:#0F172A;">'+e.name+note+tierBadge+'</td>'
-          +'<td style="padding:5px 8px;"><span style="font-size:10px;background:'+col+'22;color:'+col+';border-radius:4px;padding:1px 6px;white-space:nowrap;">'+(e.category||'')+'</span></td>'
-          +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;">'+ytdStr+'</td>'
-          +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#64748B;">'+(e.isin||'')+'</td>'
-          +'</tr>';
+      // group by category, preserving each fund's rank; sort groups by their best (min) rank
+      var groups={};
+      mw.forEach(function(e){
+        var k=e.category||'Other';
+        if(!groups[k]) groups[k]=[];
+        groups[k].push(e);
+      });
+      var groupKeys=Object.keys(groups).sort(function(a,b){
+        var minA=Math.min.apply(null,groups[a].map(function(e){return e.rank;}));
+        var minB=Math.min.apply(null,groups[b].map(function(e){return e.rank;}));
+        return minA-minB;
+      });
+      var sections=groupKeys.map(function(catKey){
+        var list=groups[catKey].slice().sort(function(a,b){return a.rank-b.rank;});
+        var col=catColor(catKey);
+        var rows=list.map(function(e){
+          var ytdStr=typeof e.ytd==='number'?e.ytd.toFixed(2)+'%':'\u2014';
+          var terStr=typeof e.ter==='number'?e.ter.toFixed(2)+'%':'\u2014';
+          var y1Str=typeof e.ret_1y==='number'?e.ret_1y.toFixed(2)+'%':'\u2014';
+          var note=e.note?'<span style="font-size:9px;color:#F59E0B;"> \u26a0 '+e.note+'</span>':'';
+          var tierBadge=e.rank<=34?'':'<span style="font-size:8px;background:#EEF2FF;color:#4F46E5;border-radius:3px;padding:0 4px;margin-left:4px;">35-40%</span>';
+          return '<tr style="border-bottom:1px solid #F1F5F9;">'
+            +'<td style="padding:5px 8px;font-size:11px;color:#64748B;font-weight:700;">'+e.rank+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;font-weight:600;color:#0F172A;">'+e.name+note+tierBadge+'</td>'
+            +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;">'+ytdStr+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;color:#0F172A;">'+y1Str+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;color:#64748B;">'+terStr+'</td>'
+            +'<td style="padding:5px 8px;font-size:10px;color:#94A3B8;max-width:220px;">'+(e.holdings||'\u2014')+'</td>'
+            +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#64748B;">'+(e.isin||'')+'</td>'
+            +'</tr>';
+        }).join('');
+        return '<div style="margin-bottom:14px;">'
+          +'<div style="font-size:12px;font-weight:700;color:'+col+';background:'+col+'11;padding:5px 10px;border-radius:6px 6px 0 0;border-left:3px solid '+col+';">'
+          +catKey+' <span style="font-weight:400;color:#94A3B8;">('+list.length+' fund'+(list.length>1?'s':'')+')</span></div>'
+          +'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">'
+          +'<thead><tr style="background:#F8FAFC;">'
+          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">#</th>'
+          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Fund</th>'
+          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">YTD</th>'
+          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">1Y</th>'
+          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">TER</th>'
+          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Major Holdings</th>'
+          +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">ISIN</th>'
+          +'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
       }).join('');
-      elMW.innerHTML='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">'
-        +'<thead><tr style="background:#F8FAFC;">'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">#</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Fund</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Category</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">YTD</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">ISIN</th>'
-        +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
+      elMW.innerHTML=sections
         +'<p style="font-size:10px;color:#94A3B8;margin:6px 0 0;">'
         +'\u26a0 Crypto ETP (rank 1) has different risk characteristics from equity ETFs. '
         +'Ranks 35-55 (badged) are the 35-39.99% YTD tier added when the threshold was lowered from 40%. '
-        +'All non-crypto are buy-and-hold equity UCITS. Leveraged/short ETPs excluded. YTD as of data collection date.</p>';
+        +'<b>1Y column:</b> only 7 of 55 funds carry a 1-year return in the source data (the Active ETFs category) '
+        +'-- shown as \u2014 for the rest rather than guessed. '
+        +'<b>Holdings</b> are indicative top constituents from the fund provider, not the full portfolio. '
+        +'Franklin-branded funds here (Korea/Taiwan/Asia-ex-China) hold the local Asian companies those markets contain '
+        +'(Samsung, TSMC, Tencent) -- not US-listed stocks; for direct US semiconductor exposure see the VanEck Semiconductor '
+        +'UCITS ETF in Engine Recommendations above. All non-crypto are buy-and-hold equity UCITS. Leveraged/short ETPs excluded.</p>';
     }
   }
 
