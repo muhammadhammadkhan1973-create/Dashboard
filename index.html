@@ -582,7 +582,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.125</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.126</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5566,6 +5566,18 @@ function renderTceEtfPicks(){
 
 
 function renderWorldEtfTab(){
+  // v1.142.0: shared trend-arrow helper -- a small up/down indicator derived from data
+  // ALREADY populated and displayed elsewhere on the card (country 3M trailing return when
+  // available, YTD sign as fallback). Zero new fetch, zero new risk: reuses country_trailing
+  // (fetch_country_rs, live since v1.137.0) and live_ytd (resolve_etf_live_price, v1.141.0).
+  var trendArrow = function(pct, label){
+    if (typeof pct !== 'number') return '';
+    var up = pct >= 0;
+    var col = up ? '#15803D' : '#B91C1C';
+    var arr = up ? '\u25B2' : '\u25BC';
+    var sign = pct >= 0 ? '+' : '';
+    return '<span style="color:'+col+';font-weight:700;font-size:12px;margin-left:7px;white-space:nowrap;" title="'+(label||'Trend')+': '+sign+pct.toFixed(1)+'%">'+arr+' '+sign+pct.toFixed(1)+'%</span>';
+  };
   // Engine Recommendations
   var elRecs=document.getElementById('we_engine_recs_main');
   if(elRecs){
@@ -5591,22 +5603,23 @@ function renderWorldEtfTab(){
         var doors=r.door.split('+');
         if(doors.length<2) return '';
         var parts=doors.map(function(d){return doorLabel(d);});
-        return '<div style="font-size:10px;color:#0F766E;margin-top:3px;line-height:1.4;">'
+        return '<div style="font-size:10px;color:#0F766E;margin-top:4px;line-height:1.4;">'
           +'<strong>Two independent signals agree:</strong> '+parts.join(' <em>AND</em> ')+'.</div>';
       };
-      var fmtPrice=function(f){
-        if(f.live_price==null) return '<div style="font-size:10px;color:#CBD5E1;">price \u2014</div>';
+      var fmtPrice=function(f, trendPct, trendLabel){
+        if(f.live_price==null) return '<div style="font-size:11px;color:#94A3B8;">price \u2014</div>';
         var ccy=f.live_ccy||'';
         var px=typeof f.live_price==='number'?f.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):f.live_price;
-        var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
-        return '<div style="font-size:13px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</div>';
+        var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':ccy==='CHF'?'CHF\u00a0':'';
+        return '<div style="font-size:17px;font-weight:700;color:#0F172A;font-family:var(--font-head,inherit);display:flex;align-items:baseline;flex-wrap:wrap;">'
+          +ccyS+px+'<span style="font-size:11px;font-weight:500;color:#64748B;margin-left:4px;">'+ccy+'</span>'+trendArrow(trendPct, trendLabel)+'</div>';
       };
       // v1.137.0: ticker is now a clean, labelled field (was buried tiny subtext under price).
       // live_sym is the SAME live TradingView resolver already priced this fund with -- real,
       // verified, refreshed every run, never a hardcoded guess.
       var fmtTicker=function(f){
-        if(!f.live_sym) return '<span style="font-size:10px;color:#CBD5E1;">ticker pending live price</span>';
-        return '<span style="font-size:10px;color:#0F172A;font-family:monospace;background:#F1F5F9;border-radius:3px;padding:1px 5px;">'+f.live_sym+'</span>';
+        if(!f.live_sym) return '<span style="font-size:10px;color:#94A3B8;">ticker pending live price</span>';
+        return '<span style="font-size:11px;color:#0F172A;font-family:var(--font-mono,monospace);background:#F1F5F9;border-radius:4px;padding:2px 6px;font-weight:600;">'+f.live_sym+'</span>';
       };
       // v1.137.0: trailing returns (Stage 4 confirmation step) for country-attached picks --
       // country door + global_theme door both resolve to a specific country, so 3M/6M/12M
@@ -5614,27 +5627,33 @@ function renderWorldEtfTab(){
       // and EM-ex-China picks have no country and honestly show that rather than a guess.
       var fmtTrailing=function(r){
         var ct=r.country_trailing;
-        if(!ct) return '<div style="font-size:9px;color:#94A3B8;margin-top:3px;">Sector-level pick \u2014 no country trailing return.</div>';
+        if(!ct) return '<div style="font-size:10px;color:#94A3B8;margin-top:4px;">Sector-level pick \u2014 no country trailing return.</div>';
         var f3=typeof ct.ret_3m==='number'?(ct.ret_3m>=0?'+':'')+ct.ret_3m+'%':'\u2014';
         var f6=typeof ct.ret_6m==='number'?(ct.ret_6m>=0?'+':'')+ct.ret_6m+'%':'\u2014';
         var f12=typeof ct.ret_12m==='number'?(ct.ret_12m>=0?'+':'')+ct.ret_12m+'%':'\u2014';
-        return '<div style="font-size:9px;color:#374151;margin-top:3px;">'
-          +'<b>'+ct.country+'</b> trailing (USD): 3M '+f3+' \u00b7 6M '+f6+' \u00b7 12M '+f12+'</div>';
+        return '<div style="font-size:10px;color:#475569;margin-top:4px;">'
+          +'<b style="color:#334155;">'+ct.country+'</b> trailing (USD): 3M '+f3+' \u00b7 6M '+f6+' \u00b7 12M '+f12+'</div>';
       };
-      elRecs.innerHTML='<div style="display:flex;gap:12px;flex-wrap:wrap;">'
+      elRecs.innerHTML='<div style="display:flex;gap:14px;flex-wrap:wrap;">'
         +recs.map(function(r){
           var f=r.fund; var conf=r.confirmed_count>1;
           var borderCol=conf?'#0F766E':'#CBD5E1'; var bgCol=conf?'#F0FDFA':'#fff';
           var ytdVal=typeof f.live_ytd==='number'?f.live_ytd:f.ytd;
-          var ytdChip=ytdVal!=null?'<span style="font-size:10px;background:#D1FAE5;color:#065F46;border-radius:4px;padding:1px 5px;margin-left:4px;">YTD '+ytdVal+'%</span>':'';
-          return '<div style="background:'+bgCol+';border:2px solid '+borderCol+';border-radius:10px;padding:10px 14px;flex:1;min-width:220px;max-width:340px;">'
-            +'<div style="font-size:10px;color:#64748B;margin-bottom:3px;">'+doorIcon(r.door)+' '+r.signal+(conf?' <strong style="color:#0F766E">\u2605 double-confirmed</strong>':'')+'</div>'
-            +'<div style="font-size:13px;font-weight:700;color:#0F172A;line-height:1.3;">'+f.name+'</div>'
-            +'<div style="font-size:10px;color:#64748B;font-family:monospace;margin:3px 0;">'+f.isin+' \u00b7 TER '+(f.ter!=null?f.ter+'%':'\u2014')+ytdChip+'</div>'
-            +(f.holdings?'<div style="font-size:10px;color:#94A3B8;">Top: '+f.holdings+'</div>':'')
-            +'<div style="margin-top:6px;display:flex;align-items:baseline;gap:8px;">'+fmtPrice(f)+fmtTicker(f)+'</div>'
+          var ytdChip=ytdVal!=null?'<span style="font-size:10px;background:#D1FAE5;color:#065F46;border-radius:4px;padding:2px 6px;margin-left:5px;font-weight:600;">YTD '+ytdVal+'%</span>':'';
+          // Trend source: country's own 3M trailing return when this pick is country-attached
+          // (a genuine recent-trend read, already computed) -- falls back to YTD sign for
+          // sector-door picks that carry no country. Never a new/guessed number.
+          var ct=r.country_trailing;
+          var trendPct=(ct && typeof ct.ret_3m==='number')?ct.ret_3m:ytdVal;
+          var trendLabel=(ct && typeof ct.ret_3m==='number')?(ct.country+' 3M trend'):'YTD trend';
+          return '<div style="background:'+bgCol+';border:2px solid '+borderCol+';border-radius:12px;padding:14px 16px;flex:1;min-width:240px;max-width:340px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
+            +'<div style="font-size:10px;color:#475569;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:5px;">'+doorIcon(r.door)+' '+r.signal+(conf?' <strong style="color:#0F766E">\u2605 double-confirmed</strong>':'')+'</div>'
+            +'<div style="font-size:15px;font-weight:700;color:#0F172A;line-height:1.32;font-family:var(--font-head,inherit);">'+f.name+'</div>'
+            +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono,monospace);margin:5px 0;">'+f.isin+' \u00b7 TER '+(f.ter!=null?f.ter+'%':'\u2014')+ytdChip+'</div>'
+            +(f.holdings?'<div style="font-size:11.5px;color:#475569;margin:5px 0;line-height:1.4;"><b style="color:#1E293B;">Top holdings:</b> '+f.holdings+'</div>':'')
+            +'<div style="margin-top:9px;padding-top:9px;border-top:1px solid '+borderCol+'55;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">'+fmtPrice(f, trendPct, trendLabel)+fmtTicker(f)+'</div>'
             +fmtTrailing(r)
-            +'<div style="font-size:9px;color:#94A3B8;margin-top:4px;">'+r.reason+'</div>'
+            +'<div style="font-size:9.5px;color:#94A3B8;margin-top:6px;">'+r.reason+'</div>'
             +explainDoubleConfirm(r)
             +'</div>';
         }).join('')+'</div>';
@@ -5684,8 +5703,8 @@ function renderWorldEtfTab(){
       var bodyRows=groupKeys.map(function(catKey){
         var list=groups[catKey].slice().sort(function(a,b){return a.rank-b.rank;});
         var col=catColor(catKey);
-        var headerRow='<tr><td colspan="7" style="padding:6px 8px;font-size:12px;font-weight:700;color:'+col+';background:'+col+'11;border-left:3px solid '+col+';">'
-          +catKey+' <span style="font-weight:400;color:#94A3B8;">('+list.length+' fund'+(list.length>1?'s':'')+')</span></td></tr>';
+        var headerRow='<tr><td colspan="8" style="padding:6px 8px;font-size:12px;font-weight:700;color:'+col+';background:'+col+'11;border-left:3px solid '+col+';">'
+          +catKey+' <span style="font-weight:400;color:#64748B;">('+list.length+' fund'+(list.length>1?'s':'')+')</span></td></tr>';
         var dataRows=list.map(function(e){
           // v1.141.0: prefer live YTD/1Y (resolve_etf_live_price, same trusted mechanism as
           // ticker/price) over the static file snapshot (31-May-2026) -- falls back to static
@@ -5707,14 +5726,14 @@ function renderWorldEtfTab(){
             :e.rank<=55?' <span style="font-size:8px;background:#EEF2FF;color:#4F46E5;border-radius:3px;padding:0 4px;white-space:nowrap;">35-40%</span>'
             :' <span style="font-size:8px;background:#FEF3C7;color:#92400E;border-radius:3px;padding:0 4px;white-space:nowrap;">below 35% &mdash; added by request</span>';
           return '<tr style="border-bottom:1px solid #F1F5F9;">'
-            +'<td style="padding:5px 8px;font-size:11px;color:#64748B;font-weight:700;vertical-align:top;">'+e.rank+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;color:#475569;font-weight:700;vertical-align:top;">'+e.rank+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;font-weight:600;color:#0F172A;vertical-align:top;word-break:break-word;">'+e.name+note+tierBadge+'</td>'
             +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+ytdStr+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;color:#0F172A;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+y1Str+'</td>'
-            +'<td style="padding:5px 8px;font-size:11px;color:#64748B;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+terStr+'</td>'
-            +'<td style="padding:5px 8px;font-size:10px;color:#94A3B8;vertical-align:top;word-break:break-word;">'+(e.holdings||'\u2014')+'</td>'
-            +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#64748B;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(e.isin||'')+'</td>'
-            +'<td style="padding:5px 8px;font-size:10px;color:#64748B;vertical-align:top;white-space:nowrap;">'+tickerStr+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;color:#475569;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+terStr+'</td>'
+            +'<td style="padding:5px 8px;font-size:10.5px;color:#475569;vertical-align:top;word-break:break-word;">'+(e.holdings||'\u2014')+'</td>'
+            +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#475569;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(e.isin||'')+'</td>'
+            +'<td style="padding:5px 8px;font-size:10px;color:#475569;vertical-align:top;white-space:nowrap;">'+tickerStr+'</td>'
             +'</tr>';
         }).join('');
         return headerRow+dataRows;
@@ -5722,15 +5741,15 @@ function renderWorldEtfTab(){
       var table='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;table-layout:fixed;">'
         +'<colgroup><col style="width:24px;"><col style="width:22%;"><col style="width:8%;"><col style="width:8%;">'
         +'<col style="width:7%;"><col style="width:19%;"><col style="width:11%;"><col style="width:9%;"></colgroup>'
-        +'<thead><tr style="background:#F8FAFC;">'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">#</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Fund</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">YTD</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">1Y</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">TER</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Major Holdings</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">ISIN</th>'
-        +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Ticker</th>'
+        +'<thead><tr style="background:#EEF2F7;border-bottom:2px solid #CBD5E1;">'
+        +'<th style="padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">#</th>'
+        +'<th style="padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">Fund</th>'
+        +'<th style="padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">YTD</th>'
+        +'<th style="padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">1Y</th>'
+        +'<th style="padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">TER</th>'
+        +'<th style="padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">Major Holdings</th>'
+        +'<th style="padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">ISIN</th>'
+        +'<th style="padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">Ticker</th>'
         +'</tr></thead><tbody>'+bodyRows+'</tbody></table></div>';
       elMW.innerHTML=table
         +'<p style="font-size:10px;color:#94A3B8;margin:6px 0 0;">'
@@ -5753,23 +5772,26 @@ function renderWorldEtfTab(){
     if(!hy.length){
       elHy.innerHTML='<p style="color:#94A3B8;font-size:12px;">Hydrogen Watch loading (scanner v1.132.0+).</p>';
     } else {
-      var fmtPriceHy=function(w){
-        if(w.live_price==null) return '<span style="font-size:9px;color:#CBD5E1;">price \u2014</span>';
+      var fmtPriceHy=function(w, trendPct){
+        if(w.live_price==null) return '<span style="font-size:10px;color:#94A3B8;">price \u2014</span>';
         var ccy=w.live_ccy||''; var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
         var px=typeof w.live_price==='number'?w.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):w.live_price;
-        return '<span style="font-size:11px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>';
+        return '<span style="font-size:12px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>'+trendArrow(trendPct, '1Y trend');
       };
-      elHy.innerHTML='<div style="display:flex;gap:12px;flex-wrap:wrap;">'
+      elHy.innerHTML='<div style="display:flex;gap:14px;flex-wrap:wrap;">'
         +hy.map(function(w){
-          var note=w.note?'<div style="font-size:9px;color:#F59E0B;margin-top:3px;">\u26a0 '+w.note+'</div>':'';
-          return '<div style="background:#F0F9FF;border:2px solid #0EA5E9;border-radius:10px;padding:10px 14px;flex:1;min-width:220px;max-width:300px;">'
-            +'<div style="font-size:13px;font-weight:700;color:#0F172A;line-height:1.3;">'+w.name+'</div>'
-            +'<div style="font-size:10px;color:#64748B;font-family:monospace;margin:3px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 \u20ac'+w.size_m_eur+'m AUM</div>'
-            +'<div style="font-size:10px;color:#94A3B8;">Top: '+w.holdings+'</div>'
-            +'<div style="margin-top:6px;display:flex;gap:10px;align-items:baseline;">'
-            +'<span style="font-size:10px;color:#0369A1;">6M <b>'+w.ret_6m+'%</b></span>'
-            +'<span style="font-size:10px;color:#0369A1;">1Y <b>'+w.ret_1y+'%</b></span>'
-            +fmtPriceHy(w)
+          var note=w.note?'<div style="font-size:9px;color:#F59E0B;margin-top:4px;">\u26a0 '+w.note+'</div>':'';
+          // Trend source: this fund's own 1Y return (already displayed just above the price) --
+          // zero new data, prefers live if the resolver got it this run.
+          var trendPct=typeof w.live_ret_1y==='number'?w.live_ret_1y:w.ret_1y;
+          return '<div style="background:#F0F9FF;border:2px solid #0EA5E9;border-radius:12px;padding:12px 16px;flex:1;min-width:230px;max-width:300px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
+            +'<div style="font-size:14px;font-weight:700;color:#0F172A;line-height:1.3;font-family:var(--font-head,inherit);">'+w.name+'</div>'
+            +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 \u20ac'+w.size_m_eur+'m AUM</div>'
+            +'<div style="font-size:11px;color:#475569;margin:5px 0;line-height:1.4;"><b style="color:#1E293B;">Top holdings:</b> '+w.holdings+'</div>'
+            +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid #0EA5E933;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;">'
+            +'<span style="font-size:10px;color:#0369A1;font-weight:600;">6M <b>'+w.ret_6m+'%</b></span>'
+            +'<span style="font-size:10px;color:#0369A1;font-weight:600;">1Y <b>'+w.ret_1y+'%</b></span>'
+            +fmtPriceHy(w, trendPct)
             +'</div>'+note
             +'</div>';
         }).join('')+'</div>';
@@ -5797,11 +5819,11 @@ function renderWorldEtfTab(){
       };
       var metalPrefix={'Gold':'gold_px','Silver':'silver_px','Platinum':'platinum_px','Palladium':'palladium_px','Copper':'copper_px'};
       var cotPrefix={'Gold':'gold','Silver':'silver','Copper':'copper'};
-      var fmtPriceM=function(w){
-        if(w.live_price==null) return '<span style="font-size:9px;color:#CBD5E1;">price \u2014</span>';
+      var fmtPriceM=function(w, trendPct){
+        if(w.live_price==null) return '<span style="font-size:10px;color:#94A3B8;">price \u2014</span>';
         var ccy=w.live_ccy||''; var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
         var px=typeof w.live_price==='number'?w.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):w.live_price;
-        return '<span style="font-size:14px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>';
+        return '<span style="font-size:15px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>'+trendArrow(trendPct, 'vs 200-DMA');
       };
       // pulls the SAME 4 fields Tab 12's dmaChip() renders, direct from macros.metals
       function techSignal(metalName){
@@ -5846,16 +5868,21 @@ function renderWorldEtfTab(){
         var col=metalCol(w.metal);
         var tech=techByMetal[w.metal];
         var cot=cotByMetal[w.metal];
+        // Trend source: this metal's own % vs 200-DMA (already computed above for the tech
+        // signal line) -- zero new data, just surfaced next to the price too for consistency
+        // with Engine Recommendations/Hydrogen Watch.
+        var _pre=metalPrefix[w.metal];
+        var trendPct=_pre?Mx[_pre+'_ext_200_pct']:undefined;
         var cotLine=cot.available
           ? '<span style="color:#374151;">COT '+cot.text+'</span>'
           : '<span style="color:#94A3B8;">COT not tracked (Gold/Silver/Copper only)</span>';
-        return '<div style="background:#FFFBEB;border:2px solid '+col+';border-radius:10px;padding:10px 14px;flex:1;min-width:220px;max-width:280px;">'
-          +'<div style="font-size:10px;color:'+col+';font-weight:700;letter-spacing:0.5px;">'+w.metal.toUpperCase()+' \u00b7 '+w.replication+'</div>'
-          +'<div style="font-size:13px;font-weight:700;color:#0F172A;line-height:1.3;margin-top:2px;">'+w.name+'</div>'
-          +'<div style="font-size:10px;color:#64748B;font-family:monospace;margin:3px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 '+w.ticker_lse+'</div>'
-          +'<div style="margin-top:6px;">'+fmtPriceM(w)+'</div>'
-          +(tech?'<div style="font-size:10px;font-family:monospace;margin-top:7px;padding-top:6px;border-top:1px solid '+col+'33;">'+tech+'</div>':'')
-          +'<div style="font-size:10px;margin-top:3px;">'+cotLine+'</div>'
+        return '<div style="background:#FFFBEB;border:2px solid '+col+';border-radius:12px;padding:12px 16px;flex:1;min-width:230px;max-width:280px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
+          +'<div style="font-size:10px;color:'+col+';font-weight:700;letter-spacing:0.06em;">'+w.metal.toUpperCase()+' \u00b7 '+w.replication+'</div>'
+          +'<div style="font-size:14px;font-weight:700;color:#0F172A;line-height:1.3;margin-top:3px;font-family:var(--font-head,inherit);">'+w.name+'</div>'
+          +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 '+w.ticker_lse+'</div>'
+          +'<div style="margin-top:7px;">'+fmtPriceM(w, trendPct)+'</div>'
+          +(tech?'<div style="font-size:10px;font-family:var(--font-mono,monospace);margin-top:8px;padding-top:7px;border-top:1px solid '+col+'33;">'+tech+'</div>':'')
+          +'<div style="font-size:10px;margin-top:4px;">'+cotLine+'</div>'
           +'</div>';
       }).join('');
       elM.innerHTML='<div style="display:flex;gap:12px;flex-wrap:wrap;">'+cards+'</div>'
