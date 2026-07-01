@@ -575,10 +575,10 @@
     <div id="we_hydrogen_main"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Physical Metals ETC Watch</h3>
-    <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed gold and silver ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk. Pair with Tab 12 Metals for the live trend, RSI, and COT positioning that tells you whether now is a good entry.</div>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk. All 4 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver only) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.117</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.118</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5664,31 +5664,95 @@ function renderWorldEtfTab(){
     }
   }
 
-  // Physical Metals ETC Watch
+  // Physical Metals ETC Watch -- WIRED to Tab 12's live technical signal (SMA200/RSI/cross)
+  // and, for Gold/Silver, the same COT positioning. Same LIVE.macros.metals object Tab 12
+  // reads; zero new fetch, zero duplicated scoring -- this is a direct reuse of Tab 12's data.
   var elM=document.getElementById('we_metals_main');
   if(elM){
     var met=(LIVE&&LIVE.etf_metals_etc_watch)||[];
+    var Mx=(LIVE&&LIVE.macros&&LIVE.macros.metals)?LIVE.macros.metals:{};
     if(!met.length){
-      elM.innerHTML='<p style="color:#94A3B8;font-size:12px;">Metals ETC Watch loading (scanner v1.132.0+).</p>';
+      elM.innerHTML='<p style="color:#94A3B8;font-size:12px;">Metals ETC Watch loading (scanner v1.134.0+).</p>';
     } else {
-      var metalCol=function(m){return m==='Gold'?'#B45309':'#64748B';};
+      var metalCol=function(m){
+        if(m==='Gold') return '#B45309';
+        if(m==='Silver') return '#64748B';
+        if(m==='Platinum') return '#0891B2';
+        if(m==='Palladium') return '#7C3AED';
+        return '#64748B';
+      };
+      // metal name -> macros.metals field prefix (exactly what Tab 12's calcMetals() uses)
+      var metalPrefix={'Gold':'gold_px','Silver':'silver_px','Platinum':'platinum_px','Palladium':'palladium_px'};
+      // metal name -> COT prefix (Gold/Silver/Copper only -- Tab 12 has no Platinum/Palladium COT)
+      var cotPrefix={'Gold':'gold','Silver':'silver'};
       var fmtPriceM=function(w){
         if(w.live_price==null) return '<span style="font-size:9px;color:#CBD5E1;">price \u2014</span>';
         var ccy=w.live_ccy||''; var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
         var px=typeof w.live_price==='number'?w.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):w.live_price;
         return '<span style="font-size:12px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>';
       };
-      elM.innerHTML='<div style="display:flex;gap:12px;flex-wrap:wrap;">'
-        +met.map(function(w){
-          var col=metalCol(w.metal);
-          return '<div style="background:#FFFBEB;border:2px solid '+col+';border-radius:10px;padding:10px 14px;flex:1;min-width:200px;max-width:280px;">'
-            +'<div style="font-size:10px;color:'+col+';font-weight:700;letter-spacing:0.5px;">'+w.metal.toUpperCase()+' \u00b7 '+w.replication+'</div>'
-            +'<div style="font-size:13px;font-weight:700;color:#0F172A;line-height:1.3;margin-top:2px;">'+w.name+'</div>'
+      // pulls the SAME 4 fields Tab 12's dmaChip() renders, direct from macros.metals
+      function techSignal(metalName){
+        var pre=metalPrefix[metalName];
+        if(!pre) return null;
+        var tr=Mx[pre+'_ma_trend'], cr=Mx[pre+'_cross'], ext=Mx[pre+'_ext_200_pct'], rsi=Mx[pre+'_rsi14'];
+        if(tr==null && cr==null && rsi==null) return null;
+        var bits=[];
+        if(tr!=null){
+          var up=(tr==='up'), arr=up?'\u25B2':'\u25BC', c=up?'#15803d':'#b91c1c';
+          var ex=(typeof ext==='number')?(' '+(ext>=0?'+':'')+ext.toFixed(1)+'%'):'';
+          bits.push('<span style="color:'+c+';font-weight:700;">'+arr+(up?' above 200-DMA':' below 200-DMA')+ex+'</span>');
+        }
+        if(cr){var g=(cr==='golden');bits.push('<span style="color:'+(g?'#15803d':'#b91c1c')+';">'+(g?'golden cross':'death cross')+'</span>');}
+        if(typeof rsi==='number'){
+          var rc=rsi<30?'#15803d':rsi>70?'#b91c1c':'#64748b', rl=rsi<30?' (oversold)':rsi>70?' (overbought)':'';
+          bits.push('<span style="color:'+rc+';">RSI '+Math.round(rsi)+rl+'</span>');
+        }
+        return bits.length?bits.join(' \u00b7 '):null;
+      }
+      // pulls RAW COT positioning (net/%OI/percentile/WoW) -- same numbers Tab 12's COT block
+      // uses, no attempt to replicate Tab 12's internal composite "vote" score
+      function cotSignal(metalName){
+        var cp=cotPrefix[metalName];
+        if(!cp) return {available:false};
+        var net=Mx['cot_'+cp+'_net'], pct=Mx['cot_'+cp+'_pct'], pctile=Mx['cot_'+cp+'_pctile'], wow=Mx['cot_'+cp+'_pct_wow'];
+        if(net==null && pct==null) return {available:false};
+        var parts=[];
+        if(typeof net==='number') parts.push('net '+(net>=0?'+':'')+Math.round(net).toLocaleString());
+        if(typeof pct==='number') parts.push(pct.toFixed(1)+'% of OI');
+        if(typeof pctile==='number') parts.push(Math.round(pctile)+'th pctile (1-3yr)');
+        var arrow=(typeof wow==='number')?(wow>0?' \u25B2':wow<0?' \u25BC':''):'';
+        return {available:true, text:parts.join(' \u00b7 ')+arrow};
+      }
+      var groups={};
+      met.forEach(function(w){ (groups[w.metal]=groups[w.metal]||[]).push(w); });
+      var metalOrder=['Gold','Silver','Platinum','Palladium'];
+      var sections=metalOrder.filter(function(m){return groups[m];}).map(function(metalName){
+        var funds=groups[metalName];
+        var col=metalCol(metalName);
+        var tech=techSignal(metalName);
+        var cot=cotSignal(metalName);
+        var cotLine=cot.available
+          ? '<span style="color:#374151;">COT positioning: '+cot.text+'</span>'
+          : '<span style="color:#94A3B8;">COT positioning: not tracked for this metal (scanner covers Gold/Silver/Copper only)</span>';
+        var fundCards=funds.map(function(w){
+          return '<div style="background:#fff;border:1px solid '+col+'55;border-radius:8px;padding:8px 12px;flex:1;min-width:200px;max-width:260px;">'
+            +'<div style="font-size:12px;font-weight:700;color:#0F172A;line-height:1.3;">'+w.name+'</div>'
             +'<div style="font-size:10px;color:#64748B;font-family:monospace;margin:3px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 '+w.ticker_lse+'</div>'
-            +'<div style="margin-top:6px;">'+fmtPriceM(w)+'</div>'
+            +'<div style="margin-top:4px;">'+fmtPriceM(w)+'</div>'
             +'</div>';
-        }).join('')+'</div>'
-        +'<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;">For the trend signal (is now a good entry) see Tab 12 Metals \u2014 SMA200, RSI, and COT positioning are already live there.</p>';
+        }).join('');
+        return '<div style="margin-bottom:14px;">'
+          +'<div style="font-size:12px;font-weight:700;color:'+col+';background:'+col+'11;padding:6px 10px;border-radius:6px;border-left:3px solid '+col+';margin-bottom:6px;">'
+          +metalName.toUpperCase()+' <span style="font-weight:400;color:#94A3B8;">('+funds.length+' fund'+(funds.length>1?'s':'')+')</span>'
+          +(tech?'<div style="font-size:11px;font-weight:400;margin-top:3px;font-family:var(--font-mono,monospace);">'+tech+'</div>':'<div style="font-size:10px;color:#94A3B8;margin-top:3px;">technical signal loading</div>')
+          +'<div style="font-size:11px;font-weight:400;margin-top:3px;">'+cotLine+'</div>'
+          +'</div>'
+          +'<div style="display:flex;gap:10px;flex-wrap:wrap;">'+fundCards+'</div>'
+          +'</div>';
+      }).join('');
+      elM.innerHTML=sections
+        +'<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;">Technical signal (200-DMA trend, cross, RSI) and COT positioning are read live from Tab 12 Metals\u2019 own data \u2014 same numbers, same source, shown here next to the buyable fund. For the full forward-outlook cones, seasonal read, and world driver map, see Tab 12 directly.</p>';
     }
   }
 }
