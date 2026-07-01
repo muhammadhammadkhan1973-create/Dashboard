@@ -470,6 +470,9 @@
     <!-- Four Metal Cards -->
     <div class="metals-subsection">Four Metals — Bias Score &amp; Overlay</div>
     <div class="metals-grid-4" id="metals_four_cards"></div>
+    <h3 class="subsection-title" style="margin-top:24px;">Where Institutional Money Is Positioned</h3>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">Every week, large speculators (hedge funds, managed-money traders — not central banks or physical users) report their futures positions to US regulators. A heavy, one-sided position is a crowd — crowds eventually unwind, which is itself a signal. Real data for Gold, Silver, and Copper; Platinum and Palladium aren't tracked by this feed (COMEX doesn't publish the same weekly report for them at meaningful volume).</div>
+    <div id="metals_cot_plain"></div>
 
     <!-- Forward Outlook (fundamental + technical) -->
     <div class="metals-subsection">Forward Outlook — Technical Range + Fundamental Read (3m / 6m)</div>
@@ -579,7 +582,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.121</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.123</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -3519,6 +3522,54 @@ function calcMetals(){
       const trend=(m.pxw!=null||m.pxm!=null)?`<div style="margin-top:2px;">${mTrend(m.pxw,m.pxm,{pre:'$',dp:dp2})}</div>`:'';
       return`<div class="metal-card"><div class="mc-name">${m.name}</div><div class="mc-price">${px}</div>${trend}<div class="mc-bias" style="background:${b.bg};color:${b.text};">${m.score>=0?'+':''}${m.score} — ${b.label}</div><div class="mc-detail">${m.detail}</div></div>`;
     }).join('');
+
+    // Plain-language COT positioning -- translates the raw net/%OI/percentile numbers
+    // (already fetched, already scored elsewhere) into a sentence a non-trader can act on.
+    // Real read for Gold/Silver/Copper (COMEX weekly report); honest gap for Platinum/Palladium.
+    (function(){
+      var elCot=document.getElementById('metals_cot_plain');
+      if(!elCot) return;
+      var metals=[['Gold','gold'],['Silver','silver'],['Copper','copper'],['Platinum',null],['Palladium',null]];
+      var cards=metals.map(function(pair){
+        var label=pair[0], key=pair[1];
+        if(!key){
+          return '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px 14px;flex:1;min-width:200px;">'
+            +'<div style="font-size:11px;font-weight:700;color:#64748B;">'+label.toUpperCase()+'</div>'
+            +'<div style="font-size:11px;color:#94A3B8;margin-top:4px;">Not tracked by this feed \u2014 no weekly COMEX report at meaningful volume for '+label.toLowerCase()+'.</div>'
+            +'</div>';
+        }
+        var net=M['cot_'+key+'_net'], pct=M['cot_'+key+'_pct'], pctile=M['cot_'+key+'_pctile'], wow=M['cot_'+key+'_pct_wow'];
+        if(net==null && pct==null){
+          return '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px 14px;flex:1;min-width:200px;">'
+            +'<div style="font-size:11px;font-weight:700;color:#64748B;">'+label.toUpperCase()+'</div>'
+            +'<div style="font-size:11px;color:#94A3B8;margin-top:4px;">Data loading.</div></div>';
+        }
+        var long=(net>=0);
+        var dirWord=long?'LONG':'SHORT';
+        var dirCol=long?'#15803d':'#b91c1c';
+        var pctStr=typeof pct==='number'?Math.abs(pct).toFixed(1)+'%':'an unknown share';
+        var crowdSentence;
+        if(typeof pctile==='number'){
+          if(pctile>=80) crowdSentence='That\u2019s near the TOP of where this has sat over the past 1\u20133 years \u2014 a crowded position, historically more prone to unwinding.';
+          else if(pctile>=60) crowdSentence='That\u2019s on the higher side of its normal 1\u20133-year range, but not extreme.';
+          else if(pctile>=40) crowdSentence='That\u2019s roughly in the middle of its normal 1\u20133-year range \u2014 not a crowded position either way.';
+          else if(pctile>=20) crowdSentence='That\u2019s on the lower side of its normal 1\u20133-year range, but not extreme.';
+          else crowdSentence='That\u2019s near the BOTTOM of where this has sat over the past 1\u20133 years \u2014 a crowded position on the other side, which some traders read as a contrarian setup.';
+        } else {
+          crowdSentence='(Percentile history still building \u2014 too early to say how crowded this is vs its own past.)';
+        }
+        var wowSentence='';
+        if(typeof wow==='number' && Math.abs(wow)>=0.3){
+          wowSentence=' This position '+(wow>0?'grew':'shrank')+' over the past week.';
+        }
+        return '<div style="background:#FFFBEB;border:2px solid '+dirCol+';border-radius:10px;padding:10px 14px;flex:1;min-width:240px;max-width:320px;">'
+          +'<div style="font-size:11px;font-weight:700;color:'+dirCol+';">'+label.toUpperCase()+' \u2014 net <span style="text-decoration:underline;">'+dirWord+'</span></div>'
+          +'<div style="font-size:12px;color:#0F172A;margin-top:4px;line-height:1.5;">Large speculators are net <b>'+dirWord.toLowerCase()+'</b> '+label+', holding <b>'+pctStr+'</b> of the open market on that side.</div>'
+          +'<div style="font-size:11px;color:#64748B;margin-top:4px;line-height:1.4;">'+crowdSentence+wowSentence+'</div>'
+          +'</div>';
+      }).join('');
+      elCot.innerHTML='<div style="display:flex;gap:12px;flex-wrap:wrap;">'+cards+'</div>';
+    })();
   }
 
   // ---- v5.97 graphical trend helpers (shared by tiles + forward cones) ----
@@ -3626,13 +3677,15 @@ function calcMetals(){
        fund:'Secular EV headwind erodes its core auto-catalyst demand (~72% of use); Russia / South-Africa supply concentration is the only offset. Structurally bearish unless ICE-vehicle demand surprises up.',
        src:'industry'},
       {n:'COPPER',pre:'copper_px',px:copPx,mom:M.copper_px_mom,seas:null,bias:0,beta:1.2,fl:0,
-       // seas deliberately null -- no fabricated monthly-seasonality table (see scanner v1.135.0 changelog:
-       // real sourced decimals weren't found, so this shows "not yet sourced" below rather than a guess).
-       // bias:0 and fl:0 are deliberate too -- copper is explicitly "independent of the gold framework"
-       // (same framing already used in the World Driver Map below), so it doesn't inherit gold's macro
-       // backdrop score or a fixed directional structural thesis the way the precious metals do.
-       fund:'Cyclical industrial demand (grid buildout, EV, AI-datacenter power) against a structural mine-supply deficit. Unlike gold, has no official-sector or monetary bid \u2014 moves with the global manufacturing cycle and Chinese demand, not real yields. The buy/sell stance below (China PMI + ICSG balance + COT) is the more relevant read for copper than this backdrop score.',
-       src:'ICSG; industry'},
+       // seas deliberately null -- no fabricated monthly-seasonality table. Real per-month decimal
+       // data was never found (justETF/Barchart/EquityClock all render it as an image chart, not
+       // extractable text), and two owner-supplied Sarmaaya screenshots (2026-07-01) confirmed the
+       // same wall -- so "not yet sourced" stands for the NUMBER. What follows in fund: below is a
+       // words-only summary of what those two charts actually showed, honestly labelled as shape
+       // description + two real quoted stats, never presented as the same precision as the Gold/
+       // Silver/Platinum/Palladium table (which has real per-month decimals from a different source).
+       fund:'Cyclical industrial demand (grid buildout, EV, AI-datacenter power) against a structural mine-supply deficit. Unlike gold, has no official-sector or monetary bid \u2014 moves with the global manufacturing cycle and Chinese demand, not real yields. The buy/sell stance below (China PMI + ICSG balance + COT) is the more relevant read for copper than this backdrop score.<br><br><b>Seasonal shape (words, not a precision table \u2014 source charts don\u2019t expose exact monthly numbers):</b> weak in January, rallies into a peak around April\u2013May, drops to a trough around July\u2013August, partially recovers into September\u2013October, then a strong rally into year-end. Two real, quoted stats: Sarmaaya\u2019s tool states a 31 Jan\u201321 Feb buy window was positive 90% of the past 10 years (64% annualized over that window); EquityClock\u2019s 20-year data shows a Nov 21\u2013Jul 31 buy window returning 749% over 10 years (8 of 10 periods positive). One extra finding from Sarmaaya\u2019s multi-window chart: the July\u2013August trough is much sharper in the 5-year and 10-year averages than in the 20-year/all-history average \u2014 recent copper cycles have had a rougher summer than the long-run pattern suggests.',
+       src:'ICSG; industry; Sarmaaya + EquityClock seasonality tools (words summary only, 2026-07-01)'},
     ];
     var fwdRows=FWD.map(function(m){
       if(m.px==null) return '';
@@ -5645,19 +5698,19 @@ function renderWorldEtfTab(){
           return '<tr style="border-bottom:1px solid #F1F5F9;">'
             +'<td style="padding:5px 8px;font-size:11px;color:#64748B;font-weight:700;vertical-align:top;">'+e.rank+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;font-weight:600;color:#0F172A;vertical-align:top;word-break:break-word;">'+e.name+note+tierBadge+'</td>'
-            +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;vertical-align:top;white-space:nowrap;">'+ytdStr+'</td>'
-            +'<td style="padding:5px 8px;font-size:11px;color:#0F172A;vertical-align:top;white-space:nowrap;">'+y1Str+'</td>'
-            +'<td style="padding:5px 8px;font-size:11px;color:#64748B;vertical-align:top;white-space:nowrap;">'+terStr+'</td>'
+            +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+ytdStr+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;color:#0F172A;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+y1Str+'</td>'
+            +'<td style="padding:5px 8px;font-size:11px;color:#64748B;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+terStr+'</td>'
             +'<td style="padding:5px 8px;font-size:10px;color:#94A3B8;vertical-align:top;word-break:break-word;">'+(e.holdings||'\u2014')+'</td>'
-            +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#64748B;vertical-align:top;white-space:nowrap;">'+(e.isin||'')+'</td>'
+            +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#64748B;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(e.isin||'')+'</td>'
             +'<td style="padding:5px 8px;font-size:10px;color:#64748B;vertical-align:top;white-space:nowrap;">'+tickerStr+'</td>'
             +'</tr>';
         }).join('');
         return headerRow+dataRows;
       }).join('');
       var table='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;table-layout:fixed;">'
-        +'<colgroup><col style="width:24px;"><col style="width:23%;"><col style="width:7%;"><col style="width:7%;">'
-        +'<col style="width:6%;"><col style="width:21%;"><col style="width:12%;"><col style="width:10%;"></colgroup>'
+        +'<colgroup><col style="width:24px;"><col style="width:22%;"><col style="width:8%;"><col style="width:8%;">'
+        +'<col style="width:7%;"><col style="width:19%;"><col style="width:11%;"><col style="width:9%;"></colgroup>'
         +'<thead><tr style="background:#F8FAFC;">'
         +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">#</th>'
         +'<th style="padding:5px 8px;text-align:left;font-size:10px;color:#64748B;">Fund</th>'
