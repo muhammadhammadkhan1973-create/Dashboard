@@ -582,7 +582,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.124</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.125</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5625,7 +5625,8 @@ function renderWorldEtfTab(){
         +recs.map(function(r){
           var f=r.fund; var conf=r.confirmed_count>1;
           var borderCol=conf?'#0F766E':'#CBD5E1'; var bgCol=conf?'#F0FDFA':'#fff';
-          var ytdChip=f.ytd!=null?'<span style="font-size:10px;background:#D1FAE5;color:#065F46;border-radius:4px;padding:1px 5px;margin-left:4px;">YTD '+f.ytd+'%</span>':'';
+          var ytdVal=typeof f.live_ytd==='number'?f.live_ytd:f.ytd;
+          var ytdChip=ytdVal!=null?'<span style="font-size:10px;background:#D1FAE5;color:#065F46;border-radius:4px;padding:1px 5px;margin-left:4px;">YTD '+ytdVal+'%</span>':'';
           return '<div style="background:'+bgCol+';border:2px solid '+borderCol+';border-radius:10px;padding:10px 14px;flex:1;min-width:220px;max-width:340px;">'
             +'<div style="font-size:10px;color:#64748B;margin-bottom:3px;">'+doorIcon(r.door)+' '+r.signal+(conf?' <strong style="color:#0F766E">\u2605 double-confirmed</strong>':'')+'</div>'
             +'<div style="font-size:13px;font-weight:700;color:#0F172A;line-height:1.3;">'+f.name+'</div>'
@@ -5686,9 +5687,16 @@ function renderWorldEtfTab(){
         var headerRow='<tr><td colspan="7" style="padding:6px 8px;font-size:12px;font-weight:700;color:'+col+';background:'+col+'11;border-left:3px solid '+col+';">'
           +catKey+' <span style="font-weight:400;color:#94A3B8;">('+list.length+' fund'+(list.length>1?'s':'')+')</span></td></tr>';
         var dataRows=list.map(function(e){
-          var ytdStr=typeof e.ytd==='number'?e.ytd.toFixed(2)+'%':'\u2014';
+          // v1.141.0: prefer live YTD/1Y (resolve_etf_live_price, same trusted mechanism as
+          // ticker/price) over the static file snapshot (31-May-2026) -- falls back to static
+          // only when the resolver missed this fund this run, never fabricated either way.
+          var ytdLive=typeof e.live_ytd==='number';
+          var ytdVal=ytdLive?e.live_ytd:e.ytd;
+          var ytdStr=typeof ytdVal==='number'?(ytdLive?'<span style="color:#16A34A;" title="Live, this run">\u25cf</span> ':'')+ytdVal.toFixed(2)+'%':'\u2014';
           var terStr=typeof e.ter==='number'?e.ter.toFixed(2)+'%':'\u2014';
-          var y1Str=typeof e.ret_1y==='number'?e.ret_1y.toFixed(2)+'%':'\u2014';
+          var y1Live=typeof e.live_ret_1y==='number';
+          var y1Val=y1Live?e.live_ret_1y:e.ret_1y;
+          var y1Str=typeof y1Val==='number'?(y1Live?'<span style="color:#16A34A;" title="Live, this run">\u25cf</span> ':'')+y1Val.toFixed(2)+'%':'\u2014';
           // v1.137.0: live_sym is now populated (enrichment loop extended to this list) --
           // a real, run-fresh ticker from the same TradingView resolver every other section uses.
           var tickerStr=e.live_sym?'<span style="font-family:monospace;background:#F1F5F9;border-radius:3px;padding:0 4px;">'+e.live_sym+'</span>':'\u2014';
@@ -5729,9 +5737,8 @@ function renderWorldEtfTab(){
         +'\u26a0 Crypto ETP (rank 1) has different risk characteristics from equity ETFs. '
         +'Ranks 35-55 (badged) are the 35-39.99% YTD tier added when the threshold was lowered from 40%. '
         +'<b>Ranks 56-60 (badged separately)</b> are the top 5 Nasdaq-100 UCITS ETFs by trailing 1-year return, added by request \u2014 all 18 real Nasdaq-100 funds in the source file sit at 18.74\u201320.19% YTD, genuinely below the 35% bar the rest of this list holds to; included anyway for direct US mega-cap tech coverage, kept visually separate rather than folded into the qualifying list. '
-        +'<b>Ticker</b> is a live, run-fresh exchange symbol from the same TradingView resolver every other section uses \u2014 shows \u2014 only on the rare run where that specific fund did not resolve. '
-        +'<b>1Y column:</b> only 12 of 60 funds carry a 1-year return in the source data (the Active ETFs category, plus the 5 Nasdaq-100 additions) '
-        +'-- shown as \u2014 for the rest rather than guessed. '
+        +'<b>YTD</b>\u25cf<b>1Y</b> shown with a green dot are live, this run \u2014 the same TradingView resolver already pricing every fund here, not the 31-May source-file snapshot. '
+        +'<b>Ticker</b> is a live, run-fresh exchange symbol from the same resolver \u2014 shows \u2014 only on the rare run where that specific fund did not resolve; the same runs also fall back to the static May snapshot for YTD/1Y (no dot shown), never fabricated. '
         +'<b>Holdings</b> are indicative top constituents from the fund provider, not the full portfolio. '
         +'Franklin-branded funds here (Korea/Taiwan/Asia-ex-China) hold the local Asian companies those markets contain '
         +'(Samsung, TSMC, Tencent) -- not US-listed stocks; for direct US semiconductor exposure see the VanEck Semiconductor '
