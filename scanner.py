@@ -4409,6 +4409,66 @@ ETF_PERF_PROBE = False  # VERDICT (v1.140.0 run + real-world cross-check): CONFI
 _ETF_CCY_PREF  = {'USD': 0, 'EUR': 1, 'GBP': 2, 'GBX': 99}   # GBX = pence, strongly deprioritised
 _ETF_EXCH_PREF = {'LSE': 0, 'XETR': 1, 'AQUIS': 2}             # primary exchanges first
 
+ETF_NULL_ISIN_PROBE = True   # v1.144.0: PRE-ARMED for ONE run. Investigates why resolve_etf_live_price
+#   returns null for IE000DR59CI3 (iShares Energy Storage & Hydrogen) -- the production resolver only
+#   scans 'uk' and 'germany', so if this fund's TradingView listing is on any other market it matches 0
+#   rows on both and returns None (no price/YTD/1Y). This probe queries the ISIN across the common UCITS
+#   markets to find where it actually resolves, so the fix (add that market to the resolver's scan list)
+#   is LOCKED from a real runner result, not guessed. Logging-only; flips False after the verdict is read.
+_ETF_NULL_PROBE_ISINS = [
+    ('IE000DR59CI3', 'iShares Energy Storage & Hydrogen (returns null on uk+germany)'),
+]
+
+def probe_null_etf_isin():
+    """v1.144.0 LOGGING-ONLY: find which TradingView market carries an ISIN the uk/germany resolver misses.
+    The production resolve_etf_live_price scans only uk + germany; this widens the SAME isin-filter POST
+    across the common UCITS listing venues so we can see exactly where IE000DR59CI3 lives (and its live
+    price/YTD/1Y there). Each POST independently guarded; never raises; touches NO data/screening/scoring/
+    IM3/TCE/the frozen ledger. Read the [ETF null-ISIN probe] block, add the winning market to the resolver
+    scan list, then flip ETF_NULL_ISIN_PROBE False."""
+    if not ETF_NULL_ISIN_PROBE:
+        return
+    markets = ['uk', 'germany', 'netherlands', 'switzerland', 'italy', 'france', 'spain', 'euronext', 'ireland', 'belgium', 'austria']
+    log('  [ETF null-ISIN probe] scanning the common UCITS markets for ISINs the uk/germany resolver misses (logging-only):')
+    for isin, label in _ETF_NULL_PROBE_ISINS:
+        log(f'    {isin} ({label}):')
+        found_any = False
+        for market in markets:
+            try:
+                payload = {
+                    'columns': ['name', 'isin', 'close', 'currency', 'exchange', 'Perf.YTD', 'Perf.Y'],
+                    'filter':  [{'left': 'isin', 'operation': 'equal', 'right': isin}],
+                    'range': [0, 10], 'markets': [market],
+                }
+                r = requests.post(f'https://scanner.tradingview.com/{market}/scan',
+                                  json=payload,
+                                  headers={'User-Agent': UA, 'Content-Type': 'application/json'},
+                                  timeout=15)
+                if r.status_code != 200:
+                    log(f'      {market:12s}: HTTP {r.status_code}')
+                    continue
+                rows = (r.json() or {}).get('data') or []
+                if not rows:
+                    log(f'      {market:12s}: 0 rows')
+                    continue
+                for row in rows:
+                    d = row.get('d') or []
+                    sym = row.get('s', '')
+                    close = d[2] if len(d) > 2 else None
+                    ccy = d[3] if len(d) > 3 else None
+                    exch = d[4] if len(d) > 4 else None
+                    ytd = d[5] if len(d) > 5 else None
+                    y1 = d[6] if len(d) > 6 else None
+                    log(f'      {market:12s}: FOUND {sym} close={close} {ccy} {exch} YTD={ytd} 1Y={y1}')
+                    found_any = True
+            except Exception as e:
+                log(f'      {market:12s}: err {type(e).__name__}')
+                continue
+        if not found_any:
+            log(f'      -> NOT FOUND on any probed market. The ISIN may list under a market TradingView '
+                f'indexes differently, or TV may not carry this fund at all -- the universe-file YTD seed '
+                f'(86.86%) then stays the only source, and 1Y stays honestly null until a source provides it.')
+
 def resolve_etf_live_price(isin):
     """Phase 6 production resolver: given a UCITS ISIN, return the best available live price from
     the proven TV scanner endpoint (uk/scan first for USD; germany/scan fallback for EUR).
@@ -6115,7 +6175,8 @@ def screen_psx_universe():
         probe_etf_isin_feeds()              # Phase 6 probe — gated off, verdict locked (nginx 403 dead end)
         probe_tv_isin_column()              # Phase 6b probe — gated off, verdict locked (isin column CONFIRMED)
         probe_tv_isin_filter()              # Phase 6c probe — gated off, verdict locked (isin filter CONFIRMED 12/12)
-        probe_etf_performance_columns()     # v1.139.0 probe — PRE-ARMED: tests Perf.YTD/Perf.Y/Perf.3Y on the proven isin-filter endpoint
+        probe_etf_performance_columns()     # v1.139.0 probe — gated off, verdict locked (Perf.YTD/Perf.Y CONFIRMED)
+        probe_null_etf_isin()               # v1.144.0 probe — PRE-ARMED: finds which market carries IE000DR59CI3 (uk/germany both return null)
     except Exception as _e:
         log(f'  [Wave R free-lever probe] error ({_e})')
     try:
