@@ -586,7 +586,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.131</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.132</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5889,16 +5889,26 @@ function renderWorldEtfTab(){
           // zero new data, prefers live if the resolver got it this run.
           var trendPct=typeof w.live_ret_1y==='number'?w.live_ret_1y:w.ret_1y;
           var ytdVal=(typeof w.live_ytd==='number')?w.live_ytd:w.ytd;
+          // v5.132: fully-unresolved case -- the price resolver returned nothing AND there is no
+          // seed return of any kind (e.g. a just-added fund whose ISIN the TradingView uk/germany
+          // scan doesn't carry yet). Rather than show a row of bare dashes that reads like a bug,
+          // state the real situation plainly. The moment a future run resolves the ISIN, live_ytd/
+          // live_price populate and the normal metric row below takes over automatically -- no
+          // further code change needed.
+          var unresolved=(w.live_price==null && ytdVal==null && w.ret_6m==null && w.ret_1y==null);
+          var metricRow = unresolved
+            ? '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #0EA5E933;font-size:10.5px;color:#94A3B8;line-height:1.45;">Price &amp; returns pending \u2014 this fund\u2019s ISIN was not yet resolved by the live data feed. It will populate automatically on the next run that finds it.</div>'
+            : '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #0EA5E933;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;">'
+              +pill('YTD', ytdVal, '#0369A1')
+              +pill('6M', w.ret_6m, '#0369A1')
+              +pill('1Y', w.ret_1y, '#0369A1')
+              +fmtPriceHy(w, trendPct)
+              +'</div>';
           return '<div style="background:#F0F9FF;border:2px solid #0EA5E9;border-radius:12px;padding:12px 16px;flex:1;min-width:230px;max-width:300px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
             +'<div style="font-size:14px;font-weight:700;color:#0F172A;line-height:1.3;font-family:var(--font-head,inherit);">'+w.name+'</div>'
             +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 \u20ac'+w.size_m_eur+'m AUM</div>'
             +'<div style="font-size:11px;color:#475569;margin:5px 0;line-height:1.4;"><b style="color:#1E293B;">Top holdings:</b> '+w.holdings+'</div>'
-            +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid #0EA5E933;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;">'
-            +pill('YTD', ytdVal, '#0369A1')
-            +pill('6M', w.ret_6m, '#0369A1')
-            +pill('1Y', w.ret_1y, '#0369A1')
-            +fmtPriceHy(w, trendPct)
-            +'</div>'+note
+            +metricRow+note
             +'</div>';
         }).join('')+'</div>';
     }
