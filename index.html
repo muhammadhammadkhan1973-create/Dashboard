@@ -575,14 +575,18 @@
     <div id="we_momentum40_main"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Hydrogen Economy Thematic Watch</h3>
-    <div style="font-size:11px;color:#64748B;border-left:3px solid #0EA5E9;padding-left:9px;margin:2px 0 12px;">4 hydrogen-economy UCITS funds, tracked separately because their ISINs were missing from the main universe file and had to be sourced individually. Shown as a thematic watchlist, not an engine recommendation &mdash; ranked by fund size (AUM), the standard liquidity proxy.</div>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #0EA5E9;padding-left:9px;margin:2px 0 12px;">5 hydrogen-economy UCITS funds, tracked separately because their ISINs were missing from the main universe file and had to be sourced individually. Shown as a thematic watchlist, not an engine recommendation &mdash; ranked by fund size (AUM), the standard liquidity proxy.</div>
     <div id="we_hydrogen_main"></div>
+
+    <h3 class="subsection-title" style="margin-top:24px;">Emerging Themes Watch</h3>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">15 funds across 4 themes &mdash; Artificial Intelligence, Cybersecurity, Quantum Computing, Space &mdash; added 2026-07-02. None of these has a natural &ldquo;booming country/sector&rdquo; signal in the engine, so they&rsquo;re shown here as an independent watchlist, not an engine recommendation, same as Hydrogen Watch above. Each theme is quality-floored and sized on its own terms, not padded to match the others.</div>
+    <div id="we_emerging_main"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Physical Metals ETC Watch</h3>
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.129</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.130</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5895,6 +5899,51 @@ function renderWorldEtfTab(){
   // COT positioning, shown as a compact footer inside the card itself rather than a separate
   // outer group box. Same LIVE.macros.metals object Tab 12 reads -- zero new fetch.
   var elM=document.getElementById('we_metals_main');
+
+  // Emerging Themes Watch (v1.143.0) -- AI / Cybersecurity / Quantum / Space, grouped by theme.
+  // Same card language as Hydrogen Watch above; holdings honestly show 'not sourced' where no
+  // real data exists rather than a guess, and the source's own 'Diversified equities' label
+  // where that is literally what the source states.
+  var elEm=document.getElementById('we_emerging_main');
+  if(elEm){
+    var em=(LIVE&&LIVE.etf_emerging_themes_watch)||[];
+    if(!em.length){
+      elEm.innerHTML='<p style="color:#94A3B8;font-size:12px;">Emerging Themes Watch loading (scanner v1.143.0+).</p>';
+    } else {
+      var THEME_COLOR={'Artificial Intelligence':'#7C3AED','Cybersecurity':'#DC2626','Quantum Computing':'#0891B2','Space':'#EA580C'};
+      var byTheme={};
+      em.forEach(function(w){ (byTheme[w.theme]=byTheme[w.theme]||[]).push(w); });
+      var fmtPriceEm=function(w, trendPct, col){
+        if(w.live_price==null) return '<span style="font-size:10px;color:#94A3B8;">price \u2014</span>';
+        var ccy=w.live_ccy||''; var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
+        var px=typeof w.live_price==='number'?w.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):w.live_price;
+        return '<span style="font-size:12px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>'+trendArrow(trendPct, 'YTD trend');
+      };
+      var html='';
+      Object.keys(byTheme).forEach(function(theme){
+        var col=THEME_COLOR[theme]||'#475569';
+        html+='<div style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:'+col+';margin:14px 0 8px;">'+theme+'</div>';
+        html+='<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px;">'
+          +byTheme[theme].map(function(w){
+            var trendPct=typeof w.live_ytd==='number'?w.live_ytd:w.ytd;
+            var holdOk=w.holdings && w.holdings!=='not sourced';
+            var holdLine=holdOk
+              ? '<div style="font-size:11px;color:#475569;margin:5px 0;line-height:1.4;"><b style="color:#1E293B;">Top holdings:</b> '+w.holdings+'</div>'
+              : '<div style="font-size:10.5px;color:#94A3B8;margin:5px 0;font-style:italic;">Holdings not sourced</div>';
+            return '<div style="background:#FAF5FF;border:2px solid '+col+';border-radius:12px;padding:12px 16px;flex:1;min-width:230px;max-width:300px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
+              +'<div style="font-size:14px;font-weight:700;color:#0F172A;line-height:1.3;font-family:var(--font-head,inherit);">'+w.name+'</div>'
+              +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 \u20ac'+w.size_m_eur+'m AUM</div>'
+              +holdLine
+              +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid '+col+'33;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;">'
+              +'<span style="font-size:10px;color:'+col+';font-weight:600;">YTD <b>'+(typeof w.ytd==='number'?w.ytd+'%':'\u2014')+'</b></span>'
+              +fmtPriceEm(w, trendPct, col)
+              +'</div></div>';
+          }).join('')+'</div>';
+      });
+      elEm.innerHTML=html;
+    }
+  }
+
   if(elM){
     var met=(LIVE&&LIVE.etf_metals_etc_watch)||[];
     var Mx=(LIVE&&LIVE.macros&&LIVE.macros.metals)?LIVE.macros.metals:{};
