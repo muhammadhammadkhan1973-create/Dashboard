@@ -582,7 +582,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.128</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.129</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -3200,6 +3200,18 @@ function metalsBiasColor(score){
   return          {bg:'#7C2D12', text:'white',label:'AVOID / SELL'};
 }
 
+// v1.143.0-paired: shared plain-language COT-percentile reading, used by both the existing
+// COT positioning cards and the new COT x seasonality line on the Forward Outlook cones --
+// one source of truth so the two can never drift out of sync with each other.
+function cotCrowdSentence(pctile){
+  if(typeof pctile!=='number') return 'percentile history still building \u2014 too early to say how crowded this is vs its own past';
+  if(pctile>=80) return 'near the TOP of where this has sat over the past 1\u20133 years \u2014 a crowded position, historically more prone to unwinding';
+  if(pctile>=60) return 'on the higher side of its normal 1\u20133-year range, but not extreme';
+  if(pctile>=40) return 'roughly in the middle of its normal 1\u20133-year range \u2014 not a crowded position either way';
+  if(pctile>=20) return 'on the lower side of its normal 1\u20133-year range, but not extreme';
+  return 'near the BOTTOM of where this has sat over the past 1\u20133 years \u2014 a crowded position on the other side, which some traders read as a contrarian setup';
+}
+
 function calcMetals(){
   const _crsm=LIVE&&LIVE.country_rs||[];
   const _chi=_crsm.find(r=>r.country==='China'),_aus=_crsm.find(r=>r.country==='Australia');
@@ -3554,11 +3566,7 @@ function calcMetals(){
         var pctStr=typeof pct==='number'?Math.abs(pct).toFixed(1)+'%':'an unknown share';
         var crowdSentence;
         if(typeof pctile==='number'){
-          if(pctile>=80) crowdSentence='That\u2019s near the TOP of where this has sat over the past 1\u20133 years \u2014 a crowded position, historically more prone to unwinding.';
-          else if(pctile>=60) crowdSentence='That\u2019s on the higher side of its normal 1\u20133-year range, but not extreme.';
-          else if(pctile>=40) crowdSentence='That\u2019s roughly in the middle of its normal 1\u20133-year range \u2014 not a crowded position either way.';
-          else if(pctile>=20) crowdSentence='That\u2019s on the lower side of its normal 1\u20133-year range, but not extreme.';
-          else crowdSentence='That\u2019s near the BOTTOM of where this has sat over the past 1\u20133 years \u2014 a crowded position on the other side, which some traders read as a contrarian setup.';
+          crowdSentence='That\u2019s '+cotCrowdSentence(pctile)+'.';
         } else {
           crowdSentence='(Percentile history still building \u2014 too early to say how crowded this is vs its own past.)';
         }
@@ -3710,6 +3718,27 @@ function calcMetals(){
         +'<div style="margin:4px 0 8px;">'+_fwdCone(m.px,b3,b6,lean.a,dp)+'</div>'
         +'<div style="font-size:12px;line-height:1.55;color:#374151;"><b style="color:#78350F;">Fundamental:</b> '+m.fund+' <span style="color:#94a3b8;">('+m.src+')</span></div>'
         +'<div style="font-size:11px;line-height:1.5;color:#64748b;margin-top:4px;"><b>Technical lean:</b> net of the bias score ('+(m.bias>=0?'+':'')+m.bias+'), 1-month momentum ('+(m.mom!=null?(m.mom>=0?'+':'')+m.mom.toFixed(dp):'n/a')+'), '+CURRENT_MONTH+' seasonality ('+(typeof m.seas==='number'?((m.seas>=0?'+':'')+m.seas.toFixed(2)+'%'):'not yet sourced')+') and the 200-DMA trend ('+(_matr||'n/a')+').</div>'
+        +(function(){
+            var _ck=m.pre.replace('_px','');
+            var _cn=M['cot_'+_ck+'_net'], _cp=M['cot_'+_ck+'_pct'], _cpt=M['cot_'+_ck+'_pctile'];
+            var _dispName=m.n.charAt(0)+m.n.slice(1).toLowerCase();
+            var _seasStr=(typeof m.seas==='number')
+              ? (CURRENT_MONTH+' has historically averaged '+(m.seas>=0?'+':'')+m.seas.toFixed(2)+'% for '+_dispName+'.')
+              : (m.n==='COPPER' ? (CURRENT_MONTH+' has no precise seasonal figure for copper \u2014 see the words-only shape in the Fundamental read above.') : (CURRENT_MONTH+' seasonality not yet sourced.'));
+            if(_cn==null && _cp==null){
+              return '<div style="font-size:11px;line-height:1.5;color:#64748b;margin-top:4px;"><b>COT \u00d7 seasonality:</b> COT not tracked for '+_dispName+' \u2014 no liquid CFTC futures contract for this metal. '+_seasStr+'</div>';
+            }
+            var _long=(_cn>=0), _dirWord=_long?'long':'short';
+            var _pctStr=(typeof _cp==='number')?Math.abs(_cp).toFixed(1)+'% of OI':'an unknown share of OI';
+            var _agree='';
+            if(typeof m.seas==='number'){
+              var _seasUp=m.seas>0, _seasDown=m.seas<0;
+              if(_long&&_seasUp) _agree=' Positioning and seasonality point the same way this month.';
+              else if(!_long&&_seasDown) _agree=' Positioning and seasonality point the same way this month.';
+              else if((_long&&_seasDown)||(!_long&&_seasUp)) _agree=' Positioning and seasonality are pulling in different directions this month.';
+            }
+            return '<div style="font-size:11px;line-height:1.5;color:#64748b;margin-top:4px;"><b>COT \u00d7 seasonality:</b> speculators are net '+_dirWord+' '+_pctStr+' \u2014 that\u2019s '+cotCrowdSentence(_cpt)+'. '+_seasStr+_agree+'</div>';
+        })()
         +(function(){
             var s50=M[m.pre+'_sma50'],s200=M[m.pre+'_sma200'],ext=M[m.pre+'_ext_200_pct'],cr=M[m.pre+'_cross'],rsi=M[m.pre+'_rsi14'];
             if(s200==null&&rsi==null) return '';
