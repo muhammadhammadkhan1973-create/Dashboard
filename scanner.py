@@ -64,7 +64,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.151.0'  # 1.151.0: iShares/BlackRock authoritative holdings fetcher (ISIN->UK product-screener->daily holdings CSV) wired for the 5 iShares emerging-theme UCITS with no US sibling; ISIN-keyed = collision-proof; runner validates issuer reachability
+SCAN_VERSION = '1.152.0'  # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -520,13 +520,13 @@ _ETF_CATALOG['Equity Artificial Intelligence'] = [
     {'name': 'Xtrackers Artificial Intelligence & Big Data UCITS ETF 1C', 'ter': 0.35, 'ytd': 36.03, 'size_m_eur': 8012,
      'isin': 'IE00BGV5VN51', 'dist': 'Accumulating', 'holdings': 'not sourced'},
     {'name': 'L&G Artificial Intelligence UCITS ETF', 'ter': 0.49, 'ytd': 49.23, 'size_m_eur': 1860,
-     'isin': 'IE00BK5BCD43', 'dist': 'Accumulating', 'holdings': 'Nvidia, Microsoft, TSMC, Palantir'},
+     'isin': 'IE00BK5BCD43', 'dist': 'Accumulating', 'holdings': 'not sourced'},
     {'name': 'WisdomTree Artificial Intelligence UCITS ETF USD Acc', 'ter': 0.4, 'ytd': 52.71, 'size_m_eur': 1362,
-     'isin': 'IE00BDVPNG13', 'dist': 'Accumulating', 'holdings': 'Nvidia, Microsoft, TSMC, Palantir'},
+     'isin': 'IE00BDVPNG13', 'dist': 'Accumulating', 'holdings': 'not sourced'},
     {'name': 'Amundi MSCI Robotics & AI UCITS ETF Acc', 'ter': 0.4, 'ytd': 27.58, 'size_m_eur': 1202,
      'isin': 'LU1861132840', 'dist': 'Accumulating', 'holdings': 'not sourced'},
     {'name': 'iShares AI Infrastructure UCITS ETF USD (Acc)', 'ter': 0.35, 'ytd': 63.0, 'size_m_eur': 1014,
-     'isin': 'IE000X59ZHE2', 'dist': 'Accumulating', 'holdings': 'Nvidia, Microsoft, TSMC, Palantir'},
+     'isin': 'IE000X59ZHE2', 'dist': 'Accumulating', 'holdings': 'not sourced'},
 ]
 
 _ETF_CATALOG['Equity Cybersecurity'] = [
@@ -592,7 +592,7 @@ _MOMENTUM_WATCH = [
     {'rank': 11, 'name': 'Xtrackers MSCI Taiwan UCITS ETF 1C', 'category': 'Equity Taiwan', 'ytd': 71.51, 'isin': 'LU0292109187', 'ter': 0.65, 'ret_1y': None, 'holdings': 'TSMC, Hon Hai, MediaTek'},
     {'rank': 12, 'name': 'iShares MSCI Taiwan UCITS ETF', 'category': 'Equity Taiwan', 'ytd': 71.33, 'isin': 'IE00B0M63623', 'ter': 0.74, 'ret_1y': None, 'holdings': 'TSMC, Hon Hai, MediaTek'},
     {'rank': 13, 'name': 'HSBC MSCI Taiwan Capped UCITS ETF USD', 'category': 'Equity Taiwan', 'ytd': 71.0, 'isin': 'IE00B3S1J086', 'ter': 0.5, 'ret_1y': None, 'holdings': 'TSMC, Hon Hai, MediaTek'},
-    {'rank': 14, 'name': 'iShares AI Innovation Active UCITS ETF USD (Acc)', 'category': 'Active ETFs Equity', 'ytd': 56.4, 'isin': 'IE000G0E83X3', 'ter': 0.73, 'ret_1y': 90.22, 'holdings': 'Nvidia, Microsoft, TSMC, Palantir'},
+    {'rank': 14, 'name': 'iShares AI Innovation Active UCITS ETF USD (Acc)', 'category': 'Active ETFs Equity', 'ytd': 56.4, 'isin': 'IE000G0E83X3', 'ter': 0.73, 'ret_1y': 90.22, 'holdings': 'not sourced'},
     {'rank': 15, 'name': 'Vanguard FTSE Developed Asia Pacific ex Japan UCITS ETF Distributing', 'category': 'Equity Asia Pacific', 'ytd': 51.98, 'isin': 'IE00B9F5YL18', 'ter': 0.15, 'ret_1y': None, 'holdings': 'TSMC, Samsung, Tencent, BHP'},
     {'rank': 16, 'name': 'Vanguard FTSE Developed Asia Pacific ex Japan UCITS ETF (USD) Accumulating', 'category': 'Equity Asia Pacific', 'ytd': 51.93, 'isin': 'IE00BK5BQZ41', 'ter': 0.15, 'ret_1y': None, 'holdings': 'TSMC, Samsung, Tencent, BHP'},
     {'rank': 17, 'name': 'UBS MSCI EM ex China Socially Responsible UCITS ETF USD acc', 'category': 'Equity Climate Change', 'ytd': 51.4, 'isin': 'IE00BNC0MH93', 'ter': 0.2, 'ret_1y': None, 'holdings': 'TSMC, Tencent, Samsung, Alibaba'},
@@ -603,7 +603,7 @@ _MOMENTUM_WATCH = [
     {'rank': 22, 'name': 'Xtrackers MSCI Emerging Markets ex China UCITS ETF 1C', 'category': 'Equity Emerging Markets', 'ytd': 44.32, 'isin': 'IE00BM67HJ62', 'ter': 0.16, 'ret_1y': None, 'holdings': 'TSMC, Tencent, Samsung, Alibaba'},
     {'rank': 23, 'name': 'UBS MSCI EM ex China UCITS ETF USD acc', 'category': 'Equity Emerging Markets', 'ytd': 44.18, 'isin': 'LU2050966394', 'ter': 0.16, 'ret_1y': None, 'holdings': 'TSMC, Tencent, Samsung, Alibaba'},
     {'rank': 24, 'name': 'BNP Paribas Easy II MSCI Emerging Markets ex-China PAB UCITS ETF USD Dist', 'category': 'Equity Climate Change', 'ytd': 44.09, 'isin': 'IE000G5IRVY3', 'ter': 0.27, 'ret_1y': None, 'holdings': 'TSMC, Tencent, Samsung, Alibaba'},
-    {'rank': 25, 'name': 'ARK Genomic Revolution UCITS ETF USD Accumulating', 'category': 'Active ETFs Equity', 'ytd': 43.94, 'isin': 'IE000O5M6XO1', 'ter': 0.75, 'ret_1y': 62.61, 'holdings': 'Nvidia, Microsoft, TSMC, Palantir'},
+    {'rank': 25, 'name': 'ARK Genomic Revolution UCITS ETF USD Accumulating', 'category': 'Active ETFs Equity', 'ytd': 43.94, 'isin': 'IE000O5M6XO1', 'ter': 0.75, 'ret_1y': 62.61, 'holdings': 'not sourced'},
     {'rank': 26, 'name': 'BNP Paribas Easy II MSCI Emerging Markets ex-China PAB UCITS ETF USD Acc', 'category': 'Equity Climate Change', 'ytd': 43.92, 'isin': 'IE000M4Z0RA5', 'ter': 0.27, 'ret_1y': None, 'holdings': 'TSMC, Tencent, Samsung, Alibaba'},
     {'rank': 27, 'name': 'iShares MSCI EM ex-China UCITS ETF USD (Acc)', 'category': 'Equity Emerging Markets', 'ytd': 43.9, 'isin': 'IE00BMG6Z448', 'ter': 0.18, 'ret_1y': None, 'holdings': 'TSMC, Tencent, Samsung, Alibaba'},
     {'rank': 28, 'name': 'iShares MSCI EM ex-China UCITS ETF USD (Dist)', 'category': 'Equity Emerging Markets', 'ytd': 43.65, 'isin': 'IE000W8RYVC0', 'ter': 0.18, 'ret_1y': None, 'holdings': 'TSMC, Tencent, Samsung, Alibaba'},
@@ -694,13 +694,13 @@ _EMERGING_THEMES_WATCH = [
     {'rank': 1, 'theme': 'Artificial Intelligence', 'name': 'Xtrackers Artificial Intelligence & Big Data UCITS ETF 1C', 'isin': 'IE00BGV5VN51',
      'ter': 0.35, 'size_m_eur': 8012, 'ytd': 36.03, 'holdings': 'not sourced'},
     {'rank': 2, 'theme': 'Artificial Intelligence', 'name': 'L&G Artificial Intelligence UCITS ETF', 'isin': 'IE00BK5BCD43',
-     'ter': 0.49, 'size_m_eur': 1860, 'ytd': 49.23, 'holdings': 'Nvidia, Microsoft, TSMC, Palantir'},
+     'ter': 0.49, 'size_m_eur': 1860, 'ytd': 49.23, 'holdings': 'not sourced'},
     {'rank': 3, 'theme': 'Artificial Intelligence', 'name': 'WisdomTree Artificial Intelligence UCITS ETF USD Acc', 'isin': 'IE00BDVPNG13',
-     'ter': 0.4, 'size_m_eur': 1362, 'ytd': 52.71, 'holdings': 'Nvidia, Microsoft, TSMC, Palantir'},
+     'ter': 0.4, 'size_m_eur': 1362, 'ytd': 52.71, 'holdings': 'not sourced'},
     {'rank': 4, 'theme': 'Artificial Intelligence', 'name': 'Amundi MSCI Robotics & AI UCITS ETF Acc', 'isin': 'LU1861132840',
      'ter': 0.4, 'size_m_eur': 1202, 'ytd': 27.58, 'holdings': 'not sourced'},
     {'rank': 5, 'theme': 'Artificial Intelligence', 'name': 'iShares AI Infrastructure UCITS ETF USD (Acc)', 'isin': 'IE000X59ZHE2',
-     'ter': 0.35, 'size_m_eur': 1014, 'ytd': 63.0, 'holdings': 'Nvidia, Microsoft, TSMC, Palantir'},
+     'ter': 0.35, 'size_m_eur': 1014, 'ytd': 63.0, 'holdings': 'not sourced'},
     {'rank': 1, 'theme': 'Cybersecurity', 'name': 'L&G Cyber Security UCITS ETF', 'isin': 'IE00BYPLS672',
      'ter': 0.69, 'size_m_eur': 3195, 'ytd': 53.31, 'holdings': 'Diversified equities'},
     {'rank': 2, 'theme': 'Cybersecurity', 'name': 'iShares Digital Security UCITS ETF USD (Acc)', 'isin': 'IE00BG0J4C88',
@@ -2155,52 +2155,20 @@ def fetch_etf_holdings(etf):
     return result
 
 # ===================== iShares / BlackRock authoritative holdings (ISIN-keyed) =====================
-# v1.151.0: the emerging-theme UCITS funds have NO US-listed sibling, so stockanalysis 404s them. Their
-# holdings ARE public -- on the issuer's own site. iShares (5 of our funds: Digital Security Acc+Dist,
-# Quantum, Space, AI Infra) exposes a daily holdings CSV at
-#   /uk/individual/en/products/{PID}/{slug}/1506575576011.ajax?fileType=csv&fileName=holdings&dataType=fund
-# ISIN -> {PID}/{slug} comes from the UK product-screener JSON (fetched once per run, cached). This is
-# ISIN-keyed so it CANNOT collide (unlike a bare US ticker). Sandbox can't reach ishares.com, so this is
-# probe-by-execution: heavy [diag] logging tells the runner exactly what each leg returned; a failure
-# yields [] (card stays 'not sourced'), never a fabricated or wrong-fund holding.
-_ISHARES_SCR = {'done': False, 'map': {}}
-def _load_ishares_screener():
-    if _ISHARES_SCR['done']:
-        return _ISHARES_SCR['map']
-    _ISHARES_SCR['done'] = True
-    _urls = [
-        'https://www.ishares.com/uk/individual/en/product-screener/product-screener-v3.1.jsn?dcrPath=/templatedata/config/product-screener-v3/data/en/uk-retail/product-screener-backend-config&siteEntryPassthrough=true',
-        'https://www.ishares.com/uk/individual/en/product-screener/product-screener-v3.1.jsn?dcrPath=/templatedata/config/product-screener-v3/data/en/uk-retail/product-screener&siteEntryPassthrough=true',
-    ]
-    for _u in _urls:
-        try:
-            _r = requests.get(_u, headers={'User-Agent': UA, 'Accept': 'application/json'}, timeout=30)
-            log('    · [diag] iShares screener dcr=%s: HTTP %s len %d' % (_u.split('data/en/')[-1][:22], _r.status_code, len(_r.text)))
-            if _r.status_code != 200 or not _r.text.strip():
-                continue
-            _j = _r.json()
-            _recs = _j.values() if isinstance(_j, dict) else _j
-            _cnt = 0
-            for _rec in _recs:
-                if not isinstance(_rec, dict):
-                    continue
-                _ppu = _rec.get('productPageUrl') or _rec.get('fundPageURL') or ''
-                _tk  = _rec.get('localExchangeTicker') or _rec.get('ticker') or ''
-                _if  = _rec.get('isin')
-                _isins = []
-                if isinstance(_if, str):  _isins = [_if]
-                elif isinstance(_if, dict): _isins = [str(_if.get('r') or _if.get('d') or '')]
-                elif isinstance(_if, list): _isins = [str(_x) for _x in _if]
-                for _iz in _isins:
-                    if _iz and _ppu:
-                        _ISHARES_SCR['map'][_iz.upper()] = {'ppu': _ppu, 'ticker': _tk if isinstance(_tk, str) else ''}
-                        _cnt += 1
-            if _cnt:
-                log('    · [diag] iShares screener: mapped %d ISIN->product entries' % _cnt)
-                break
-        except Exception as _e:
-            log('    · [diag] iShares screener EXC %s' % _e)
-    return _ISHARES_SCR['map']
+# v1.152.0: emerging-theme UCITS funds have NO US-listed sibling, so stockanalysis 404s them. Their
+# holdings ARE public -- on the ISSUER'S own site. iShares (5 of our funds) publishes a daily holdings
+# CSV at /uk/individual/en/products/{PID}/{slug}/1506575576011.ajax?fileType=csv&fileName=holdings&dataType=fund
+# (1506575576011 is the fixed UK/individual site token, same for every UK fund). The v1.151 product-screener
+# lookup 500'd on the runner, so we DROP it: each fund's {PID}/{slug} is pinned below (confirmed from
+# ishares.com product pages), keyed by ISIN -> cannot collide, no extra network hop. A failure yields []
+# (card stays 'not sourced'), never a fabricated or wrong-fund holding.
+_ISHARES_PRODUCTS = {
+    'IE00BG0J4C88': ('297843', 'ishares-digital-security-ucits-etf-fund'),  # Digital Security (Acc)  LOCK
+    'IE00BG0J4841': ('305642', 'ishares-digital-security-ucits-etf'),       # Digital Security (Dist) SHLD
+    'IE000C6ITGC8': ('345953', 'ishares-quantum-computing-ucits-etf'),      # Quantum Computing (Acc) QANT
+    'IE000A9G9R73': ('351117', 'ishares-space-technologies-ucits-etf'),     # Space Technologies (Acc) STRR
+    'IE000X59ZHE2': ('338777', 'ishares-ai-infrastructure-ucits-etf'),      # AI Infrastructure (Acc) AINF
+}
 
 def _parse_ishares_csv(text):
     import csv, io
@@ -2212,34 +2180,42 @@ def _parse_ishares_csv(text):
     if _hdr is None:
         return []
     _rdr = csv.DictReader(io.StringIO('\n'.join(_lines[_hdr:])))
+    _CASH = {'-', '', 'USD', 'GBP', 'EUR', 'CASH', 'CASH_USD', 'MMFUNDS', 'XTSLA', 'BGXS'}
     _out = []
     for _row in _rdr:
         _tk = str(_row.get('Ticker') or '').strip().strip('"')
+        # drop cash / derivative rows via the Asset Class column when iShares provides it
+        _acol = next((_k for _k in _row.keys() if _k and 'asset class' in _k.strip().lower()), None)
+        _acls = str(_row.get(_acol) if _acol else '').strip().lower()
+        if _acls and (('cash' in _acls) or ('derivative' in _acls) or ('money market' in _acls)):
+            continue
         _wcol = next((_k for _k in _row.keys() if _k and _k.strip().lower().startswith('weight')), None)
         _w = str(_row.get(_wcol) if _wcol else '').replace('%', '').replace(',', '').strip()
         try:
             _wf = float(_w)
         except Exception:
             continue
-        if _tk and _tk not in ('-', '') and _wf > 0:
+        if _tk and _tk.upper() not in _CASH and _wf > 0:
             _out.append({'ticker': _tk.upper(), 'weight': _wf})
     return _out
 
 def fetch_ishares_holdings(isin):
-    """iShares/BlackRock authoritative holdings by ISIN -> [{ticker, weight}] (top by weight) or []."""
-    _m = _load_ishares_screener()
-    _ent = _m.get((isin or '').upper())
+    """iShares/BlackRock authoritative holdings by ISIN -> [{ticker, weight}] (top by weight) or [].
+    ISIN -> pinned (PID, slug); builds the fund's own daily holdings CSV. No screener hop, no collision."""
+    _ent = _ISHARES_PRODUCTS.get((isin or '').upper())
     if not _ent:
         return []
-    _ppu = _ent['ppu']
-    _base = ('https://www.ishares.com' + _ppu) if _ppu.startswith('/') else _ppu
-    _url = _base.rstrip('/') + '/1506575576011.ajax?fileType=csv&fileName=holdings&dataType=fund&asOfDate='
+    _pid, _slug = _ent
+    _url = ('https://www.ishares.com/uk/individual/en/products/%s/%s/1506575576011.ajax'
+            '?fileType=csv&fileName=holdings&dataType=fund' % (_pid, _slug))
     try:
-        _r = requests.get(_url, headers={'User-Agent': UA}, timeout=30)
-        if _r.status_code != 200 or not _r.text:
-            return []
-        return _parse_ishares_csv(_r.text)
-    except Exception:
+        _r = requests.get(_url, headers={'User-Agent': UA, 'Accept': 'text/csv,*/*'}, timeout=30)
+        _rows = _parse_ishares_csv(_r.text) if (_r.status_code == 200 and _r.text) else []
+        log('    · [diag] iShares %s pid=%s: HTTP %s len %d -> %d holdings'
+            % (isin, _pid, _r.status_code, len(_r.text or ''), len(_rows)))
+        return _rows
+    except Exception as _e:
+        log('    · [diag] iShares %s pid=%s EXC %s' % (isin, _pid, _e))
         return []
 # =================== end iShares / BlackRock authoritative holdings ===================
 
