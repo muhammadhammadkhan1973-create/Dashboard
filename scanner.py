@@ -64,7 +64,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.147.0'  # 1.147.0: wired 3 candidate Uranium&Nuclear ISINs (GlobalX URNU/Sprott URNM/VanEck NUKL) -- resolver validates on runner, degrades to 'price --' if any ISIN is wrong (no fabrication)
+SCAN_VERSION = '1.148.0'  # 1.148.0: hydrogen-watch notes recomputed live each run (weakest-YTD + smallest-AUM liquidity) from live_ytd/size_m_eur -- replaces hardcoded notes so they self-verify and never go stale
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -10531,6 +10531,34 @@ def main():
                 pass
     if _n_priced:
         log(f'  [ETF live prices] {_n_priced} fund(s) priced via isin-filter resolver (recs + hydrogen + emerging-themes + metals + momentum watch) -- now incl. live YTD/1Y (v1.141.0)')
+
+    # v1.148.0: Hydrogen-watch notes are COMPUTED LIVE from this run's own values (weakest-YTD +
+    # smallest-AUM/liquidity), overwriting any hardcoded seed notes so a note can never go stale or
+    # contradict the numbers beside it. A fund that is not actually the weakest or the smallest carries
+    # no note. This runs after live prices resolve (above), so it reads live_ytd/size_m_eur for this run.
+    _hyw = data.get('etf_hydrogen_watch') or []
+    if _hyw:
+        for _w in _hyw:
+            _w['note'] = None
+        def _hy_ytd(w):
+            v = w.get('live_ytd')
+            if not isinstance(v, (int, float)):
+                v = w.get('ytd')
+            return v if isinstance(v, (int, float)) else None
+        _hy_rated = [w for w in _hyw if _hy_ytd(w) is not None]
+        _hy_weak = min(_hy_rated, key=_hy_ytd) if len(_hy_rated) >= 2 else None
+        if _hy_weak is not None:
+            _hy_weak['note'] = 'Weakest YTD of the %d tracked (%.1f%%) this run' % (len(_hy_rated), _hy_ytd(_hy_weak))
+        _hy_sized = [w for w in _hyw if isinstance(w.get('size_m_eur'), (int, float))]
+        _hy_minsz = min((w['size_m_eur'] for w in _hy_sized), default=None)
+        if _hy_minsz is not None:
+            _hy_small = [w for w in _hy_sized if w['size_m_eur'] == _hy_minsz]
+            _hy_liq = 'Smallest AUM (\u20ac%gm)%s -- check liquidity before trading' % (_hy_minsz, ' (tied)' if len(_hy_small) > 1 else '')
+            for _w in _hy_small:
+                _w['note'] = (_w['note'] + ' \u00b7 ' + _hy_liq) if _w.get('note') else _hy_liq
+        log('  [Hydrogen notes] recomputed live: weakest=%s, smallest-AUM=%s' % (
+            _hy_weak['name'][:20] if _hy_weak else 'n/a',
+            ('%gm' % _hy_minsz) if _hy_minsz is not None else 'n/a'))
 
     # v1.142.0: World ETF Engine Phase 3 close-out -- (a) Results-tab live tracker vs ACWI
     # (reuses the same resolver/enrichment just completed above) and (b) the Stock->UCITS
