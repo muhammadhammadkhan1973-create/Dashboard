@@ -579,14 +579,14 @@
     <div id="we_hydrogen_main"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Emerging Themes Watch</h3>
-    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">15 funds across 4 themes &mdash; Artificial Intelligence, Cybersecurity, Quantum Computing, Space &mdash; added 2026-07-02. None of these has a natural &ldquo;booming country/sector&rdquo; signal in the engine, so they&rsquo;re shown here as an independent watchlist, not an engine recommendation, same as Hydrogen Watch above. Each theme is quality-floored and sized on its own terms, not padded to match the others.</div>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">33 funds across 9 themes &mdash; Artificial Intelligence, Cybersecurity, Quantum Computing, Space, plus Memory &amp; Storage, Lithium/Rare-Earth/Battery, Datacenter &amp; Grid Build-out, Metals Miners, and Uranium &amp; Nuclear (ISINs probe-pending) &mdash; the last five added 2026-07-03 (v1.146.0) to close the booming-theme gaps from the top-500 global-winners analysis. None of these has a natural &ldquo;booming country/sector&rdquo; signal in the engine, so they&rsquo;re shown here as an independent watchlist, not an engine recommendation, same as Hydrogen Watch above. Each theme is quality-floored and sized on its own terms, not padded to match the others.</div>
     <div id="we_emerging_main"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Physical Metals ETC Watch</h3>
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.132</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.133</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5928,9 +5928,9 @@ function renderWorldEtfTab(){
   if(elEm){
     var em=(LIVE&&LIVE.etf_emerging_themes_watch)||[];
     if(!em.length){
-      elEm.innerHTML='<p style="color:#94A3B8;font-size:12px;">Emerging Themes Watch loading (scanner v1.143.0+).</p>';
+      elEm.innerHTML='<p style="color:#94A3B8;font-size:12px;">Emerging Themes Watch loading (scanner v1.146.0+).</p>';
     } else {
-      var THEME_COLOR={'Artificial Intelligence':'#7C3AED','Cybersecurity':'#DC2626','Quantum Computing':'#0891B2','Space':'#EA580C'};
+      var THEME_COLOR={'Artificial Intelligence':'#7C3AED','Cybersecurity':'#DC2626','Quantum Computing':'#0891B2','Space':'#EA580C','Memory & Storage':'#2563EB','Lithium, Rare Earth & Battery':'#059669','Datacenter & Grid Build-out':'#D97706','Metals Miners':'#B45309','Uranium & Nuclear':'#65A30D'};
       var byTheme={};
       em.forEach(function(w){ (byTheme[w.theme]=byTheme[w.theme]||[]).push(w); });
       var fmtPriceEm=function(w, trendPct, col){
