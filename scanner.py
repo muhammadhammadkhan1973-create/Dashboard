@@ -64,7 +64,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.146.0'  # 1.146.0: +5 booming-theme gaps (Memory&Storage, Lithium/RareEarth/Battery, Datacenter&Grid, Metals Miners, Uranium&Nuclear) to _EMERGING_THEMES_WATCH; verified ISINs from ETF_Universe_8.xlsx, uranium scaffolded pending runner probe; UAE/IBKR tax ladder documented
+SCAN_VERSION = '1.147.0'  # 1.147.0: wired 3 candidate Uranium&Nuclear ISINs (GlobalX URNU/Sprott URNM/VanEck NUKL) -- resolver validates on runner, degrades to 'price --' if any ISIN is wrong (no fabrication)
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -761,12 +761,14 @@ _EMERGING_THEMES_WATCH = [
     {'rank': 4, 'theme': 'Metals Miners', 'name': 'Amundi STOXX Europe 600 Basic Resources UCITS ETF Acc', 'isin': 'LU1834983550',
      'ter': 0.30, 'size_m_eur': None, 'ytd': None, 'holdings': 'Broad European basic-resources / diversified miners'},
     # ---- Uranium & Nuclear (#11, +69% avg 1Y) -- ABSENT from ETF_Universe_8.xlsx; ISINs left null pending a runner probe (do NOT ship unverified live data) ----
-    {'rank': 1, 'theme': 'Uranium & Nuclear', 'name': 'Global X Uranium UCITS ETF (confirm ISIN on runner)', 'isin': None,
-     'ter': None, 'size_m_eur': None, 'ytd': None, 'holdings': 'Uranium miners', 'note': 'PROBE PENDING -- resolve ISIN via TradingView on the runner, same pattern as the hydrogen null-ISIN probe'},
-    {'rank': 2, 'theme': 'Uranium & Nuclear', 'name': 'HANetf Sprott Uranium Miners UCITS ETF (confirm ISIN on runner)', 'isin': None,
-     'ter': None, 'size_m_eur': None, 'ytd': None, 'holdings': 'Uranium miners', 'note': 'PROBE PENDING'},
-    {'rank': 3, 'theme': 'Uranium & Nuclear', 'name': 'VanEck Uranium and Nuclear Technologies UCITS ETF (confirm ISIN on runner)', 'isin': None,
-     'ter': None, 'size_m_eur': None, 'ytd': None, 'holdings': 'Uranium + nuclear technology', 'note': 'PROBE PENDING'},
+    # v1.147.0: candidate ISINs wired -- resolver validates by execution on the runner. If a card still shows 'price --'
+    # after the run, that ISIN is wrong; correct it from IBKR/justETF. All three are Irish-domiciled, LSE-listed, IBKR-accessible.
+    {'rank': 1, 'theme': 'Uranium & Nuclear', 'name': 'Global X Uranium UCITS ETF', 'isin': 'IE000NDWFGA5',
+     'ter': 0.65, 'size_m_eur': None, 'ytd': None, 'holdings': 'Cameco, Kazatomprom, NexGen + uranium miners', 'note': 'ISIN candidate -- runner validates'},
+    {'rank': 2, 'theme': 'Uranium & Nuclear', 'name': 'HANetf Sprott Uranium Miners UCITS ETF', 'isin': 'IE0005YK6564',
+     'ter': 0.85, 'size_m_eur': None, 'ytd': None, 'holdings': 'Cameco, Kazatomprom, Paladin + uranium miners', 'note': 'ISIN candidate -- runner validates'},
+    {'rank': 3, 'theme': 'Uranium & Nuclear', 'name': 'VanEck Uranium and Nuclear Technologies UCITS ETF', 'isin': 'IE000M7V94E1',
+     'ter': 0.55, 'size_m_eur': None, 'ytd': None, 'holdings': 'Constellation, Cameco + nuclear utilities/miners', 'note': 'ISIN candidate -- runner validates'},
 ]
 # ======================= end Emerging Themes Watch =============================
 
