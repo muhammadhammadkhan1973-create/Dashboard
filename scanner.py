@@ -64,7 +64,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.152.0'  # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
+SCAN_VERSION = '1.153.0'  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -773,7 +773,8 @@ _EMERGING_THEMES_WATCH = [
 # ======================= end Emerging Themes Watch =============================
 
 # ======================= Physical Precious Metals ETCs ========================
-# Physical-backed gold and silver ETCs, IBKR-accessible on LSE.
+# Physical-backed metal ETCs (Gold/Silver/Platinum/Palladium single-metal + a
+# diversified precious-metals basket; Copper is synthetic), IBKR-accessible on LSE.
 # No equity counterparty risk -- metal held in allocated vaults.
 # Full analysis (trend, RSI, COT positioning) on Tab 12 Metals.
 # Use Tab 16 to see these as tradeable UCITS products; use Tab 12 for signals.
@@ -790,6 +791,12 @@ _METALS_ETC_WATCH = [
      'ter': 0.20, 'ticker_lse': 'SPDM', 'metal': 'Palladium', 'replication': 'Physical'},
     {'rank': 6, 'name': 'WisdomTree Copper', 'isin': 'GB00B15KXQ89',
      'ter': 0.49, 'ticker_lse': 'COPA', 'metal': 'Copper', 'replication': 'Synthetic'},
+    # v1.153.0: first DIVERSIFIED precious-metals basket on the list (the other 6 are single-metal).
+    # Jersey-domiciled physical ETC, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian
+    # HSBC. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP),
+    # Xetra + Euronext (EUR) -> live price/YTD auto-resolve through the same ISIN enrichment loop.
+    {'rank': 7, 'name': 'WisdomTree Physical Precious Metals', 'isin': 'JE00B1VS3W29',
+     'ter': 0.44, 'ticker_lse': 'PHPM', 'metal': 'Precious Metals (basket)', 'replication': 'Physical'},
 ]
 # ======================= end Metals ETCs ======================================
 
@@ -10541,7 +10548,7 @@ def main():
     data['etf_momentum_watch'] = _MOMENTUM_WATCH     # Momentum-Watch: 55 ETFs up >=35% YTD (threshold lowered from 40%)
     data['etf_hydrogen_watch'] = _HYDROGEN_WATCH      # Hydrogen Economy Thematic Watch (5 funds, confirmed ISINs)
     data['etf_emerging_themes_watch'] = _EMERGING_THEMES_WATCH  # v1.143.0: AI/Cybersecurity/Quantum/Space (15 funds)
-    data['etf_metals_etc_watch'] = _METALS_ETC_WATCH  # Physical Gold/Silver ETCs (3 funds)
+    data['etf_metals_etc_watch'] = _METALS_ETC_WATCH  # Physical metal ETCs (7 funds: Gold x2, Silver, Platinum, Palladium, Copper + a precious-metals basket)
     # v1.137.0: Pakistan UCITS proxy as its own top-level field, sourced from the existing
     # catalog entry (zero new data) -- for display on Tab 2 (Pakistan) and Tab 7 (Allocation
     # Zone), NOT Tab 16 (removed from there per owner instruction, that removal stands).
