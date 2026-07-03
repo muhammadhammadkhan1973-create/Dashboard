@@ -64,7 +64,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.149.0'  # 1.149.0: emerging-themes 'not sourced'/'Diversified equities' holdings now filled LIVE via fetch_etf_holdings (stockanalysis primary, FMP fallback) on the resolved symbol; real top-5 tickers overwrite placeholders, misses stay honest
+SCAN_VERSION = '1.150.0'  # 1.150.0: emerging-holdings auto-fill restricted to a verified ISIN allowlist (4 funds, symbol-pinned) after the v1.149 blind fetch collided (iShares Digital Security Dist -> US defense ETF); collision removed, rest stay 'not sourced' pending justETF/issuer
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -10532,21 +10532,28 @@ def main():
     if _n_priced:
         log(f'  [ETF live prices] {_n_priced} fund(s) priced via isin-filter resolver (recs + hydrogen + emerging-themes + metals + momentum watch) -- now incl. live YTD/1Y (v1.141.0)')
 
-    # v1.149.0: fill missing Emerging-Themes holdings LIVE via the proven fetch_etf_holdings()
-    # (stockanalysis.com primary + FMP stable/v3 fallback -- FMP holdings 402/403 on a free key, so
-    # stockanalysis carries it; if the key has the premium tier FMP fills automatically). Only funds
-    # currently showing 'not sourced'/'Diversified equities' are fetched (bounded ~12). Real fetched
-    # holdings (top-5 tickers by weight) overwrite the placeholder and set holdings_live=True; a miss
-    # keeps the placeholder -- never fabricated. stockanalysis is US-centric, so LSE/Euronext UCITS
-    # coverage is a runner-measured unknown (first fetch logs a [diag] HTTP status/body so we can see it).
+    # v1.150.0: holdings auto-fill is RESTRICTED to a verified ISIN allowlist. The v1.149.0 blind
+    # bare-symbol fetch collided once -- iShares Digital Security (Dist), LSE ticker 'SHLD', resolved on
+    # stockanalysis to a US DEFENSE ETF (RTX/GD/LMT/NOC/PLTR): the WRONG fund. A confident-but-wrong
+    # holding is worse than a blank one, so we no longer fetch by unverified symbol. Only the four ISINs
+    # below -- each audited against the run that first filled it, holdings match the theme -- are fetched,
+    # and each is PINNED to its confirmed bare symbol; if live_sym resolves to anything else we skip
+    # (defence against a future ticker reassignment). Every other placeholder stays 'not sourced' until a
+    # per-ISIN verified source (justETF / issuer factsheet) is wired -- never guessed.
+    _EMH_HOLD_OK = {
+        'IE00BF16M727': 'CIBR',   # First Trust Nasdaq Cybersecurity  -> PANW/FTNT/CRWD/CSCO/AVGO (cyber) ✓
+        'IE00BLPK3577': 'WCBR',   # WisdomTree Cybersecurity          -> CRWD/DDOG/PANW/FTNT/TENB (cyber) ✓
+        'IE000W8WMSL2': 'WQTM',   # WisdomTree Quantum Computing      -> QBTS/RGTI/IONQ/IBM      (quantum) ✓
+        'IE000YU9K6K2': 'JEDI',   # VanEck Space Innovators           -> RDW/UMAC/LUNR/RKLB      (space)   ✓
+    }
     _emh = data.get('etf_emerging_themes_watch') or []
     _h_fill = 0; _h_try = 0
     for _w in _emh:
-        _cur = str(_w.get('holdings') or '').strip().lower()
-        if _cur not in ('not sourced', 'diversified equities', ''):
+        _want = _EMH_HOLD_OK.get(_w.get('isin'))
+        if not _want:
             continue
-        _sym = str(_w.get('live_sym') or '').split(':')[-1].strip()
-        if not _sym:
+        _sym = str(_w.get('live_sym') or '').split(':')[-1].strip().upper()
+        if _sym != _want:          # resolved to an unexpected symbol -> refuse (collision guard)
             continue
         _h_try += 1
         try:
@@ -10559,7 +10566,7 @@ def main():
             _w['holdings_live'] = True
             _h_fill += 1
     if _h_try:
-        log('  [Emerging holdings] live-filled %d/%d placeholder funds via stockanalysis/FMP (misses stay "not sourced")' % (_h_fill, _h_try))
+        log('  [Emerging holdings] verified-allowlist filled %d/%d funds (collision-safe; rest need justETF/issuer)' % (_h_fill, _h_try))
 
     # v1.148.0: Hydrogen-watch notes are COMPUTED LIVE from this run's own values (weakest-YTD +
     # smallest-AUM/liquidity), overwriting any hardcoded seed notes so a note can never go stale or
