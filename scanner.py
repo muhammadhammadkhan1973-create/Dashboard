@@ -40,6 +40,7 @@ import sys
 import json
 import math
 import time
+import threading
 import csv
 import re
 import traceback
@@ -64,10 +65,15 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.155.0'  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
+SCAN_VERSION = '1.156.0'  # 1.156.0: (SPEED) TCE per-name scoring now runs CONCURRENTLY (ThreadPoolExecutor, TCE_WORKERS=3) instead of one-at-a-time -- the ~137s TCE phase (46% of the run) is network-bound (news RSS + SEC EDGAR + per-name Yahoo .info/estimates), each name independent. ex.map preserves order + tce_results sorted deterministically -> tiers/scores BYTE-IDENTICAL to serial, ONLY execution order changes (freeze-safe). Per-name time.sleep(YF_DELAY) dropped. _swallow lock-guarded so the tce.fetch canary stays accurate under threads. CANARY (confirm parity on runner): tce.fetch stays 2, US TCE HIGH stays 8, PSX HIGH stays 3. TCE_WORKERS=1 reverts to serial.  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
+TCE_WORKERS       = 3      # v1.156.0: parallel workers for the per-name TCE scoring loop (news RSS + SEC
+                           # EDGAR + per-name Yahoo fundamentals are network-bound & independent). ex.map
+                           # preserves order + results sorted deterministically -> tiers/scores identical
+                           # to sequential; ONLY execution order changes (freeze-safe). Kept modest to
+                           # avoid Yahoo throttling the .info/estimate calls; set to 1 to revert to serial.
 TCE_BATCH_HISTORY = True   # v1.111.0: batch the TCE pool's 6mo price-history fetch (ONE yf.download for
                            # the whole pool) instead of one t.history() round-trip per name. Per-name
                            # fallback preserves coverage exactly. Flip False to revert to pure per-name.
@@ -6926,7 +6932,9 @@ def run_tce(candidates, market='us', max_count=20, spy_6mo_ret=None, prev_rev=No
     if _hist_cache:
         log(f'  TCE batch history: {len(_hist_cache)}/{min(len(candidates), max_count)} '
             f'names pre-fetched in one call ({market})')
-    for c in candidates[:max_count]:
+    pool = candidates[:max_count]
+
+    def _score_one(c):
         ticker = c['ticker']
         try:
             # PSX has no yfinance fundamentals; feed the scanner's TTM growth so s7 can fire. US: None.
@@ -6940,16 +6948,32 @@ def run_tce(candidates, market='us', max_count=20, spy_6mo_ret=None, prev_rev=No
                                           analyst_row=_ar, prev_fwd_eps=prev_fwd.get(ticker),
                                           hist_cache=_hist_cache)
             tier_label, total, conv = tce_tier(streams, market)
-            tce_results.append({
-                'ticker': ticker, 'name': c.get('name', ticker), 'sector': c.get('sector', ''),
-                'src': c.get('src', 'screen'),
-                'tce_score': total, 'conviction': conv, 'tier': tier_label, 'streams': streams,
-            })
             fired = [k for k in COUNTED if streams.get(k) == 1]
-            log(f'  {ticker}: {tier_label} total={total} conv={conv} streams={fired}')
-            time.sleep(YF_DELAY)
+            return {'ticker': ticker, 'name': c.get('name', ticker), 'sector': c.get('sector', ''),
+                    'src': c.get('src', 'screen'),
+                    'tce_score': total, 'conviction': conv, 'tier': tier_label, 'streams': streams,
+                    '_log': f'  {ticker}: {tier_label} total={total} conv={conv} streams={fired}'}
         except Exception as e:
-            log(f'  · TCE {ticker}: {e}')
+            return {'_err': f'  · TCE {ticker}: {e}'}
+
+    # v1.156.0: score the pool CONCURRENTLY. The per-name work (Google-News RSS + SEC EDGAR Form-4 +
+    # the per-name Yahoo .info/estimates) is network-bound and each name is INDEPENDENT. ex.map keeps
+    # input order and tce_results is sorted deterministically below, so tiers/scores are byte-identical
+    # to the old sequential loop -- ONLY execution order changes (freeze-safe: no threshold touched).
+    # The per-name time.sleep(YF_DELAY) is dropped (redundant under concurrency). Results are logged in
+    # candidate order after the pool finishes, so the run log stays stable + diff-able vs the serial run.
+    if TCE_WORKERS and TCE_WORKERS > 1 and len(pool) > 1:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=TCE_WORKERS) as _ex:
+            _scored = list(_ex.map(_score_one, pool))
+    else:
+        _scored = [_score_one(c) for c in pool]     # TCE_WORKERS<=1 -> original serial behaviour
+    for _res in _scored:
+        if _res.get('_err'):
+            log(_res['_err'])
+        elif '_log' in _res:
+            log(_res.pop('_log'))
+            tce_results.append(_res)
 
     tce_results.sort(key=lambda r: (r['tce_score'], r.get('conviction', 0)), reverse=True)
     high  = sum(1 for r in tce_results if r['tier'] == 'HIGH')
@@ -7180,10 +7204,12 @@ def score_explosive_candidate(c, partial_ok=False):
 
 # ===== v1.112.0 performance + correctness helpers (audit F1-F6) =====
 _SWALLOWED = {}
+_SWALLOW_LOCK = threading.Lock()
 def _swallow(where):
     """F6: count a deliberately-swallowed exception in a load-bearing spot so a degraded data leg
     (e.g. a failed cashflow fetch silently reading as 'not cash-backed') surfaces in the run summary."""
-    _SWALLOWED[where] = _SWALLOWED.get(where, 0) + 1
+    with _SWALLOW_LOCK:                      # v1.156.0: TCE now scores concurrently -> protect the counter
+        _SWALLOWED[where] = _SWALLOWED.get(where, 0) + 1
 
 # v1.112.1: the explosive statement cache now persists INSIDE data.json (committed every run by the
 # workflow) instead of a side file GitHub Actions never commits — so the cross-run cache actually
