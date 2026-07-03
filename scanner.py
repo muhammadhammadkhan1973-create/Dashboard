@@ -64,7 +64,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.148.0'  # 1.148.0: hydrogen-watch notes recomputed live each run (weakest-YTD + smallest-AUM liquidity) from live_ytd/size_m_eur -- replaces hardcoded notes so they self-verify and never go stale
+SCAN_VERSION = '1.149.0'  # 1.149.0: emerging-themes 'not sourced'/'Diversified equities' holdings now filled LIVE via fetch_etf_holdings (stockanalysis primary, FMP fallback) on the resolved symbol; real top-5 tickers overwrite placeholders, misses stay honest
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -10531,6 +10531,35 @@ def main():
                 pass
     if _n_priced:
         log(f'  [ETF live prices] {_n_priced} fund(s) priced via isin-filter resolver (recs + hydrogen + emerging-themes + metals + momentum watch) -- now incl. live YTD/1Y (v1.141.0)')
+
+    # v1.149.0: fill missing Emerging-Themes holdings LIVE via the proven fetch_etf_holdings()
+    # (stockanalysis.com primary + FMP stable/v3 fallback -- FMP holdings 402/403 on a free key, so
+    # stockanalysis carries it; if the key has the premium tier FMP fills automatically). Only funds
+    # currently showing 'not sourced'/'Diversified equities' are fetched (bounded ~12). Real fetched
+    # holdings (top-5 tickers by weight) overwrite the placeholder and set holdings_live=True; a miss
+    # keeps the placeholder -- never fabricated. stockanalysis is US-centric, so LSE/Euronext UCITS
+    # coverage is a runner-measured unknown (first fetch logs a [diag] HTTP status/body so we can see it).
+    _emh = data.get('etf_emerging_themes_watch') or []
+    _h_fill = 0; _h_try = 0
+    for _w in _emh:
+        _cur = str(_w.get('holdings') or '').strip().lower()
+        if _cur not in ('not sourced', 'diversified equities', ''):
+            continue
+        _sym = str(_w.get('live_sym') or '').split(':')[-1].strip()
+        if not _sym:
+            continue
+        _h_try += 1
+        try:
+            _rows = fetch_etf_holdings(_sym)
+        except Exception:
+            _rows = []
+        if _rows and len(_rows) >= 3:
+            _top = sorted(_rows, key=lambda h: (h.get('weight') or 0), reverse=True)[:5]
+            _w['holdings'] = ', '.join('%s %.1f%%' % (h['ticker'], h['weight']) for h in _top)
+            _w['holdings_live'] = True
+            _h_fill += 1
+    if _h_try:
+        log('  [Emerging holdings] live-filled %d/%d placeholder funds via stockanalysis/FMP (misses stay "not sourced")' % (_h_fill, _h_try))
 
     # v1.148.0: Hydrogen-watch notes are COMPUTED LIVE from this run's own values (weakest-YTD +
     # smallest-AUM/liquidity), overwriting any hardcoded seed notes so a note can never go stale or
