@@ -586,7 +586,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.135</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.136</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5884,7 +5884,7 @@ function renderWorldEtfTab(){
       };
       elHy.innerHTML='<div style="display:flex;gap:14px;flex-wrap:wrap;">'
         +hy.map(function(w){
-          var note=w.note?'<div style="font-size:9px;color:#F59E0B;margin-top:4px;">\u26a0 '+w.note+'</div>':'';
+          var note=(w.note && !((typeof w.live_ytd==='number') && /seeded|returns empty/i.test(w.note)))?'<div style="font-size:9px;color:#F59E0B;margin-top:4px;">\u26a0 '+w.note+'</div>':'';
           // Trend source: this fund's own 1Y return (already displayed just above the price) --
           // zero new data, prefers live if the resolver got it this run.
           var trendPct=typeof w.live_ret_1y==='number'?w.live_ret_1y:w.ret_1y;
@@ -5901,7 +5901,7 @@ function renderWorldEtfTab(){
             : '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #0EA5E933;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;">'
               +pill('YTD', ytdVal, '#0369A1')
               +pill('6M', w.ret_6m, '#0369A1')
-              +pill('1Y', w.ret_1y, '#0369A1')
+              +pill('1Y', (typeof w.live_ret_1y==='number'?w.live_ret_1y:w.ret_1y), '#0369A1')
               +fmtPriceHy(w, trendPct)
               +'</div>';
           return '<div style="background:#F0F9FF;border:2px solid #0EA5E9;border-radius:12px;padding:12px 16px;flex:1;min-width:230px;max-width:300px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
