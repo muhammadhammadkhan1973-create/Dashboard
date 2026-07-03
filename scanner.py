@@ -64,7 +64,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.153.0'  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
+SCAN_VERSION = '1.154.0'  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -1095,11 +1095,25 @@ def fetch_us_macros():
                 out['sp500'] = lg
                 out['sp500_hist'] = safe_get(EXISTING, 'macros', 'us', 'sp500_hist') or {}
                 log(f'  \u00b7 sp500: kept last-good = {lg}')
-        # Live oil — Yahoo first, then TradingView futures, then FRED (last resort, may be stale)
-        oil = fetch_live_oil()
+        # Live oil — v1.154.0: TradingView futures PRIMARY (fast, no Yahoo throttle/crumb-poisoning),
+        # Yahoo then FRED as fallback. TV serves spot only, so when TV wins we carry the WoW/MoM/QoQ
+        # oil trend from last-good (never blank) — Yahoo still recomputes trend when it fills a gap.
+        oil = fetch_tv_oil(['wti', 'brent'])
         _oil_missing = [k for k in ('wti', 'brent') if k not in oil]
         if _oil_missing:
-            oil.update(fetch_tv_oil(_oil_missing))
+            _yh_oil = fetch_live_oil()
+            for _k in _oil_missing:
+                for _suf in ('', '_source', '_date', '_wow', '_mom', '_qoq',
+                             '_wow_dir', '_mom_dir', '_qoq_dir'):
+                    _kk = _k + _suf
+                    if _kk in _yh_oil:
+                        oil[_kk] = _yh_oil[_kk]
+        for _k in ('wti', 'brent'):                       # TV served price but no trend -> carry last-good trend
+            if _k in oil and f'{_k}_wow' not in oil:
+                for _suf in ('_wow', '_mom', '_qoq', '_wow_dir', '_mom_dir', '_qoq_dir'):
+                    _lg = safe_get(EXISTING, 'macros', 'us', f'{_k}{_suf}')
+                    if _lg is not None:
+                        oil[f'{_k}{_suf}'] = _lg
         for key, fred_id in (('wti', 'DCOILWTICO'), ('brent', 'DCOILBRENTEU')):
             if key in oil:
                 out[key] = oil[key]
