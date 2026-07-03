@@ -64,7 +64,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.154.0'  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
+SCAN_VERSION = '1.155.0'  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -2374,6 +2374,43 @@ def _metal_technicals(closes):
     return out
 
 
+def fetch_metals_tv(symmap):
+    """v1.155.0 — TradingView-PRIMARY metals: spot + precomputed SMA50/SMA200/RSI in ONE
+    futures-scan POST (same endpoint proven for oil). Returns {key: {'px','sma50','sma200','rsi'}}
+    for whatever resolved; the caller derives ma_trend/cross/ext, keeps the WoW/MoM/QoQ trend +
+    sparkline alive via a maintained daily-close series, and falls back to the full Yahoo path
+    per-key for anything TV did not return (never blanks). DXY stays on Yahoo (TV symbol TBD)."""
+    want = {v: k for k, v in symmap.items()}          # tvsym -> our key
+    out = {}
+    if not want:
+        return out
+    try:
+        payload = {'symbols': {'tickers': list(want.keys())},
+                   'columns': ['close', 'SMA50', 'SMA200', 'RSI']}
+        r = requests.post('https://scanner.tradingview.com/futures/scan',
+                          json=payload, headers={'User-Agent': UA}, timeout=20)
+        if r.status_code == 200:
+            for d in r.json().get('data', []):
+                key = want.get(d.get('s'))
+                if not key:
+                    continue
+                vals = d.get('d', []) or []
+                def _f(i):
+                    try:
+                        return float(vals[i])
+                    except (TypeError, ValueError, IndexError):
+                        return None
+                px, s50, s200, rsi = _f(0), _f(1), _f(2), _f(3)
+                if px is not None and 0 < px < 1e6:
+                    out[key] = {'px': round(px, 2),
+                                'sma50':  round(s50, 2)  if s50  is not None else None,
+                                'sma200': round(s200, 2) if s200 is not None else None,
+                                'rsi':    round(rsi, 1)  if rsi  is not None else None}
+    except Exception as e:
+        log(f'  · metals TV fetch miss (falling back to Yahoo per-metal): {e}')
+    return out
+
+
 def fetch_metals():
     """
     Fetches all data for Tab 12:
@@ -2391,7 +2428,17 @@ def fetch_metals():
     headers = {'User-Agent': UA}
     log('Fetching metals data...')
 
-    # 1. Metal prices + DXY via Yahoo Finance
+    # 1. Metal prices via TradingView (PRIMARY, v1.155.0) + DXY via Yahoo.
+    # v1.155.0: the 5 metals now resolve spot + SMA50/SMA200/RSI from TV's futures scan (ONE POST,
+    # no Yahoo throttle/crumb-poisoning). ma_trend/cross/ext are derived here; WoW/MoM/QoQ + the
+    # sparkline are kept ALIVE via a maintained per-metal daily-close series (_push_hist/_hist_trend,
+    # seeded from last-good hist so no cold-start blank). Yahoo is the per-metal fallback (full 1y
+    # history + identical technicals) whenever TV doesn't return SMA200. DXY stays Yahoo (TV sym TBD).
+    # NUMBERS may differ ~1-3% from the old Yahoo-computed technicals (TV continuous-contract series).
+    _metals_tv_sym = {'gold_px': 'COMEX:GC1!', 'silver_px': 'COMEX:SI1!', 'platinum_px': 'NYMEX:PL1!',
+                      'palladium_px': 'NYMEX:PA1!', 'copper_px': 'COMEX:HG1!'}
+    _tvmet = fetch_metals_tv(_metals_tv_sym)
+    _today_str = str(dt.date.today())
     yahoo_tickers = {
         'gold_px':      'GC=F',
         'silver_px':    'SI=F',
@@ -2401,19 +2448,49 @@ def fetch_metals():
         'dxy':          'DX-Y.NYB',
     }
     for key, sym in yahoo_tickers.items():
+        _tv = _tvmet.get(key)
+        if _tv and _tv.get('sma200') is not None:
+            # --- TradingView PRIMARY: fresh spot + SMA/RSI; derive trend/cross/ext; keep trend alive ---
+            px = _tv['px']; s50 = _tv.get('sma50'); s200 = _tv['sma200']; rsi = _tv.get('rsi')
+            out[key] = px
+            out[f'{key}_date'] = _today_str
+            if s50 is not None: out[f'{key}_sma50'] = s50
+            out[f'{key}_sma200'] = s200
+            if rsi is not None: out[f'{key}_rsi14'] = rsi
+            out[f'{key}_ma_trend'] = 'up' if px >= s200 else 'down'
+            out[f'{key}_ext_200_pct'] = round((px / s200 - 1.0) * 100.0, 1)
+            if s50 is not None:
+                out[f'{key}_cross'] = 'golden' if s50 >= s200 else 'death'
+            # daily-close series (date-deduped) so WoW/MoM/QoQ + sparkline stay live without Yahoo's
+            # 1y array; seed from last-good hist on first TV run to avoid a cold-start blank.
+            _prev = safe_get(EXISTING, 'macros', 'metals', f'{key}_pxseries')
+            if not _prev:
+                _seed = safe_get(EXISTING, 'macros', 'metals', f'{key}_hist') or []
+                _prev = [{'d': None, 'v': v} for v in _seed if isinstance(v, (int, float))]
+            _series = _push_hist(_prev, _today_str, px, cap=90)
+            out[f'{key}_pxseries'] = _series
+            for _tk, _tv2 in _hist_trend(_series, w=(5, 21, 63)).items():
+                out[f'{key}_{_tk}'] = _tv2
+            out[f'{key}_hist'] = [h['v'] for h in _series if isinstance(h, dict) and h.get('v') is not None][-60:]
+            out[f'{key}_source'] = 'tradingview:' + _metals_tv_sym[key].split(':')[-1]
+            log(f'  ✓ {key} (TV {_metals_tv_sym[key]}): {px} · SMA200 {s200} · '
+                f'{out[f"{key}_ma_trend"]} {out.get(f"{key}_cross","")} · RSI {rsi}')
+            continue
+        # --- Yahoo FALLBACK (unchanged full path): 1y history + identical technicals ---
         try:
             h = yf.Ticker(sym).history(period='1y')   # v1.105.0 widened 6mo->1y so SMA200 has enough history
             if len(h) > 0:
                 _closes = [round(float(x), 2) for x in h['Close'].values if x == x]
                 out[key] = round(float(h['Close'].iloc[-1]), 2)
                 out[f'{key}_date'] = str(h.index[-1].date())
-                for _tk,_tv in _series_trend(_closes[-64:], w=(5,21,63)).items():
-                    out[f'{key}_{_tk}'] = _tv
+                for _tk,_tv3 in _series_trend(_closes[-64:], w=(5,21,63)).items():
+                    out[f'{key}_{_tk}'] = _tv3
                 # v1.105.0 metal technicals: SMA50/SMA200, RSI(14), trend label + cross, compact price-history array
-                for _tk,_tv in _metal_technicals(_closes).items():
-                    out[f'{key}_{_tk}'] = _tv
+                for _tk,_tv3 in _metal_technicals(_closes).items():
+                    out[f'{key}_{_tk}'] = _tv3
+                out[f'{key}_source'] = 'yahoo:' + sym
                 _t200 = out.get(f'{key}_sma200')
-                log(f'  ✓ {key} ({sym}): {out[key]}' + (f' · SMA200 {_t200} · {out.get(f"{key}_ma_trend","")} {out.get(f"{key}_cross","")} · RSI {out.get(f"{key}_rsi14","")}' if _t200 else ''))
+                log(f'  ✓ {key} ({sym} Yahoo-fallback): {out[key]}' + (f' · SMA200 {_t200} · {out.get(f"{key}_ma_trend","")} {out.get(f"{key}_cross","")} · RSI {out.get(f"{key}_rsi14","")}' if _t200 else ''))
         except Exception as e:
             warn(f'{key} ({sym}) failed: {e}')
             lg = safe_get(EXISTING, 'macros', 'metals', key)
