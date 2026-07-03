@@ -64,7 +64,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.150.0'  # 1.150.0: emerging-holdings auto-fill restricted to a verified ISIN allowlist (4 funds, symbol-pinned) after the v1.149 blind fetch collided (iShares Digital Security Dist -> US defense ETF); collision removed, rest stay 'not sourced' pending justETF/issuer
+SCAN_VERSION = '1.151.0'  # 1.151.0: iShares/BlackRock authoritative holdings fetcher (ISIN->UK product-screener->daily holdings CSV) wired for the 5 iShares emerging-theme UCITS with no US sibling; ISIN-keyed = collision-proof; runner validates issuer reachability
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -2153,6 +2153,95 @@ def fetch_etf_holdings(etf):
     if diag:
         _ETF_DIAG['done'] = True
     return result
+
+# ===================== iShares / BlackRock authoritative holdings (ISIN-keyed) =====================
+# v1.151.0: the emerging-theme UCITS funds have NO US-listed sibling, so stockanalysis 404s them. Their
+# holdings ARE public -- on the issuer's own site. iShares (5 of our funds: Digital Security Acc+Dist,
+# Quantum, Space, AI Infra) exposes a daily holdings CSV at
+#   /uk/individual/en/products/{PID}/{slug}/1506575576011.ajax?fileType=csv&fileName=holdings&dataType=fund
+# ISIN -> {PID}/{slug} comes from the UK product-screener JSON (fetched once per run, cached). This is
+# ISIN-keyed so it CANNOT collide (unlike a bare US ticker). Sandbox can't reach ishares.com, so this is
+# probe-by-execution: heavy [diag] logging tells the runner exactly what each leg returned; a failure
+# yields [] (card stays 'not sourced'), never a fabricated or wrong-fund holding.
+_ISHARES_SCR = {'done': False, 'map': {}}
+def _load_ishares_screener():
+    if _ISHARES_SCR['done']:
+        return _ISHARES_SCR['map']
+    _ISHARES_SCR['done'] = True
+    _urls = [
+        'https://www.ishares.com/uk/individual/en/product-screener/product-screener-v3.1.jsn?dcrPath=/templatedata/config/product-screener-v3/data/en/uk-retail/product-screener-backend-config&siteEntryPassthrough=true',
+        'https://www.ishares.com/uk/individual/en/product-screener/product-screener-v3.1.jsn?dcrPath=/templatedata/config/product-screener-v3/data/en/uk-retail/product-screener&siteEntryPassthrough=true',
+    ]
+    for _u in _urls:
+        try:
+            _r = requests.get(_u, headers={'User-Agent': UA, 'Accept': 'application/json'}, timeout=30)
+            log('    · [diag] iShares screener dcr=%s: HTTP %s len %d' % (_u.split('data/en/')[-1][:22], _r.status_code, len(_r.text)))
+            if _r.status_code != 200 or not _r.text.strip():
+                continue
+            _j = _r.json()
+            _recs = _j.values() if isinstance(_j, dict) else _j
+            _cnt = 0
+            for _rec in _recs:
+                if not isinstance(_rec, dict):
+                    continue
+                _ppu = _rec.get('productPageUrl') or _rec.get('fundPageURL') or ''
+                _tk  = _rec.get('localExchangeTicker') or _rec.get('ticker') or ''
+                _if  = _rec.get('isin')
+                _isins = []
+                if isinstance(_if, str):  _isins = [_if]
+                elif isinstance(_if, dict): _isins = [str(_if.get('r') or _if.get('d') or '')]
+                elif isinstance(_if, list): _isins = [str(_x) for _x in _if]
+                for _iz in _isins:
+                    if _iz and _ppu:
+                        _ISHARES_SCR['map'][_iz.upper()] = {'ppu': _ppu, 'ticker': _tk if isinstance(_tk, str) else ''}
+                        _cnt += 1
+            if _cnt:
+                log('    · [diag] iShares screener: mapped %d ISIN->product entries' % _cnt)
+                break
+        except Exception as _e:
+            log('    · [diag] iShares screener EXC %s' % _e)
+    return _ISHARES_SCR['map']
+
+def _parse_ishares_csv(text):
+    import csv, io
+    _lines = (text or '').splitlines()
+    _hdr = None
+    for _i, _ln in enumerate(_lines[:15]):
+        if 'Ticker' in _ln and 'Name' in _ln:
+            _hdr = _i; break
+    if _hdr is None:
+        return []
+    _rdr = csv.DictReader(io.StringIO('\n'.join(_lines[_hdr:])))
+    _out = []
+    for _row in _rdr:
+        _tk = str(_row.get('Ticker') or '').strip().strip('"')
+        _wcol = next((_k for _k in _row.keys() if _k and _k.strip().lower().startswith('weight')), None)
+        _w = str(_row.get(_wcol) if _wcol else '').replace('%', '').replace(',', '').strip()
+        try:
+            _wf = float(_w)
+        except Exception:
+            continue
+        if _tk and _tk not in ('-', '') and _wf > 0:
+            _out.append({'ticker': _tk.upper(), 'weight': _wf})
+    return _out
+
+def fetch_ishares_holdings(isin):
+    """iShares/BlackRock authoritative holdings by ISIN -> [{ticker, weight}] (top by weight) or []."""
+    _m = _load_ishares_screener()
+    _ent = _m.get((isin or '').upper())
+    if not _ent:
+        return []
+    _ppu = _ent['ppu']
+    _base = ('https://www.ishares.com' + _ppu) if _ppu.startswith('/') else _ppu
+    _url = _base.rstrip('/') + '/1506575576011.ajax?fileType=csv&fileName=holdings&dataType=fund&asOfDate='
+    try:
+        _r = requests.get(_url, headers={'User-Agent': UA}, timeout=30)
+        if _r.status_code != 200 or not _r.text:
+            return []
+        return _parse_ishares_csv(_r.text)
+    except Exception:
+        return []
+# =================== end iShares / BlackRock authoritative holdings ===================
 
 def build_etf_overlap(rank12_etfs, holdings_map, zacks_top_tickers, top_n=ETF_OVERLAP_TOP_N):
     """Aggregate holdings across Zacks #1/#2 ETFs. conviction = blend(weight, breadth) with a
@@ -10567,6 +10656,33 @@ def main():
             _h_fill += 1
     if _h_try:
         log('  [Emerging holdings] verified-allowlist filled %d/%d funds (collision-safe; rest need justETF/issuer)' % (_h_fill, _h_try))
+
+    # v1.151.0: iShares/BlackRock funds -> authoritative holdings CSV by ISIN (issuer's own daily file).
+    # ISIN-keyed via the UK product-screener, so it cannot grab the wrong fund. Covers the 5 iShares UCITS
+    # here that have no US sibling. Any failure leaves the card 'not sourced' -- never guessed.
+    _ISHARES_EMH = {
+        'IE00BG0J4C88',  # iShares Digital Security UCITS ETF (Acc)
+        'IE00BG0J4841',  # iShares Digital Security UCITS ETF (Dist)
+        'IE000C6ITGC8',  # iShares Quantum Computing UCITS ETF (Acc)
+        'IE000A9G9R73',  # iShares Space Technologies UCITS ETF (Acc)
+        'IE000X59ZHE2',  # iShares AI Infrastructure UCITS ETF (Acc)
+    }
+    _ish_fill = 0; _ish_try = 0
+    for _w in _emh:
+        if _w.get('isin') not in _ISHARES_EMH:
+            continue
+        _ish_try += 1
+        try:
+            _rows = fetch_ishares_holdings(_w.get('isin'))
+        except Exception:
+            _rows = []
+        if _rows and len(_rows) >= 3:
+            _top = sorted(_rows, key=lambda h: (h.get('weight') or 0), reverse=True)[:5]
+            _w['holdings'] = ', '.join('%s %.1f%%' % (h['ticker'], h['weight']) for h in _top)
+            _w['holdings_live'] = True
+            _ish_fill += 1
+    if _ish_try:
+        log('  [Emerging holdings] iShares issuer-file filled %d/%d funds (BlackRock authoritative CSV by ISIN)' % (_ish_fill, _ish_try))
 
     # v1.148.0: Hydrogen-watch notes are COMPUTED LIVE from this run's own values (weakest-YTD +
     # smallest-AUM/liquidity), overwriting any hardcoded seed notes so a note can never go stale or
