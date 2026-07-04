@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.163.0'  # 1.163.0: (backlog F3/F4/F5 diagnostic sweep -- re-arm two gated runner probes for ONE run, logging-only, freeze-safe) F3 SBP reserves has failed every run ("ecodata: fetch/parse returned nothing -> last-good 15.92") since the v1.85.0-locked table layout; the page structure changed. Re-arm ECODATA_DUMP_RAW=True so probe_ecodata_dump() re-dumps the CURRENT sbp.org.pk/ecodata table map + reserves-candidate columns on the next run, to re-lock fetch_sbp_reserves() against the new structure. Also re-arm FREE_LEVER_PROBE=True to re-sweep the free-source landscape for F4 (reer/pak_ca/pak_fiscal -- still no free monthly feed at v1.84.1) and F5 (broker-watchlist automation -- PSX sites were CF-blocked at v1.84.1), in case any became reachable. BOTH logging-only, guarded, wrapped in main -> touch NO data/screening/scoring/IM3/TCE/the frozen ledger -> freeze-safe. NEXT: read the [F3 ecodata dump] + [Wave R free-lever probe] blocks, then a follow-up re-locks fetch_sbp_reserves() (F3) against the real current columns and flips both flags False. No data/scoring change this rev. (daily.yml bank-input-hash trigger + ABCL/GAU IM3 scorer both confirmed already-resolved in the current files -- no change needed.)  # 1.162.0: (Explosive SEC revenue-concept fix -- root-caused by v1.161.1's [EXPL SEC-diag]) the diag showed MAMA/IOVA/AMSC returning rev_g=None because _sec_annual_series took the FIRST present concept ('Revenues'), which for these names held only stale/legacy scraps (e.g. MAMA Total=[2023,2012:0]) while the real recent revenue sat under RevenueFromContractWithCustomerExcludingAssessedTax. FIX: _sec_annual_series now picks the BEST-COVERED concept (>=2y, then most-recent max-year, then densest) instead of first-present, drops junk fy<=0 years, and the revenue candidate list is widened (7 variants). ZSQR/HSHP stay None correctly (genuine zero prior-year revenue -- real pre-revenue names). Cache bumped sec2->sec3 to re-validate. Scoring logic (explosive_conditions/classify/_build_explosive_rec) byte-unchanged; PSX/TCE/index.html/im3 untouched; canaries tce.fetch=2, US HIGH=8, PSX HIGH=3.  # 1.161.1: (cache-invalidation fix) v1.161.0 shipped the SEC net-income gate + [EXPL SEC-diag] but did NOT bump the cache token, so v1.160.0's warm 'sec1' cache hit all 198 names (0 fetched) and the fix+diagnostic never executed. Bump EXPLOSIVE_CACHE_SCHEMA 'sec1'->'sec2' -> this ONE run re-validates all names off SEC (applies the ni-gate: MNST-class np-missing reverts to Yahoo; fires [EXPL SEC-diag] for any residual AMSC/MAMA-style None), then caches under 'sec2' and is fast again. No other change.  # 1.161.0: (Explosive SEC swap -- correctness follow-up to v1.160.0's 32 verdict flips) TWO changes. (1) FIX: fetch_sec_financials now requires >=2y of NET INCOME too (was revenue+OI only). The verdict's growth AND acceleration signals both consume net-income YoY; a SEC frame missing it produced a None accel signal that downgraded a name on MISSING data not real weakness (MNST-class: A=False B=None). Now those fall back to Yahoo (the deployed/confirmed path) -> spurious downgrades revert. (2) DIAG: any SEC-served name STILL yielding a None rev/op/np signal (e.g. AMSC/MAMA A=None) logs [EXPL SEC-diag] with the raw annual (year:value) series for revenue/OI/net-income, so a genuine prev==0 base is told apart from a period-misalignment/duplicate-fy artifact on the next run -- zero guessing. No scoring-logic or field/tag change; growth_source/index.html/im3 untouched; PSX untouched; TCE untouched (canaries tce.fetch=2, US HIGH=8, PSX HIGH=3).  # 1.160.0: (Explosive SEC swap -- finishes Item 1) the US Explosive screen's statement source is now SEC EDGAR PRIMARY with Yahoo income_stmt FALLBACK. fetch_sec_financials builds a pandas DataFrame shaped EXACTLY like Yahoo's .income_stmt/.cashflow (rows Total Revenue/Operating Income/Net Income/Pretax Income/Operating Cash Flow; cols = fiscal years desc) so explosive_conditions + _yoy run UNCHANGED -- only the data source differs. SEC lacks >=2y revenue+OI (e.g. banks) -> Yahoo fallback. Companyfacts fetched once/ticker and shared with the EPS enrichment via _sec_companyfacts. Cache schema bumped ('sec1') -> this ONE run re-fetches all ~186 names off SEC to validate + logs any EXPLOSIVE verdict FLIP vs last-good ([EXPL Δ] lines + [Explosive src] N SEC / M Yahoo / K flips); afterwards normal 7d caching resumes (fast). YF_DELAY pacing skipped when SEC served. Yahoo-only fallbacks: 2 delisted PSX names + SEC-gap stragglers. Canaries unaffected (TCE untouched): tce.fetch=2, US HIGH=8, PSX HIGH=3.  # 1.159.1: (HOTFIX) v1.159.0 crashed the metals block ('Metals macros crashed: dxy', Hard errors:1) -- DXY correctly resolved on TV with SMA200 and entered the TV-primary branch, but the source-label + log lines did _metals_tv_sym[key], and that dict has only the 5 metals (no 'dxy') -> KeyError aborted the whole block (DXY/Gold:Silver/WALCL/COT/scores lost that run). Fix: _metals_tv_sym.get(key,'TVC:DXY') in both lines. USD/PKR TV swap confirmed working (v1.159.0). Picks never affected (metals is a macro block; canaries held 8/3/2).  # 1.159.0: (fix + speed) (1) DXY + USD/PKR TV swap CORRECTED -- v1.158.0 used /symbol which returns HTTP 405; the right call is the market-segment scan scanner.tradingview.com/{market}/scan (same body as oil/metals). fetch_index_tv now tries a market list until the symbol resolves: DXY via cfd->america->forex (TVC:DXY), USD/PKR via forex (FX_IDC:USDPKR); Yahoo fallback unchanged so nothing blanks. (2) The 20s Yahoo crumb cooldown in the EPS enrichment now scales to the remainder (<=3 names -> 5s) -- since v1.158.0 SEC fills most names, only a handful reach Yahoo, so the full cooldown was wasted latency (~15s saved on SEC-heavy days). SEC EPS + canaries unchanged (tce.fetch=2, US HIGH=8, PSX HIGH=3). Explosive OP-accel SEC swap still queued (scored screen -> next version, with verdict-delta log).  # 1.158.0: (Yahoo->SEC/TV cutover) THREE swaps, all PRIMARY-with-fallback so nothing blanks and the scan run is its own test. (1) SEC EDGAR companyfacts is now the PRIMARY source for the 14-survivor EPS-growth enrichment (FY diluted-EPS YoY off data.sec.gov) -- kills the ~27s Yahoo income_stmt call; Yahoo stays the fallback for names SEC can't fill; [SEC] log lines reveal runner reachability + hit rate. (2) DXY now TradingView-PRIMARY (TVC:DXY via /symbol scan, SMA200/RSI) merged into the metals loop -> Yahoo fallback if no SMA200 -- pulls the Dollar Index off Yahoo. (3) USD/PKR now TradingView-PRIMARY for spot (FX_IDC:USDPKR) with Yahoo for the trend series + fallback spot. New helpers: fetch_index_tv (index/forex /symbol scan), _sec_cik_map + fetch_sec_eps_growth. Freeze-safe (TCE untouched; Explosive scored screen NOT changed this version -- its OP-accel income_stmt swap is the next step pending this run's [SEC] reachability confirmation, since it shifts a scored screen). CANARY: tce.fetch=2, US HIGH=8, PSX HIGH=3 unchanged.  # 1.157.0: TCE s1_news RSS fetch retries up to 3x on an empty/bozo response -- under the v1.156.0 concurrent pool a transient empty occasionally dropped a real s1_news (PSX FFC), which the serial run always caught; retry restores serial parity, healthy names still fetch once (no added cost), genuinely news-less stays 0. Data-robustness only, no threshold touched.  # 1.156.0: (SPEED) TCE per-name scoring now runs CONCURRENTLY (ThreadPoolExecutor, TCE_WORKERS=3) instead of one-at-a-time -- the ~137s TCE phase (46% of the run) is network-bound (news RSS + SEC EDGAR + per-name Yahoo .info/estimates), each name independent. ex.map preserves order + tce_results sorted deterministically -> tiers/scores BYTE-IDENTICAL to serial, ONLY execution order changes (freeze-safe). Per-name time.sleep(YF_DELAY) dropped. _swallow lock-guarded so the tce.fetch canary stays accurate under threads. CANARY (confirm parity on runner): tce.fetch stays 2, US TCE HIGH stays 8, PSX HIGH stays 3. TCE_WORKERS=1 reverts to serial.  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
+SCAN_VERSION = '1.164.0'  # 1.164.0: (F3 SBP reserves -- REAL FIX, not a probe) the v1.163.0 dump proved sbp.org.pk/ecodata is now a LINK DIRECTORY (20 single-column link tables), so the old code scanned an index page that no longer holds the figure -- it moved one click deeper behind the 'Balance of Payment' leaves 'Official Reserve Assets Monthly' / 'Foreign Exchange Reserves'. fetch_sbp_reserves() rewritten to SELF-DISCOVER: fetch the index, follow the highest-priority reserves anchor at runtime, extract from the leaf via a labeled-table scan then a bounded text scan (new _sbp_extract_reserves + _sbp_bn, every figure plausibility-clamped to ~$3-80bn so a stray number/year/index can't leak in), with the index page itself as a last-resort fallback. Caller now accepts a total-only leaf (sbp_bn or total_bn; source labelled sbp_ecodata vs sbp_ecodata_total) so a leaf without the SBP/bank split isn't discarded -- the devaluation basket needs the reserves TREND. [F3 reserves] log lines make the run self-validating; returns None -> last-good (15.92) on any miss (never blanks, never fabricates). Both diagnostic flags (ECODATA_DUMP_RAW/FREE_LEVER_PROBE) flipped OFF. Freeze-safe: touches ONLY the sbp_reserves macro path -- no US/PSX screening, no TCE, no IM3, no index.html, no scoring; canaries must stay tce.fetch=2, US HIGH=8, PSX HIGH=3. F4 fiscal (CF-403) + current-account (PBS trade URL 404) stay manual -- source-blocked, next step. # 1.163.0: (backlog F3/F4/F5 diagnostic sweep -- re-arm two gated runner probes for ONE run, logging-only, freeze-safe) F3 SBP reserves has failed every run ("ecodata: fetch/parse returned nothing -> last-good 15.92") since the v1.85.0-locked table layout; the page structure changed. Re-arm ECODATA_DUMP_RAW=True so probe_ecodata_dump() re-dumps the CURRENT sbp.org.pk/ecodata table map + reserves-candidate columns on the next run, to re-lock fetch_sbp_reserves() against the new structure. Also re-arm FREE_LEVER_PROBE=True to re-sweep the free-source landscape for F4 (reer/pak_ca/pak_fiscal -- still no free monthly feed at v1.84.1) and F5 (broker-watchlist automation -- PSX sites were CF-blocked at v1.84.1), in case any became reachable. BOTH logging-only, guarded, wrapped in main -> touch NO data/screening/scoring/IM3/TCE/the frozen ledger -> freeze-safe. NEXT: read the [F3 ecodata dump] + [Wave R free-lever probe] blocks, then a follow-up re-locks fetch_sbp_reserves() (F3) against the real current columns and flips both flags False. No data/scoring change this rev. (daily.yml bank-input-hash trigger + ABCL/GAU IM3 scorer both confirmed already-resolved in the current files -- no change needed.)  # 1.162.0: (Explosive SEC revenue-concept fix -- root-caused by v1.161.1's [EXPL SEC-diag]) the diag showed MAMA/IOVA/AMSC returning rev_g=None because _sec_annual_series took the FIRST present concept ('Revenues'), which for these names held only stale/legacy scraps (e.g. MAMA Total=[2023,2012:0]) while the real recent revenue sat under RevenueFromContractWithCustomerExcludingAssessedTax. FIX: _sec_annual_series now picks the BEST-COVERED concept (>=2y, then most-recent max-year, then densest) instead of first-present, drops junk fy<=0 years, and the revenue candidate list is widened (7 variants). ZSQR/HSHP stay None correctly (genuine zero prior-year revenue -- real pre-revenue names). Cache bumped sec2->sec3 to re-validate. Scoring logic (explosive_conditions/classify/_build_explosive_rec) byte-unchanged; PSX/TCE/index.html/im3 untouched; canaries tce.fetch=2, US HIGH=8, PSX HIGH=3.  # 1.161.1: (cache-invalidation fix) v1.161.0 shipped the SEC net-income gate + [EXPL SEC-diag] but did NOT bump the cache token, so v1.160.0's warm 'sec1' cache hit all 198 names (0 fetched) and the fix+diagnostic never executed. Bump EXPLOSIVE_CACHE_SCHEMA 'sec1'->'sec2' -> this ONE run re-validates all names off SEC (applies the ni-gate: MNST-class np-missing reverts to Yahoo; fires [EXPL SEC-diag] for any residual AMSC/MAMA-style None), then caches under 'sec2' and is fast again. No other change.  # 1.161.0: (Explosive SEC swap -- correctness follow-up to v1.160.0's 32 verdict flips) TWO changes. (1) FIX: fetch_sec_financials now requires >=2y of NET INCOME too (was revenue+OI only). The verdict's growth AND acceleration signals both consume net-income YoY; a SEC frame missing it produced a None accel signal that downgraded a name on MISSING data not real weakness (MNST-class: A=False B=None). Now those fall back to Yahoo (the deployed/confirmed path) -> spurious downgrades revert. (2) DIAG: any SEC-served name STILL yielding a None rev/op/np signal (e.g. AMSC/MAMA A=None) logs [EXPL SEC-diag] with the raw annual (year:value) series for revenue/OI/net-income, so a genuine prev==0 base is told apart from a period-misalignment/duplicate-fy artifact on the next run -- zero guessing. No scoring-logic or field/tag change; growth_source/index.html/im3 untouched; PSX untouched; TCE untouched (canaries tce.fetch=2, US HIGH=8, PSX HIGH=3).  # 1.160.0: (Explosive SEC swap -- finishes Item 1) the US Explosive screen's statement source is now SEC EDGAR PRIMARY with Yahoo income_stmt FALLBACK. fetch_sec_financials builds a pandas DataFrame shaped EXACTLY like Yahoo's .income_stmt/.cashflow (rows Total Revenue/Operating Income/Net Income/Pretax Income/Operating Cash Flow; cols = fiscal years desc) so explosive_conditions + _yoy run UNCHANGED -- only the data source differs. SEC lacks >=2y revenue+OI (e.g. banks) -> Yahoo fallback. Companyfacts fetched once/ticker and shared with the EPS enrichment via _sec_companyfacts. Cache schema bumped ('sec1') -> this ONE run re-fetches all ~186 names off SEC to validate + logs any EXPLOSIVE verdict FLIP vs last-good ([EXPL Δ] lines + [Explosive src] N SEC / M Yahoo / K flips); afterwards normal 7d caching resumes (fast). YF_DELAY pacing skipped when SEC served. Yahoo-only fallbacks: 2 delisted PSX names + SEC-gap stragglers. Canaries unaffected (TCE untouched): tce.fetch=2, US HIGH=8, PSX HIGH=3.  # 1.159.1: (HOTFIX) v1.159.0 crashed the metals block ('Metals macros crashed: dxy', Hard errors:1) -- DXY correctly resolved on TV with SMA200 and entered the TV-primary branch, but the source-label + log lines did _metals_tv_sym[key], and that dict has only the 5 metals (no 'dxy') -> KeyError aborted the whole block (DXY/Gold:Silver/WALCL/COT/scores lost that run). Fix: _metals_tv_sym.get(key,'TVC:DXY') in both lines. USD/PKR TV swap confirmed working (v1.159.0). Picks never affected (metals is a macro block; canaries held 8/3/2).  # 1.159.0: (fix + speed) (1) DXY + USD/PKR TV swap CORRECTED -- v1.158.0 used /symbol which returns HTTP 405; the right call is the market-segment scan scanner.tradingview.com/{market}/scan (same body as oil/metals). fetch_index_tv now tries a market list until the symbol resolves: DXY via cfd->america->forex (TVC:DXY), USD/PKR via forex (FX_IDC:USDPKR); Yahoo fallback unchanged so nothing blanks. (2) The 20s Yahoo crumb cooldown in the EPS enrichment now scales to the remainder (<=3 names -> 5s) -- since v1.158.0 SEC fills most names, only a handful reach Yahoo, so the full cooldown was wasted latency (~15s saved on SEC-heavy days). SEC EPS + canaries unchanged (tce.fetch=2, US HIGH=8, PSX HIGH=3). Explosive OP-accel SEC swap still queued (scored screen -> next version, with verdict-delta log).  # 1.158.0: (Yahoo->SEC/TV cutover) THREE swaps, all PRIMARY-with-fallback so nothing blanks and the scan run is its own test. (1) SEC EDGAR companyfacts is now the PRIMARY source for the 14-survivor EPS-growth enrichment (FY diluted-EPS YoY off data.sec.gov) -- kills the ~27s Yahoo income_stmt call; Yahoo stays the fallback for names SEC can't fill; [SEC] log lines reveal runner reachability + hit rate. (2) DXY now TradingView-PRIMARY (TVC:DXY via /symbol scan, SMA200/RSI) merged into the metals loop -> Yahoo fallback if no SMA200 -- pulls the Dollar Index off Yahoo. (3) USD/PKR now TradingView-PRIMARY for spot (FX_IDC:USDPKR) with Yahoo for the trend series + fallback spot. New helpers: fetch_index_tv (index/forex /symbol scan), _sec_cik_map + fetch_sec_eps_growth. Freeze-safe (TCE untouched; Explosive scored screen NOT changed this version -- its OP-accel income_stmt swap is the next step pending this run's [SEC] reachability confirmation, since it shifts a scored screen). CANARY: tce.fetch=2, US HIGH=8, PSX HIGH=3 unchanged.  # 1.157.0: TCE s1_news RSS fetch retries up to 3x on an empty/bozo response -- under the v1.156.0 concurrent pool a transient empty occasionally dropped a real s1_news (PSX FFC), which the serial run always caught; retry restores serial parity, healthy names still fetch once (no added cost), genuinely news-less stays 0. Data-robustness only, no threshold touched.  # 1.156.0: (SPEED) TCE per-name scoring now runs CONCURRENTLY (ThreadPoolExecutor, TCE_WORKERS=3) instead of one-at-a-time -- the ~137s TCE phase (46% of the run) is network-bound (news RSS + SEC EDGAR + per-name Yahoo .info/estimates), each name independent. ex.map preserves order + tce_results sorted deterministically -> tiers/scores BYTE-IDENTICAL to serial, ONLY execution order changes (freeze-safe). Per-name time.sleep(YF_DELAY) dropped. _swallow lock-guarded so the tce.fetch canary stays accurate under threads. CANARY (confirm parity on runner): tce.fetch stays 2, US TCE HIGH stays 8, PSX HIGH stays 3. TCE_WORKERS=1 reverts to serial.  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -1616,12 +1616,15 @@ def fetch_psx_macros():
         else:
             _prior = out.get('sbp_reserves')
             _res = fetch_sbp_reserves()
-            if _res and _res.get('sbp_bn') is not None:
-                out['sbp_reserves'] = _res['sbp_bn']
+            _lvl = _res.get('sbp_bn') if _res else None
+            if _lvl is None and _res:
+                _lvl = _res.get('total_bn')   # v1.164.0: a total-only leaf is still usable (the devaluation basket needs the reserves TREND, not the SBP/bank split)
+            if _res and _lvl is not None:
+                out['sbp_reserves'] = _lvl
                 out['sbp_reserves_total'] = _res.get('total_bn')
                 out['sbp_reserves_bank'] = _res.get('bank_bn')
                 out['sbp_reserves_as_of'] = _res.get('as_of')
-                out['sbp_reserves_source'] = 'sbp_ecodata'
+                out['sbp_reserves_source'] = 'sbp_ecodata' if _res.get('sbp_bn') is not None else 'sbp_ecodata_total'
                 log(f'  ✓ SBP reserves (ecodata, live): SBP {_res.get("sbp_bn")}bn / bank {_res.get("bank_bn")}bn / total {_res.get("total_bn")}bn as on {_res.get("as_of")} (prior {_prior})')
             else:
                 log(f'  · SBP reserves (ecodata): fetch/parse returned nothing -> keeping last-good ({_prior})')
@@ -4692,7 +4695,7 @@ def probe_scs_reports():
 # JS-rendered / moved. Probe-before-build. URLs are best-guess STARTING POINTS to be refined from the verdict, not asserted
 # feeds. Runner-only answer (datacenter-IP CF blocking; the sandbox reaches only github/pypi/npm). Logging-only; gated
 # FREE_LEVER_PROBE; each GET guarded; never affects the universe screen, scoring, IM3, the TCE tier or the Sept freeze.
-FREE_LEVER_PROBE = True    # v1.163.0 RE-ARMED for one run (F4/F5 free-source re-sweep); flip False after reading the verdict. Prior (v1.84.1): SBP ecodata reserves (72 tables, carries 'reserves') + SBP EasyData both reachable+parseable -> F3 greenlit; PBS CPI reachable (text/xml); PBS trade URL 404 (needs correct path); Finance fiscal + OGRA Cloudflare-403 blocked. Probe stays in code, gated off; re-arm only to re-probe.
+FREE_LEVER_PROBE = False   # v1.164.0 OFF: F3 fix built; F4 fiscal/CA still source-blocked (CF-403 / dead URL). Prior v1.163.0 RE-ARMED for one run (F4/F5 free-source re-sweep); flip False after reading the verdict. Prior (v1.84.1): SBP ecodata reserves (72 tables, carries 'reserves') + SBP EasyData both reachable+parseable -> F3 greenlit; PBS CPI reachable (text/xml); PBS trade URL 404 (needs correct path); Finance fiscal + OGRA Cloudflare-403 blocked. Probe stays in code, gated off; re-arm only to re-probe.
 
 _FREE_LEVER_SOURCES = [
     ('SBP FX reserves (weekly, replaces manual sbp_reserves) - sbp.org.pk/ecodata',
@@ -5431,7 +5434,7 @@ def probe_fdic_bankfind():
 # exactly the MTS/MSCI dump-then-lock pattern. Regex-only (no bs4/lxml dependency on the runner). Logs (a) a one-line
 # map of EVERY <table> (index, rows x cols, first-row text) and (b) a detailed header+first-rows dump of any table whose
 # text mentions reserves / liquid / foreign exchange. Gated ECODATA_DUMP_RAW; guarded; never raises; touches no data.
-ECODATA_DUMP_RAW = True    # v1.163.0 RE-ARMED for one run (F3: reserves fetch returns nothing -> page changed; re-dump to re-lock the table+column, then flip False). Prior: layout locked from the v1.85.0 dump (t30: "SBP's Reserves"/"Bank's Reserves"/"Total Reserves" + "As on <date>"); fetch_sbp_reserves() now reads it live. Re-arm only to re-inspect the page.
+ECODATA_DUMP_RAW = False   # v1.164.0 OFF: reserves fetch rewritten to self-discover the leaf; dump no longer needed. Prior v1.163.0 RE-ARMED for one run (F3: reserves fetch returns nothing -> page changed; re-dump to re-lock the table+column, then flip False). Prior: layout locked from the v1.85.0 dump (t30: "SBP's Reserves"/"Bank's Reserves"/"Total Reserves" + "As on <date>"); fetch_sbp_reserves() now reads it live. Re-arm only to re-inspect the page.
 ECODATA_URL = 'https://www.sbp.org.pk/ecodata/index2.asp'
 _ECODATA_KEYS = ('reserve', 'liquid', 'foreign exchange', 'forex', ' fx ', 'swap', 'with sbp', 'with bank', 'net reserves')
 
@@ -5505,49 +5508,134 @@ def _eco_num(s):
         return None
 
 
+def _sbp_bn(raw):
+    """Parse a reserves cell/'15,920.0' or '15.92' -> USD billions, or None. Rejects garbage:
+    a bare small integer (row#, a stray '45') with no comma/decimal is dropped, and the result is
+    clamped to a sane SBP-reserves band so a phone number / year / index value can never leak in."""
+    v = _eco_num(raw)
+    if v is None:
+        return None
+    if v < 1000 and (',' not in (raw or '') and '.' not in (raw or '')):
+        return None                                     # bare small int -> not a reserves figure
+    b = v / 1000.0 if v > 1000 else v                   # page prints in $mn or already $bn
+    return round(b, 2) if 3.0 <= b <= 80.0 else None    # SBP reserves have lived in ~$3-20bn; band is generous but blocks junk
+
+
+def _sbp_extract_reserves(html):
+    """Pull {'sbp_bn','bank_bn','total_bn','as_of'} from ONE page (a leaf OR the index), or None.
+    Strategy 1: any table row whose label mentions reserves -> map to sbp/bank/total by keyword.
+    Strategy 2 (if no table hit): a bounded text scan for a reserves keyword immediately followed by a
+    formatted figure. Every figure passes _sbp_bn (plausibility-clamped), so nothing is fabricated."""
+    out = {'sbp_bn': None, 'bank_bn': None, 'total_bn': None, 'as_of': None}
+    _date_rx = re.compile(
+        r'as on\s*[:\-]?\s*('
+        r'\d{1,2}[\-\s/][A-Za-z]{3,9}[\-\s/]\d{2,4}'      # 27-Jun-2026
+        r'|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}'             # June 27, 2026
+        r'|\d{1,2}[\-/]\d{1,2}[\-/]\d{2,4}'               # 27/06/2026
+        r'|\d{4}[\-/]\d{1,2}[\-/]\d{1,2}'                 # 2026-06-27
+        r')', re.I)
+    # ---- strategy 1: labeled table rows ----
+    for rr in re.findall(r'(?is)<tr\b.*?</tr>', html):
+        cells = [_ecodata_strip(c) for c in re.findall(r'(?is)<t[dh]\b.*?</t[dh]>', rr)]
+        if not cells:
+            continue
+        label = cells[0].lower().replace('&rsquo;', "'").replace('\u2019', "'")
+        md = _date_rx.search(label)
+        if md and out['as_of'] is None:
+            out['as_of'] = md.group(1).strip().title()
+        if 'reserve' not in label and 'forex' not in label and 'foreign exchange' not in label:
+            continue
+        bn = None
+        for c in cells[1:]:
+            bn = _sbp_bn(c)
+            if bn is not None:
+                break
+        if bn is None:
+            continue
+        if 'sbp' in label or 'state bank' in label:
+            out['sbp_bn'] = out['sbp_bn'] or bn
+        elif 'bank' in label:
+            out['bank_bn'] = out['bank_bn'] or bn
+        elif 'total' in label or 'official reserve asset' in label or 'liquid' in label:
+            out['total_bn'] = out['total_bn'] or bn
+        else:
+            out['total_bn'] = out['total_bn'] or bn      # generic 'Foreign Exchange Reserves' row -> treat as total
+    if out['sbp_bn'] is not None or out['total_bn'] is not None:
+        return out
+    # ---- strategy 2: bounded text scan (leaf may not be a clean <table>) ----
+    flat = _ecodata_strip(html)
+    md = _date_rx.search(flat)
+    if md:
+        out['as_of'] = md.group(1).strip().title()
+    for km in re.finditer(
+            r'(?is)(total liquid (?:foreign )?reserves|official reserve assets|foreign exchange reserves|reserves with (?:the )?sbp)'
+            r'(.{0,60}?)([0-9][0-9,]{2,}(?:\.[0-9]+)?)', flat):
+        bn = _sbp_bn(km.group(3))
+        if bn is None:
+            continue
+        if 'sbp' in km.group(1).lower():
+            out['sbp_bn'] = out['sbp_bn'] or bn
+        else:
+            out['total_bn'] = out['total_bn'] or bn
+    return out if (out['sbp_bn'] is not None or out['total_bn'] is not None) else None
+
+
 def fetch_sbp_reserves():
-    """F3 - live weekly SBP FX reserves from sbp.org.pk/ecodata (content-locked to the 'Total Reserves' panel).
-    Returns {'sbp_bn','bank_bn','total_bn','as_of'} in USD BILLIONS, or None. Runner-only; guarded; never raises."""
+    """F3 -- live SBP FX reserves. The v1.163.0 ecodata dump proved sbp.org.pk/ecodata is now a LINK DIRECTORY
+    (20 single-column link tables); the figure moved one click deeper, behind the 'Balance of Payment' leaves
+    'Official Reserve Assets Monthly' / 'Foreign Exchange Reserves'. So this SELF-DISCOVERS: fetch the index,
+    follow the highest-priority reserves anchor, extract from that leaf; if none parse, fall back to scanning
+    the index page itself (in case the layout ever reverts). Returns {'sbp_bn','bank_bn','total_bn','as_of'} in
+    USD BILLIONS, or None -> caller keeps last-good. Runner-only (the sandbox can't reach sbp.org.pk); guarded;
+    never raises; never fabricates. The [F3 reserves] log lines make the run self-validating (no separate probe)."""
+    from urllib.parse import urljoin
     try:
         r = requests.get(ECODATA_URL, headers={'User-Agent': UA, 'Accept': '*/*'}, timeout=20)
         if r.status_code != 200 or not r.content:
+            log(f'  [F3 reserves] index HTTP {r.status_code}/empty -> last-good')
             return None
-        html = r.content.decode('utf-8', 'ignore')
-        panel = None
-        for t in re.findall(r'(?is)<table\b.*?</table>', html):
-            if 'total reserves' in _ecodata_strip(t).lower():
-                panel = t
-                break
-        if panel is None:
-            return None
-        out = {'sbp_bn': None, 'bank_bn': None, 'total_bn': None, 'as_of': None}
-        for rr in re.findall(r'(?is)<tr\b.*?</tr>', panel):
-            cells = [_ecodata_strip(c) for c in re.findall(r'(?is)<t[dh]\b.*?</t[dh]>', rr)]
-            if not cells:
+        idx = r.content.decode('utf-8', 'ignore')
+        cand = []
+        for m in re.finditer(r'(?is)<a\b[^>]*href\s*=\s*["\']([^"\']+)["\'][^>]*>(.*?)</a>', idx):
+            txt = _ecodata_strip(m.group(2)).lower()
+            if not txt or 'reserve' not in txt:
                 continue
-            label = cells[0].lower().replace('&rsquo;', "'").replace('\u2019', "'")
-            m = re.search(r'as on\s*[:\-]?\s*([0-9].+)', label)
-            if m and out['as_of'] is None:
-                out['as_of'] = m.group(1).strip().title()
-            val = None
-            for c in cells[1:]:
-                vv = _eco_num(c)
-                if vv is not None:
-                    val = vv
-                    break
-            if val is None:
+            if 'official reserve asset' in txt:
+                pr = 0
+            elif 'foreign exchange reserve' in txt:
+                pr = 1
+            elif 'international reserve' in txt:
+                pr = 2
+            else:
+                pr = 3
+            cand.append((pr, txt[:50], urljoin(ECODATA_URL, m.group(1))))
+        cand.sort(key=lambda x: x[0])
+        seen, tried = set(), []
+        for pr, label, url in cand:
+            if url in seen:
                 continue
-            bn = round(val / 1000.0, 2) if val > 1000 else round(val, 2)
-            if 'reserve' in label and 'sbp' in label:
-                out['sbp_bn'] = bn
-            elif 'reserve' in label and 'bank' in label:
-                out['bank_bn'] = bn
-            elif 'total' in label and 'reserve' in label:
-                out['total_bn'] = bn
-        if out['sbp_bn'] is None and out['total_bn'] is None:
-            return None
-        return out
-    except Exception:
+            seen.add(url); tried.append(label)
+            try:
+                lr = requests.get(url, headers={'User-Agent': UA, 'Accept': '*/*'}, timeout=20)
+            except Exception:
+                continue
+            ctype = lr.headers.get('Content-Type', '')
+            if lr.status_code != 200 or 'html' not in ctype.lower():
+                log(f'  [F3 reserves] leaf "{label}" HTTP {lr.status_code} {ctype[:24]} (non-html) -> skip')
+                continue
+            got = _sbp_extract_reserves(lr.content.decode('utf-8', 'ignore'))
+            if got:
+                got['leaf'] = label
+                log(f'  [F3 reserves] leaf "{label}" -> SBP {got.get("sbp_bn")}bn / bank {got.get("bank_bn")}bn / total {got.get("total_bn")}bn as on {got.get("as_of")}')
+                return got
+        got = _sbp_extract_reserves(idx)   # last resort: layout may revert to on-index tables
+        if got:
+            log(f'  [F3 reserves] index-page fallback -> SBP {got.get("sbp_bn")}bn / total {got.get("total_bn")}bn')
+            return got
+        log(f'  [F3 reserves] no figure found (leaves tried: {tried[:4]}) -> last-good')
+        return None
+    except Exception as e:
+        log(f'  [F3 reserves] exception {type(e).__name__}: {str(e)[:50]} -> last-good')
         return None
 # ========================== end F3 Step 2 SBP reserves parser ==========================
 
