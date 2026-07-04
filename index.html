@@ -586,7 +586,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.143</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.144</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -1176,9 +1176,9 @@ function calcDevAlert(){
   const core = [
     {k:'Reserves < 2.5mo import cover', fire: ic<2.5,   now:ic.toFixed(2)+' mo',
      note: ic<2.5?'Below crisis line':'Above safe line'},
-    {k:'Current account deficit widening', fire: ca<-200, now:'$'+ca+'M',
+    {k:'Current account deficit widening', fire: ca<-200, now:'$'+ca+'M'+(function(){var _pj=_wtPrior();if(!_pj)return '';return computedArrow(ca,_wtp(_pj,'psx.pak_ca'),0,'');})(),
      note: ca>=0?'Surplus — safe':ca<-1000?'Wide deficit':'Mild deficit'},
-    {k:'REER > 100 (PKR overvalued)', fire: reer>100, now:reer.toFixed(1),
+    {k:'REER > 100 (PKR overvalued)', fire: reer>100, now:reer.toFixed(1)+(function(){var _pj=_wtPrior();if(!_pj)return '';return computedArrow(reer,_wtp(_pj,'psx.reer'),1,'');})(),
      note: reer>105?'Strongly overvalued':reer>100?'Overvalued':'Fair/undervalued'},
     {k:'External debt service heavy', fire: (stToRes>1.0), now:'ST/Res '+stToRes.toFixed(2)+'x ($'+stdebt+'bn due vs $'+res+'bn)',
      note: stToRes>1.0?'ST debt exceeds reserves (2018 pattern)':stToRes>0.5?'Manageable vs reserves':'Comfortably rollable'},
@@ -1521,7 +1521,7 @@ function calcZone(){
   const _abv=_cz.filter(r=>r.above_200dma===true).length,_tot=_cz.filter(r=>r.above_200dma!=null).length;
   const _zel=document.getElementById('zone_global_breadth');
   if(_zel&&_tot>0){const _p=Math.round(_abv/_tot*100),_c=_p>=60?'#059669':_p>=40?'#D97706':'#DC2626',_l=_p>=60?'Risk-On':_p>=40?'Mixed':'Risk-Off';
-  _zel.innerHTML=`<div style="background:${_p>=60?'#DCFCE7':_p>=40?'#FEF3C7':'#FEE2E2'};border:1px solid ${_c}33;border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px;"><span style="font-size:10px;font-weight:700;color:#64748B;letter-spacing:1px;">GLOBAL MARKET BREADTH</span><span style="font-size:14px;font-weight:800;color:${_c};">${_abv}/${_tot} above 200-DMA</span><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:${_c};color:#fff;">${_l}</span></div>`;}
+  _zel.innerHTML=`<div style="background:${_p>=60?'#DCFCE7':_p>=40?'#FEF3C7':'#FEE2E2'};border:1px solid ${_c}33;border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px;"><span style="font-size:10px;font-weight:700;color:#64748B;letter-spacing:1px;">GLOBAL MARKET BREADTH</span><span style="font-size:14px;font-weight:800;color:${_c};">${_abv}/${_tot} above 200-DMA${(function(){var _pj=_wtPrior();if(!_pj||_pj.global_breadth_abv==null)return '';return computedArrow(_abv,_wtp(_pj,'global_breadth_abv'),0,'');})()}</span><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:${_c};color:#fff;">${_l}</span></div>`;}
 
   const cells=[{name:'DARK GREEN',rr:'Lesser',dir:'Decreasing',w:1.0,alloc:'100% Stocks / 0% Bonds / 0% Cash',color:'#006100',tc:'#FFFFFF'},{name:'LIGHT GREEN',rr:'Greater',dir:'Decreasing',w:0.8,alloc:'80% Stocks / 15% Bonds / 5% Cash',color:'#92D050',tc:'#000000'},{name:'YELLOW',rr:'Lesser',dir:'Increasing',w:0.6,alloc:'60% Stocks / 30% Bonds / 10% Cash',color:'#FFFF00',tc:'#000000'},{name:'RED',rr:'Greater',dir:'Increasing',w:0.2,alloc:'20% Stocks / 60% Bonds / 20% Cash',color:'#FF0000',tc:'#FFFFFF'}];
   // Reactive: derive zone from the live/entered SBP rate vs mean + direction vs previous policy rate.
@@ -5349,7 +5349,7 @@ function _renderWeDiffusion(){
   el.innerHTML=`
     <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
       <div>
-        <div style="font-size:48px;font-weight:900;color:${col};line-height:1;letter-spacing:-2px;font-family:var(--font-head);">${net>0?'+':''}${net}</div>
+        <div style="font-size:48px;font-weight:900;color:${col};line-height:1;letter-spacing:-2px;font-family:var(--font-head);">${net>0?'+':''}${net}</div>${(function(){var _pj=_wtPrior();if(!_pj)return '';return '<div style=\'margin-top:2px;\'>'+computedArrow(net,_wtp(_pj,'us_diffusion_net'),0,'')+'</div>';})()}
         <div style="font-size:11px;color:#64748B;margin-top:2px;letter-spacing:0.5px;">NET SCORE / ${tot}</div>
         <div style="margin-top:10px;">
           <span style="display:inline-block;background:${isExp?'#DBEAFE':'#FEE2E2'};color:${col};font-size:13px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;">${arrow} ${phase}${accel?' · Accelerating':''}</span>
