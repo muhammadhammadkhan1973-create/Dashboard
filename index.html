@@ -586,7 +586,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.134</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.135</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -3840,6 +3840,26 @@ function calcMetals(){
         : `<span style="font-size:10.5px;color:var(--grey-d);margin-left:8px;min-width:170px;">trend builds with each weekly report</span>`;
       return`<div class="cot-row"><span style="font-weight:600;min-width:60px;">${c.name}</span><span style="font-family:var(--font-mono);min-width:100px;">${c.net?c.net.toLocaleString():'—'} net</span>${lsBar}<div class="cot-bar-wrap"><div class="cot-bar-fill" style="width:${Math.min(100,Math.abs(pct)*2)}%;background:${color};"></div></div><span style="font-family:var(--font-mono);min-width:50px;">${pct.toFixed(1)}%</span><span style="font-weight:700;color:${color};min-width:70px;">${crowded?'⚠ CROWDED':'OK'}</span>${trendSeg}</div>`;
     }).join('');
+  }
+
+  // v5.135: COT × Seasonality strip (metals) — scanner cot_seasonality (COT Index × World Bank CMO monthly seasonality)
+  if(cotRows && M.cot_seasonality){
+    let cs=document.getElementById('cot_seasonality_strip');
+    if(!cs){ cs=document.createElement('div'); cs.id='cot_seasonality_strip'; cotRows.parentNode.insertBefore(cs, cotRows.nextSibling); }
+    const CS=M.cot_seasonality, order=['gold','silver','copper'], nm={gold:'Gold',silver:'Silver',copper:'Copper'};
+    const col=v=>({'Tailwind':'#10B981','Lean bullish':'#34D399','Neutral':'#9CA3AF','Conflicting':'#F59E0B','Lean bearish':'#F87171','Headwind':'#EF4444','n/a':'#6B7280'}[v]||'#9CA3AF');
+    cs.innerHTML=`<div style="margin-top:12px;padding:12px 14px;background:rgba(180,83,9,0.06);border:1px solid rgba(180,83,9,0.22);border-radius:10px;">`
+      +`<div style="font-weight:700;font-size:12.5px;margin-bottom:8px;">COT × Seasonality — ${CS.month} <span style="font-weight:400;color:var(--grey-d);font-size:10.5px;">(COT Index × World Bank CMO monthly seasonality 2000–25)</span></div>`
+      +order.map(m=>{const d=CS.metals[m];const c=col(d.combined);
+        const sv=d.seasonal_avg_pct!=null?((d.seasonal_avg_pct>=0?'+':'')+d.seasonal_avg_pct+'%'):'n/a';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:4px 0;font-size:11.5px;flex-wrap:wrap;">`
+          +`<span style="font-weight:600;min-width:56px;">${nm[m]}</span>`
+          +`<span style="font-weight:700;color:${c};min-width:96px;">${d.combined}</span>`
+          +`<span style="color:var(--grey-d);min-width:170px;">COT ${d.cot_bias||'—'}${d.cot_pctile!=null?' ('+d.cot_pctile+'th pctile)':''}</span>`
+          +`<span style="color:var(--grey-d);">seasonal ${d.seasonal_bias||'—'} ${sv}</span></div>`;
+      }).join('')
+      +`<div style="font-size:10px;color:var(--grey-d);margin-top:6px;">Aligned bull/bear → Tailwind/Headwind; disagree → Conflicting. Historical context, not a trade signal.</div>`
+      +`</div>`;
   }
 
   // v5.102: COT Positioning Index — render the 9 futures contracts' analytics block (scanner v1.110)
