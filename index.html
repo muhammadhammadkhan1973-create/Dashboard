@@ -586,7 +586,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.142</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.143</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -681,6 +681,50 @@ function trendChip(path,opt){
   var pctTxt=(T.pct!=null&&isFinite(T.pct))?' ('+(T.pct>0?'+':'')+T.pct+'%)':'';
   var ago=(T.days!=null&&T.days>0)?(' \u00b7 '+T.days+'d'):'';
   return '<span style="color:'+col+';font-size:10.5px;white-space:nowrap;" title="'+title+'">'+a+' '+mag+pctTxt+ago+'</span>';
+}
+// Wave T (computed numbers) — trend arrows for browser-CALCULATED values (twin deficit, real rate,
+// yield curve, devaluation composite) that aren't in LIVE.trends. We re-run the SAME formula on the
+// most-recent PRIOR stored day (from LIVE.history, which already carries the raw inputs) and diff —
+// single source of truth, no scanner-side copy to drift. Neutral grey (these are risk/spread numbers
+// where "up" is not uniformly good). Import cover is a manual input (no live feed) -> no auto-trend.
+function _wtPrior(){
+  var h=(typeof LIVE!=='undefined'&&LIVE&&Array.isArray(LIVE.history))?LIVE.history:[];
+  if(h.length<2) return null;
+  var today=(h[h.length-1]||{}).date;
+  for(var i=h.length-2;i>=0;i--){ if(h[i]&&h[i].date&&h[i].date!==today) return h[i]; }
+  return null;
+}
+function _wtp(prior,key){ if(!prior) return NaN; var v=prior[key]; var f=parseFloat(v); return (v==null||isNaN(f))?NaN:f; }
+function computedArrow(cur,prev,digits,unit){
+  if(cur==null||prev==null||isNaN(cur)||isNaN(prev)) return '';
+  digits=(digits==null)?1:digits; unit=unit||'';
+  var d=cur-prev, eps=Math.pow(10,-digits)/2;
+  var a=Math.abs(d)<eps?'\u25ac':(d>0?'\u25b2':'\u25bc');
+  var pd=_wtPrior(); var when=(pd&&pd.date)?(' vs '+pd.date):'';
+  var mag=Math.abs(d)<eps?'flat':((d>0?'+':'\u2212')+Math.abs(d).toFixed(digits)+unit);
+  return ' <span style="color:#8a8a8a;font-size:10.5px;font-weight:400;white-space:nowrap;" title="Wave T \u2014 change since the prior stored day'+when+'">'+a+' '+mag+'</span>';
+}
+// Devaluation composite factored so current AND prior share ONE ladder (returns sub-scores + 0-100).
+function _devScore(g){
+  var ic=g('import_cover'),ca=g('pak_ca'),reer=g('reer'),cpi=g('pak_cpi'),fis=g('pak_fiscal'),
+      oil=g('oil_arab'),sbp=g('sbp_rate'),res=g('sbp_reserves'),stdebt=g('st_debt');
+  var realRate=sbp-cpi, stToRes=res>0?stdebt/res:99;
+  var s={reserves:0,ca:0,reer:0,inflation:0,fiscal:0,oil:0,realRate:0,stdebt:0};
+  if(ic<1.5)s.reserves=100;else if(ic<2)s.reserves=85;else if(ic<2.5)s.reserves=60;else if(ic<3)s.reserves=35;else if(ic<4)s.reserves=15;
+  if(ca<-1500)s.ca=100;else if(ca<-1000)s.ca=85;else if(ca<-500)s.ca=60;else if(ca<0)s.ca=35;else if(ca<500)s.ca=10;
+  if(reer>110)s.reer=100;else if(reer>107)s.reer=85;else if(reer>105)s.reer=65;else if(reer>102)s.reer=40;else if(reer>100)s.reer=20;
+  if(cpi>20)s.inflation=100;else if(cpi>15)s.inflation=80;else if(cpi>12)s.inflation=60;else if(cpi>10)s.inflation=45;else if(cpi>8)s.inflation=25;
+  if(fis>8)s.fiscal=100;else if(fis>7)s.fiscal=75;else if(fis>6)s.fiscal=50;else if(fis>5)s.fiscal=25;
+  if(oil>110)s.oil=100;else if(oil>90)s.oil=70;else if(oil>80)s.oil=45;else if(oil>70)s.oil=20;
+  if(realRate<-10)s.realRate=100;else if(realRate<-5)s.realRate=75;else if(realRate<-2)s.realRate=50;else if(realRate<0)s.realRate=25;
+  if(stToRes>1.5)s.stdebt=100;else if(stToRes>1.2)s.stdebt=80;else if(stToRes>1.0)s.stdebt=60;else if(stToRes>0.8)s.stdebt=40;else if(stToRes>0.6)s.stdebt=20;
+  var composite=s.reserves*0.22+s.ca*0.18+s.reer*0.15+s.stdebt*0.12+s.inflation*0.12+s.fiscal*0.09+s.oil*0.07+s.realRate*0.05;
+  return {s:s, composite:composite};
+}
+function _devPriorGet(prior){
+  var map={pak_ca:'psx.pak_ca',reer:'psx.reer',pak_cpi:'psx.pak_cpi',pak_fiscal:'psx.pak_fiscal',
+           oil_arab:'us.arab_light',sbp_rate:'psx.sbp_rate',sbp_reserves:'psx.sbp_reserves'};
+  return function(id){ var k=map[id]; if(k&&prior[k]!=null&&!isNaN(parseFloat(prior[k]))) return parseFloat(prior[k]); return val(id); };
 }
 function indicatorCard(label,value,status,statusClass,interp,trendPath){
   var tc=trendPath?trendChip(trendPath):'';
@@ -968,7 +1012,7 @@ function calcUS(){
     if(!parts.length) return;
     b.innerHTML += '<div style="font-size:11px;color:#555;margin-top:5px;border-top:1px solid #eee;padding-top:5px;"><b>Macro momentum (vs prior release):</b> '+parts.join(' \u00b7 ')+' \u2014 the direction the prints are moving, independent of their level (Wave T3).</div>';
   })();
-  document.getElementById('yield_curve_box').innerHTML=`<div class="reading-box"><strong>10Y-2Y Spread: ${(spread>0?'+':'')+spread.toFixed(0)} bps</strong> — ${spread>30?'Normal curve, expansion expected.':spread>-30?'Flat, transition zone.':'Inverted, recession signal.'}</div>`;
+  document.getElementById('yield_curve_box').innerHTML=`<div class="reading-box"><strong>10Y-2Y Spread: ${(spread>0?'+':'')+spread.toFixed(0)} bps</strong>${(function(){var _pj=_wtPrior();if(!_pj)return '';return computedArrow(spread,(_wtp(_pj,'us.us_10y')-_wtp(_pj,'us.us_2y'))*100,0,'bps');})()} — ${spread>30?'Normal curve, expansion expected.':spread>-30?'Flat, transition zone.':'Inverted, recession signal.'}</div>`;
   document.getElementById('us_quadrant').innerHTML=quadrant(gdp>0?'Positive':'Negative',pce>2.5?'High':'Low',regime.name);
   document.getElementById('us_sector_rec').innerHTML=generateUSRec(ism,svc,umcsi,spread,pce,gdp,dxy);
   (function(){var Z=(LIVE&&LIVE.zacks_sectors)?LIVE.zacks_sectors:null; if(!Z)return;
@@ -1053,7 +1097,7 @@ function calcPAK(){
   let html='';
   html+=indicatorCard('Arab Light Crude','$'+oil+'/bbl',oil>90?'HIGH — Import pressure':oil>80?'Elevated':oil>70?'Mid-range':'Low — Relief',oil>90?'neg':oil>80?'warn':oil>70?'neutral':'pos',oil>90?'Import bill rises. CAD widens.':oil<70?'Import relief possible.':'Manageable range.','arab_light');
   const realRate=sbp-cpi;
-  html+=indicatorCard('SBP Policy Rate',sbp+'%',sbp>18?'Very tight':sbp>=11?'Tight':'Accommodative',sbp>18?'warn':sbp>=11?realRate>0?'pos':'warn':'neutral',(realRate>0?'Real rate +'+realRate.toFixed(1)+'% positive.':'Real rate '+realRate.toFixed(1)+'% negative.')+' Banks benefit from NIM expansion.','sbp_rate');
+  html+=indicatorCard('SBP Policy Rate',sbp+'%',sbp>18?'Very tight':sbp>=11?'Tight':'Accommodative',sbp>18?'warn':sbp>=11?realRate>0?'pos':'warn':'neutral',(realRate>0?'Real rate +'+realRate.toFixed(1)+'% positive.':'Real rate '+realRate.toFixed(1)+'% negative.')+(function(){var _pj=_wtPrior();if(!_pj)return '';return computedArrow(realRate,_wtp(_pj,'psx.sbp_rate')-_wtp(_pj,'psx.pak_cpi'),1,'%');})()+' Banks benefit from NIM expansion.','sbp_rate');
   html+=indicatorCard('USD/PKR Spot',pkr,'Stable','pos','Range-bound. PKR 8-month winning streak.','usd_pkr');
   html+=indicatorCard('Pakistan CPI YoY',cpi+'%',cpi>15?'CRITICAL':cpi>10?'High':cpi>6?'Moderate':'Low',cpi>15?'neg':cpi>10?'warn':cpi>6?'neutral':'pos',(cpi>10?'Defensive yield favored (FFC, HINOON).':cpi<6?'Rate cut window.':'Above target but manageable.')+_cpiInfo,'pak_cpi');
   html+=indicatorCard('SBP FX Reserves','$'+res+'bn',res<6?'CRITICAL':res<12?'Below adequate':res<20?'Adequate':'Strong',res<6?'neg':res<12?'warn':'pos',(res<6?'Below 2 months cover. Devaluation risk.':res<12?'Sub-IMF target.':'Above IMF 3-month target.')+_resInfo,'sbp_reserves');
@@ -1102,7 +1146,7 @@ function calcPAK(){
   document.getElementById('reer_box').innerHTML=`<div class="reading-box"><strong>REER ${reer} | NEER ${neer}</strong><p style="margin-top:8px;">${reer>105?'Significant overvaluation — near 7.5-year high. SYS/HINOON growing despite headwind = quality test.':reer>100?'Mildly overvalued. Monitor monthly.':'Near fair value.'}</p></div>`;
   const ca_pct=(ca*12)/35000*100;
   const twin=Math.abs(ca_pct)+fis;
-  document.getElementById('twin_deficit_box').innerHTML=`<div class="indicator-card ${twin>14?'neg':twin>10?'warn':twin>6?'neutral':'pos'}"><div class="label">Twin Deficit (CA + Fiscal)</div><div class="value">${twin.toFixed(1)}% of GDP</div><div class="status">CA ${ca_pct.toFixed(2)}% + Fiscal ${fis}%</div><div class="interp">${twin>14?'SEVERE — devaluation zone.':twin>10?'HIGH — monitor closely.':'Manageable.'}</div></div>`;
+  document.getElementById('twin_deficit_box').innerHTML=`<div class="indicator-card ${twin>14?'neg':twin>10?'warn':twin>6?'neutral':'pos'}"><div class="label">Twin Deficit (CA + Fiscal)</div><div class="value">${twin.toFixed(1)}% of GDP${(function(){var _pj=_wtPrior();if(!_pj)return '';var _pca=(_wtp(_pj,'psx.pak_ca')*12)/35000*100;return computedArrow(twin,Math.abs(_pca)+_wtp(_pj,'psx.pak_fiscal'),1,'');})()}</div><div class="status">CA ${ca_pct.toFixed(2)}% + Fiscal ${fis}%</div><div class="interp">${twin>14?'SEVERE — devaluation zone.':twin>10?'HIGH — monitor closely.':'Manageable.'}</div></div>`;
   const sbpV=val('sbp_rate'),cpiV=val('pak_cpi'),oilV=val('oil_arab'),reerV=val('reer');
   let psxHtml='<div class="grid grid-2">';
   [{name:'Banks (UBL,MCB)',bullish:sbpV>11,bearish:sbpV<7,note:'NIM expansion. UBL Tier A.'},{name:'E&P (OGDC,PPL)',bullish:oilV>75,bearish:oilV<65,note:'USD-linked pricing.'},{name:'Fertilizer (FFC)',bullish:true,bearish:false,note:'Defensive yield. FFC Tier A.'},{name:'IT Exporters (SYS)',bullish:reerV<100,bearish:reerV>110,note:'USD revenue hedge.'},{name:'Pharma (HINOON)',bullish:true,bearish:false,note:'Defensive. HINOON Tier A.'},{name:'Cement',bullish:sbpV<9,bearish:sbpV>12,note:'Rate-sensitive headwind.'}].forEach(s=>{let cls2='neutral',label='NEUTRAL';if(s.bullish){cls2='pos';label='POSITIVE';}else if(s.bearish){cls2='neg';label='NEGATIVE';}psxHtml+=`<div class="indicator-card ${cls2}"><div class="label">${s.name}</div><div class="status">${label}</div><div class="interp">${s.note}${budgetTagFor(s.name)}</div></div>`;});
@@ -1144,17 +1188,9 @@ function calcDevAlert(){
   const fireCount = core.filter(c=>c.fire).length;
 
   // ================= ④ COMPOSITE SCORE (richer 0-100 weighting) =================
-  let scores={reserves:0,ca:0,reer:0,inflation:0,fiscal:0,oil:0,realRate:0,stdebt:0};
-  if(ic<1.5)scores.reserves=100;else if(ic<2)scores.reserves=85;else if(ic<2.5)scores.reserves=60;else if(ic<3)scores.reserves=35;else if(ic<4)scores.reserves=15;
-  if(ca<-1500)scores.ca=100;else if(ca<-1000)scores.ca=85;else if(ca<-500)scores.ca=60;else if(ca<0)scores.ca=35;else if(ca<500)scores.ca=10;
-  if(reer>110)scores.reer=100;else if(reer>107)scores.reer=85;else if(reer>105)scores.reer=65;else if(reer>102)scores.reer=40;else if(reer>100)scores.reer=20;
-  if(cpi>20)scores.inflation=100;else if(cpi>15)scores.inflation=80;else if(cpi>12)scores.inflation=60;else if(cpi>10)scores.inflation=45;else if(cpi>8)scores.inflation=25;
-  if(fis>8)scores.fiscal=100;else if(fis>7)scores.fiscal=75;else if(fis>6)scores.fiscal=50;else if(fis>5)scores.fiscal=25;
-  if(oil>110)scores.oil=100;else if(oil>90)scores.oil=70;else if(oil>80)scores.oil=45;else if(oil>70)scores.oil=20;
-  if(realRate<-10)scores.realRate=100;else if(realRate<-5)scores.realRate=75;else if(realRate<-2)scores.realRate=50;else if(realRate<0)scores.realRate=25;
-  if(stToRes>1.5)scores.stdebt=100;else if(stToRes>1.2)scores.stdebt=80;else if(stToRes>1.0)scores.stdebt=60;else if(stToRes>0.8)scores.stdebt=40;else if(stToRes>0.6)scores.stdebt=20;
-  // weights (sum 1.0): reserves .22, ca .18, reer .15, st-debt/res .12, inflation .12, fiscal .09, oil .07, realRate .05
-  const composite=scores.reserves*0.22+scores.ca*0.18+scores.reer*0.15+scores.stdebt*0.12+scores.inflation*0.12+scores.fiscal*0.09+scores.oil*0.07+scores.realRate*0.05;
+  // Factored into _devScore so the current read and the Wave T prior-day read share ONE ladder.
+  var _ds=_devScore(function(id){return val(id);});
+  var scores=_ds.s, composite=_ds.composite;
 
   // banner from composite AND core-trigger count (historical 4-of-5 dominates)
   let bClass,bTitle,bText;
@@ -1162,7 +1198,7 @@ function calcDevAlert(){
   else if(fireCount===3||composite>=50){bClass='orange';bTitle='⚠️ ORANGE WARNING — Elevated Risk';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers. One more trigger = historical danger zone.';}
   else if(fireCount===2||composite>=30){bClass='yellow';bTitle='⚡ YELLOW CAUTION — Building Risk';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers. Structurally watchful, not pre-crisis.';}
   else{bClass='green';bTitle='✅ GREEN — PKR Stability';bText='Composite <strong>'+composite.toFixed(0)+'/100</strong>, <strong>'+fireCount+' of 5</strong> core triggers. Far from the historical crash cluster.';}
-  document.getElementById('devalert_main').innerHTML=`<div class="alert-banner ${bClass}"><h3>${bTitle}</h3><p>${bText}</p></div><div class="indicator-card neutral" style="margin-top:16px;"><div class="label">Composite Devaluation Risk</div><div class="score-bar" style="height:36px;"><div class="score-fill" style="width:${composite}%"></div><div class="score-label">${composite.toFixed(0)}/100</div></div></div>`;
+  document.getElementById('devalert_main').innerHTML=`<div class="alert-banner ${bClass}"><h3>${bTitle}</h3><p>${bText}</p></div><div class="indicator-card neutral" style="margin-top:16px;"><div class="label">Composite Devaluation Risk</div><div class="score-bar" style="height:36px;"><div class="score-fill" style="width:${composite}%"></div><div class="score-label">${composite.toFixed(0)}/100${(function(){var _pj=_wtPrior();return _pj?computedArrow(composite,_devScore(_devPriorGet(_pj)).composite,0,''):'';})()}</div></div></div>`;
 
   // ================= ① DISTANCE TO CRISIS =================
   const dist = 4 - fireCount;   // triggers remaining to hit historical 4-of-5
