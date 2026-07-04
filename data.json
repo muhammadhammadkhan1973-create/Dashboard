@@ -1,7 +1,7 @@
 {
   "meta": {
-    "scan_version": "1.167.0",
-    "last_scan_utc": "2026-07-04T10:31:28.177477Z",
+    "scan_version": "1.168.0",
+    "last_scan_utc": "2026-07-04T10:46:41.054752Z",
     "errors": [],
     "warnings": []
   },
@@ -2558,33 +2558,39 @@
         "metals": {
           "gold": {
             "cot_pctile": null,
-            "cot_bias": null,
+            "cot_net_oi": 51.5,
+            "cot_basis": "net_oi",
+            "cot_bias": "bullish",
             "cot_wow": -1.6,
             "seasonal_bias": "unfavorable",
             "seasonal_avg_pct": 0.19,
             "seasonal_rank": 11,
-            "combined": "n/a",
-            "note": "insufficient COT or seasonality data"
+            "combined": "Conflicting",
+            "note": "COT positioning and seasonality disagree - no edge"
           },
           "silver": {
             "cot_pctile": null,
-            "cot_bias": null,
+            "cot_net_oi": 21.8,
+            "cot_basis": "net_oi",
+            "cot_bias": "neutral",
             "cot_wow": -1.0,
             "seasonal_bias": "unfavorable",
             "seasonal_avg_pct": 0.77,
             "seasonal_rank": 9,
-            "combined": "n/a",
-            "note": "insufficient COT or seasonality data"
+            "combined": "Lean bearish",
+            "note": "one of COT / seasonality soft, the other neutral"
           },
           "copper": {
             "cot_pctile": null,
-            "cot_bias": null,
+            "cot_net_oi": 26.6,
+            "cot_basis": "net_oi",
+            "cot_bias": "bullish",
             "cot_wow": -1.2,
             "seasonal_bias": "neutral",
             "seasonal_avg_pct": 0.81,
             "seasonal_rank": 6,
-            "combined": "n/a",
-            "note": "insufficient COT or seasonality data"
+            "combined": "Lean bullish",
+            "note": "one of COT / seasonality supportive, the other neutral"
           }
         }
       }
@@ -32967,7 +32973,7 @@
     "as_of_age_days": 148,
     "stale": true,
     "stale_days": 148,
-    "last_fetch_utc": "2026-07-04T10:32:46.178288Z"
+    "last_fetch_utc": "2026-07-04T10:48:03.780783Z"
   },
   "psx_msci": {},
   "psx_market": {
@@ -38072,7 +38078,7 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s2_sponsor": 1,
-        "s1_news_count": 18,
+        "s1_news_count": 17,
         "s5_volume_ratio": 3.4,
         "price": 52.93,
         "s6_momentum_pct": 66.1,
@@ -39173,7 +39179,7 @@
         "s11_target_upside": 1,
         "s12_recommendation": 1,
         "s2_sponsor": 0,
-        "s1_news_count": 4,
+        "s1_news_count": 3,
         "rs_ok": true,
         "total": 1,
         "analyst_covered": true,
@@ -41005,8 +41011,8 @@
         "s9_eps_revision": 0,
         "s11_target_upside": 1,
         "s12_recommendation": 1,
-        "s2_sponsor": 0,
-        "s1_news_count": 3,
+        "s2_sponsor": 1,
+        "s1_news_count": 22,
         "s5_volume_ratio": 0.49,
         "price": 248.71,
         "s6_momentum_pct": 20.8,
@@ -60702,7 +60708,7 @@
         "s11_target_upside": 1,
         "s12_recommendation": 1,
         "s2_sponsor": 1,
-        "s1_news_count": 22,
+        "s1_news_count": 21,
         "s5_volume_ratio": 1.41,
         "price": 360.45,
         "s6_momentum_pct": 15.2,
@@ -64494,7 +64500,7 @@
         "s11_target_upside": 0,
         "s12_recommendation": 0,
         "s2_sponsor": 1,
-        "s1_news_count": 22,
+        "s1_news_count": 23,
         "s5_volume_ratio": 1.01,
         "price": 539.0,
         "s6_momentum_pct": 81.1,
@@ -158501,7 +158507,7 @@
       }
     ],
     "source": "FRED + faireconomy",
-    "_fetched_utc": "2026-07-04T10:33:36.463204Z",
+    "_fetched_utc": "2026-07-04T10:49:06.727553Z",
     "risk": "LOW",
     "score": 0,
     "triggers": []
@@ -173142,7 +173148,7 @@
     },
     "last_run": "2026-07-04"
   },
-  "im3_last_scored_utc": "2026-07-04T10:34:39.088016+00:00",
+  "im3_last_scored_utc": "2026-07-04T10:50:15.331140+00:00",
   "im3_psx_tickers": [
     "ABL",
     "AHL",
