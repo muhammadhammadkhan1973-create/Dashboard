@@ -586,7 +586,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.138</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.139</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -3092,8 +3092,8 @@ function renderTceTable(elId, rows, market) {
   }
   const STREAM_LABELS={s1_news:'News',s2_sponsor:'Sponsor',s3_insider:'Insider',s5_volume:'Volume',s6_momentum:'Mom',s7_margin:'Margin',s8_capital:'Capital',s9_eps_rev:'EPS-rev',s10_rev_rev:'Rev-rev',s9_eps_revision:'Fwd-EPS',s11_target_upside:'Target',s12_recommendation:'Rec'};
   const SDEF=[
-    {bk:'s1_news',     lbl:'News',    us:false, cv:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Google News articles, last 14d (fires ≥3)'},
-    {bk:'s2_sponsor',  lbl:'Sponsor', us:false, cv:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Heavy coverage — same news count (fires ≥8)'},
+    {bk:'s1_news',     lbl:'News',    us:false, cv:false, val:s=>(s.s1_news_count!=null?(s.s1_news_count+(s.s1_news_sources>=2?' \u2713'+s.s1_news_sources+'src':'')):'·'),    tip:'Recent articles across Google + Bing + Yahoo, last 14d (fires \u22653). \u2713Nsrc = independently confirmed by N of the 3 sources'},
+    {bk:'s2_sponsor',  lbl:'Sponsor', us:false, cv:false, val:s=>(s.s1_news_count!=null?s.s1_news_count:'·'),    tip:'Heavy coverage — same multi-source news count (fires ≥8)'},
     {bk:'s3_insider',  lbl:'Insider', us:true,  cv:false, val:s=>(s.s3_insider_count!=null?s.s3_insider_count:'·'), tip:'SEC Form 4 filings, last 90d (fires ≥2, US only)'},
     {bk:'s5_volume',   lbl:'Vol',     us:false, cv:false, val:s=>(s.s5_volume_ratio!=null?(s.s5_volume_ratio+'×'):'·'), tip:'20d vs 40d volume (fires >1.3×)'},
     {bk:'s6_momentum', lbl:'Mom',     us:false, cv:true,  val:s=>(s.s6_momentum_pct!=null?((s.s6_momentum_pct>0?'+':'')+s.s6_momentum_pct+'%'):'·'), tip:'3-month price momentum (fires ≥+15%) — CONVICTION'},
