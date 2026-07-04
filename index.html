@@ -586,7 +586,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.136</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.137</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -661,8 +661,28 @@ function showPanel(id,btn){
 }
 function val(id){const el=document.getElementById(id);return el?parseFloat(el.value):NaN;}
 function resetDefaults(){for(const[k,v]of Object.entries(defaults)){const el=document.getElementById(k);if(el)el.value=v;}recalc();}
-function indicatorCard(label,value,status,statusClass,interp){
-  return`<div class="indicator-card ${statusClass}"><div class="label">${label}</div><div class="value">${value}</div><div class="status">${status}</div><div class="interp">${interp}</div></div>`;
+function trendChip(path,opt){
+  // Wave T (universal): render a small trend cell for any number, from LIVE.trends[path].
+  // Resolves a bare key to its namespaced form (fed_rate -> us.fed_rate) so callers can pass either.
+  opt=opt||{};
+  var TT=(typeof LIVE!=='undefined'&&LIVE&&LIVE.trends)?LIVE.trends:null;
+  if(!TT) return '';
+  var T=TT[path]||(path.indexOf('.')<0?(TT['us.'+path]||TT['psx.'+path]||TT['metals.'+path]):null);
+  if(!T) return '';
+  if(T.basis==='pending') return '';                 // no history yet — stay quiet until it accrues
+  var dir=T.dir, a=dir==='up'?'\u25b2':dir==='down'?'\u25bc':'\u25ac';
+  var col=dir==='up'?'#1a7f37':dir==='down'?'#b42318':'#8a8a8a';
+  var title='Wave T \u2014 change since this number last moved'+(T.as_of?' (last level '+T.as_of+')':'');
+  if(T.basis==='flat') return '<span style="color:#8a8a8a;font-size:10.5px;white-space:nowrap;" title="'+title+'">'+a+' flat</span>';
+  var d=T.delta, ad=Math.abs(d);
+  var mag=(d>0?'+':(d<0?'\u2212':''))+(ad>=100?Math.round(ad):(ad>=1?ad.toFixed(2):ad.toFixed(3)));
+  var pctTxt=(T.pct!=null&&isFinite(T.pct))?' ('+(T.pct>0?'+':'')+T.pct+'%)':'';
+  var ago=(T.days!=null&&T.days>0)?(' \u00b7 '+T.days+'d'):'';
+  return '<span style="color:'+col+';font-size:10.5px;white-space:nowrap;" title="'+title+'">'+a+' '+mag+pctTxt+ago+'</span>';
+}
+function indicatorCard(label,value,status,statusClass,interp,trendPath){
+  var tc=trendPath?trendChip(trendPath):'';
+  return`<div class="indicator-card ${statusClass}"><div class="label">${label}</div><div class="value">${value}${tc?' <span style="font-weight:400;">'+tc+'</span>':''}</div><div class="status">${status}</div><div class="interp">${interp}</div></div>`;
 }
 function regimeOf(growth,inflation){
   if(growth>0&&inflation<=2.5)return{name:'GOLDILOCKS',sectors:'Tech, Comm Services, Consumer Discretionary, Growth',class:'green'};
@@ -886,13 +906,14 @@ function calcUS(){
     if(v==null||isNaN(v)){ html+=indicatorCard(it.label,'\u2014','no live data','neutral','<b>'+it.lens+'</b> · awaiting scan.'); return; }
     var r=it.read(v,c);
     var disp=it.fmt?it.fmt(v):(v+(it.unit||''));
-    html+=indicatorCard(it.label,disp,r.state,r.cls,'<b>'+it.lens+'</b> · '+r.implies+t3CardTrend(it.key,usLive));
+    var t3=t3CardTrend(it.key,usLive);
+    html+=indicatorCard(it.label,disp,r.state,r.cls,'<b>'+it.lens+'</b> · '+r.implies+t3, t3?null:it.key);
   });
   document.getElementById('us_indicators').innerHTML=html;
   const spread=(!isNaN(c.curve))?c.curve:((y10-y2)*100);   // bps, for yield_curve_box + generateUSRec
   const fomc=usLive.fomc||null;
   let eHtml='';
-  eHtml+=indicatorCard('WTI Crude','$'+wti+'/bbl',wti>=90?'HIGH — net positive':wti>=65?'MID — balanced':'LOW — drilling stress',wti>=90?'pos':wti>=65?'neutral':'warn',wti>=90?'Elevated WTI lifts shale margins. Bullish Energy (XLE).':'Mid-band manageable.');
+  eHtml+=indicatorCard('WTI Crude','$'+wti+'/bbl',wti>=90?'HIGH — net positive':wti>=65?'MID — balanced':'LOW — drilling stress',wti>=90?'pos':wti>=65?'neutral':'warn',wti>=90?'Elevated WTI lifts shale margins. Bullish Energy (XLE).':'Mid-band manageable.','wti');
   eHtml+=indicatorCard('US Crude Production',crudeProd+'M b/d',crudeProd>=13.5?'NEAR RECORD':crudeProd>=12.5?'Strong':'Declining',crudeProd>=12.5?'pos':'warn',crudeProd>=13.5?'Near all-time highs. Structural export surplus.':'Watch production trend.');
   eHtml+=indicatorCard('US Rotary Rigs (total)',oilRigs+' rigs',oilRigs>=700?'High activity':oilRigs>=560?'Steady':'Subdued',oilRigs>=560?'pos':'warn','Total US oil+gas rotary rigs (EIA, monthly). <b>Why it is here:</b> a leading supply gauge — rigs drilling now become production in 6–12 months, so falling rigs tighten future crude supply (bullish oil, supports the &ldquo;Arab&nbsp;Light&nbsp;&gt;$60 = overweight E&amp;P&rdquo; tilt and your XOM·CVX·COP·EOG), while rising rigs add supply. Shale efficiency means high output on fewer rigs, so read the <i>trend</i>, not just the level.');
   document.getElementById('us_energy_indicators').innerHTML=eHtml;
@@ -1030,7 +1051,7 @@ function calcPAK(){
   let html='';
   html+=indicatorCard('Arab Light Crude','$'+oil+'/bbl',oil>90?'HIGH — Import pressure':oil>80?'Elevated':oil>70?'Mid-range':'Low — Relief',oil>90?'neg':oil>80?'warn':oil>70?'neutral':'pos',oil>90?'Import bill rises. CAD widens.':oil<70?'Import relief possible.':'Manageable range.');
   const realRate=sbp-cpi;
-  html+=indicatorCard('SBP Policy Rate',sbp+'%',sbp>18?'Very tight':sbp>=11?'Tight':'Accommodative',sbp>18?'warn':sbp>=11?realRate>0?'pos':'warn':'neutral',(realRate>0?'Real rate +'+realRate.toFixed(1)+'% positive.':'Real rate '+realRate.toFixed(1)+'% negative.')+' Banks benefit from NIM expansion.');
+  html+=indicatorCard('SBP Policy Rate',sbp+'%',sbp>18?'Very tight':sbp>=11?'Tight':'Accommodative',sbp>18?'warn':sbp>=11?realRate>0?'pos':'warn':'neutral',(realRate>0?'Real rate +'+realRate.toFixed(1)+'% positive.':'Real rate '+realRate.toFixed(1)+'% negative.')+' Banks benefit from NIM expansion.','sbp_rate');
   html+=indicatorCard('USD/PKR Spot',pkr,'Stable','pos','Range-bound. PKR 8-month winning streak.');
   html+=indicatorCard('Pakistan CPI YoY',cpi+'%',cpi>15?'CRITICAL':cpi>10?'High':cpi>6?'Moderate':'Low',cpi>15?'neg':cpi>10?'warn':cpi>6?'neutral':'pos',(cpi>10?'Defensive yield favored (FFC, HINOON).':cpi<6?'Rate cut window.':'Above target but manageable.')+_cpiInfo);
   html+=indicatorCard('SBP FX Reserves','$'+res+'bn',res<6?'CRITICAL':res<12?'Below adequate':res<20?'Adequate':'Strong',res<6?'neg':res<12?'warn':'pos',(res<6?'Below 2 months cover. Devaluation risk.':res<12?'Sub-IMF target.':'Above IMF 3-month target.')+_resInfo);
@@ -1038,7 +1059,7 @@ function calcPAK(){
   html+=indicatorCard('Fiscal Deficit',fis+'% GDP',fis>7?'STRESSED':fis>5?'High':'Manageable',fis>7?'neg':fis>5?'warn':'pos',fis>5?'Watch IMF program compliance.':'Within target.');
   html+=indicatorCard('REER',reer,reer>110?'EXTREME OVERVALUATIOn':reer>105?'Overvalued (danger zone)':reer>100?'Mildly overvalued':reer>95?'Near fair value':'UNDERVALUED',reer>110?'neg':reer>105?'warn':reer>100?'neutral':'pos',reer>105?'PKR strong in real terms. Exports facing headwind.':reer<95?'Strong export tailwind.':'Near balance.');
   const kse=val('kse100'),rem=val('remittances');
-  html+=indicatorCard('KSE-100 Index',isNaN(kse)?'—':kse.toLocaleString(),'Live close','neutral','Updated from live scan when data.json loads; editable manually.');
+  html+=indicatorCard('KSE-100 Index',isNaN(kse)?'—':kse.toLocaleString(),'Live close','neutral','Updated from live scan when data.json loads; editable manually.','kse100');
   html+=indicatorCard('Remittances','$'+(isNaN(rem)?'—':rem)+'bn/mo',rem>=3?'Strong inflow':rem>=2.5?'Adequate':'Weak',rem>=3?'pos':rem>=2.5?'neutral':'warn','Monthly worker remittances — key FX support for PKR.');
   document.getElementById('pak_seven_factors').innerHTML=html;
   // ── KSE Macro Backdrop (equity-impact score of the 7 factors; +1 bullish / -1 bearish for the market) ──
