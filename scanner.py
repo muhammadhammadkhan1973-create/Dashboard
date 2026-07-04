@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.159.1'  # 1.159.1: (HOTFIX) v1.159.0 crashed the metals block ('Metals macros crashed: dxy', Hard errors:1) -- DXY correctly resolved on TV with SMA200 and entered the TV-primary branch, but the source-label + log lines did _metals_tv_sym[key], and that dict has only the 5 metals (no 'dxy') -> KeyError aborted the whole block (DXY/Gold:Silver/WALCL/COT/scores lost that run). Fix: _metals_tv_sym.get(key,'TVC:DXY') in both lines. USD/PKR TV swap confirmed working (v1.159.0). Picks never affected (metals is a macro block; canaries held 8/3/2).  # 1.159.0: (fix + speed) (1) DXY + USD/PKR TV swap CORRECTED -- v1.158.0 used /symbol which returns HTTP 405; the right call is the market-segment scan scanner.tradingview.com/{market}/scan (same body as oil/metals). fetch_index_tv now tries a market list until the symbol resolves: DXY via cfd->america->forex (TVC:DXY), USD/PKR via forex (FX_IDC:USDPKR); Yahoo fallback unchanged so nothing blanks. (2) The 20s Yahoo crumb cooldown in the EPS enrichment now scales to the remainder (<=3 names -> 5s) -- since v1.158.0 SEC fills most names, only a handful reach Yahoo, so the full cooldown was wasted latency (~15s saved on SEC-heavy days). SEC EPS + canaries unchanged (tce.fetch=2, US HIGH=8, PSX HIGH=3). Explosive OP-accel SEC swap still queued (scored screen -> next version, with verdict-delta log).  # 1.158.0: (Yahoo->SEC/TV cutover) THREE swaps, all PRIMARY-with-fallback so nothing blanks and the scan run is its own test. (1) SEC EDGAR companyfacts is now the PRIMARY source for the 14-survivor EPS-growth enrichment (FY diluted-EPS YoY off data.sec.gov) -- kills the ~27s Yahoo income_stmt call; Yahoo stays the fallback for names SEC can't fill; [SEC] log lines reveal runner reachability + hit rate. (2) DXY now TradingView-PRIMARY (TVC:DXY via /symbol scan, SMA200/RSI) merged into the metals loop -> Yahoo fallback if no SMA200 -- pulls the Dollar Index off Yahoo. (3) USD/PKR now TradingView-PRIMARY for spot (FX_IDC:USDPKR) with Yahoo for the trend series + fallback spot. New helpers: fetch_index_tv (index/forex /symbol scan), _sec_cik_map + fetch_sec_eps_growth. Freeze-safe (TCE untouched; Explosive scored screen NOT changed this version -- its OP-accel income_stmt swap is the next step pending this run's [SEC] reachability confirmation, since it shifts a scored screen). CANARY: tce.fetch=2, US HIGH=8, PSX HIGH=3 unchanged.  # 1.157.0: TCE s1_news RSS fetch retries up to 3x on an empty/bozo response -- under the v1.156.0 concurrent pool a transient empty occasionally dropped a real s1_news (PSX FFC), which the serial run always caught; retry restores serial parity, healthy names still fetch once (no added cost), genuinely news-less stays 0. Data-robustness only, no threshold touched.  # 1.156.0: (SPEED) TCE per-name scoring now runs CONCURRENTLY (ThreadPoolExecutor, TCE_WORKERS=3) instead of one-at-a-time -- the ~137s TCE phase (46% of the run) is network-bound (news RSS + SEC EDGAR + per-name Yahoo .info/estimates), each name independent. ex.map preserves order + tce_results sorted deterministically -> tiers/scores BYTE-IDENTICAL to serial, ONLY execution order changes (freeze-safe). Per-name time.sleep(YF_DELAY) dropped. _swallow lock-guarded so the tce.fetch canary stays accurate under threads. CANARY (confirm parity on runner): tce.fetch stays 2, US TCE HIGH stays 8, PSX HIGH stays 3. TCE_WORKERS=1 reverts to serial.  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
+SCAN_VERSION = '1.160.0'  # 1.160.0: (Explosive SEC swap -- finishes Item 1) the US Explosive screen's statement source is now SEC EDGAR PRIMARY with Yahoo income_stmt FALLBACK. fetch_sec_financials builds a pandas DataFrame shaped EXACTLY like Yahoo's .income_stmt/.cashflow (rows Total Revenue/Operating Income/Net Income/Pretax Income/Operating Cash Flow; cols = fiscal years desc) so explosive_conditions + _yoy run UNCHANGED -- only the data source differs. SEC lacks >=2y revenue+OI (e.g. banks) -> Yahoo fallback. Companyfacts fetched once/ticker and shared with the EPS enrichment via _sec_companyfacts. Cache schema bumped ('sec1') -> this ONE run re-fetches all ~186 names off SEC to validate + logs any EXPLOSIVE verdict FLIP vs last-good ([EXPL Δ] lines + [Explosive src] N SEC / M Yahoo / K flips); afterwards normal 7d caching resumes (fast). YF_DELAY pacing skipped when SEC served. Yahoo-only fallbacks: 2 delisted PSX names + SEC-gap stragglers. Canaries unaffected (TCE untouched): tce.fetch=2, US HIGH=8, PSX HIGH=3.  # 1.159.1: (HOTFIX) v1.159.0 crashed the metals block ('Metals macros crashed: dxy', Hard errors:1) -- DXY correctly resolved on TV with SMA200 and entered the TV-primary branch, but the source-label + log lines did _metals_tv_sym[key], and that dict has only the 5 metals (no 'dxy') -> KeyError aborted the whole block (DXY/Gold:Silver/WALCL/COT/scores lost that run). Fix: _metals_tv_sym.get(key,'TVC:DXY') in both lines. USD/PKR TV swap confirmed working (v1.159.0). Picks never affected (metals is a macro block; canaries held 8/3/2).  # 1.159.0: (fix + speed) (1) DXY + USD/PKR TV swap CORRECTED -- v1.158.0 used /symbol which returns HTTP 405; the right call is the market-segment scan scanner.tradingview.com/{market}/scan (same body as oil/metals). fetch_index_tv now tries a market list until the symbol resolves: DXY via cfd->america->forex (TVC:DXY), USD/PKR via forex (FX_IDC:USDPKR); Yahoo fallback unchanged so nothing blanks. (2) The 20s Yahoo crumb cooldown in the EPS enrichment now scales to the remainder (<=3 names -> 5s) -- since v1.158.0 SEC fills most names, only a handful reach Yahoo, so the full cooldown was wasted latency (~15s saved on SEC-heavy days). SEC EPS + canaries unchanged (tce.fetch=2, US HIGH=8, PSX HIGH=3). Explosive OP-accel SEC swap still queued (scored screen -> next version, with verdict-delta log).  # 1.158.0: (Yahoo->SEC/TV cutover) THREE swaps, all PRIMARY-with-fallback so nothing blanks and the scan run is its own test. (1) SEC EDGAR companyfacts is now the PRIMARY source for the 14-survivor EPS-growth enrichment (FY diluted-EPS YoY off data.sec.gov) -- kills the ~27s Yahoo income_stmt call; Yahoo stays the fallback for names SEC can't fill; [SEC] log lines reveal runner reachability + hit rate. (2) DXY now TradingView-PRIMARY (TVC:DXY via /symbol scan, SMA200/RSI) merged into the metals loop -> Yahoo fallback if no SMA200 -- pulls the Dollar Index off Yahoo. (3) USD/PKR now TradingView-PRIMARY for spot (FX_IDC:USDPKR) with Yahoo for the trend series + fallback spot. New helpers: fetch_index_tv (index/forex /symbol scan), _sec_cik_map + fetch_sec_eps_growth. Freeze-safe (TCE untouched; Explosive scored screen NOT changed this version -- its OP-accel income_stmt swap is the next step pending this run's [SEC] reachability confirmation, since it shifts a scored screen). CANARY: tce.fetch=2, US HIGH=8, PSX HIGH=3 unchanged.  # 1.157.0: TCE s1_news RSS fetch retries up to 3x on an empty/bozo response -- under the v1.156.0 concurrent pool a transient empty occasionally dropped a real s1_news (PSX FFC), which the serial run always caught; retry restores serial parity, healthy names still fetch once (no added cost), genuinely news-less stays 0. Data-robustness only, no threshold touched.  # 1.156.0: (SPEED) TCE per-name scoring now runs CONCURRENTLY (ThreadPoolExecutor, TCE_WORKERS=3) instead of one-at-a-time -- the ~137s TCE phase (46% of the run) is network-bound (news RSS + SEC EDGAR + per-name Yahoo .info/estimates), each name independent. ex.map preserves order + tce_results sorted deterministically -> tiers/scores BYTE-IDENTICAL to serial, ONLY execution order changes (freeze-safe). Per-name time.sleep(YF_DELAY) dropped. _swallow lock-guarded so the tce.fetch canary stays accurate under threads. CANARY (confirm parity on runner): tce.fetch stays 2, US TCE HIGH stays 8, PSX HIGH stays 3. TCE_WORKERS=1 reverts to serial.  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -98,6 +98,7 @@ US_EXPLOSIVE_POOL = 200   # survivors fed to explosive screen (fast, no network)
 TCE_YF_FUNDAMENTALS_US_ONLY = True   # F1: skip the doomed PSX .info/.eps/.rev Yahoo calls (.KA has no fundamentals)
 EPS_ENRICH_TRY_FMP          = False  # F3: FMP /stable/ is premium-gated for these small-caps (402 every run) -> Yahoo-first
 EXPLOSIVE_STMT_CACHE_DAYS   = 7      # F2: income statements change quarterly -> cache the computed cond dict 7d
+EXPLOSIVE_CACHE_SCHEMA      = 'sec1'  # v1.160.0: bump -> one-time full re-fetch so Yahoo-built entries re-score off SEC
 MTS_STALE_DAYS              = 14     # F5: flag the MTS leverage gauge stale if its as-of date is older than this (days)
 
 PSX_SWEET_SPOT_MIN = 5_000_000_000
@@ -2504,43 +2505,116 @@ def _sec_cik_map():
     return _SEC_CIK_MAP
 
 
-def fetch_sec_eps_growth(ticker):
-    """SEC EDGAR companyfacts -> latest full-year diluted-EPS YoY growth %.
-    Returns None if unavailable (caller falls back to Yahoo income_stmt). Annual figures only
-    (frame CYxxxx without a quarter, or form 10-K / fp FY), deduped by fiscal year."""
+_SEC_FACTS_CACHE = {}
+
+
+def _sec_companyfacts(ticker):
+    """Fetch + per-run memoize the SEC companyfacts us-gaap dict for a ticker. {} if unavailable
+    (unknown ticker, SEC unreachable, non-200). One GET serves every concept the callers need."""
     cik = _sec_cik_map().get(str(ticker).upper())
     if not cik:
-        return None
+        return {}
+    if cik in _SEC_FACTS_CACHE:
+        return _SEC_FACTS_CACHE[cik]
+    facts = {}
     try:
         r = requests.get(f'https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json',
                          headers={'User-Agent': SEC_UA}, timeout=25)
-        if r.status_code != 200:
-            return None
-        facts = r.json().get('facts', {}).get('us-gaap', {})
-        node = facts.get('EarningsPerShareDiluted') or facts.get('EarningsPerShareBasic')
-        if not node:
-            return None
-        units = node.get('units', {})
-        arr = units.get('USD/shares') or (next(iter(units.values()), []) if units else [])
-        fy = {}
-        for x in arr:
-            fr = x.get('frame', '') or ''
-            is_annual = (fr.startswith('CY') and 'Q' not in fr) or \
-                        (x.get('form') == '10-K' and x.get('fp') == 'FY')
-            if is_annual and x.get('val') is not None and x.get('fy') is not None:
-                try:
-                    fy[int(x['fy'])] = float(x['val'])
-                except (TypeError, ValueError):
-                    continue
-        if len(fy) < 2:
-            return None
-        yrs = sorted(fy.keys())
-        curr, prev = fy[yrs[-1]], fy[yrs[-2]]
-        if prev == 0:
-            return None
-        return round((curr - prev) / abs(prev) * 100, 1)
+        if r.status_code == 200:
+            facts = r.json().get('facts', {}).get('us-gaap', {})
     except Exception:
+        facts = {}
+    _SEC_FACTS_CACHE[cik] = facts
+    return facts
+
+
+def _sec_annual_series(facts, concepts, unit='USD'):
+    """{fiscal_year: value} full-year annual series for the first present concept. Annual =
+    frame 'CYxxxx' (no quarter) or form 10-K / fp FY. Empty dict if none of the concepts exist."""
+    node = None
+    for c in concepts:
+        if c in facts:
+            node = facts[c]
+            break
+    if not node:
+        return {}
+    units = node.get('units', {})
+    arr = units.get(unit) or (next(iter(units.values()), []) if units else [])
+    fy = {}
+    for x in arr:
+        fr = x.get('frame', '') or ''
+        is_annual = (fr.startswith('CY') and 'Q' not in fr) or \
+                    (x.get('form') == '10-K' and x.get('fp') == 'FY')
+        if is_annual and x.get('val') is not None and x.get('fy') is not None:
+            try:
+                fy[int(x['fy'])] = float(x['val'])
+            except (TypeError, ValueError):
+                continue
+    return fy
+
+
+def fetch_sec_financials(ticker):
+    """SEC EDGAR -> (income_df, cashflow_df) as pandas DataFrames shaped EXACTLY like Yahoo's
+    .income_stmt / .cashflow: index = the row labels _yoy/explosive_conditions look for, columns =
+    fiscal years most-recent-first. Returns (None, None) when SEC lacks >=2y of revenue+operating
+    income, so the caller falls back to Yahoo. Scoring logic is UNCHANGED -- only the source differs."""
+    facts = _sec_companyfacts(ticker)
+    if not facts:
+        return None, None
+    rev = _sec_annual_series(facts, ('Revenues', 'RevenueFromContractWithCustomerExcludingAssessedTax',
+                                     'RevenueFromContractWithCustomerIncludingAssessedTax', 'SalesRevenueNet'))
+    opi = _sec_annual_series(facts, ('OperatingIncomeLoss',))
+    ni  = _sec_annual_series(facts, ('NetIncomeLoss',))
+    pbt = _sec_annual_series(facts, ('IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest',
+                                     'IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments'))
+    ocf = _sec_annual_series(facts, ('NetCashProvidedByUsedInOperatingActivities',
+                                     'NetCashProvidedByUsedInOperatingActivitiesContinuingOperations'))
+    if len(rev) < 2 or len(opi) < 2:
+        return None, None
+    try:
+        import pandas as pd
+    except ImportError:
+        return None, None
+    yrs = sorted(set(rev) | set(opi) | set(ni) | set(pbt), reverse=True)
+    income_df = pd.DataFrame(
+        {y: [rev.get(y), opi.get(y), ni.get(y), pbt.get(y)] for y in yrs},
+        index=['Total Revenue', 'Operating Income', 'Net Income', 'Pretax Income'])
+    income_df = income_df[yrs]   # columns most-recent-first (matches Yahoo)
+    cf_df = None
+    if len(ocf) >= 2:
+        cfyrs = sorted(ocf, reverse=True)
+        cf_df = pd.DataFrame({y: [ocf.get(y)] for y in cfyrs}, index=['Operating Cash Flow'])[cfyrs]
+    return income_df, cf_df
+
+
+def fetch_sec_eps_growth(ticker):
+    """SEC EDGAR companyfacts -> latest full-year diluted-EPS YoY growth %.
+    Returns None if unavailable (caller falls back to Yahoo income_stmt)."""
+    facts = _sec_companyfacts(ticker)
+    if not facts:
         return None
+    node = facts.get('EarningsPerShareDiluted') or facts.get('EarningsPerShareBasic')
+    if not node:
+        return None
+    units = node.get('units', {})
+    arr = units.get('USD/shares') or (next(iter(units.values()), []) if units else [])
+    fy = {}
+    for x in arr:
+        fr = x.get('frame', '') or ''
+        is_annual = (fr.startswith('CY') and 'Q' not in fr) or \
+                    (x.get('form') == '10-K' and x.get('fp') == 'FY')
+        if is_annual and x.get('val') is not None and x.get('fy') is not None:
+            try:
+                fy[int(x['fy'])] = float(x['val'])
+            except (TypeError, ValueError):
+                continue
+    if len(fy) < 2:
+        return None
+    yrs = sorted(fy.keys())
+    curr, prev = fy[yrs[-1]], fy[yrs[-2]]
+    if prev == 0:
+        return None
+    return round((curr - prev) / abs(prev) * 100, 1)
 
 
 def fetch_metals():
@@ -7442,6 +7516,16 @@ def run_explosive(candidates, market='us'):
     # statement-derived conditions are cached, so a verdict can't go stale within the window; a miss
     # fetches + recomputes + stores, so coverage can't regress.
     _stmt_cache = _load_explosive_cache() if market == 'us' else {}
+    # v1.160.0: last-good verdict per ticker (from the cached cond) so we can log any EXPLOSIVE
+    # verdict that FLIPS when the source switches Yahoo -> SEC. Built before the loop overwrites entries.
+    _prev_explosive_verdict = {}
+    for _tk, _ce in _stmt_cache.items():
+        if isinstance(_ce, dict) and isinstance(_ce.get('cond'), dict):
+            try:
+                _prev_explosive_verdict[_tk] = classify_explosive(_ce['cond'])
+            except Exception:
+                pass
+    _sec_src = 0; _yf_src = 0; _flips = 0
     _cache_hits = _cache_fetched = 0; _cache_dirty = False
     out = []
     for c in candidates:
@@ -7451,33 +7535,53 @@ def run_explosive(candidates, market='us'):
             # when a name is provisionally EXPLOSIVE (keeps the extra call count tiny).
             if market == 'us' and yf is not None:
                 _ce = _stmt_cache.get(ticker)
-                if _ce is not None and _explosive_cache_fresh(_ce) and isinstance(_ce.get('cond'), dict):
+                if (_ce is not None and _explosive_cache_fresh(_ce)
+                        and _ce.get('v') == EXPLOSIVE_CACHE_SCHEMA and isinstance(_ce.get('cond'), dict)):
                     cond = _ce['cond']; _cache_hits += 1
                     verdict = classify_explosive(cond)
                     f1, fr = _forward_boost(c)
                     rec = _build_explosive_rec(c, cond, verdict, cond.get('ratio'),
-                                               c.get('eps_growth'), 'yf_stmt_im3', f1, fr)
+                                               c.get('eps_growth'), 'sec_stmt_im3', f1, fr)
                 else:
+                    _used_yahoo = False
                     try:
-                        stmt = yf.Ticker(ticker).income_stmt
+                        # v1.160.0: SEC EDGAR PRIMARY for the statement (authoritative, no Yahoo crumb
+                        # poisoning). Yahoo income_stmt is the FALLBACK when SEC lacks >=2y revenue+OI.
+                        sec_inc, sec_cf = fetch_sec_financials(ticker)
+                        if sec_inc is not None:
+                            stmt = sec_inc; _lazy_cf = sec_cf; _src = 'sec_edgar'
+                        else:
+                            stmt = yf.Ticker(ticker).income_stmt; _lazy_cf = None
+                            _src = 'yf_stmt'; _used_yahoo = True
                         cond = explosive_conditions(stmt, None)
                         if not (cond['rev_g'] is None and cond['op_g'] is None and cond['np_g'] is None):
                             if bool(cond['g1']) and bool(cond['g2']) and bool(cond['a1']):
                                 try:
-                                    cfs = yf.Ticker(ticker).cashflow
+                                    cfs = _lazy_cf if _src == 'sec_edgar' else yf.Ticker(ticker).cashflow
                                     cond = explosive_conditions(stmt, cfs)
                                 except Exception:
                                     _swallow('explosive.cashflow')
                             verdict = classify_explosive(cond)
                             f1, fr = _forward_boost(c)
                             rec = _build_explosive_rec(c, cond, verdict, cond['ratio'],
-                                                       c.get('eps_growth'), 'yf_stmt_im3', f1, fr)
+                                                       c.get('eps_growth'),
+                                                       'sec_stmt_im3' if _src == 'sec_edgar' else 'yf_stmt_im3', f1, fr)
+                            if _src == 'sec_edgar':
+                                _sec_src += 1
+                            else:
+                                _yf_src += 1
+                            _pv = _prev_explosive_verdict.get(ticker)
+                            if _pv and _pv != verdict:
+                                _flips += 1
+                                log(f'    [EXPL Δ] {ticker}: "{_pv}" -> "{verdict}" (src {_src})')
                             _stmt_cache[ticker] = {'cond': _cond_jsonable(cond),
-                                                   'date': dt.date.today().isoformat()}
+                                                   'date': dt.date.today().isoformat(),
+                                                   'v': EXPLOSIVE_CACHE_SCHEMA, 'src': _src}
                             _cache_fetched += 1; _cache_dirty = True
                     except Exception:
                         _swallow('explosive.income_stmt')
-                    time.sleep(YF_DELAY)
+                    if _used_yahoo:
+                        time.sleep(YF_DELAY)   # pace Yahoo only; SEC has no crumb throttle
             # Fallback / PSX: embedded growth fields. PSX gets partial_ok=True so names
             # whose statements aren't fetched at scan time read PARTIAL (the IM3 step
             # finalises them) instead of a NOT-EXPLOSIVE we didn't actually compute.
@@ -7500,6 +7604,8 @@ def run_explosive(candidates, market='us'):
         _save_explosive_cache(_stmt_cache)   # v1.112.1: ALWAYS hand back (carry the cache forward even on an all-hit run -> never wipes data.json's cache)
         log(f'  [Explosive cache] {_cache_hits} hit / {_cache_fetched} fetched '
             f'(income_stmt cached {EXPLOSIVE_STMT_CACHE_DAYS}d, persisted in data.json)')
+        log(f'  [Explosive src] {_sec_src} SEC-EDGAR / {_yf_src} Yahoo-fallback of {_cache_fetched} fetched; '
+            f'{_flips} verdict flip(s) vs last-good')
     out.sort(key=lambda r: (r.get('strength_score') or 0,
                             str(r.get('verdict', '')).startswith('EXPLOSIVE'),
                             r.get('op_growth') or r.get('eps_growth') or -999), reverse=True)
