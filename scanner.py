@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.172.0'  # 1.172.0: (TCE news -- cross-source CONFIRMATION on top of breadth) _tce_news_count -> _tce_news returns {count, sources}: count = deduped recent articles across Google+Bing+Yahoo (BREADTH, drives s1_news, computed identically to v1.171.0 so the gate is unchanged); sources = how many of the 3 providers independently reported the stock (CONFIRMATION). Caller emits s1_news_sources + s1_news_confirmed(=1 when >=2 sources). Index v5.139 News cell shows 'N ✓Ksrc'. Story-level token corroboration was prototyped then dropped -- real outlets phrase headlines too differently for reliable matching, so it read 0; source-count is the robust confirmation signal. Display/enrichment; s1_news/s2_sponsor gates untouched. Freeze waived (owner). # 1.171.0: (TCE news -- PARALLEL multi-source, owner-approved inside freeze) s1_news/s2_sponsor no longer ride a SINGLE Google News RSS feed (whose outage caused the 14-min hang + PSX HIGH 3->0). New _tce_news_count queries 3 independent providers CONCURRENTLY on the first pass -- Google News + Bing News + Yahoo Finance headline RSS -- dedups by headline, counts last-14-day articles; if the whole parallel pass returns nothing, one light retry (fallback). Each fetch via _fetch_rss_entries with a HARD 5s timeout (requests.get->feedparser) so a dead/slow feed fails fast instead of hanging the pool. Thresholds UNCHANGED (>=3 s1_news, >=8 s2_sponsor) -- only source breadth widened. OWNER WAIVED the TCE freeze for this: broader breadth may raise s1_news on names Google alone missed -> can shift some conviction tiers / US-PSX HIGH counts vs prior baseline (expected, not a regression). Healthy-day Google-only parity verified in audit. # 1.170.0: (Wave T -- first-run visibility + cross-tab wiring) TWO fixes to close the 'many numbers still have no arrow' gap. (1) append_history now BACKFILLS the newly-captured namespaced fields (us.*/psx.*/metals.*) onto the most-recent PRIOR snapshot from last run's macros (existing['macros']), so every generic field has a prior point and TRENDS on run 1 instead of sitting 'pending' for a day (setdefault -> never clobbers real captured values). (2) index v5.138 wires trendChip into the previously-bare Pakistan macro cards (Arab Light/USD-PKR/CPI/Reserves/Current Account/Fiscal/REER/Remittances) + US rotary-rigs card -- cross-tab propagation the v1.169.0 wiring missed (it only covered the US-macro loop + 3 headline cards). Metals price tiles already carry trend divs. Display/data-only -- freeze-safe: canaries tce.fetch=2/US HIGH=8/PSX HIGH=3. # 1.169.0: (Wave T -- UNIVERSAL trend layer, keystone) append_history now generically captures EVERY numeric macro scalar (us.*/psx.*/metals.*, skipping already-trended _wow/_mom/_qoq/_sma/etc.) into the rolling history snapshot, and a NEW compute_trends(data) emits a central data['trends'] table keyed by field-path: {v,prev,delta,pct,dir,days,as_of,basis} computed as change-since-last-move (honest for daily series AND monthly prints stored daily). Index v5.137 adds trendChip(path) (resolves bare key->us./psx./metals.) + optional indicatorCard trendPath; wired generically into the US macro loop (every card w/o a cadence print-trend) + WTI/SBP-rate/KSE-100 headline cards. Universal coverage at the data layer -- any other cell is now a one-line trendChip('path'). Curated fields (kse100/usd_pkr/sp500/gold_px/dxy/wti/us_10y/hy_spread/core_pce) trend day-one; newly-captured namespaced fields show after 1 run accrues ('pending' stays quiet). Display/data-only -- freeze-safe: NO screening/TCE/IM3/scoring input; canaries tce.fetch=2/US HIGH=8/PSX HIGH=3. # 1.168.0: (COT x Seasonality -- net-position fallback + plain-language labels) compute_cot_seasonality now PRIMARY = COT Index percentile (cot_{metal}_pctile, vs own history); FALLBACK when that's None = coarse net-long %OI read (cot_{metal}_pct >=25 bullish / <=10 bearish) so the read forms immediately instead of n/a until weekly percentile history accrues. Emits cot_basis ('percentile'|'net_oi') + cot_net_oi so the UI marks a provisional read. Tab-12 strip (index v5.136) reworded for layman readers: 'Trader Positioning', 'big traders X% net-betting on a rise', no 'OI'/'COT Index' jargon. Still pure display/context -- freeze-safe; canaries tce.fetch=2/US HIGH=8/PSX HIGH=3. # 1.167.0: (COT x Seasonality -- metals-only, Priority 1) NEW compute_cot_seasonality fuses the STANDARD COT Index (net-positioning percentile cot_{metal}_pctile, already computed) with REAL monthly seasonality (avg MoM % by calendar month, World Bank CMO monthly 2000-25, embedded METAL_SEASONALITY -- reproducible from CMOHistoricalDataMonthly.xlsx) into a per-metal read for Gold/Silver/Copper: aligned bull/bear -> Tailwind/Headwind, disagree -> Conflicting, one-sided -> Lean, gaps -> n/a (never fabricated). Emitted as macros.metals.cot_seasonality; rendered on Tab 12 (index v5.135 strip). Pure display/context -- freeze-safe: NO screening/TCE/IM3/scoring input; canaries tce.fetch=2, US HIGH=8, PSX HIGH=3 unchanged. Sector-level COT x seasonality stays out (no free seasonality source for equity sectors). # 1.166.0: (F3 SBP reserves -- LEAN, no more scraping) SBP's own endpoints proved unreliable (ecodata = link directory; forex.pdf threw PdfminerException on the runner after SBP's Jul-2026 site revamp) for a number that is PUBLIC in every broker FMR, bank report, and business paper. Dropped the fetch entirely: sbp_reserves is now a MANUAL override exactly like reer/pak_ca/pak_fiscal -- psx_macros_manual.json overrides, else the in-repo baseline SBP_RESERVES_MANUAL (seeded 16.53bn SBP-held, as of 24-Jun-26; update from any FMR), else last-good. Fixes the stale/wrong 14.0 carry. No runner fetch, no wasted time. fetch_sbp_reserves/_parse_sbp_forex_pdf left defined but UNCALLED (dead, zero runtime cost). Freeze-safe: only the sbp_reserves macro line changes; canaries tce.fetch=2, US HIGH=8, PSX HIGH=3. # 1.165.0: (F3 SBP reserves -- CORRECTED SOURCE) v1.164.0's HTML self-discover scrape returned a PLAUSIBLE-BUT-WRONG number: 14.0bn, which is the STALE FY2023-24 year-end total sitting on the ecodata link-directory page, not the live weekly figure (verified: real SBP-held reserves were ~$16.5bn / total ~$22.0bn as of 24-Jun-26; last-good 15.92 was actually the correct SBP-held figure). Root cause: the reserves data is NOT html at all -- SBP publishes it as sbp.org.pk/ecodata/forex.pdf ('Liquid Foreign Exchange Reserves', week-end levels date|SBP|banks|total in US$ mn). fetch_sbp_reserves() rewritten to fetch that PDF, extract via pdfplumber (already a scanner dep), and take the MOST RECENT week-end row (new _parse_sbp_forex_pdf; figures /1000 -> bn, plausibility-clamped, decimal required so a year/index can't match). The dangerous HTML index-page fallback + _sbp_extract_reserves/_sbp_bn REMOVED (it was the source of the 14.0 mis-grab). Parser VALIDATED against the real forex.pdf text: last week-end row 5-Jun-26 -> SBP 17.22 / bank 5.46 / total 22.67bn. None -> last-good on any miss. Caller (v1.164.0) already accepts sbp_bn; source label sbp_ecodata. Freeze-safe: touches ONLY the sbp_reserves macro path -- no screening/TCE/IM3/index/scoring; canaries tce.fetch=2, US HIGH=8, PSX HIGH=3 (note: a news-driven s1_news flip can move PSX HIGH by 1, independent of this change). # 1.164.0: (F3 SBP reserves -- REAL FIX, not a probe) the v1.163.0 dump proved sbp.org.pk/ecodata is now a LINK DIRECTORY (20 single-column link tables), so the old code scanned an index page that no longer holds the figure -- it moved one click deeper behind the 'Balance of Payment' leaves 'Official Reserve Assets Monthly' / 'Foreign Exchange Reserves'. fetch_sbp_reserves() rewritten to SELF-DISCOVER: fetch the index, follow the highest-priority reserves anchor at runtime, extract from the leaf via a labeled-table scan then a bounded text scan (new _sbp_extract_reserves + _sbp_bn, every figure plausibility-clamped to ~$3-80bn so a stray number/year/index can't leak in), with the index page itself as a last-resort fallback. Caller now accepts a total-only leaf (sbp_bn or total_bn; source labelled sbp_ecodata vs sbp_ecodata_total) so a leaf without the SBP/bank split isn't discarded -- the devaluation basket needs the reserves TREND. [F3 reserves] log lines make the run self-validating; returns None -> last-good (15.92) on any miss (never blanks, never fabricates). Both diagnostic flags (ECODATA_DUMP_RAW/FREE_LEVER_PROBE) flipped OFF. Freeze-safe: touches ONLY the sbp_reserves macro path -- no US/PSX screening, no TCE, no IM3, no index.html, no scoring; canaries must stay tce.fetch=2, US HIGH=8, PSX HIGH=3. F4 fiscal (CF-403) + current-account (PBS trade URL 404) stay manual -- source-blocked, next step. # 1.163.0: (backlog F3/F4/F5 diagnostic sweep -- re-arm two gated runner probes for ONE run, logging-only, freeze-safe) F3 SBP reserves has failed every run ("ecodata: fetch/parse returned nothing -> last-good 15.92") since the v1.85.0-locked table layout; the page structure changed. Re-arm ECODATA_DUMP_RAW=True so probe_ecodata_dump() re-dumps the CURRENT sbp.org.pk/ecodata table map + reserves-candidate columns on the next run, to re-lock fetch_sbp_reserves() against the new structure. Also re-arm FREE_LEVER_PROBE=True to re-sweep the free-source landscape for F4 (reer/pak_ca/pak_fiscal -- still no free monthly feed at v1.84.1) and F5 (broker-watchlist automation -- PSX sites were CF-blocked at v1.84.1), in case any became reachable. BOTH logging-only, guarded, wrapped in main -> touch NO data/screening/scoring/IM3/TCE/the frozen ledger -> freeze-safe. NEXT: read the [F3 ecodata dump] + [Wave R free-lever probe] blocks, then a follow-up re-locks fetch_sbp_reserves() (F3) against the real current columns and flips both flags False. No data/scoring change this rev. (daily.yml bank-input-hash trigger + ABCL/GAU IM3 scorer both confirmed already-resolved in the current files -- no change needed.)  # 1.162.0: (Explosive SEC revenue-concept fix -- root-caused by v1.161.1's [EXPL SEC-diag]) the diag showed MAMA/IOVA/AMSC returning rev_g=None because _sec_annual_series took the FIRST present concept ('Revenues'), which for these names held only stale/legacy scraps (e.g. MAMA Total=[2023,2012:0]) while the real recent revenue sat under RevenueFromContractWithCustomerExcludingAssessedTax. FIX: _sec_annual_series now picks the BEST-COVERED concept (>=2y, then most-recent max-year, then densest) instead of first-present, drops junk fy<=0 years, and the revenue candidate list is widened (7 variants). ZSQR/HSHP stay None correctly (genuine zero prior-year revenue -- real pre-revenue names). Cache bumped sec2->sec3 to re-validate. Scoring logic (explosive_conditions/classify/_build_explosive_rec) byte-unchanged; PSX/TCE/index.html/im3 untouched; canaries tce.fetch=2, US HIGH=8, PSX HIGH=3.  # 1.161.1: (cache-invalidation fix) v1.161.0 shipped the SEC net-income gate + [EXPL SEC-diag] but did NOT bump the cache token, so v1.160.0's warm 'sec1' cache hit all 198 names (0 fetched) and the fix+diagnostic never executed. Bump EXPLOSIVE_CACHE_SCHEMA 'sec1'->'sec2' -> this ONE run re-validates all names off SEC (applies the ni-gate: MNST-class np-missing reverts to Yahoo; fires [EXPL SEC-diag] for any residual AMSC/MAMA-style None), then caches under 'sec2' and is fast again. No other change.  # 1.161.0: (Explosive SEC swap -- correctness follow-up to v1.160.0's 32 verdict flips) TWO changes. (1) FIX: fetch_sec_financials now requires >=2y of NET INCOME too (was revenue+OI only). The verdict's growth AND acceleration signals both consume net-income YoY; a SEC frame missing it produced a None accel signal that downgraded a name on MISSING data not real weakness (MNST-class: A=False B=None). Now those fall back to Yahoo (the deployed/confirmed path) -> spurious downgrades revert. (2) DIAG: any SEC-served name STILL yielding a None rev/op/np signal (e.g. AMSC/MAMA A=None) logs [EXPL SEC-diag] with the raw annual (year:value) series for revenue/OI/net-income, so a genuine prev==0 base is told apart from a period-misalignment/duplicate-fy artifact on the next run -- zero guessing. No scoring-logic or field/tag change; growth_source/index.html/im3 untouched; PSX untouched; TCE untouched (canaries tce.fetch=2, US HIGH=8, PSX HIGH=3).  # 1.160.0: (Explosive SEC swap -- finishes Item 1) the US Explosive screen's statement source is now SEC EDGAR PRIMARY with Yahoo income_stmt FALLBACK. fetch_sec_financials builds a pandas DataFrame shaped EXACTLY like Yahoo's .income_stmt/.cashflow (rows Total Revenue/Operating Income/Net Income/Pretax Income/Operating Cash Flow; cols = fiscal years desc) so explosive_conditions + _yoy run UNCHANGED -- only the data source differs. SEC lacks >=2y revenue+OI (e.g. banks) -> Yahoo fallback. Companyfacts fetched once/ticker and shared with the EPS enrichment via _sec_companyfacts. Cache schema bumped ('sec1') -> this ONE run re-fetches all ~186 names off SEC to validate + logs any EXPLOSIVE verdict FLIP vs last-good ([EXPL Δ] lines + [Explosive src] N SEC / M Yahoo / K flips); afterwards normal 7d caching resumes (fast). YF_DELAY pacing skipped when SEC served. Yahoo-only fallbacks: 2 delisted PSX names + SEC-gap stragglers. Canaries unaffected (TCE untouched): tce.fetch=2, US HIGH=8, PSX HIGH=3.  # 1.159.1: (HOTFIX) v1.159.0 crashed the metals block ('Metals macros crashed: dxy', Hard errors:1) -- DXY correctly resolved on TV with SMA200 and entered the TV-primary branch, but the source-label + log lines did _metals_tv_sym[key], and that dict has only the 5 metals (no 'dxy') -> KeyError aborted the whole block (DXY/Gold:Silver/WALCL/COT/scores lost that run). Fix: _metals_tv_sym.get(key,'TVC:DXY') in both lines. USD/PKR TV swap confirmed working (v1.159.0). Picks never affected (metals is a macro block; canaries held 8/3/2).  # 1.159.0: (fix + speed) (1) DXY + USD/PKR TV swap CORRECTED -- v1.158.0 used /symbol which returns HTTP 405; the right call is the market-segment scan scanner.tradingview.com/{market}/scan (same body as oil/metals). fetch_index_tv now tries a market list until the symbol resolves: DXY via cfd->america->forex (TVC:DXY), USD/PKR via forex (FX_IDC:USDPKR); Yahoo fallback unchanged so nothing blanks. (2) The 20s Yahoo crumb cooldown in the EPS enrichment now scales to the remainder (<=3 names -> 5s) -- since v1.158.0 SEC fills most names, only a handful reach Yahoo, so the full cooldown was wasted latency (~15s saved on SEC-heavy days). SEC EPS + canaries unchanged (tce.fetch=2, US HIGH=8, PSX HIGH=3). Explosive OP-accel SEC swap still queued (scored screen -> next version, with verdict-delta log).  # 1.158.0: (Yahoo->SEC/TV cutover) THREE swaps, all PRIMARY-with-fallback so nothing blanks and the scan run is its own test. (1) SEC EDGAR companyfacts is now the PRIMARY source for the 14-survivor EPS-growth enrichment (FY diluted-EPS YoY off data.sec.gov) -- kills the ~27s Yahoo income_stmt call; Yahoo stays the fallback for names SEC can't fill; [SEC] log lines reveal runner reachability + hit rate. (2) DXY now TradingView-PRIMARY (TVC:DXY via /symbol scan, SMA200/RSI) merged into the metals loop -> Yahoo fallback if no SMA200 -- pulls the Dollar Index off Yahoo. (3) USD/PKR now TradingView-PRIMARY for spot (FX_IDC:USDPKR) with Yahoo for the trend series + fallback spot. New helpers: fetch_index_tv (index/forex /symbol scan), _sec_cik_map + fetch_sec_eps_growth. Freeze-safe (TCE untouched; Explosive scored screen NOT changed this version -- its OP-accel income_stmt swap is the next step pending this run's [SEC] reachability confirmation, since it shifts a scored screen). CANARY: tce.fetch=2, US HIGH=8, PSX HIGH=3 unchanged.  # 1.157.0: TCE s1_news RSS fetch retries up to 3x on an empty/bozo response -- under the v1.156.0 concurrent pool a transient empty occasionally dropped a real s1_news (PSX FFC), which the serial run always caught; retry restores serial parity, healthy names still fetch once (no added cost), genuinely news-less stays 0. Data-robustness only, no threshold touched.  # 1.156.0: (SPEED) TCE per-name scoring now runs CONCURRENTLY (ThreadPoolExecutor, TCE_WORKERS=3) instead of one-at-a-time -- the ~137s TCE phase (46% of the run) is network-bound (news RSS + SEC EDGAR + per-name Yahoo .info/estimates), each name independent. ex.map preserves order + tce_results sorted deterministically -> tiers/scores BYTE-IDENTICAL to serial, ONLY execution order changes (freeze-safe). Per-name time.sleep(YF_DELAY) dropped. _swallow lock-guarded so the tce.fetch canary stays accurate under threads. CANARY (confirm parity on runner): tce.fetch stays 2, US TCE HIGH stays 8, PSX HIGH stays 3. TCE_WORKERS=1 reverts to serial.  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
+SCAN_VERSION = '1.174.0'  # 1.174.0: (TCE social buzz -- NEW s13_social, DISPLAY-ONLY) new retail-attention signal, separate from editorial news. US names -> StockTwits (public symbol stream: 3d message volume + net bull-bear sentiment). PSX names -> Reddit (site search + r/PakStockExchange, 14d post count) + Google Trends (0-100 interest, best-effort via pytrends -- inert no-op until pytrends is added to requirements). _tce_social(ticker,market) runs providers concurrently, fails fast + graceful; emits s13_social_count/_sentiment/_trends/_src + s13_social flag. CRITICAL: s13_social is NOT in COUNTED (same as s2_sponsor) so it can NEVER move total/conviction/tier -- HIGH/WATCH unaffected. One-shot [social diag <market>] probe line shows runner reachability (stocktwits/reddit/gtrends may be blocked -> then it's just 0, graceful). Index v5.141 adds a 'Social' stream cell. Freeze waived (owner). # 1.173.0: (TCE news -- MARKET-AWARE sources, PSX->Pakistani outlets) _tce_news_sources now takes market: US names keep US-edition Google/Bing + Yahoo; PSX names now query Pakistan-edition Google News (hl=en-PK,gl=PK) + Bing PK + a Business-Recorder-scoped Google News query (site:brecorder.com) -- which index Business Recorder/Dawn/Tribune/Profit, unlike the US feeds that barely cover .KA tickers. Yahoo dropped for PSX (no .KA coverage). _tce_news(ticker,market) threads market through; caller passes it. One-shot [news diag <market>] log line per market shows per-source article counts for the first name = live runner reachability probe for the PSX outlets (brecorder/broker sites may be CF/login-gated -> if a source returns 0, the others still carry it, graceful). Breadth+confirmation logic unchanged. Freeze waived (owner). # 1.172.0: (TCE news -- cross-source CONFIRMATION on top of breadth) _tce_news_count -> _tce_news returns {count, sources}: count = deduped recent articles across Google+Bing+Yahoo (BREADTH, drives s1_news, computed identically to v1.171.0 so the gate is unchanged); sources = how many of the 3 providers independently reported the stock (CONFIRMATION). Caller emits s1_news_sources + s1_news_confirmed(=1 when >=2 sources). Index v5.139 News cell shows 'N ✓Ksrc'. Story-level token corroboration was prototyped then dropped -- real outlets phrase headlines too differently for reliable matching, so it read 0; source-count is the robust confirmation signal. Display/enrichment; s1_news/s2_sponsor gates untouched. Freeze waived (owner). # 1.171.0: (TCE news -- PARALLEL multi-source, owner-approved inside freeze) s1_news/s2_sponsor no longer ride a SINGLE Google News RSS feed (whose outage caused the 14-min hang + PSX HIGH 3->0). New _tce_news_count queries 3 independent providers CONCURRENTLY on the first pass -- Google News + Bing News + Yahoo Finance headline RSS -- dedups by headline, counts last-14-day articles; if the whole parallel pass returns nothing, one light retry (fallback). Each fetch via _fetch_rss_entries with a HARD 5s timeout (requests.get->feedparser) so a dead/slow feed fails fast instead of hanging the pool. Thresholds UNCHANGED (>=3 s1_news, >=8 s2_sponsor) -- only source breadth widened. OWNER WAIVED the TCE freeze for this: broader breadth may raise s1_news on names Google alone missed -> can shift some conviction tiers / US-PSX HIGH counts vs prior baseline (expected, not a regression). Healthy-day Google-only parity verified in audit. # 1.170.0: (Wave T -- first-run visibility + cross-tab wiring) TWO fixes to close the 'many numbers still have no arrow' gap. (1) append_history now BACKFILLS the newly-captured namespaced fields (us.*/psx.*/metals.*) onto the most-recent PRIOR snapshot from last run's macros (existing['macros']), so every generic field has a prior point and TRENDS on run 1 instead of sitting 'pending' for a day (setdefault -> never clobbers real captured values). (2) index v5.138 wires trendChip into the previously-bare Pakistan macro cards (Arab Light/USD-PKR/CPI/Reserves/Current Account/Fiscal/REER/Remittances) + US rotary-rigs card -- cross-tab propagation the v1.169.0 wiring missed (it only covered the US-macro loop + 3 headline cards). Metals price tiles already carry trend divs. Display/data-only -- freeze-safe: canaries tce.fetch=2/US HIGH=8/PSX HIGH=3. # 1.169.0: (Wave T -- UNIVERSAL trend layer, keystone) append_history now generically captures EVERY numeric macro scalar (us.*/psx.*/metals.*, skipping already-trended _wow/_mom/_qoq/_sma/etc.) into the rolling history snapshot, and a NEW compute_trends(data) emits a central data['trends'] table keyed by field-path: {v,prev,delta,pct,dir,days,as_of,basis} computed as change-since-last-move (honest for daily series AND monthly prints stored daily). Index v5.137 adds trendChip(path) (resolves bare key->us./psx./metals.) + optional indicatorCard trendPath; wired generically into the US macro loop (every card w/o a cadence print-trend) + WTI/SBP-rate/KSE-100 headline cards. Universal coverage at the data layer -- any other cell is now a one-line trendChip('path'). Curated fields (kse100/usd_pkr/sp500/gold_px/dxy/wti/us_10y/hy_spread/core_pce) trend day-one; newly-captured namespaced fields show after 1 run accrues ('pending' stays quiet). Display/data-only -- freeze-safe: NO screening/TCE/IM3/scoring input; canaries tce.fetch=2/US HIGH=8/PSX HIGH=3. # 1.168.0: (COT x Seasonality -- net-position fallback + plain-language labels) compute_cot_seasonality now PRIMARY = COT Index percentile (cot_{metal}_pctile, vs own history); FALLBACK when that's None = coarse net-long %OI read (cot_{metal}_pct >=25 bullish / <=10 bearish) so the read forms immediately instead of n/a until weekly percentile history accrues. Emits cot_basis ('percentile'|'net_oi') + cot_net_oi so the UI marks a provisional read. Tab-12 strip (index v5.136) reworded for layman readers: 'Trader Positioning', 'big traders X% net-betting on a rise', no 'OI'/'COT Index' jargon. Still pure display/context -- freeze-safe; canaries tce.fetch=2/US HIGH=8/PSX HIGH=3. # 1.167.0: (COT x Seasonality -- metals-only, Priority 1) NEW compute_cot_seasonality fuses the STANDARD COT Index (net-positioning percentile cot_{metal}_pctile, already computed) with REAL monthly seasonality (avg MoM % by calendar month, World Bank CMO monthly 2000-25, embedded METAL_SEASONALITY -- reproducible from CMOHistoricalDataMonthly.xlsx) into a per-metal read for Gold/Silver/Copper: aligned bull/bear -> Tailwind/Headwind, disagree -> Conflicting, one-sided -> Lean, gaps -> n/a (never fabricated). Emitted as macros.metals.cot_seasonality; rendered on Tab 12 (index v5.135 strip). Pure display/context -- freeze-safe: NO screening/TCE/IM3/scoring input; canaries tce.fetch=2, US HIGH=8, PSX HIGH=3 unchanged. Sector-level COT x seasonality stays out (no free seasonality source for equity sectors). # 1.166.0: (F3 SBP reserves -- LEAN, no more scraping) SBP's own endpoints proved unreliable (ecodata = link directory; forex.pdf threw PdfminerException on the runner after SBP's Jul-2026 site revamp) for a number that is PUBLIC in every broker FMR, bank report, and business paper. Dropped the fetch entirely: sbp_reserves is now a MANUAL override exactly like reer/pak_ca/pak_fiscal -- psx_macros_manual.json overrides, else the in-repo baseline SBP_RESERVES_MANUAL (seeded 16.53bn SBP-held, as of 24-Jun-26; update from any FMR), else last-good. Fixes the stale/wrong 14.0 carry. No runner fetch, no wasted time. fetch_sbp_reserves/_parse_sbp_forex_pdf left defined but UNCALLED (dead, zero runtime cost). Freeze-safe: only the sbp_reserves macro line changes; canaries tce.fetch=2, US HIGH=8, PSX HIGH=3. # 1.165.0: (F3 SBP reserves -- CORRECTED SOURCE) v1.164.0's HTML self-discover scrape returned a PLAUSIBLE-BUT-WRONG number: 14.0bn, which is the STALE FY2023-24 year-end total sitting on the ecodata link-directory page, not the live weekly figure (verified: real SBP-held reserves were ~$16.5bn / total ~$22.0bn as of 24-Jun-26; last-good 15.92 was actually the correct SBP-held figure). Root cause: the reserves data is NOT html at all -- SBP publishes it as sbp.org.pk/ecodata/forex.pdf ('Liquid Foreign Exchange Reserves', week-end levels date|SBP|banks|total in US$ mn). fetch_sbp_reserves() rewritten to fetch that PDF, extract via pdfplumber (already a scanner dep), and take the MOST RECENT week-end row (new _parse_sbp_forex_pdf; figures /1000 -> bn, plausibility-clamped, decimal required so a year/index can't match). The dangerous HTML index-page fallback + _sbp_extract_reserves/_sbp_bn REMOVED (it was the source of the 14.0 mis-grab). Parser VALIDATED against the real forex.pdf text: last week-end row 5-Jun-26 -> SBP 17.22 / bank 5.46 / total 22.67bn. None -> last-good on any miss. Caller (v1.164.0) already accepts sbp_bn; source label sbp_ecodata. Freeze-safe: touches ONLY the sbp_reserves macro path -- no screening/TCE/IM3/index/scoring; canaries tce.fetch=2, US HIGH=8, PSX HIGH=3 (note: a news-driven s1_news flip can move PSX HIGH by 1, independent of this change). # 1.164.0: (F3 SBP reserves -- REAL FIX, not a probe) the v1.163.0 dump proved sbp.org.pk/ecodata is now a LINK DIRECTORY (20 single-column link tables), so the old code scanned an index page that no longer holds the figure -- it moved one click deeper behind the 'Balance of Payment' leaves 'Official Reserve Assets Monthly' / 'Foreign Exchange Reserves'. fetch_sbp_reserves() rewritten to SELF-DISCOVER: fetch the index, follow the highest-priority reserves anchor at runtime, extract from the leaf via a labeled-table scan then a bounded text scan (new _sbp_extract_reserves + _sbp_bn, every figure plausibility-clamped to ~$3-80bn so a stray number/year/index can't leak in), with the index page itself as a last-resort fallback. Caller now accepts a total-only leaf (sbp_bn or total_bn; source labelled sbp_ecodata vs sbp_ecodata_total) so a leaf without the SBP/bank split isn't discarded -- the devaluation basket needs the reserves TREND. [F3 reserves] log lines make the run self-validating; returns None -> last-good (15.92) on any miss (never blanks, never fabricates). Both diagnostic flags (ECODATA_DUMP_RAW/FREE_LEVER_PROBE) flipped OFF. Freeze-safe: touches ONLY the sbp_reserves macro path -- no US/PSX screening, no TCE, no IM3, no index.html, no scoring; canaries must stay tce.fetch=2, US HIGH=8, PSX HIGH=3. F4 fiscal (CF-403) + current-account (PBS trade URL 404) stay manual -- source-blocked, next step. # 1.163.0: (backlog F3/F4/F5 diagnostic sweep -- re-arm two gated runner probes for ONE run, logging-only, freeze-safe) F3 SBP reserves has failed every run ("ecodata: fetch/parse returned nothing -> last-good 15.92") since the v1.85.0-locked table layout; the page structure changed. Re-arm ECODATA_DUMP_RAW=True so probe_ecodata_dump() re-dumps the CURRENT sbp.org.pk/ecodata table map + reserves-candidate columns on the next run, to re-lock fetch_sbp_reserves() against the new structure. Also re-arm FREE_LEVER_PROBE=True to re-sweep the free-source landscape for F4 (reer/pak_ca/pak_fiscal -- still no free monthly feed at v1.84.1) and F5 (broker-watchlist automation -- PSX sites were CF-blocked at v1.84.1), in case any became reachable. BOTH logging-only, guarded, wrapped in main -> touch NO data/screening/scoring/IM3/TCE/the frozen ledger -> freeze-safe. NEXT: read the [F3 ecodata dump] + [Wave R free-lever probe] blocks, then a follow-up re-locks fetch_sbp_reserves() (F3) against the real current columns and flips both flags False. No data/scoring change this rev. (daily.yml bank-input-hash trigger + ABCL/GAU IM3 scorer both confirmed already-resolved in the current files -- no change needed.)  # 1.162.0: (Explosive SEC revenue-concept fix -- root-caused by v1.161.1's [EXPL SEC-diag]) the diag showed MAMA/IOVA/AMSC returning rev_g=None because _sec_annual_series took the FIRST present concept ('Revenues'), which for these names held only stale/legacy scraps (e.g. MAMA Total=[2023,2012:0]) while the real recent revenue sat under RevenueFromContractWithCustomerExcludingAssessedTax. FIX: _sec_annual_series now picks the BEST-COVERED concept (>=2y, then most-recent max-year, then densest) instead of first-present, drops junk fy<=0 years, and the revenue candidate list is widened (7 variants). ZSQR/HSHP stay None correctly (genuine zero prior-year revenue -- real pre-revenue names). Cache bumped sec2->sec3 to re-validate. Scoring logic (explosive_conditions/classify/_build_explosive_rec) byte-unchanged; PSX/TCE/index.html/im3 untouched; canaries tce.fetch=2, US HIGH=8, PSX HIGH=3.  # 1.161.1: (cache-invalidation fix) v1.161.0 shipped the SEC net-income gate + [EXPL SEC-diag] but did NOT bump the cache token, so v1.160.0's warm 'sec1' cache hit all 198 names (0 fetched) and the fix+diagnostic never executed. Bump EXPLOSIVE_CACHE_SCHEMA 'sec1'->'sec2' -> this ONE run re-validates all names off SEC (applies the ni-gate: MNST-class np-missing reverts to Yahoo; fires [EXPL SEC-diag] for any residual AMSC/MAMA-style None), then caches under 'sec2' and is fast again. No other change.  # 1.161.0: (Explosive SEC swap -- correctness follow-up to v1.160.0's 32 verdict flips) TWO changes. (1) FIX: fetch_sec_financials now requires >=2y of NET INCOME too (was revenue+OI only). The verdict's growth AND acceleration signals both consume net-income YoY; a SEC frame missing it produced a None accel signal that downgraded a name on MISSING data not real weakness (MNST-class: A=False B=None). Now those fall back to Yahoo (the deployed/confirmed path) -> spurious downgrades revert. (2) DIAG: any SEC-served name STILL yielding a None rev/op/np signal (e.g. AMSC/MAMA A=None) logs [EXPL SEC-diag] with the raw annual (year:value) series for revenue/OI/net-income, so a genuine prev==0 base is told apart from a period-misalignment/duplicate-fy artifact on the next run -- zero guessing. No scoring-logic or field/tag change; growth_source/index.html/im3 untouched; PSX untouched; TCE untouched (canaries tce.fetch=2, US HIGH=8, PSX HIGH=3).  # 1.160.0: (Explosive SEC swap -- finishes Item 1) the US Explosive screen's statement source is now SEC EDGAR PRIMARY with Yahoo income_stmt FALLBACK. fetch_sec_financials builds a pandas DataFrame shaped EXACTLY like Yahoo's .income_stmt/.cashflow (rows Total Revenue/Operating Income/Net Income/Pretax Income/Operating Cash Flow; cols = fiscal years desc) so explosive_conditions + _yoy run UNCHANGED -- only the data source differs. SEC lacks >=2y revenue+OI (e.g. banks) -> Yahoo fallback. Companyfacts fetched once/ticker and shared with the EPS enrichment via _sec_companyfacts. Cache schema bumped ('sec1') -> this ONE run re-fetches all ~186 names off SEC to validate + logs any EXPLOSIVE verdict FLIP vs last-good ([EXPL Δ] lines + [Explosive src] N SEC / M Yahoo / K flips); afterwards normal 7d caching resumes (fast). YF_DELAY pacing skipped when SEC served. Yahoo-only fallbacks: 2 delisted PSX names + SEC-gap stragglers. Canaries unaffected (TCE untouched): tce.fetch=2, US HIGH=8, PSX HIGH=3.  # 1.159.1: (HOTFIX) v1.159.0 crashed the metals block ('Metals macros crashed: dxy', Hard errors:1) -- DXY correctly resolved on TV with SMA200 and entered the TV-primary branch, but the source-label + log lines did _metals_tv_sym[key], and that dict has only the 5 metals (no 'dxy') -> KeyError aborted the whole block (DXY/Gold:Silver/WALCL/COT/scores lost that run). Fix: _metals_tv_sym.get(key,'TVC:DXY') in both lines. USD/PKR TV swap confirmed working (v1.159.0). Picks never affected (metals is a macro block; canaries held 8/3/2).  # 1.159.0: (fix + speed) (1) DXY + USD/PKR TV swap CORRECTED -- v1.158.0 used /symbol which returns HTTP 405; the right call is the market-segment scan scanner.tradingview.com/{market}/scan (same body as oil/metals). fetch_index_tv now tries a market list until the symbol resolves: DXY via cfd->america->forex (TVC:DXY), USD/PKR via forex (FX_IDC:USDPKR); Yahoo fallback unchanged so nothing blanks. (2) The 20s Yahoo crumb cooldown in the EPS enrichment now scales to the remainder (<=3 names -> 5s) -- since v1.158.0 SEC fills most names, only a handful reach Yahoo, so the full cooldown was wasted latency (~15s saved on SEC-heavy days). SEC EPS + canaries unchanged (tce.fetch=2, US HIGH=8, PSX HIGH=3). Explosive OP-accel SEC swap still queued (scored screen -> next version, with verdict-delta log).  # 1.158.0: (Yahoo->SEC/TV cutover) THREE swaps, all PRIMARY-with-fallback so nothing blanks and the scan run is its own test. (1) SEC EDGAR companyfacts is now the PRIMARY source for the 14-survivor EPS-growth enrichment (FY diluted-EPS YoY off data.sec.gov) -- kills the ~27s Yahoo income_stmt call; Yahoo stays the fallback for names SEC can't fill; [SEC] log lines reveal runner reachability + hit rate. (2) DXY now TradingView-PRIMARY (TVC:DXY via /symbol scan, SMA200/RSI) merged into the metals loop -> Yahoo fallback if no SMA200 -- pulls the Dollar Index off Yahoo. (3) USD/PKR now TradingView-PRIMARY for spot (FX_IDC:USDPKR) with Yahoo for the trend series + fallback spot. New helpers: fetch_index_tv (index/forex /symbol scan), _sec_cik_map + fetch_sec_eps_growth. Freeze-safe (TCE untouched; Explosive scored screen NOT changed this version -- its OP-accel income_stmt swap is the next step pending this run's [SEC] reachability confirmation, since it shifts a scored screen). CANARY: tce.fetch=2, US HIGH=8, PSX HIGH=3 unchanged.  # 1.157.0: TCE s1_news RSS fetch retries up to 3x on an empty/bozo response -- under the v1.156.0 concurrent pool a transient empty occasionally dropped a real s1_news (PSX FFC), which the serial run always caught; retry restores serial parity, healthy names still fetch once (no added cost), genuinely news-less stays 0. Data-robustness only, no threshold touched.  # 1.156.0: (SPEED) TCE per-name scoring now runs CONCURRENTLY (ThreadPoolExecutor, TCE_WORKERS=3) instead of one-at-a-time -- the ~137s TCE phase (46% of the run) is network-bound (news RSS + SEC EDGAR + per-name Yahoo .info/estimates), each name independent. ex.map preserves order + tce_results sorted deterministically -> tiers/scores BYTE-IDENTICAL to serial, ONLY execution order changes (freeze-safe). Per-name time.sleep(YF_DELAY) dropped. _swallow lock-guarded so the tce.fetch canary stays accurate under threads. CANARY (confirm parity on runner): tce.fetch stays 2, US TCE HIGH stays 8, PSX HIGH stays 3. TCE_WORKERS=1 reverts to serial.  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -7078,36 +7078,49 @@ def _fetch_rss_entries(url, timeout=5):
 # Independent infrastructures so a single provider outage can't zero the news signal (the old single
 # Google-News feed did exactly that -> 14-min hang + PSX HIGH 3->0). Owner-approved to run inside the
 # frozen TCE engine: broader breadth may shift some conviction tiers vs the old single source.
-def _tce_news_sources(ticker):
+def _tce_news_sources(ticker, market='us'):
+    """News providers as (label, url) pairs, localized per market. US names go to the US editions +
+    Yahoo Finance; PSX names go to Pakistan-edition Google News + Bing (which index Business Recorder,
+    Dawn, Tribune, Profit, etc.) + a Business-Recorder-scoped Google News query -- Yahoo is dropped for
+    PSX (it barely covers .KA tickers)."""
     t = ticker
+    if market == 'psx':
+        return [
+            ('google_pk', f'https://news.google.com/rss/search?q={t}+PSX+OR+Pakistan+stock&hl=en-PK&gl=PK&ceid=PK:en'),
+            ('bing_pk',   f'https://www.bing.com/news/search?q={t}+Pakistan+PSX+stock&format=rss&cc=PK'),
+            ('brecorder', f'https://news.google.com/rss/search?q={t}+site:brecorder.com&hl=en-PK&gl=PK&ceid=PK:en'),
+        ]
     return [
-        f'https://news.google.com/rss/search?q={t}+stock+OR+earnings&hl=en-US&gl=US&ceid=US:en',
-        f'https://www.bing.com/news/search?q={t}+stock&format=rss',
-        f'https://feeds.finance.yahoo.com/rss/2.0/headline?s={t}&region=US&lang=en-US',
+        ('google', f'https://news.google.com/rss/search?q={t}+stock+OR+earnings&hl=en-US&gl=US&ceid=US:en'),
+        ('bing',   f'https://www.bing.com/news/search?q={t}+stock&format=rss'),
+        ('yahoo',  f'https://feeds.finance.yahoo.com/rss/2.0/headline?s={t}&region=US&lang=en-US'),
     ]
 
 
-def _tce_news(ticker):
-    """Parallel multi-source news read for TCE. Returns a dict:
+_NEWS_DIAG = {'us': True, 'psx': True}   # log one per-source breakdown per market (reachability probe)
+
+
+def _tce_news(ticker, market='us'):
+    """Parallel multi-source news read for TCE. Returns {count, sources}:
       count   = recent (<=14d) articles, deduped by headline across sources -> BREADTH (drives s1_news)
-      sources = how many of the providers reported this stock recently (0-3) -> CONFIRMATION strength
-    Queries Google + Bing + Yahoo CONCURRENTLY (first pass); if the whole pass is empty, one light
-    retry. Hard per-fetch timeout -> can't hang. `count` is computed identically to the single-pass
-    version (exact-headline dedup, same recency rule) so the s1_news gate is unchanged; `sources` is
-    the cross-source confirmation added on top (>=2 providers = independently confirmed). Never raises."""
+      sources = how many providers independently reported this stock (0-3)   -> CONFIRMATION strength
+    Providers are localized per market (see _tce_news_sources): US names use US editions + Yahoo,
+    PSX names use Pakistan-edition Google/Bing + Business Recorder. Queries CONCURRENTLY (first pass);
+    if the whole pass is empty, one light retry. Hard per-fetch timeout -> can't hang. Never raises."""
     import concurrent.futures as _cf
-    labels = ('google', 'bing', 'yahoo')
-    srcs = _tce_news_sources(ticker)
+    pairs = _tce_news_sources(ticker, market)
+    labels = [lbl for lbl, _u in pairs]
+    urls = {lbl: u for lbl, u in pairs}
 
     def _gather():
         per = {}
         try:
-            with _cf.ThreadPoolExecutor(max_workers=len(srcs)) as ex:
-                for i, ents in ex.map(lambda i: (i, _fetch_rss_entries(srcs[i])), range(len(srcs))):
-                    per[labels[i]] = ents or []
+            with _cf.ThreadPoolExecutor(max_workers=len(pairs)) as ex:
+                for lbl, ents in ex.map(lambda lbl: (lbl, _fetch_rss_entries(urls[lbl])), labels):
+                    per[lbl] = ents or []
         except Exception:
-            for i in range(len(srcs)):
-                per[labels[i]] = _fetch_rss_entries(srcs[i])
+            for lbl in labels:
+                per[lbl] = _fetch_rss_entries(urls[lbl])
         return per
 
     per = _gather()
@@ -7126,7 +7139,6 @@ def _tce_news(ticker):
         except Exception:
             return True
 
-    # per-source recent normalized headlines
     per_recent = {}
     for name, ents in per.items():
         titles = []
@@ -7136,17 +7148,144 @@ def _tce_news(ticker):
                 titles.append(title.lower()[:70])
         per_recent[name] = titles
 
-    # BREADTH count — exact-headline dedup across sources (identical to the single-pass count)
+    # one-shot reachability probe per market so the run shows which sources actually return articles
+    if _NEWS_DIAG.get(market):
+        _NEWS_DIAG[market] = False
+        try:
+            log('  [news diag %s] %s -> %s' % (
+                market, ticker, ', '.join(f'{lbl}={len(per_recent.get(lbl, []))}' for lbl in labels)))
+        except Exception:
+            pass
+
     seen = set()
     for titles in per_recent.values():
         for tnorm in titles:
             seen.add(tnorm)
     count = len(seen)
-
-    # CONFIRMATION — how many providers independently reported this stock
     sources = sum(1 for titles in per_recent.values() if titles)
-
     return {'count': count, 'sources': sources}
+
+
+def _fetch_stocktwits(ticker, timeout=5):
+    """StockTwits public symbol stream (US) -> {count(last 3d), sentiment(net bull-bear)}. None on fail."""
+    try:
+        import requests
+        r = requests.get(f'https://api.stocktwits.com/api/2/streams/symbol/{ticker}.json',
+                         timeout=timeout, headers={'User-Agent': 'Mozilla/5.0 (compatible; PIbot/1.0)'})
+        if r.status_code != 200:
+            return None
+        msgs = (r.json() or {}).get('messages') or []
+        cutoff = dt.datetime.utcnow() - dt.timedelta(days=3)
+        cnt = bull = bear = 0
+        for m in msgs:
+            ca = m.get('created_at')
+            recent = True
+            if ca:
+                try:
+                    recent = dt.datetime.strptime(ca[:19], '%Y-%m-%dT%H:%M:%S') > cutoff
+                except Exception:
+                    recent = True
+            if not recent:
+                continue
+            cnt += 1
+            s = (((m.get('entities') or {}).get('sentiment') or {}) or {}).get('basic')
+            if s == 'Bullish':
+                bull += 1
+            elif s == 'Bearish':
+                bear += 1
+        return {'count': cnt, 'sentiment': bull - bear}
+    except Exception:
+        return None
+
+
+def _fetch_reddit(ticker, market='psx', timeout=5):
+    """Reddit recent-post count mentioning the ticker (last 14d); PSX also scopes r/PakStockExchange."""
+    try:
+        import requests
+        urls = [f'https://www.reddit.com/search.json?q={ticker}&sort=new&limit=25&t=month']
+        if market == 'psx':
+            urls.insert(0, f'https://www.reddit.com/r/PakStockExchange/search.json?q={ticker}'
+                           f'&restrict_sr=1&sort=new&limit=25&t=month')
+        cutoff = (dt.datetime.utcnow() - dt.timedelta(days=14)).timestamp()
+        seen = set()
+        cnt = 0
+        for u in urls:
+            r = requests.get(u, timeout=timeout, headers={'User-Agent': 'PIbot/1.0 (buzz signal)'})
+            if r.status_code != 200:
+                continue
+            for ch in (((r.json() or {}).get('data') or {}).get('children') or []):
+                d = ch.get('data') or {}
+                pid = d.get('id')
+                if pid and pid not in seen and (d.get('created_utc') or 0) >= cutoff:
+                    seen.add(pid)
+                    cnt += 1
+        return {'count': cnt}
+    except Exception:
+        return None
+
+
+def _fetch_google_trends(term, timeout=4):
+    """Best-effort Google Trends latest interest (0-100) via pytrends. None if pytrends is missing or
+    trends.google.com is blocked/throttled (so it's an inert no-op until pytrends is added to reqs)."""
+    try:
+        from pytrends.request import TrendReq
+        py = TrendReq(hl='en-US', tz=0, timeout=(timeout, timeout))
+        py.build_payload([term], timeframe='now 7-d')
+        df = py.interest_over_time()
+        if df is None or df.empty or term not in df:
+            return None
+        return int(df[term].iloc[-1])
+    except Exception:
+        return None
+
+
+_SOCIAL_DIAG = {'us': True, 'psx': True}   # one per-market reachability probe line
+
+
+def _tce_social(ticker, market='us'):
+    """Retail social-buzz read, DISPLAY-ONLY. US -> StockTwits (volume + sentiment); PSX -> Reddit
+    (incl. r/PakStockExchange) + Google Trends. Providers run concurrently; each fails fast + graceful.
+    Returns {count, sentiment, trends, src[], flag}. Never raises."""
+    import concurrent.futures as _cf
+    out = {'count': 0, 'sentiment': None, 'trends': None, 'src': [], 'flag': 0}
+    try:
+        with _cf.ThreadPoolExecutor(max_workers=3) as ex:
+            if market == 'us':
+                fut = {'stocktwits': ex.submit(_fetch_stocktwits, ticker)}
+            else:
+                fut = {'reddit': ex.submit(_fetch_reddit, ticker, market),
+                       'trends': ex.submit(_fetch_google_trends, ticker)}
+            res = {k: f.result() for k, f in fut.items()}
+    except Exception:
+        res = {}
+    if market == 'us':
+        st = res.get('stocktwits')
+        if st:
+            out['count'] = st['count']
+            out['sentiment'] = st['sentiment']
+            if st['count'] > 0:
+                out['src'].append('stocktwits')
+        out['flag'] = 1 if out['count'] >= 5 else 0
+    else:
+        rd = res.get('reddit')
+        tr = res.get('trends')
+        if rd:
+            out['count'] = rd['count']
+            if rd['count'] > 0:
+                out['src'].append('reddit')
+        if tr is not None:
+            out['trends'] = tr
+            if tr >= 1:
+                out['src'].append('gtrends')
+        out['flag'] = 1 if (out['count'] >= 2 or (out['trends'] or 0) >= 50) else 0
+    if _SOCIAL_DIAG.get(market):
+        _SOCIAL_DIAG[market] = False
+        try:
+            log('  [social diag %s] %s -> count=%s sentiment=%s trends=%s src=%s' %
+                (market, ticker, out['count'], out['sentiment'], out['trends'], ','.join(out['src']) or 'none'))
+        except Exception:
+            pass
+    return out
 
 
 def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None,
@@ -7160,7 +7299,7 @@ def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None
     # Adds CONFIRMATION: s1_news_sources = # providers independently reporting this stock; >=2 sets
     # s1_news_confirmed. Hard-timeout fast-fail (no hang).
     try:
-        _ni = _tce_news(ticker)
+        _ni = _tce_news(ticker, market)
         recent = _ni['count']
         streams['s1_news_count'] = recent
         streams['s1_news_sources'] = _ni['sources']
@@ -7170,6 +7309,22 @@ def compute_tce_streams(ticker, market='us', spy_6mo_ret=None, prev_rev_est=None
             streams['s1_news'] = 1
         if recent >= 8:
             streams['s2_sponsor'] = 1
+    except Exception:
+        pass
+
+    # s13_social — retail buzz, DISPLAY-ONLY (NOT in COUNTED -> can't move total/conviction/tier, same
+    # guarantee as s2_sponsor). US: StockTwits volume+sentiment; PSX: Reddit + Google Trends.
+    try:
+        _sc = _tce_social(ticker, market)
+        streams['s13_social_count'] = _sc['count']
+        if _sc['sentiment'] is not None:
+            streams['s13_social_sentiment'] = _sc['sentiment']
+        if _sc['trends'] is not None:
+            streams['s13_social_trends'] = _sc['trends']
+        if _sc['src']:
+            streams['s13_social_src'] = ','.join(_sc['src'])
+        if _sc.get('flag'):
+            streams['s13_social'] = 1
     except Exception:
         pass
 
