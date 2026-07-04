@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.157.0'  # 1.157.0: TCE s1_news RSS fetch retries up to 3x on an empty/bozo response -- under the v1.156.0 concurrent pool a transient empty occasionally dropped a real s1_news (PSX FFC), which the serial run always caught; retry restores serial parity, healthy names still fetch once (no added cost), genuinely news-less stays 0. Data-robustness only, no threshold touched.  # 1.156.0: (SPEED) TCE per-name scoring now runs CONCURRENTLY (ThreadPoolExecutor, TCE_WORKERS=3) instead of one-at-a-time -- the ~137s TCE phase (46% of the run) is network-bound (news RSS + SEC EDGAR + per-name Yahoo .info/estimates), each name independent. ex.map preserves order + tce_results sorted deterministically -> tiers/scores BYTE-IDENTICAL to serial, ONLY execution order changes (freeze-safe). Per-name time.sleep(YF_DELAY) dropped. _swallow lock-guarded so the tce.fetch canary stays accurate under threads. CANARY (confirm parity on runner): tce.fetch stays 2, US TCE HIGH stays 8, PSX HIGH stays 3. TCE_WORKERS=1 reverts to serial.  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
+SCAN_VERSION = '1.158.0'  # 1.158.0: (Yahoo->SEC/TV cutover) THREE swaps, all PRIMARY-with-fallback so nothing blanks and the scan run is its own test. (1) SEC EDGAR companyfacts is now the PRIMARY source for the 14-survivor EPS-growth enrichment (FY diluted-EPS YoY off data.sec.gov) -- kills the ~27s Yahoo income_stmt call; Yahoo stays the fallback for names SEC can't fill; [SEC] log lines reveal runner reachability + hit rate. (2) DXY now TradingView-PRIMARY (TVC:DXY via /symbol scan, SMA200/RSI) merged into the metals loop -> Yahoo fallback if no SMA200 -- pulls the Dollar Index off Yahoo. (3) USD/PKR now TradingView-PRIMARY for spot (FX_IDC:USDPKR) with Yahoo for the trend series + fallback spot. New helpers: fetch_index_tv (index/forex /symbol scan), _sec_cik_map + fetch_sec_eps_growth. Freeze-safe (TCE untouched; Explosive scored screen NOT changed this version -- its OP-accel income_stmt swap is the next step pending this run's [SEC] reachability confirmation, since it shifts a scored screen). CANARY: tce.fetch=2, US HIGH=8, PSX HIGH=3 unchanged.  # 1.157.0: TCE s1_news RSS fetch retries up to 3x on an empty/bozo response -- under the v1.156.0 concurrent pool a transient empty occasionally dropped a real s1_news (PSX FFC), which the serial run always caught; retry restores serial parity, healthy names still fetch once (no added cost), genuinely news-less stays 0. Data-robustness only, no threshold touched.  # 1.156.0: (SPEED) TCE per-name scoring now runs CONCURRENTLY (ThreadPoolExecutor, TCE_WORKERS=3) instead of one-at-a-time -- the ~137s TCE phase (46% of the run) is network-bound (news RSS + SEC EDGAR + per-name Yahoo .info/estimates), each name independent. ex.map preserves order + tce_results sorted deterministically -> tiers/scores BYTE-IDENTICAL to serial, ONLY execution order changes (freeze-safe). Per-name time.sleep(YF_DELAY) dropped. _swallow lock-guarded so the tce.fetch canary stays accurate under threads. CANARY (confirm parity on runner): tce.fetch stays 2, US TCE HIGH stays 8, PSX HIGH stays 3. TCE_WORKERS=1 reverts to serial.  # 1.155.0: (Phase 1 Yahoo->TV cont.) the 5 metals (Gold/Silver/Platinum/Palladium/Copper) now TradingView-PRIMARY via fetch_metals_tv (futures scan: COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1! -> close+SMA50+SMA200+RSI in ONE POST); ma_trend/cross/ext derived here, WoW/MoM/QoQ+sparkline kept live via a maintained date-deduped daily-close series (_push_hist/_hist_trend, seeded from last-good hist). Yahoo is the per-metal FALLBACK (full 1y history, identical technicals) when TV lacks SMA200 -> never blanks. DXY stays Yahoo (TV sym TBD). Tab-12 metal technicals may shift ~1-3% vs old Yahoo-computed (TV continuous-contract series) -- owner-approved. Freeze-safe (metals feed Tab12/COT, not TCE).  # 1.154.0: (Phase 1 Yahoo->TV) live oil now TradingView-PRIMARY (NYMEX:CL1!/ICEEUR:BRN1! futures scan, proven reachable) with Yahoo->FRED fallback; oil trend carried from last-good when TV serves spot (never blank). Cuts Yahoo crumb-poisoning surface. Metals/DXY/USDPKR deferred: TV precomputed-indicator swap shifts Tab-12 numbers, pending owner OK.  # 1.153.0: (World ETF Tab-16 Metals ETC Watch) WisdomTree Physical Precious Metals (JE00B1VS3W29) added as rank 7 -- the first DIVERSIFIED precious-metals basket ETC on the list (the other 6 are single-metal). Jersey-domiciled physical debt security, LBMA/LPPA good-delivery gold+silver+platinum+palladium, custodian HSBC; pays no dividend. TER web-confirmed 0.44% (WisdomTree factsheet + justETF). Lists LSE (USD PHPM / GBP PHPP) + Xetra/Euronext (EUR) so live price/YTD auto-resolve through the existing etf_metals_etc_watch enrichment loop (uk/germany/netherlands scan) -- no new plumbing. TAX NOTE (owner-requested, established from primary sources): for a UAE-resident non-UK/non-US person this ETC sits OUTSIDE both US estate tax (non-US-situs) and UK IHT -- UK situs of a registered security is where the register is kept (HMRC IHTM27121), i.e. Jersey, NOT where it lists; the LSE listing is irrelevant to situs. Display/data-only, freeze-safe.   # 1.152.0: iShares holdings now issuer-DIRECT -- dropped the v1.151 product-screener (500'd on runner); 5 iShares ISINs pinned to (PID,slug) -> fund's own daily holdings CSV, no screener hop, collision-proof; [diag] logs HTTP+holding count per fund
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
 
 YF_DELAY          = 0.35
@@ -108,6 +108,8 @@ KSE_MIN, KSE_MAX = 50_000, 500_000
 
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/124.0 Safari/537.36')
+# SEC EDGAR fair-access policy asks for a descriptive UA with contact (10 req/s cap).
+SEC_UA = 'PortfolioIntelDashboard admin contact@example.com'
 
 DEFAULT_DATA = {
     'meta': {'scan_version': SCAN_VERSION, 'last_scan_utc': None,
@@ -1454,16 +1456,32 @@ def fetch_psx_macros():
             out['kse100'] = None
             warn('KSE-100 unavailable and no last-good value')
 
+    # USD/PKR: v1.158.0 TradingView-PRIMARY for spot (FX_IDC:USDPKR), Yahoo for the trend series
+    # + fallback spot. If TV serves the level, Yahoo still supplies WoW/MoM trend; if TV misses,
+    # Yahoo carries both; if Yahoo is rate-limited, TV spot still stands. Never blanks.
+    _pk_tv = None
+    try:
+        _pk = fetch_index_tv({'usd_pkr': 'FX_IDC:USDPKR'})
+        _v = (_pk.get('usd_pkr') or {}).get('px')
+        if _v and 200 < _v < 400:
+            _pk_tv = _v
+            out['usd_pkr'] = _v
+            out['usd_pkr_source'] = 'tradingview:FX_IDC:USDPKR'
+            log(f'  ✓ USD/PKR (TV FX_IDC:USDPKR): {_v}')
+    except Exception as e:
+        log(f'  · USD/PKR TV miss (Yahoo fallback): {str(e)[:60]}')
     try:
         import yfinance as yf
         h = yf.Ticker('USDPKR=X').history(period='6mo')
         if len(h) > 0:
-            out['usd_pkr'] = round(float(h['Close'].iloc[-1]), 2)
+            if _pk_tv is None:
+                out['usd_pkr'] = round(float(h['Close'].iloc[-1]), 2)
+                log(f'  ✓ USD/PKR (Yahoo fallback): {out["usd_pkr"]}')
             for _tk,_tv in _series_trend([round(float(x),2) for x in h['Close'].values[-64:]], w=(5,21,63)).items():
                 out['usd_pkr_'+_tk] = _tv
-            log(f'  ✓ USD/PKR: {out["usd_pkr"]}')
     except Exception as e:
-        warn(f'USD/PKR failed: {e}')
+        if _pk_tv is None:
+            warn(f'USD/PKR failed: {e}')
 
     try:
         r = _retry_get('https://www.sbp.org.pk/m_policy/index.asp',
@@ -2417,6 +2435,108 @@ def fetch_metals_tv(symmap):
     return out
 
 
+def fetch_index_tv(symmap):
+    """v1.158.0 — TradingView-PRIMARY for index/forex symbols (DXY, USD/PKR) via the /symbol
+    scan (the same POST primitive proven for oil/metals; /symbol handles non-futures). Returns
+    {key:{'px','sma50','sma200','rsi'}} for whatever resolved with a sane price; the caller
+    Yahoo-fallbacks anything missing so nothing ever blanks."""
+    want = {v: k for k, v in symmap.items()}          # tvsym -> our key
+    out = {}
+    if not want:
+        return out
+    try:
+        payload = {'symbols': {'tickers': list(want.keys())},
+                   'columns': ['close', 'SMA50', 'SMA200', 'RSI']}
+        r = requests.post('https://scanner.tradingview.com/symbol',
+                          json=payload, headers={'User-Agent': UA}, timeout=20)
+        if r.status_code == 200:
+            for d in r.json().get('data', []):
+                key = want.get(d.get('s'))
+                if not key:
+                    continue
+                vals = d.get('d', []) or []
+                def _f(i):
+                    try:
+                        return float(vals[i])
+                    except (TypeError, ValueError, IndexError):
+                        return None
+                px, s50, s200, rsi = _f(0), _f(1), _f(2), _f(3)
+                if px is not None and px > 0:
+                    out[key] = {'px': round(px, 2),
+                                'sma50':  round(s50, 2)  if s50  is not None else None,
+                                'sma200': round(s200, 2) if s200 is not None else None,
+                                'rsi':    round(rsi, 1)  if rsi  is not None else None}
+        else:
+            log(f'  · index TV fetch HTTP {r.status_code} (Yahoo fallback)')
+    except Exception as e:
+        log(f'  · index TV fetch miss (Yahoo fallback): {str(e)[:70]}')
+    return out
+
+
+# --- SEC EDGAR companyfacts: free authoritative US statements (replaces slow Yahoo income_stmt) ---
+_SEC_CIK_MAP = None
+
+
+def _sec_cik_map():
+    """ticker -> CIK (10-digit), fetched once per run and memoized. Empty dict if SEC is
+    unreachable from the runner (then every SEC EPS call returns None -> Yahoo fallback)."""
+    global _SEC_CIK_MAP
+    if _SEC_CIK_MAP is not None:
+        return _SEC_CIK_MAP
+    _SEC_CIK_MAP = {}
+    try:
+        r = requests.get('https://www.sec.gov/files/company_tickers.json',
+                         headers={'User-Agent': SEC_UA}, timeout=25)
+        if r.status_code == 200:
+            for _, row in r.json().items():
+                _SEC_CIK_MAP[str(row['ticker']).upper()] = int(row['cik_str'])
+            log(f'  [SEC] CIK map loaded: {len(_SEC_CIK_MAP)} tickers (data.sec.gov reachable)')
+        else:
+            log(f'  [SEC] CIK map HTTP {r.status_code} — SEC EPS disabled this run (Yahoo fallback)')
+    except Exception as e:
+        log(f'  [SEC] CIK map fetch failed: {str(e)[:80]} — Yahoo fallback')
+    return _SEC_CIK_MAP
+
+
+def fetch_sec_eps_growth(ticker):
+    """SEC EDGAR companyfacts -> latest full-year diluted-EPS YoY growth %.
+    Returns None if unavailable (caller falls back to Yahoo income_stmt). Annual figures only
+    (frame CYxxxx without a quarter, or form 10-K / fp FY), deduped by fiscal year."""
+    cik = _sec_cik_map().get(str(ticker).upper())
+    if not cik:
+        return None
+    try:
+        r = requests.get(f'https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json',
+                         headers={'User-Agent': SEC_UA}, timeout=25)
+        if r.status_code != 200:
+            return None
+        facts = r.json().get('facts', {}).get('us-gaap', {})
+        node = facts.get('EarningsPerShareDiluted') or facts.get('EarningsPerShareBasic')
+        if not node:
+            return None
+        units = node.get('units', {})
+        arr = units.get('USD/shares') or (next(iter(units.values()), []) if units else [])
+        fy = {}
+        for x in arr:
+            fr = x.get('frame', '') or ''
+            is_annual = (fr.startswith('CY') and 'Q' not in fr) or \
+                        (x.get('form') == '10-K' and x.get('fp') == 'FY')
+            if is_annual and x.get('val') is not None and x.get('fy') is not None:
+                try:
+                    fy[int(x['fy'])] = float(x['val'])
+                except (TypeError, ValueError):
+                    continue
+        if len(fy) < 2:
+            return None
+        yrs = sorted(fy.keys())
+        curr, prev = fy[yrs[-1]], fy[yrs[-2]]
+        if prev == 0:
+            return None
+        return round((curr - prev) / abs(prev) * 100, 1)
+    except Exception:
+        return None
+
+
 def fetch_metals():
     """
     Fetches all data for Tab 12:
@@ -2444,6 +2564,12 @@ def fetch_metals():
     _metals_tv_sym = {'gold_px': 'COMEX:GC1!', 'silver_px': 'COMEX:SI1!', 'platinum_px': 'NYMEX:PL1!',
                       'palladium_px': 'NYMEX:PA1!', 'copper_px': 'COMEX:HG1!'}
     _tvmet = fetch_metals_tv(_metals_tv_sym)
+    # v1.158.0: DXY is an INDEX (not a future) -> resolve it via the /symbol scan and merge into
+    # the same _tvmet dict so the loop below treats it identically (TV-primary, Yahoo fallback if
+    # no SMA200). Pulls the Dollar Index off Yahoo. TVC:DXY is the ICE dollar index on TradingView.
+    _dxy_tv = fetch_index_tv({'dxy': 'TVC:DXY'})
+    if _dxy_tv.get('dxy'):
+        _tvmet['dxy'] = _dxy_tv['dxy']
     _today_str = str(dt.date.today())
     yahoo_tickers = {
         'gold_px':      'GC=F',
@@ -3657,6 +3783,25 @@ def screen_us_universe():
     if eps_missing:
         log(f'  Fetching income_stmt EPS for {len(eps_missing)} survivors missing earningsGrowth...')
 
+        # v1.158.0: SEC EDGAR companyfacts FIRST (free, authoritative, fast) -> fills FY diluted-EPS
+        # YoY growth; only names SEC can't fill fall through to the slow Yahoo income_stmt path. This
+        # is the swap that kills the ~27s Yahoo enrichment (and doubles as the SEC reachability probe:
+        # the [SEC] log lines show whether data.sec.gov is reachable + the hit rate). Yahoo stays the
+        # fallback so nothing regresses if SEC is blocked from the runner.
+        _eps_total = len(eps_missing)
+        sec_hits = 0
+        _sec_remaining = []
+        for c in eps_missing:
+            g = fetch_sec_eps_growth(c['ticker'])
+            if g is not None:
+                c['eps_growth'] = g
+                c['growth_source'] = 'sec_edgar'
+                sec_hits += 1; eps_hits += 1
+            else:
+                _sec_remaining.append(c)
+        log(f'    [SEC EPS] filled {sec_hits}/{_eps_total} from SEC EDGAR; {len(_sec_remaining)} -> FMP/Yahoo fallback')
+        eps_missing = _sec_remaining   # FMP/Yahoo below now only work the SEC-unfilled remainder
+
         def _fmp_eps_pick(row):
             # tolerant to FMP field naming (epsDiluted / epsdiluted / eps); prefer diluted
             for k in ('epsDiluted', 'epsdiluted', 'epsDilutedTTM', 'eps'):
@@ -3742,7 +3887,7 @@ def screen_us_universe():
                     except Exception:
                         time.sleep(3)   # backoff, then one retry
                 time.sleep(YF_DELAY)
-        log(f'  EPS enriched {eps_hits}/{len(eps_missing)} previously-None survivors (FMP {fmp_hits}, Yahoo {yf_hits})')
+        log(f'  EPS enriched {eps_hits}/{_eps_total} previously-None survivors (SEC {sec_hits}, FMP {fmp_hits}, Yahoo {yf_hits})')
     else:
         log('  All survivors already have EPS growth from Yahoo info')
 
