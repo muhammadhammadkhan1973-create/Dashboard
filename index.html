@@ -369,7 +369,7 @@
     </details>
   </div>
   <div id="topdown" class="panel"><h2 class="section-title">Top-Down Engine (M1)</h2>
-    <div style="color:var(--grey-d);font-size:13px;margin-bottom:10px;">The M1 funnel: macro regime &rarr; business-cycle phase &rarr; favored sectors &rarr; the live names inside them with their IM3 grades and TCE tiers. This tab is the synchronizing-spine join (favored-sector half) and the top-down engine shell; the largest-cap universe cut and the quick quality split are now live via the keystone; the strict 61% Track-B gate and Track-A ranking run next on the survivors. Reads live data only &mdash; it never changes a grade, valuation, TCE tier or screen.</div>
+    <div style="color:var(--grey-d);font-size:13px;margin-bottom:10px;"><b>What this tab does:</b> it finds stocks the top-down way &mdash; from the big economic picture down to specific names &mdash; in four steps: <b>(1)</b> read where the economy is right now, <b>(2)</b> pick the sectors that phase usually favors, <b>(3)</b> list the strongest stocks inside those sectors, <b>(4)</b> squeeze that to a final short list of buys. <b>What you get:</b> the strongest stocks in the sectors today&rsquo;s economy favors. It only reads live data &mdash; it never changes any stock&rsquo;s grade, valuation, conviction tier or whether it&rsquo;s screened.</div>
     <div id="td_body"></div>
   </div>
   <div id="sectors" class="panel"><div id="sei_lei_context"></div><h2 class="section-title">Sector &amp; Stock Implications</h2><div id="sectors_booming_strip" style="margin:0 0 16px 0;"></div><h3 class="subsection-title" style="color:#0A3161;">US Sectors</h3><div style="font-size:11px;color:var(--grey-d);border-left:3px solid #0A3161;padding-left:9px;margin:2px 0 8px;">Under each sector is a plain <b>vs-market summary</b> &mdash; how pricey it is, how profitable, and which way it&rsquo;s heading &mdash; measured against the average across all US sectors, shown as a one-line read plus three quick tags. <b>P/E (price-to-earnings)</b> is how many dollars you pay for each $1 of a company&rsquo;s yearly profit, so a higher number means investors expect faster growth (or the stock is dearer) and a lower number means modest expectations (or a possible bargain) &mdash; a quick gauge of how pricey a sector is for what it earns. Each summary also shows a small <b>quarter trend line</b> (the sector&rsquo;s price path over the last three months) and, where analyst coverage exists, a <b>forward</b> read of the total return (analysts&rsquo; price-target gain plus dividend yield) expected over the next quarter and six months.</div><div id="us_sectors"></div><h3 class="subsection-title" style="color:#0A3161;">US Sector Trend — 200-DMA Breadth</h3><div id="us_sector_breadth"></div><div id="psx_sectors_booming_strip2" style="margin:0 0 10px 0;"></div><h3 class="subsection-title" style="color:#065F46;">PSX Sectors</h3><div style="font-size:11px;color:var(--grey-d);border-left:3px solid #065F46;padding-left:9px;margin:2px 0 8px;">Each PSX sector carries the same plain <b>vs-market summary</b> &mdash; how pricey, how profitable, and which way it&rsquo;s heading versus the average across all Pakistan sectors &mdash; with a small <b>quarter trend line</b> and, where analyst coverage exists, a <b>forward</b> read of the total return (analysts&rsquo; price-target gain plus dividend yield) expected over the next quarter and six months. Thin sectors (few covered names) show the price trend but leave P/E or profitability blank rather than guess.</div><div id="psx_sectors"></div><h3 class="subsection-title" style="color:#065F46;">PSX Sector Trend — 200-DMA Breadth</h3><div id="psx_sector_breadth"></div><h3 class="subsection-title">Top Picks</h3><div id="top_picks"></div></div>
@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.154</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.155</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5440,17 +5440,17 @@ function renderTopDown(){
   function namesForGics(g){var out=names.filter(function(r){return gicsOf(r.sector)===g;});out.sort(function(a,b){var pa=(a.im3&&a.im3.pct!=null)?a.im3.pct:-1,pb=(b.im3&&b.im3.pct!=null)?b.im3.pct:-1;return pb-pa;});return out;}
   var html='';
   html+='<div class="reading-box" style="border-left:4px solid var(--navy);margin-bottom:10px;">'
-      +'<strong>Macro regime: '+reg.name+'</strong> &mdash; business-cycle phase: <b>'+phase+'</b>. '
-      +'Growth axis = yield-curve slope '+(isNaN(ycSlope)?'n/a':((ycSlope>=0?'+':'')+(ycSlope*100).toFixed(0)+'bps'))+', inflation = core PCE '+(isNaN(pce)?'n/a':pce+'%')+'. '
-      +'Phase tilt: <b>'+tilt+'</b>.<br><span style="color:var(--grey-d);">Stages 1\u20133 of the M1 funnel. The layer below joins each favored sector to its live names + grades.</span></div>';
+      +'<b>Step 1 &mdash; where the economy is now:</b> <strong>'+reg.name+'</strong> &mdash; phase <b>'+phase+'</b>. '
+      +'Read from two dials: growth = the yield-curve slope '+(isNaN(ycSlope)?'n/a':((ycSlope>=0?'+':'')+(ycSlope*100).toFixed(0)+'bps'))+', inflation = core PCE '+(isNaN(pce)?'n/a':pce+'%')+'. '
+      +'Step 2 &mdash; sectors this phase favors: <b>'+tilt+'</b>.<br><span style="color:var(--grey-d);">Below, Step 3 lists the strongest actual stocks inside each favored sector.</span></div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">';
   comp.forEach(function(c){var bg=c.live?(c.trig?'var(--red-l)':'var(--green-l)'):'var(--grey-l)';var bc=c.live?(c.trig?'var(--red)':'var(--green)'):'#d8d8e0';html+='<div style="flex:1;min-width:150px;border:1px solid '+bc+';background:'+bg+';border-radius:8px;padding:8px 10px;"><div style="font-size:12px;color:var(--grey-d);">'+c.k+'</div><div style="font-weight:600;font-size:13px;">'+c.txt+'</div></div>';});
   html+='</div>';
-  html+='<div class="reading-box" style="margin-bottom:12px;font-size:13px;"><b>Leading score (0\u20134): '+trigN+' recession flag'+(trigN===1?'':'s')+' of '+liveN+' live inputs.</b> '
-      +'Yield curve + HY spread are live; Conference Board LEI and ISM PMI are feed-pending (the full 0\u20134 score completes when those land). COT context \u2014 '
+  html+='<div class="reading-box" style="margin-bottom:12px;font-size:13px;"><b>Early-warning check: '+trigN+' recession flag'+(trigN===1?'':'s')+' of '+liveN+' live inputs.</b> '
+      +'Two are live (the yield curve and the high-yield credit spread); two more (a leading-indicator index and a factory-activity survey) are still being wired in. Below is where big futures traders are positioned on the major markets \u2014 context only: '
       +[cotTxt('SP500'),cotTxt('NASDAQ'),cotTxt('Russell'),cotTxt('DJIA'),cotTxt('10yr'),cotTxt('VIX'),cotTxt('Crude'),cotTxt('NatGas'),cotTxt('Agriculture')].join(' \u00b7 ')+'.</div>';
-  html+='<h3 class="subsection-title" style="color:#0A3161;">Favored sectors \u2192 live names (the join)</h3>';
-  html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:8px;">Regime-favored sectors only, each expanded to its actual scanned names ranked by IM3 strength, with the TCE conviction tier where one exists. Chip colour = IM3 grade (green A \u00b7 navy B \u00b7 amber C \u00b7 red FAIL). This is the favored-sector half of the synchronizing spine \u2014 a strong sector now names its strong stocks.</div>';
+  html+='<h3 class="subsection-title" style="color:#0A3161;">Step 3 &mdash; strongest stocks in each favored sector</h3>';
+  html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:8px;">Only the favored sectors from Step 2, each opened up to its actual stocks, strongest first. <b>Chip colour = business-strength grade</b>: green = A (strongest), navy = B, amber = C, red = fail. A <b>HIGH</b> or <b>WATCH</b> tag after a name is our early-signal conviction level, where the stock has one. In each sector&rsquo;s header, <b>breadth</b> = the share of that sector&rsquo;s stocks trading above their long-term (200-day) average price (a health gauge), and <b>Zacks #1/#2</b> = the share the Zacks service currently rates a top buy.</div>';
   favored.forEach(function(g){
     var bp=gBpct(g),z=zs[g]||{};
     var zTxt=(z.pct_top!=null)?('Zacks #1/#2 '+z.pct_top+'%'+(z.pct_top_chg!=null?(' ('+(z.pct_top_chg>=0?'+':'')+z.pct_top_chg+')'):'')):'Zacks n/a';
@@ -5465,13 +5465,13 @@ function renderTopDown(){
   var _mu=(LIVE&&LIVE.m2_universe)||null;
   if(_mu&&_mu.n_universe){
     var _disc=Array.isArray(_mu.disciplined)?_mu.disciplined:[];
-    html+='<h3 class="subsection-title" style="color:#0A3161;">Universe quality pass \u2014 largest-cap cut + split</h3>';
+    html+='<h3 class="subsection-title" style="color:#0A3161;">Step 3b &mdash; the biggest companies that pass a quick quality check</h3>';
     html+='<div class="reading-box" style="margin-bottom:8px;font-size:13px;">'
-        +'<b>'+(_mu.n_universe||0).toLocaleString()+'</b> largest-cap companies ($2bn+) scored on a quick quality read (revenue growth \u00b7 earnings growth \u00b7 return on capital \u00b7 6-month trend) \u2192 '
-        +'<b style="color:var(--green);">'+(_mu.n_disciplined||0).toLocaleString()+'</b> clear the loose first cut ('+_mu.gate+'+) and <b style="color:var(--grey-d);">'+(_mu.n_speculative||0).toLocaleString()+'</b> route to the watch / turnaround side. '
-        +'This first pass is deliberately generous; the strict <b>61% quality gate</b> then runs name-by-name on the survivors. '
-        +'<span style="color:var(--grey-d);">The disciplined side seeds the 70% safe sleeve; the watch side feeds the 30% turnaround sleeve.</span></div>';
-    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:8px;">Each favored sector below now names its <b>top-quality large-caps</b> from that pass \u2014 the funnel\u2019s promised step from a favored sector to the strong established companies inside it, ranked by the quality score (highest first).</div>';
+        +'<b>'+(_mu.n_universe||0).toLocaleString()+'</b> of the biggest companies ($2bn+) get a quick quality score (sales growth, profit growth, return on capital, 6-month price trend) \u2192 '
+        +'<b style="color:var(--green);">'+(_mu.n_disciplined||0).toLocaleString()+'</b> pass this first easy check (score '+_mu.gate+'+) and <b style="color:var(--grey-d);">'+(_mu.n_speculative||0).toLocaleString()+'</b> fall to the watch / turnaround side. '
+        +'This first pass is deliberately easy; a much stricter quality bar then runs on the survivors, one by one. '
+        +'<span style="color:var(--grey-d);">The pass-side feeds the steady 70% part of a portfolio; the watch-side feeds the riskier 30% turnaround part.</span></div>';
+    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:8px;">Each favored sector below now lists its <b>strongest big companies</b> from that check, best score first \u2014 the large, established names (the list further up holds the smaller, faster-growing ones).</div>';
     favored.forEach(function(g){
       var _rows=_disc.filter(function(r){return gicsOf(r.sector)===g;});
       _rows.sort(function(a,b){return (b.score||0)-(a.score||0);});
@@ -5483,7 +5483,7 @@ function renderTopDown(){
       html+='<div style="border:1px solid #e3e3ee;border-radius:10px;padding:9px 12px;margin-bottom:8px;"><div style="font-weight:700;color:var(--ink);font-size:13.5px;margin-bottom:4px;">'+g+' <span style="font-size:11px;color:var(--grey-d);font-weight:400;">'+_rows.length+' in top-quality tier'+_more+'</span></div><div>'+_chips+'</div></div>';
     });
   }
-  html+='<div class="reading-box" style="margin-top:10px;border-left:4px solid var(--gold);font-size:12.5px;"><b>Still ahead in the funnel:</b> on the disciplined survivors above, run the strict <b>Track-B 61% quality gate</b> name-by-name (the full 122-point scorecard via the deep scorer), then the Track-A valuation rank, the Zacks three-lock and the fund-overlap confirm \u2192 the final 5\u20138 buys. The largest-cap cut and the quick quality split are now <b>live</b> (the keystone). Pakistan top-down (rate-sensitivity favored sectors \u2192 PSX names + bank grades) is the next render addition.</div>';
+  html+='<div class="reading-box" style="margin-top:10px;border-left:4px solid var(--gold);font-size:12.5px;"><b>Step 4 &mdash; still being wired in:</b> take the companies that passed above, put each through the strict quality bar (the full 122-point scorecard), then rank them on value, and confirm with the Zacks rating and big-fund ownership \u2192 the final <b>5\u20138 buys</b>. Steps 1\u20133 are live now; this last auto-narrowing to a buy list is the piece still to come. A Pakistan version of this tab (which PSX sectors the interest-rate backdrop favors, plus their stocks and bank grades) is next.</div>';
   host.innerHTML=html;
 }
 
