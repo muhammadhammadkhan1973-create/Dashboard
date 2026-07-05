@@ -577,6 +577,10 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #0F766E;padding-left:9px;margin:2px 0 12px;">Live prices via TradingView Scanner (LSE in USD, XETRA in EUR). YTD returns from ETF catalog (as of data collection date). Double-confirmed picks carry a &#9733; badge.</div>
     <div id="we_engine_recs_main"></div>
 
+    <h3 class="subsection-title" style="margin-top:24px;">Explosive Recommended ETFs &mdash; from the Dashboard</h3>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #DC2626;padding-left:9px;margin:2px 0 12px;">The UCITS ETF proxies for the dashboard&rsquo;s <strong>both-signal Explosive</strong> names (US + PSX from Tab 10), tracked separately here so the engine&rsquo;s own country/sector picks above stay distinct from what the stock screen is surfacing. Each ETF is priced live &mdash; YTD, 1-year, and today&rsquo;s move (same TradingView resolver as every fund on this tab) &mdash; and lists the Explosive names it stands in for. These are sector/region proxies (the <strong>Match</strong> column shows how close), chosen so you can take the exposure in a tax-efficient UCITS wrapper rather than buying a single US-listed name.</div>
+    <div id="world_explosive_etf_box"></div>
+
     <h3 class="subsection-title" style="margin-top:24px;">Momentum-40 &mdash; Non-Leveraged ETFs Already Up &ge;40% YTD</h3>
     <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">Independent watchlist &mdash; tracked separately from the engine&rsquo;s own recommendations, <strong>not</strong> engine picks. 55 non-leveraged UCITS products (including 1 crypto ETP, owner-confirmed) with YTD &ge;35% from ETF_Universe_8.xlsx, grouped below by category so you can see at a glance which are country plays (Korea, Taiwan, Japan) versus sector/theme plays (Technology, Clean Energy, Emerging Markets ex-China). Plus 5 more: the top Nasdaq-100 UCITS ETFs by trailing 1-year return, added by request even though all 18 real Nasdaq-100 funds in the source file sit at 18.74&ndash;20.19% YTD &mdash; well under the 35% bar the rest of this list holds to. They&rsquo;re numbered and badged separately so that distinction stays visible, not blended into the &ldquo;&ge;35%&rdquo; claim above. Each fund shows TER, 1-year return where the source data has it, and major holdings. Leveraged/short products excluded.</div>
     <div id="we_momentum40_main"></div>
@@ -593,7 +597,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.150</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.151</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -4680,10 +4684,14 @@ function _rIdxRet(map,firstDate){
 // the SAME window (the gap = alpha). A dropped pick freezes at its last-known figures rather
 // than disappearing. Separate from the existing stock tracker below -- this is ETFs, not stocks.
 // =========================================================
-function renderExplosiveEtfTracker(){
+function renderExplosiveEtfTracker(elId, showIntro){
   // Reads LIVE.explosive_etf_tracker (scanner v1.182.0): the UCITS proxy ETFs of the BOTH-SIGNAL
-  // Explosive names (US+PSX), each with live YTD / 1Y / today's move.
-  var el=document.getElementById('explosive_etf_box'); if(!el) return;
+  // Explosive names (US+PSX), each with live YTD / 1Y / today's move. elId = target box; showIntro=true
+  // adds the intro card (Results tab) -- false renders the bare table (World ETF tab, where the h3
+  // heading lives in the HTML). Renders into either/both, same data.
+  elId = elId || 'explosive_etf_box';
+  if(showIntro===undefined) showIntro=true;
+  var el=document.getElementById(elId); if(!el) return;
   var T=(typeof LIVE!=='undefined'&&LIVE&&Array.isArray(LIVE.explosive_etf_tracker))?LIVE.explosive_etf_tracker:null;
   if(!T||!T.length){
     el.innerHTML='<p style="color:var(--grey-d);font-size:12px;margin:0 0 16px;">Explosive &rarr; UCITS ETF tracking fills in after the scanner (v1.182.0+) has run and there is at least one both-signal Explosive name.</p>';
@@ -4694,9 +4702,9 @@ function renderExplosiveEtfTracker(){
   var daily=function(v){ if(typeof v!=='number') return '<span style="color:#94A3B8;">\u2014</span>';
     var up=v>=0; return '<span style="color:'+(up?'#15803D':'#B91C1C')+';font-weight:700;">'+(up?'\u25B2':'\u25BC')+' '+(up?'+':'')+v.toFixed(2)+'%</span>'; };
   var nTracked=T.reduce(function(a,r){return a+(r.n_stocks||0);},0);
-  var intro='<div style="background:linear-gradient(180deg,#F8FAFF 0%,#ffffff 100%);border:1px solid #E8EBF5;border-radius:14px;padding:16px 18px;margin:0 0 16px;">'
+  var intro=showIntro?('<div style="background:linear-gradient(180deg,#F8FAFF 0%,#ffffff 100%);border:1px solid #E8EBF5;border-radius:14px;padding:16px 18px;margin:0 0 16px;">'
     +'<div style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0F766E;margin-bottom:6px;">Explosive Picks \u2192 UCITS ETF Tracker</div>'
-    +'<div style="font-family:var(--font-body);font-size:13px;line-height:1.6;color:#475569;">Every <b style="color:#0F172A;">both-signal Explosive</b> name (US + PSX) is mapped to the closest UCITS-domiciled ETF \u2014 the tax-efficient way for you to take the exposure \u2014 and that ETF is tracked live here: <b style="color:#0F172A;">YTD</b>, <b style="color:#0F172A;">1-year</b>, and today\u2019s move, priced through the same TradingView resolver as Tab 16. The <b style="color:#0F172A;">Match</b> column shows how close the proxy is to the name\u2019s business (sector / region). <b style="color:#0F172A;">'+T.length+'</b> ETF'+(T.length===1?'':'s')+' currently proxy <b style="color:#0F172A;">'+nTracked+'</b> both-signal name'+(nTracked===1?'':'s')+'. Proxies, not the stock itself \u2014 a sector ETF will not capture a single name\u2019s full move.</div></div>';
+    +'<div style="font-family:var(--font-body);font-size:13px;line-height:1.6;color:#475569;">Every <b style="color:#0F172A;">both-signal Explosive</b> name (US + PSX) is mapped to the closest UCITS-domiciled ETF \u2014 the tax-efficient way for you to take the exposure \u2014 and that ETF is tracked live here: <b style="color:#0F172A;">YTD</b>, <b style="color:#0F172A;">1-year</b>, and today\u2019s move, priced through the same TradingView resolver as Tab 16. The <b style="color:#0F172A;">Match</b> column shows how close the proxy is to the name\u2019s business (sector / region). <b style="color:#0F172A;">'+T.length+'</b> ETF'+(T.length===1?'':'s')+' currently proxy <b style="color:#0F172A;">'+nTracked+'</b> both-signal name'+(nTracked===1?'':'s')+'. Proxies, not the stock itself \u2014 a sector ETF will not capture a single name\u2019s full move.</div></div>'):'';
   var body=T.map(function(r){
     var chips=(r.stocks_us||[]).map(function(t){return '<span style="display:inline-block;font-size:10px;font-weight:700;font-family:var(--font-mono);background:#EFF6FF;color:#1D4ED8;padding:1px 5px;margin:1px;border-radius:3px;">'+t+'</span>';})
       .concat((r.stocks_psx||[]).map(function(t){return '<span style="display:inline-block;font-size:10px;font-weight:700;font-family:var(--font-mono);background:#F0FDF4;color:#15803D;padding:1px 5px;margin:1px;border-radius:3px;" title="PSX">\uD83C\uDDF5\uD83C\uDDF0 '+t+'</span>';})).join('');
@@ -4716,7 +4724,7 @@ function renderExplosiveEtfTracker(){
     +'<thead><tr style="background:#EEF7F5;border-bottom:2px solid #99C2BA;">'
     +th('UCITS ETF (proxy)')+th('Match')+th('Both-signal names')+th('YTD','right')+th('1Y','right')+th('Today','right')
     +'</tr></thead><tbody>'+body+'</tbody></table></div>'
-    +'<div style="margin:24px 0 4px;border-top:2px solid #E5E7EB;"></div>';
+    +(showIntro?'<div style="margin:24px 0 4px;border-top:2px solid #E5E7EB;"></div>':'');
 }
 function renderEtfResultsTracker(){
   var el=document.getElementById('etf_results_box'); if(!el) return;
@@ -5108,7 +5116,8 @@ function applyLive(){
   renderCandidates('us_candidates_table',(LIVE&&Array.isArray(LIVE.us_candidates))?LIVE.us_candidates:[],'us');
   renderCandidates('psx_candidates_table',(LIVE&&Array.isArray(LIVE.psx_candidates))?LIVE.psx_candidates:[],'psx');
   renderRecession((LIVE&&LIVE.recession)?LIVE.recession:null);
-  try{renderExplosiveEtfTracker();}catch(e){if(window.console)console.warn('explosive etf tracker render',e);}
+  try{renderExplosiveEtfTracker('explosive_etf_box', true);}catch(e){if(window.console)console.warn('explosive etf tracker render',e);}
+  try{renderExplosiveEtfTracker('world_explosive_etf_box', false);}catch(e){if(window.console)console.warn('world explosive etf tracker render',e);}
   try{renderEtfResultsTracker();}catch(e){if(window.console)console.warn('etf results tracker render',e);}
   try{renderResults();}catch(e){if(window.console)console.warn('results render',e);}
   renderProfiles();
