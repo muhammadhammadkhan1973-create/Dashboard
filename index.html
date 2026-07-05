@@ -369,7 +369,7 @@
     </details>
   </div>
   <div id="topdown" class="panel"><h2 class="section-title">Top-Down Engine (M1)</h2>
-    <div style="color:var(--grey-d);font-size:13px;margin-bottom:10px;">The M1 funnel: macro regime &rarr; business-cycle phase &rarr; favored sectors &rarr; the live names inside them with their IM3 grades and TCE tiers. This tab is the synchronizing-spine join (favored-sector half) and the top-down engine shell; the largest-cap cut, Track-A ranking and the 61% split arrive with the scanner keystone. Reads live data only &mdash; it never changes a grade, valuation, TCE tier or screen.</div>
+    <div style="color:var(--grey-d);font-size:13px;margin-bottom:10px;">The M1 funnel: macro regime &rarr; business-cycle phase &rarr; favored sectors &rarr; the live names inside them with their IM3 grades and TCE tiers. This tab is the synchronizing-spine join (favored-sector half) and the top-down engine shell; the largest-cap universe cut and the quick quality split are now live via the keystone; the strict 61% Track-B gate and Track-A ranking run next on the survivors. Reads live data only &mdash; it never changes a grade, valuation, TCE tier or screen.</div>
     <div id="td_body"></div>
   </div>
   <div id="sectors" class="panel"><div id="sei_lei_context"></div><h2 class="section-title">Sector &amp; Stock Implications</h2><div id="sectors_booming_strip" style="margin:0 0 16px 0;"></div><h3 class="subsection-title" style="color:#0A3161;">US Sectors</h3><div style="font-size:11px;color:var(--grey-d);border-left:3px solid #0A3161;padding-left:9px;margin:2px 0 8px;">Under each sector is a plain <b>vs-market summary</b> &mdash; how pricey it is, how profitable, and which way it&rsquo;s heading &mdash; measured against the average across all US sectors, shown as a one-line read plus three quick tags. <b>P/E (price-to-earnings)</b> is how many dollars you pay for each $1 of a company&rsquo;s yearly profit, so a higher number means investors expect faster growth (or the stock is dearer) and a lower number means modest expectations (or a possible bargain) &mdash; a quick gauge of how pricey a sector is for what it earns. Each summary also shows a small <b>quarter trend line</b> (the sector&rsquo;s price path over the last three months) and, where analyst coverage exists, a <b>forward</b> read of the total return (analysts&rsquo; price-target gain plus dividend yield) expected over the next quarter and six months.</div><div id="us_sectors"></div><h3 class="subsection-title" style="color:#0A3161;">US Sector Trend — 200-DMA Breadth</h3><div id="us_sector_breadth"></div><div id="psx_sectors_booming_strip2" style="margin:0 0 10px 0;"></div><h3 class="subsection-title" style="color:#065F46;">PSX Sectors</h3><div style="font-size:11px;color:var(--grey-d);border-left:3px solid #065F46;padding-left:9px;margin:2px 0 8px;">Each PSX sector carries the same plain <b>vs-market summary</b> &mdash; how pricey, how profitable, and which way it&rsquo;s heading versus the average across all Pakistan sectors &mdash; with a small <b>quarter trend line</b> and, where analyst coverage exists, a <b>forward</b> read of the total return (analysts&rsquo; price-target gain plus dividend yield) expected over the next quarter and six months. Thin sectors (few covered names) show the price trend but leave P/E or profitability blank rather than guess.</div><div id="psx_sectors"></div><h3 class="subsection-title" style="color:#065F46;">PSX Sector Trend — 200-DMA Breadth</h3><div id="psx_sector_breadth"></div><h3 class="subsection-title">Top Picks</h3><div id="top_picks"></div></div>
@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.152</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.153</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5395,7 +5395,29 @@ function renderTopDown(){
     var _p0c=_p0?('<span style="background:'+(_p0.band==='Booming'?'#DCFCE7':_p0.band==='Favoured'?'#E0F2FE':'#FEF3C7')+';color:'+(_p0.band==='Booming'?'#059669':_p0.band==='Favoured'?'#0284C7':'#D97706')+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;">'+_p0.score.toFixed(0)+' '+_p0.band+'</span>'):''
 ;    html+='<div style="border:1px solid #e3e3ee;border-radius:10px;padding:10px 12px;margin-bottom:9px;"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:5px;"><span style="font-weight:700;color:var(--ink);font-size:14px;">'+g+_p0c+'</span><span style="font-size:12px;color:var(--grey-d);">'+bTxt+'  \u00b7  '+zTxt+'  \u00b7  '+all.length+' name'+(all.length===1?'':'s')+moreTxt+'</span></div><div>'+chips+'</div></div>';
   });
-  html+='<div class="reading-box" style="margin-top:10px;border-left:4px solid var(--gold);font-size:12.5px;"><b>Next in the funnel (scanner keystone):</b> within these favored sectors, apply the largest-cap cut ($1B+ \u00b7 ADV \u2265100k \u00b7 main exchange \u00b7 not GREY), then the Track-B gate (61%) + Track-A rank, the Zacks three-lock and the fund overlap \u2192 5\u20138 buys. Those stages need the universe-score-and-split keystone. Pakistan top-down (rate-sensitivity favored sectors \u2192 PSX names + bank grades) is the next render addition.</div>';
+  // ---- keystone universe layer (v5.153): the largest-cap cut + quality split, now live ----
+  var _mu=(LIVE&&LIVE.m2_universe)||null;
+  if(_mu&&_mu.n_universe){
+    var _disc=Array.isArray(_mu.disciplined)?_mu.disciplined:[];
+    html+='<h3 class="subsection-title" style="color:#0A3161;">Universe quality pass \u2014 largest-cap cut + split</h3>';
+    html+='<div class="reading-box" style="margin-bottom:8px;font-size:13px;">'
+        +'<b>'+(_mu.n_universe||0).toLocaleString()+'</b> largest-cap companies ($2bn+) scored on a quick quality read (revenue growth \u00b7 earnings growth \u00b7 return on capital \u00b7 6-month trend) \u2192 '
+        +'<b style="color:var(--green);">'+(_mu.n_disciplined||0).toLocaleString()+'</b> clear the loose first cut ('+_mu.gate+'+) and <b style="color:var(--grey-d);">'+(_mu.n_speculative||0).toLocaleString()+'</b> route to the watch / turnaround side. '
+        +'This first pass is deliberately generous; the strict <b>61% quality gate</b> then runs name-by-name on the survivors. '
+        +'<span style="color:var(--grey-d);">The disciplined side seeds the 70% safe sleeve; the watch side feeds the 30% turnaround sleeve.</span></div>';
+    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:8px;">Each favored sector below now names its <b>top-quality large-caps</b> from that pass \u2014 the funnel\u2019s promised step from a favored sector to the strong established companies inside it, ranked by the quality score (highest first).</div>';
+    favored.forEach(function(g){
+      var _rows=_disc.filter(function(r){return gicsOf(r.sector)===g;});
+      _rows.sort(function(a,b){return (b.score||0)-(a.score||0);});
+      var _top=_rows.slice(0,8);
+      var _chips=_top.length?_top.map(function(r){
+        return '<span style="display:inline-block;margin:3px 5px 3px 0;padding:3px 9px;border:1px solid #0A3161;border-radius:13px;font-size:12.5px;white-space:nowrap;"><b>'+r.ticker+'</b> <span style="color:#0A3161;font-weight:700;">'+Math.round(r.score||0)+'</span></span>';
+      }).join(''):'<span style="color:var(--grey-d);">no large-cap in the top-quality tier yet</span>';
+      var _more=(_rows.length>_top.length)?(' (top '+_top.length+' shown)'):'';
+      html+='<div style="border:1px solid #e3e3ee;border-radius:10px;padding:9px 12px;margin-bottom:8px;"><div style="font-weight:700;color:var(--ink);font-size:13.5px;margin-bottom:4px;">'+g+' <span style="font-size:11px;color:var(--grey-d);font-weight:400;">'+_rows.length+' in top-quality tier'+_more+'</span></div><div>'+_chips+'</div></div>';
+    });
+  }
+  html+='<div class="reading-box" style="margin-top:10px;border-left:4px solid var(--gold);font-size:12.5px;"><b>Still ahead in the funnel:</b> on the disciplined survivors above, run the strict <b>Track-B 61% quality gate</b> name-by-name (the full 122-point scorecard via the deep scorer), then the Track-A valuation rank, the Zacks three-lock and the fund-overlap confirm \u2192 the final 5\u20138 buys. The largest-cap cut and the quick quality split are now <b>live</b> (the keystone). Pakistan top-down (rate-sensitivity favored sectors \u2192 PSX names + bank grades) is the next render addition.</div>';
   host.innerHTML=html;
 }
 
