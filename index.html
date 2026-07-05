@@ -586,7 +586,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.144</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.145</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2155,6 +2155,36 @@ function calcMbUs(){
   tiers.forEach((t,i)=>{const cls=i===0?'warn':i<=2?'pos':i===3?'warn':'neg';tHtml+='<tr class="'+cls+'"><td><b>'+t[0]+'</b></td><td>'+t[1]+'</td><td>'+t[2]+'</td></tr>';});
   tHtml+='</tbody></table>';
   document.getElementById('us_mb_tiers_table').innerHTML=tHtml;
+  var mbLive=(typeof LIVE!=='undefined'&&LIVE&&Array.isArray(LIVE.us_multibagger))?LIVE.us_multibagger:null;
+  if(mbLive&&mbLive.length){
+    var _bn=['NOT A MULTIBAGGER','WATCH','STRONG','HIGH-CONVICTION'],_bc=['neg','','warn','pos'];
+    var lh='<table style="font-size:12px;"><thead><tr>'
+      +'<th title="cash conversion = 3-yr sum of operating cash flow \u00f7 sum of cash profit after tax (net income + depreciation + amortization). The ranking key \u2014 cash is king.">CFO/CPAT \u25bc</th>'
+      +'<th>Ticker</th><th>Company</th><th>Sector</th><th>Mkt Cap ($M)</th><th>Price</th>'
+      +'<th title="revenue growth %">Rev Gr</th><th title="EPS growth %">EPS Gr</th><th>ROIC</th>'
+      +'<th title="P/E \u00f7 EPS growth">PEG</th><th title="objective quantitative score; soft factors are the manual scorecard above">Score</th>'
+      +'<th>Verdict</th><th title="single weakest factor / gate to check first">Check first</th></tr></thead><tbody>';
+    mbLive.forEach(function(m){
+      var r=m.cfo_cpat;
+      var rC=(r==null)?'<span style="color:var(--grey-d);">\u2014</span>'
+        :'<b style="background:'+(r>=1?'#C6EFCE':r>=0.85?'#E2F0D9':r>=0.7?'#FFEB9C':'#FFC7CE')+';padding:2px 6px;border-radius:4px;">'+r.toFixed(2)+'</b>';
+      var vb=_bn[m.final_rank]||'\u2014',vc=_bc[m.final_rank]||'';
+      var flag=(m.gated?' <span title="gated down from '+(_bn[m.raw_rank]||'')+' \u2014 a hard gate failed" style="color:#C00000;">\u26a0</span>':'')
+             +(m.thin_data?' <span title="thin live data \u2014 too few factors to confirm a higher rank" style="color:#e0a030;">\u25cb</span>':'');
+      var f=function(v,s){return v==null?'\u2014':v+(s||'');};
+      lh+='<tr class="'+vc+'"><td style="text-align:center;">'+rC+'</td>'
+        +'<td><b>'+m.ticker+'</b></td><td>'+(m.name||'')+'</td><td>'+(m.sector||'')+'</td>'
+        +'<td>'+(m.market_cap_m==null?'\u2014':'$'+Math.round(m.market_cap_m).toLocaleString()+'M')+'</td>'
+        +'<td>'+(m.price==null?'\u2014':'$'+m.price)+'</td>'
+        +'<td>'+f(m.rev_growth,'%')+'</td><td>'+f(m.eps_growth,'%')+'</td><td>'+f(m.roic,'%')+'</td>'
+        +'<td>'+(m.peg==null?'\u2014':m.peg)+'</td><td>'+(m.total==null?'\u2014':m.total.toFixed(1))+'</td>'
+        +'<td><b>'+vb+'</b>'+flag+'</td><td style="font-size:11px;color:var(--grey-d);">'+(m.binding||'\u2014')+'</td></tr>';
+    });
+    lh+='</tbody></table>';
+    var _as=(typeof LIVE!=='undefined'&&LIVE&&LIVE.meta&&LIVE.meta.generated)?LIVE.meta.generated:'latest scan';
+    lh+='<p style="margin-top:10px;font-size:12px;color:var(--grey-d);"><strong>Live ranked screen</strong> ('+_as+'). Ranked by <b>CFO/CPAT</b> (3-yr operating cash \u00f7 cash profit after tax) descending among names that clear the multibagger gates \u2014 cash is king. Score is the objective quantitative backbone; the soft/qualitative factors live in the manual scorecard above. \u25cb = thin live data, \u26a0 = a hard gate capped the rank. Verify each via 10-K/10-Q + insider ownership on SEC EDGAR before initiation.</p>';
+    document.getElementById('us_mb_live_candidates').innerHTML=lh;
+  } else {
   const live=[
     ['PLPC','Preformed Line Products','Power/Comm Infra',420,90,21,'Significant insider ownership',2,'Small-cap sweet spot','HIGH-CONVICTION','Energy + comms infrastructure. Profitable, clean balance sheet. Q3 rev +21% YoY. Family-controlled. Motley Fool small-cap AI pick.'],
     ['MGNI','Magnite','AdTech',1900,13,15,'Mixed insider activity',2,'Small-cap sweet spot','STRONG','CTV ad-tech leader. Connected TV programmatic growth tailwind. Motley Fool 2026 small-cap recommendation.'],
@@ -2170,6 +2200,7 @@ function calcMbUs(){
   liveHtml+='</tbody></table>';
   liveHtml+='<p style="margin-top:10px; font-size:12px; color:var(--grey-d);"><strong>Notes:</strong> Zacks Rank 1=Strong Buy, 2=Buy, 3=Hold, 4=Sell, 5=Strong Sell. Rev Growth = most recent quarterly YoY. Insider Signal = SEC Form 4 filings activity. Verify via 10-K / 10-Q + insider ownership % on SEC EDGAR before initiation.</p>';
   document.getElementById('us_mb_live_candidates').innerHTML=liveHtml;
+  }
   const hist=[
     ['NVDA','2015-2025','~70x','Semiconductors','Founder-CEO Jensen Huang','AI inference monopoly + CUDA moat + datacenter compute demand'],
     ['MELI (MercadoLibre)','2016-2024','~15x','E-commerce LatAm','Founder-CEO Marcos Galperin','LatAm e-commerce + fintech (Mercado Pago) cross-sell'],
