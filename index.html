@@ -586,7 +586,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.145</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.146</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2156,7 +2156,8 @@ function calcMbUs(){
   tHtml+='</tbody></table>';
   document.getElementById('us_mb_tiers_table').innerHTML=tHtml;
   var mbLive=(typeof LIVE!=='undefined'&&LIVE&&Array.isArray(LIVE.us_multibagger))?LIVE.us_multibagger:null;
-  if(mbLive&&mbLive.length){
+  if(mbLive){
+  if(mbLive.length){
     var _bn=['NOT A MULTIBAGGER','WATCH','STRONG','HIGH-CONVICTION'],_bc=['neg','','warn','pos'];
     var lh='<table style="font-size:12px;"><thead><tr>'
       +'<th title="cash conversion = 3-yr sum of operating cash flow \u00f7 sum of cash profit after tax (net income + depreciation + amortization). The ranking key \u2014 cash is king.">CFO/CPAT \u25bc</th>'
@@ -2182,8 +2183,11 @@ function calcMbUs(){
     });
     lh+='</tbody></table>';
     var _as=(typeof LIVE!=='undefined'&&LIVE&&LIVE.meta&&LIVE.meta.generated)?LIVE.meta.generated:'latest scan';
-    lh+='<p style="margin-top:10px;font-size:12px;color:var(--grey-d);"><strong>Live ranked screen</strong> ('+_as+'). Ranked by <b>CFO/CPAT</b> (3-yr operating cash \u00f7 cash profit after tax) descending among names that clear the multibagger gates \u2014 cash is king. Score is the objective quantitative backbone; the soft/qualitative factors live in the manual scorecard above. \u25cb = thin live data, \u26a0 = a hard gate capped the rank. Verify each via 10-K/10-Q + insider ownership on SEC EDGAR before initiation.</p>';
+    lh+='<p style="margin-top:10px;font-size:12px;color:var(--grey-d);"><strong>Live ranked screen</strong> ('+_as+'). Profitable small-caps (ROIC &gt; 0) that clear the multibagger gates AND have 3-year cash-flow data, ranked by <b>CFO/CPAT</b> (3-yr operating cash \u00f7 cash profit after tax) descending \u2014 cash is king. Names without computable 3-yr cash data are deliberately excluded rather than shown unranked. Score is the objective quantitative backbone; the soft/qualitative factors live in the manual scorecard above. \u25cb = thin live data, \u26a0 = a hard gate capped the rank. Verify each via 10-K/10-Q + insider ownership on SEC EDGAR before initiation.</p>';
     document.getElementById('us_mb_live_candidates').innerHTML=lh;
+  } else {
+    document.getElementById('us_mb_live_candidates').innerHTML='<p style="font-size:12px;line-height:1.55;color:var(--grey-d);border-left:3px solid #e0a030;padding:8px 12px;">No US names currently meet the multibagger criteria with 3-year cash-flow data (profitable on capital with ROIC above the hurdle, growth engine running, and a computable CFO/CPAT). This is the honest live result \u2014 the screen does not pad the list with names it cannot cash-rank. Use the manual scorecard above to grade a specific company.</p>';
+  }
   } else {
   const live=[
     ['PLPC','Preformed Line Products','Power/Comm Infra',420,90,21,'Significant insider ownership',2,'Small-cap sweet spot','HIGH-CONVICTION','Energy + comms infrastructure. Profitable, clean balance sheet. Q3 rev +21% YoY. Family-controlled. Motley Fool small-cap AI pick.'],
