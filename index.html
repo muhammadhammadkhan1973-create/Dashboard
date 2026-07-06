@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.160</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.161</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5545,6 +5545,10 @@ function renderTopDown(){
     'STAGFLATION':['Energy','Consumer Staples','Utilities','Communication Services']
   };
   var favored=REGIME_FAVORED[reg.name]||[];
+  var _bl0=LIVE.m1_buylist||{}, tdOverrides=_bl0.override_sectors||[], tdOvSet={};
+  tdOverrides.forEach(function(o){tdOvSet[o.sector]=o;});
+  if(_bl0.favored_effective&&_bl0.favored_effective.length){favored=_bl0.favored_effective.slice();}
+  else if(tdOverrides.length){favored=favored.concat(tdOverrides.map(function(o){return o.sector;}));}
   var _sb=(LIVE&&LIVE.sector_booming)||[];
   var _sbMap={}; _sb.forEach(function(r){if(r.sector)_sbMap[r.sector]=r;});
   var _GICS_TV={'Information Technology':['Electronic Technology','Technology Services'],'Communication Services':['Communication Services'],'Consumer Discretionary':['Consumer Durables','Retail Trade'],'Financials':['Finance'],'Industrials':['Producer Manufacturing','Transportation'],'Materials':['Non-Energy Minerals','Basic Materials'],'Energy':['Energy Minerals'],'Health Care':['Health Technology'],'Consumer Staples':['Consumer Non-Durables'],'Utilities':['Utilities'],'Real Estate':['Finance']};
@@ -5578,6 +5582,16 @@ function renderTopDown(){
       +'<b>Step 1 &mdash; where the economy is now:</b> <strong>'+reg.name+'</strong> &mdash; phase <b>'+phase+'</b>. '
       +'Read from two dials: growth = the yield-curve slope '+(isNaN(ycSlope)?'n/a':((ycSlope>=0?'+':'')+(ycSlope*100).toFixed(0)+'bps'))+', inflation = core PCE '+(isNaN(pce)?'n/a':pce+'%')+'. '
       +'Step 2 &mdash; sectors this phase favors: <b>'+tilt+'</b>.<br><span style="color:var(--grey-d);">Below, Step 3 lists the strongest actual stocks inside each favored sector.</span></div>';
+  if(tdOverrides.length){
+    html+='<div style="border-left:5px solid #7c3aed;background:linear-gradient(90deg,#f5f3ff,#ffffff);border-radius:8px;padding:8px 12px;margin:6px 0 10px;">'
+      +'<span style="color:#7c3aed;font-weight:800;">\u26A1 Booming overrides (live evidence, not from the regime table):</span> '
+      +tdOverrides.map(function(o){var e=o.evidence||{};var bits=[];
+        if(e.e_earnings)bits.push('profit growth '+(e.med_eps_g!=null?Math.round(e.med_eps_g*10)/10:'?')+'% vs market '+(e.mkt_eps_g!=null?Math.round(e.mkt_eps_g*10)/10:'?')+'%');
+        if(e.e_momentum)bits.push('6-mo move '+(e.med_6m!=null?Math.round(e.med_6m*10)/10:'?')+'% vs market '+(e.mkt_6m!=null?Math.round(e.mkt_6m*10)/10:'?')+'%');
+        if(e.e_zacks)bits.push('Zacks-heat '+e.zacks_pct_top+'% of names rated #1/#2');
+        return '<b style="color:#7c3aed;">'+o.sector+'</b> ('+bits.join(' \u00b7 ')+')';}).join('; ')
+      +'. <span style="font-size:11px;color:var(--grey-d);">These sectors earned their way in on data \u2014 their stocks face the exact same 61% deep-score bar.</span></div>';
+  }
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">';
   comp.forEach(function(c){var bg=c.live?(c.trig?'var(--red-l)':'var(--green-l)'):'var(--grey-l)';var bc=c.live?(c.trig?'var(--red)':'var(--green)'):'#d8d8e0';html+='<div style="flex:1;min-width:150px;border:1px solid '+bc+';background:'+bg+';border-radius:8px;padding:8px 10px;"><div style="font-size:12px;color:var(--grey-d);">'+c.k+'</div><div style="font-weight:600;font-size:13px;">'+c.txt+'</div></div>';});
   html+='</div>';
@@ -5609,8 +5623,9 @@ function renderTopDown(){
     }).join(''):'<tr>'+tdCell('<span style="color:var(--grey-d);">no live names in this sector yet</span>')+'</tr>';
     var _p0=_sbScore(g);
     var _p0c=_p0?('<span style="background:'+(_p0.band==='Booming'?'#DCFCE7':_p0.band==='Favoured'?'#E0F2FE':'#FEF3C7')+';color:'+(_p0.band==='Booming'?'#059669':_p0.band==='Favoured'?'#0284C7':'#D97706')+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;">'+_p0.score.toFixed(0)+' '+_p0.band+'</span>'):''
-;    var _pal=TD_SECTOR_PAL[favored.indexOf(g)%TD_SECTOR_PAL.length];
-    html+='<div style="border:1px solid '+_pal[0]+'33;border-left:6px solid '+_pal[0]+';background:linear-gradient(180deg,'+_pal[1]+',#ffffff);border-radius:10px;padding:10px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:5px;"><span style="font-weight:800;color:'+_pal[0]+';font-size:14.5px;letter-spacing:0.2px;">'+g+_p0c+'</span><span style="font-size:12px;color:var(--grey-d);">'+bTxt+'  \u00b7  '+zTxt+'  \u00b7  '+all.length+' name'+(all.length===1?'':'s')+moreTxt+'</span></div>'
+;    var _pal=tdOvSet[g]?['#7c3aed','#f5f3ff']:TD_SECTOR_PAL[favored.indexOf(g)%TD_SECTOR_PAL.length];
+    var _ovBadge=tdOvSet[g]?' <span style="background:#7c3aed;color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:2px 8px;vertical-align:middle;letter-spacing:0.3px;">\u26A1 BOOMING OVERRIDE</span>':'';
+    html+='<div style="border:1px solid '+_pal[0]+'33;border-left:6px solid '+_pal[0]+';background:linear-gradient(180deg,'+_pal[1]+',#ffffff);border-radius:10px;padding:10px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:5px;"><span style="font-weight:800;color:'+_pal[0]+';font-size:14.5px;letter-spacing:0.2px;">'+g+_p0c+_ovBadge+'</span><span style="font-size:12px;color:var(--grey-d);">'+bTxt+'  \u00b7  '+zTxt+'  \u00b7  '+all.length+' name'+(all.length===1?'':'s')+moreTxt+'</span></div>'
         +tdTable(['Ticker','Company','Strength (grade \u00b7 %)','Valuation','Zacks','6-mo move','Conviction'],body,
                  [_pal[0],_pal[0]+'d9'],['7%','27%','16%','11%','10%','10%','19%'])
         +tdPositioningLine(g)+'</div>';
@@ -5653,7 +5668,7 @@ function renderTopDown(){
         +_bl.n_scored+' of '+_bl.pool_n+' candidates deep-scored \u00b7 '+_bl.n_eligible+' cleared the bar \u00b7 as of '+(_bl.as_of||'\u2014')+'. A short list means few passed \u2014 it is never padded.</div>';
     var _bb=_bl.buys.map(function(b){
       var locks=(b.zacks_ok?'<span style="color:var(--green);font-weight:700;">Zacks \u2713</span> ':'')+(b.fund_ok?'<span style="color:var(--green);font-weight:700;">Funds \u2713</span>':'');
-      return '<tr>'+tdCell('<b>'+b.ticker+'</b>')+tdCell(b.name||'\u2014')+tdCell(b.sector||'\u2014')
+      return '<tr>'+tdCell('<b>'+b.ticker+'</b>')+tdCell(b.name||'\u2014')+tdCell((b.sector||'\u2014')+(b.off_regime?' <span title="Booming override \u2014 outside the regime table" style="color:#7c3aed;font-weight:800;">\u26A1</span>':''))
         +tdCell('<span style="color:'+tdGradeColor(b.im3_grade)+';font-weight:700;">'+(b.im3_grade||'\u2014')+(b.im3_pct!=null?(' '+(Math.round(b.im3_pct*10)/10)+'%'):'')+'</span>')
         +tdCell(b.valuation?('<span style="color:'+(b.valuation==='Attractive'?'var(--green)':b.valuation==='Rich'?'var(--red)':'var(--grey-d)')+';font-weight:600;">'+b.valuation+'</span>'):'<span style="color:var(--grey-d);">\u2014</span>')
         +tdCell(tdPerfChip(b.perf_ytd))+tdCell(tdPerfChip(b.perf_1y))+tdCell(tdPerfChip(b.perf_5y))+tdCell(tdPerfChip(b.perf_6m))
