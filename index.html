@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.157</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.158</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5448,6 +5448,51 @@ function tdTable(head,rowsHtml){
 }
 function tdCell(v){ return '<td style="padding:5px 8px;border-bottom:1px solid #f0f0f5;white-space:nowrap;">'+v+'</td>'; }
 
+
+/* ─── M1 sector positioning check (v5.158): COT confirm/caution badges ───
+   Reads the COT data already in data.json (index/rates/commodity futures + metals COT).
+   Regime stays the selector; this line only CONFIRMS or CAUTIONS a favored sector.
+   Sectors with no real futures proxy say so honestly. Never changes any pick. */
+function tdPositioning(g){
+  var cf=(LIVE&&LIVE.cot_futures)||{};
+  var mm=((LIVE&&LIVE.macros)||{}).metals||{};
+  function sig(k){var o=cf[k];return o&&o.signal?String(o.signal):null;}
+  function bull(x){return x&&x.indexOf('BULL')>=0;}
+  function bear(x){return x&&x.indexOf('BEAR')>=0;}
+  if(g==='Energy'){
+    var c=sig('Crude'),n=sig('NatGas');
+    if(!c&&!n)return null;
+    var t='Positioning check: crude futures traders '+(c?c.toLowerCase():'n/a')+(n?(' \u00b7 natural gas '+n.toLowerCase()):'')+'.';
+    if(bull(c))return{txt:t+' Supports the Energy tilt.',tone:'good'};
+    if(bear(c))return{txt:t+' Big money leaning against oil \u2014 caution on the Energy tilt.',tone:'warn'};
+    return{txt:t,tone:'flat'};
+  }
+  if(g==='Materials'){
+    var cp=mm.cot_copper_pct,ag=sig('Agriculture');
+    if(cp==null&&!ag)return null;
+    var lean=(cp!=null)?(cp>=25?'bullish':cp<=10?'bearish':'neutral'):null;
+    var t='Positioning check: copper futures traders '+(lean||'n/a')+(cp!=null?(' ('+cp+'% of open interest net-long)'):'')+(ag?(' \u00b7 agriculture '+ag.toLowerCase()):'')+'.';
+    if(lean==='bullish')return{txt:t+' Industrial-metal positioning supports the Materials tilt.',tone:'good'};
+    if(lean==='bearish')return{txt:t+' Caution on the Materials tilt.',tone:'warn'};
+    return{txt:t,tone:'flat'};
+  }
+  if(g==='Financials'||g==='Utilities'||g==='Real Estate'){
+    var r=sig('10yr');
+    if(!r)return null;
+    if(bear(r))return{txt:'Positioning check: Treasury futures traders heavily short (positioned for HIGHER rates). '+(g==='Financials'?'Mixed for banks \u2014 helps lending margins, hurts bond books \u2014 watch margins.':'A rate headwind for '+g+' \u2014 caution.'),tone:(g==='Financials'?'flat':'warn')};
+    if(bull(r))return{txt:'Positioning check: Treasury traders positioned for LOWER rates \u2014 a tailwind for '+g+'.',tone:'good'};
+    return{txt:'Positioning check: Treasury positioning neutral.',tone:'flat'};
+  }
+  return{txt:'No futures positioning exists for this sector in the current feed (sector-index futures are a planned probe).',tone:'none'};
+}
+function tdPositioningLine(g){
+  var p=tdPositioning(g);
+  if(!p)return '';
+  var col=p.tone==='good'?'var(--green)':p.tone==='warn'?'var(--red)':'var(--grey-d)';
+  var ic=p.tone==='good'?'\u25B2 ':p.tone==='warn'?'\u25BC ':'';
+  return '<div style="font-size:11.5px;color:'+(p.tone==='none'?'var(--grey-d)':'#374151')+';margin-top:6px;padding-top:5px;border-top:1px dashed #e3e3ee;"><span style="color:'+col+';font-weight:700;">'+ic+'</span>'+p.txt+' <span style="color:var(--grey-d);">Context only \u2014 never changes the pick.</span></div>';
+}
+
 function renderTopDown(){
   var host=document.getElementById('td_body');
   if(!host)return;
@@ -5528,7 +5573,8 @@ function renderTopDown(){
     var _p0=_sbScore(g);
     var _p0c=_p0?('<span style="background:'+(_p0.band==='Booming'?'#DCFCE7':_p0.band==='Favoured'?'#E0F2FE':'#FEF3C7')+';color:'+(_p0.band==='Booming'?'#059669':_p0.band==='Favoured'?'#0284C7':'#D97706')+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;">'+_p0.score.toFixed(0)+' '+_p0.band+'</span>'):''
 ;    html+='<div style="border:1px solid #e3e3ee;border-radius:10px;padding:10px 12px;margin-bottom:9px;"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:5px;"><span style="font-weight:700;color:var(--ink);font-size:14px;">'+g+_p0c+'</span><span style="font-size:12px;color:var(--grey-d);">'+bTxt+'  \u00b7  '+zTxt+'  \u00b7  '+all.length+' name'+(all.length===1?'':'s')+moreTxt+'</span></div>'
-        +tdTable(['Ticker','Company','Strength (grade \u00b7 %)','Valuation','Zacks','6-mo move','Conviction'],body)+'</div>';
+        +tdTable(['Ticker','Company','Strength (grade \u00b7 %)','Valuation','Zacks','6-mo move','Conviction'],body)
+        +tdPositioningLine(g)+'</div>';
   });
   // ---- keystone universe layer (v5.153): the largest-cap cut + quality split, now live ----
   var _mu=(LIVE&&LIVE.m2_universe)||null;
