@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.159</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.160</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5441,12 +5441,23 @@ function tdSortBar(){
   function b(m,lbl){var on=TD_SORT===m;return '<button onclick="tdSetSort(\''+m+'\')" style="cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d8d8e0')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+';border-radius:8px;padding:4px 12px;font-size:12px;font-weight:600;">'+lbl+'</button>';}
   return '<div style="display:flex;gap:8px;align-items:center;margin:2px 0 10px;"><span style="font-size:12px;color:var(--grey-d);">Rank the lists by:</span>'+b('strength','Business strength')+b('zacks','Zacks rating')+'</div>';
 }
-function tdTable(head,rowsHtml){
-  return '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12.5px;">'
-    +'<thead><tr>'+head.map(function(h){return '<th style="text-align:left;padding:5px 8px;border-bottom:2px solid #e3e3ee;color:var(--grey-d);font-size:11px;white-space:nowrap;">'+h+'</th>';}).join('')+'</tr></thead>'
+function tdTable(head,rowsHtml,acc,widths){
+  /* v5.160: (a) header row sets its OWN vibrant gradient background inline -- the site-wide dark
+     navy th background was bleeding through and made headings unreadable; (b) table-layout:fixed
+     + an explicit colgroup so every table on this tab shares the same column positions instead of
+     each card auto-sizing differently (the misalignment). */
+  var a1=(acc&&acc[0])||'#334155', a2=(acc&&acc[1])||a1;
+  var cols=(widths&&widths.length===head.length)
+    ? '<colgroup>'+widths.map(function(w){return '<col style="width:'+w+';">';}).join('')+'</colgroup>' : '';
+  return '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12.5px;'+(cols?'table-layout:fixed;':'')+'">'
+    +cols
+    +'<thead><tr>'+head.map(function(h,i){
+        var r=(i===0?'border-radius:8px 0 0 0;':(i===head.length-1?'border-radius:0 8px 0 0;':''));
+        return '<th style="text-align:left;padding:7px 8px;background:linear-gradient(90deg,'+a1+','+a2+');color:#ffffff;font-weight:800;font-size:11px;letter-spacing:0.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'+r+'">'+h+'</th>';
+      }).join('')+'</tr></thead>'
     +'<tbody>'+rowsHtml+'</tbody></table></div>';
 }
-function tdCell(v){ return '<td style="padding:5px 8px;border-bottom:1px solid #f0f0f5;white-space:nowrap;">'+v+'</td>'; }
+function tdCell(v){ return '<td style="padding:5px 8px;border-bottom:1px solid #f0f0f5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+v+'</td>'; }
 
 
 /* ─── M1 sector positioning check (v5.158): COT confirm/caution badges ───
@@ -5600,7 +5611,8 @@ function renderTopDown(){
     var _p0c=_p0?('<span style="background:'+(_p0.band==='Booming'?'#DCFCE7':_p0.band==='Favoured'?'#E0F2FE':'#FEF3C7')+';color:'+(_p0.band==='Booming'?'#059669':_p0.band==='Favoured'?'#0284C7':'#D97706')+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;">'+_p0.score.toFixed(0)+' '+_p0.band+'</span>'):''
 ;    var _pal=TD_SECTOR_PAL[favored.indexOf(g)%TD_SECTOR_PAL.length];
     html+='<div style="border:1px solid '+_pal[0]+'33;border-left:6px solid '+_pal[0]+';background:linear-gradient(180deg,'+_pal[1]+',#ffffff);border-radius:10px;padding:10px 12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.06);"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:5px;"><span style="font-weight:800;color:'+_pal[0]+';font-size:14.5px;letter-spacing:0.2px;">'+g+_p0c+'</span><span style="font-size:12px;color:var(--grey-d);">'+bTxt+'  \u00b7  '+zTxt+'  \u00b7  '+all.length+' name'+(all.length===1?'':'s')+moreTxt+'</span></div>'
-        +tdTable(['Ticker','Company','Strength (grade \u00b7 %)','Valuation','Zacks','6-mo move','Conviction'],body)
+        +tdTable(['Ticker','Company','Strength (grade \u00b7 %)','Valuation','Zacks','6-mo move','Conviction'],body,
+                 [_pal[0],_pal[0]+'d9'],['7%','27%','16%','11%','10%','10%','19%'])
         +tdPositioningLine(g)+'</div>';
   });
   // ---- keystone universe layer (v5.153): the largest-cap cut + quality split, now live ----
@@ -5630,7 +5642,8 @@ function renderTopDown(){
       }).join(''):'<tr>'+tdCell('<span style="color:var(--grey-d);">no large-cap in the top-quality tier yet</span>')+'</tr>';
       var _more=(_rows.length>_top.length)?(' (top '+_top.length+' shown)'):'';
       html+='<div style="border:1px solid #e3e3ee;border-radius:10px;padding:9px 12px;margin-bottom:8px;"><div style="font-weight:700;color:var(--ink);font-size:13.5px;margin-bottom:4px;">'+g+' <span style="font-size:11px;color:var(--grey-d);font-weight:400;">'+_rows.length+' in top-quality tier'+_more+'</span></div>'
-        +tdTable(['Ticker','Company','Quick score','Sales growth','Profit growth','Return on capital','6-mo move','Zacks'],_body)+'</div>';
+        +tdTable(['Ticker','Company','Quick score','Sales growth','Profit growth','Return on capital','6-mo move','Zacks'],_body,
+                 ['#0891b2','#2563eb'],['7%','27%','11%','12%','12%','13%','9%','9%'])+'</div>';
     });
   }
   var _bl=(LIVE&&LIVE.m1_buylist)||null;
@@ -5649,7 +5662,8 @@ function renderTopDown(){
         +tdCell(locks||'<span style="color:var(--grey-d);">\u2014</span>')+'</tr>';
     }).join('');
     html+='<div style="border:2px solid transparent;border-radius:12px;padding:2px;background:linear-gradient(#fffdf5,#fffdf5) padding-box,linear-gradient(90deg,#f59e0b,#ea580c) border-box;margin-bottom:9px;"><div style="padding:9px 11px;">'
-        +tdTable(['Ticker','Company','Sector','Deep score','Valuation','YTD','1Y','5Y','6-mo','Trend','Zacks','Confirmations'],_bb)
+        +tdTable(['Ticker','Company','Sector','Deep score','Valuation','YTD','1Y','5Y','6-mo','Trend','Zacks','Confirmations'],_bb,
+                 ['#f59e0b','#ea580c'],['6%','17%','10%','9%','8%','7%','7%','7%','7%','8%','7%','7%'])
         +'<div style="font-size:11px;color:var(--grey-d);margin-top:6px;">These are the engine\u2019s candidates for the steady 70% sleeve \u2014 a starting shortlist for your own final human check, not an order to buy. Deep scores refresh on a rolling 7-day cycle. Returns are price moves from TradingView (YTD / 1-year / 5-year / 6-month \u2014 the free feed has no 3-year figure, so 5-year is shown); the Trend arrow compares the last 3 months against the 3 before them. Dashes mean the newest scanner hasn\u2019t filled that figure yet.</div></div></div>';
   } else {
     html+='<div class="reading-box" style="border-left:4px solid var(--gold);font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Waiting for the first scored run.</b> The scanner deep-scores the Step-3b leaders (full scorecard, strict '+ (String(61)) +'% bar, Zacks + fund confirmation) and the ranked 5\u20138 buys will appear here. Nothing is shown until real scores exist \u2014 no guessed numbers.</div>';
