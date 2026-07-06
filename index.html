@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.156</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.157</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5560,7 +5560,25 @@ function renderTopDown(){
         +tdTable(['Ticker','Company','Quick score','Sales growth','Profit growth','Return on capital','6-mo move','Zacks'],_body)+'</div>';
     });
   }
-  html+='<div class="reading-box" style="margin-top:10px;border-left:4px solid var(--gold);font-size:12.5px;"><b>Step 4 &mdash; still being wired in:</b> take the companies that passed above, put each through the strict quality bar (the full 122-point scorecard), then rank them on value, and confirm with the Zacks rating and big-fund ownership \u2192 the final <b>5\u20138 buys</b>. Steps 1\u20133 are live now; this last auto-narrowing to a buy list is the piece still to come. A Pakistan version of this tab (which PSX sectors the interest-rate backdrop favors, plus their stocks and bank grades) is next.</div>';
+  var _bl=(LIVE&&LIVE.m1_buylist)||null;
+  html+='<h3 class="subsection-title" style="color:#0A3161;">Step 4 &mdash; the final buy list</h3>';
+  if(_bl&&Array.isArray(_bl.buys)&&_bl.buys.length){
+    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:6px;"><b>How this list is made:</b> the strongest big companies from Step 3b, each put through the <b>real deep scorecard</b> (not the quick score), kept only if they clear the strict <b>'+_bl.gate_pct+'%</b> quality bar, then ordered by confirmation first (a <b>Zacks #1/#2</b> rating and/or held by the tracked top funds), then by valuation (cheapest first), then strength. '
+        +_bl.n_scored+' of '+_bl.pool_n+' candidates deep-scored \u00b7 '+_bl.n_eligible+' cleared the bar \u00b7 as of '+(_bl.as_of||'\u2014')+'. A short list means few passed \u2014 it is never padded.</div>';
+    var _bb=_bl.buys.map(function(b){
+      var locks=(b.zacks_ok?'<span style="color:var(--green);font-weight:700;">Zacks \u2713</span> ':'')+(b.fund_ok?'<span style="color:var(--green);font-weight:700;">Funds \u2713</span>':'');
+      return '<tr>'+tdCell('<b>'+b.ticker+'</b>')+tdCell(b.name||'\u2014')+tdCell(b.sector||'\u2014')
+        +tdCell('<span style="color:'+tdGradeColor(b.im3_grade)+';font-weight:700;">'+(b.im3_grade||'\u2014')+(b.im3_pct!=null?(' '+(Math.round(b.im3_pct*10)/10)+'%'):'')+'</span>')
+        +tdCell(b.valuation?('<span style="color:'+(b.valuation==='Attractive'?'var(--green)':b.valuation==='Rich'?'var(--red)':'var(--grey-d)')+';font-weight:600;">'+b.valuation+'</span>'):'<span style="color:var(--grey-d);">\u2014</span>')
+        +tdCell(tdZacksChip(b.zacks!=null?b.zacks:null))
+        +tdCell(locks||'<span style="color:var(--grey-d);">\u2014</span>')+'</tr>';
+    }).join('');
+    html+='<div style="border:2px solid var(--gold);border-radius:10px;padding:10px 12px;margin-bottom:9px;background:#FFFDF5;">'
+        +tdTable(['Ticker','Company','Sector','Deep score','Valuation','Zacks','Confirmations'],_bb)
+        +'<div style="font-size:11px;color:var(--grey-d);margin-top:6px;">These are the engine\u2019s candidates for the steady 70% sleeve \u2014 a starting shortlist for your own final human check, not an order to buy. Deep scores refresh on a rolling 7-day cycle.</div></div>';
+  } else {
+    html+='<div class="reading-box" style="border-left:4px solid var(--gold);font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Waiting for the first scored run.</b> The scanner deep-scores the Step-3b leaders (full scorecard, strict '+ (String(61)) +'% bar, Zacks + fund confirmation) and the ranked 5\u20138 buys will appear here. Nothing is shown until real scores exist \u2014 no guessed numbers.</div>';
+  }
   html+='<div class="reading-box" style="margin-top:8px;border-left:4px solid #d8d8e0;font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Pakistan Top-Down &mdash; coming next.</b> Same four steps for the PSX: the interest-rate backdrop (SBP rate + rupee) decides the favored sectors, then each opens to its stocks with bank grades. Waiting for the build &mdash; nothing shown yet rather than guessed numbers.</div>';
   host.innerHTML=html;
 }
