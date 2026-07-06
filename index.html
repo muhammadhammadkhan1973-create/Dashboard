@@ -369,7 +369,7 @@
     </details>
   </div>
   <div id="topdown" class="panel"><h2 class="section-title">Top-Down Engine (M1)</h2>
-    <div style="color:var(--grey-d);font-size:13px;margin-bottom:10px;"><b>What this tab does:</b> it finds stocks the top-down way &mdash; from the big economic picture down to specific names &mdash; in four steps: <b>(1)</b> read where the economy is right now, <b>(2)</b> pick the sectors that phase usually favors, <b>(3)</b> list the strongest stocks inside those sectors, <b>(4)</b> squeeze that to a final short list of buys. <b>What you get:</b> the strongest stocks in the sectors today&rsquo;s economy favors. It only reads live data &mdash; it never changes any stock&rsquo;s grade, valuation, conviction tier or whether it&rsquo;s screened.</div>
+    <div style="color:var(--grey-d);font-size:13px;margin-bottom:10px;"><b>What this tab does:</b> it finds stocks the top-down way &mdash; from the big economic picture down to specific names &mdash; in four steps: <b>(1)</b> read where the economy is right now, <b>(2)</b> pick the sectors that phase usually favors, <b>(3)</b> list the strongest stocks inside those sectors, <b>(4)</b> squeeze that to a final short list of buys. <b>What you get:</b> the strongest stocks in the sectors today&rsquo;s economy favors. It only reads live data &mdash; it never changes any stock&rsquo;s grade, valuation, conviction tier or whether it&rsquo;s screened. <b>How this differs from the US Dashboard:</b> the US Dashboard <i>watches</i> the economy (rates, inflation, recession risk) and never picks stocks; this tab <i>uses</i> that economic read as Step 1 and ends in stock names.</div>
     <div id="td_body"></div>
   </div>
   <div id="sectors" class="panel"><div id="sei_lei_context"></div><h2 class="section-title">Sector &amp; Stock Implications</h2><div id="sectors_booming_strip" style="margin:0 0 16px 0;"></div><h3 class="subsection-title" style="color:#0A3161;">US Sectors</h3><div style="font-size:11px;color:var(--grey-d);border-left:3px solid #0A3161;padding-left:9px;margin:2px 0 8px;">Under each sector is a plain <b>vs-market summary</b> &mdash; how pricey it is, how profitable, and which way it&rsquo;s heading &mdash; measured against the average across all US sectors, shown as a one-line read plus three quick tags. <b>P/E (price-to-earnings)</b> is how many dollars you pay for each $1 of a company&rsquo;s yearly profit, so a higher number means investors expect faster growth (or the stock is dearer) and a lower number means modest expectations (or a possible bargain) &mdash; a quick gauge of how pricey a sector is for what it earns. Each summary also shows a small <b>quarter trend line</b> (the sector&rsquo;s price path over the last three months) and, where analyst coverage exists, a <b>forward</b> read of the total return (analysts&rsquo; price-target gain plus dividend yield) expected over the next quarter and six months.</div><div id="us_sectors"></div><h3 class="subsection-title" style="color:#0A3161;">US Sector Trend — 200-DMA Breadth</h3><div id="us_sector_breadth"></div><div id="psx_sectors_booming_strip2" style="margin:0 0 10px 0;"></div><h3 class="subsection-title" style="color:#065F46;">PSX Sectors</h3><div style="font-size:11px;color:var(--grey-d);border-left:3px solid #065F46;padding-left:9px;margin:2px 0 8px;">Each PSX sector carries the same plain <b>vs-market summary</b> &mdash; how pricey, how profitable, and which way it&rsquo;s heading versus the average across all Pakistan sectors &mdash; with a small <b>quarter trend line</b> and, where analyst coverage exists, a <b>forward</b> read of the total return (analysts&rsquo; price-target gain plus dividend yield) expected over the next quarter and six months. Thin sectors (few covered names) show the price trend but leave P/E or profitability blank rather than guess.</div><div id="psx_sectors"></div><h3 class="subsection-title" style="color:#065F46;">PSX Sector Trend — 200-DMA Breadth</h3><div id="psx_sector_breadth"></div><h3 class="subsection-title">Top Picks</h3><div id="top_picks"></div></div>
@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.155</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.156</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5395,6 +5395,59 @@ function renderSovereignHealth(){
   if(pe){ pe.innerHTML=pk?('<h3 class="subsection-title">Sovereign Health</h3>'+ceCard('pakistan','Pakistan',pk)):''; }
 }
 
+
+/* ─── M1 readability layer (v5.156): names, per-indicator columns, sort toggle ─── */
+var TD_SORT='strength';                        // 'strength' | 'zacks'
+function tdSetSort(m){ TD_SORT=m; renderTopDown(); }
+var _tdNameCache=null;
+function tdNameOf(t){                           // real company name, from any im3-bearing pool, else keystone/foundation
+  if(!_tdNameCache){
+    _tdNameCache={};
+    ['explosive_us','explosive_psx','tce_us','tce_psx'].forEach(function(k){
+      (Array.isArray(LIVE&&LIVE[k])?LIVE[k]:[]).forEach(function(r){
+        var tk=(r.im3&&r.im3.ticker)||r.ticker, n=(r.im3&&r.im3.name)||null;
+        if(tk&&n&&n!==tk)_tdNameCache[tk]=n;
+      });
+    });
+    var mu=(LIVE&&LIVE.m2_universe)||{};
+    (mu.disciplined||[]).concat(mu.speculative||[]).forEach(function(r){
+      if(r.ticker&&r.name&&r.name!==r.ticker&&!_tdNameCache[r.ticker])_tdNameCache[r.ticker]=r.name;
+    });
+    (Array.isArray(LIVE&&LIVE.foundation_universe)?LIVE.foundation_universe:[]).forEach(function(r){
+      if(r.ticker&&r.name&&r.name!==r.ticker&&!_tdNameCache[r.ticker])_tdNameCache[r.ticker]=r.name;
+    });
+  }
+  return _tdNameCache[t]||null;
+}
+function tdZacksOf(t,rec){                      // per-stock Zacks rank 1-5 where the service covers it
+  if(rec&&rec.zacks_rank!=null)return rec.zacks_rank;
+  var z=(LIVE&&LIVE.zacks_ranks)||{};
+  return (z[t]!=null)?z[t]:null;
+}
+function tdZacksChip(z){
+  if(z==null)return '<span style="color:var(--grey-d);">\u2014</span>';
+  var lbl={1:'1 Strong Buy',2:'2 Buy',3:'3 Hold',4:'4 Sell',5:'5 Strong Sell'}[z]||String(z);
+  var c=z<=2?'var(--green)':z===3?'var(--grey-d)':'var(--red)';
+  return '<span style="color:'+c+';font-weight:600;">'+lbl+'</span>';
+}
+function tdPct(v){ return (v==null||isNaN(v))?'<span style="color:var(--grey-d);">\u2014</span>':((v>=0?'+':'')+(Math.round(v*10)/10)+'%'); }
+function tdSortRows(rows,keyStrength){          // shared sorter: strength (default) or Zacks (1 best, null last)
+  var r=rows.slice();
+  if(TD_SORT==='zacks'){ r.sort(function(a,b){var za=(a._z==null)?9:a._z, zb=(b._z==null)?9:b._z; return za-zb || (b._s||0)-(a._s||0);}); }
+  else { r.sort(function(a,b){return (b._s||0)-(a._s||0);}); }
+  return r;
+}
+function tdSortBar(){
+  function b(m,lbl){var on=TD_SORT===m;return '<button onclick="tdSetSort(\''+m+'\')" style="cursor:pointer;border:1px solid '+(on?'var(--navy)':'#d8d8e0')+';background:'+(on?'var(--navy)':'#fff')+';color:'+(on?'#fff':'var(--ink)')+';border-radius:8px;padding:4px 12px;font-size:12px;font-weight:600;">'+lbl+'</button>';}
+  return '<div style="display:flex;gap:8px;align-items:center;margin:2px 0 10px;"><span style="font-size:12px;color:var(--grey-d);">Rank the lists by:</span>'+b('strength','Business strength')+b('zacks','Zacks rating')+'</div>';
+}
+function tdTable(head,rowsHtml){
+  return '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12.5px;">'
+    +'<thead><tr>'+head.map(function(h){return '<th style="text-align:left;padding:5px 8px;border-bottom:2px solid #e3e3ee;color:var(--grey-d);font-size:11px;white-space:nowrap;">'+h+'</th>';}).join('')+'</tr></thead>'
+    +'<tbody>'+rowsHtml+'</tbody></table></div>';
+}
+function tdCell(v){ return '<td style="padding:5px 8px;border-bottom:1px solid #f0f0f5;white-space:nowrap;">'+v+'</td>'; }
+
 function renderTopDown(){
   var host=document.getElementById('td_body');
   if(!host)return;
@@ -5450,16 +5503,32 @@ function renderTopDown(){
       +'Two are live (the yield curve and the high-yield credit spread); two more (a leading-indicator index and a factory-activity survey) are still being wired in. Below is where big futures traders are positioned on the major markets \u2014 context only: '
       +[cotTxt('SP500'),cotTxt('NASDAQ'),cotTxt('Russell'),cotTxt('DJIA'),cotTxt('10yr'),cotTxt('VIX'),cotTxt('Crude'),cotTxt('NatGas'),cotTxt('Agriculture')].join(' \u00b7 ')+'.</div>';
   html+='<h3 class="subsection-title" style="color:#0A3161;">Step 3 &mdash; strongest stocks in each favored sector</h3>';
-  html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:8px;">Only the favored sectors from Step 2, each opened up to its actual stocks, strongest first. <b>Chip colour = business-strength grade</b>: green = A (strongest), navy = B, amber = C, red = fail. A <b>HIGH</b> or <b>WATCH</b> tag after a name is our early-signal conviction level, where the stock has one. In each sector&rsquo;s header, <b>breadth</b> = the share of that sector&rsquo;s stocks trading above their long-term (200-day) average price (a health gauge), and <b>Zacks #1/#2</b> = the share the Zacks service currently rates a top buy.</div>';
+  html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:6px;">Only the favored sectors from Step 2, each opened up to its actual scanned stocks. <b>How ranked:</b> by the real 122-point business-strength score (the deep scorer) &mdash; or switch to the Zacks rating with the buttons below. Every indicator has its own column; a dash means that service doesn&rsquo;t cover the name. In each sector&rsquo;s header, <b>breadth</b> = the share of that sector&rsquo;s stocks above their long-term (200-day) average price, and <b>Zacks #1/#2</b> = the share Zacks currently rates a top buy.</div>';
+  html+=tdSortBar();
   favored.forEach(function(g){
     var bp=gBpct(g),z=zs[g]||{};
     var zTxt=(z.pct_top!=null)?('Zacks #1/#2 '+z.pct_top+'%'+(z.pct_top_chg!=null?(' ('+(z.pct_top_chg>=0?'+':'')+z.pct_top_chg+')'):'')):'Zacks n/a';
     var bTxt=(bp!=null)?('breadth '+bp+'% &gt;200-DMA'):'breadth n/a';
-    var all=namesForGics(g);var ns=all.slice(0,10);var moreTxt=(all.length>ns.length)?(' (top '+ns.length+' of '+all.length+')'):'';
-    var chips=ns.length?ns.map(function(r){return tdChip(r.ticker,(r.im3&&r.im3.grade),(r.im3&&r.im3.pct),tmap[r.ticker]);}).join(''):'<span style="color:var(--grey-d);">no live names in this sector yet</span>';
+    var all=namesForGics(g).map(function(r){
+      var t=r.ticker;
+      return {t:t,name:(r.im3&&r.im3.name&&r.im3.name!==t)?r.im3.name:(tdNameOf(t)||'\u2014'),
+              grade:(r.im3&&r.im3.grade)||null,_s:(r.im3&&r.im3.pct!=null)?r.im3.pct:null,
+              val:(r.im3&&r.im3.valuation&&r.im3.valuation.label)||null,
+              _z:tdZacksOf(t,r),p6:r.perf_6m,tier:tmap[t]||null};
+    });
+    var ns=tdSortRows(all).slice(0,10);var moreTxt=(all.length>ns.length)?(' (top '+ns.length+' of '+all.length+' shown)'):'';
+    var body=ns.length?ns.map(function(r){
+      var gc=tdGradeColor(r.grade);
+      return '<tr>'+tdCell('<b>'+r.t+'</b>')+tdCell(r.name)
+        +tdCell('<span style="color:'+gc+';font-weight:700;">'+(r.grade||'\u2014')+(r._s!=null?(' '+(Math.round(r._s*10)/10)+'%'):'')+'</span>')
+        +tdCell(r.val?('<span style="color:'+(r.val==='Attractive'?'var(--green)':r.val==='Rich'?'var(--red)':'var(--grey-d)')+';font-weight:600;">'+r.val+'</span>'):'<span style="color:var(--grey-d);">\u2014</span>')
+        +tdCell(tdZacksChip(r._z))+tdCell(tdPct(r.p6))
+        +tdCell(r.tier?('<b>'+r.tier+'</b>'):'<span style="color:var(--grey-d);">\u2014</span>')+'</tr>';
+    }).join(''):'<tr>'+tdCell('<span style="color:var(--grey-d);">no live names in this sector yet</span>')+'</tr>';
     var _p0=_sbScore(g);
     var _p0c=_p0?('<span style="background:'+(_p0.band==='Booming'?'#DCFCE7':_p0.band==='Favoured'?'#E0F2FE':'#FEF3C7')+';color:'+(_p0.band==='Booming'?'#059669':_p0.band==='Favoured'?'#0284C7':'#D97706')+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;">'+_p0.score.toFixed(0)+' '+_p0.band+'</span>'):''
-;    html+='<div style="border:1px solid #e3e3ee;border-radius:10px;padding:10px 12px;margin-bottom:9px;"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:5px;"><span style="font-weight:700;color:var(--ink);font-size:14px;">'+g+_p0c+'</span><span style="font-size:12px;color:var(--grey-d);">'+bTxt+'  \u00b7  '+zTxt+'  \u00b7  '+all.length+' name'+(all.length===1?'':'s')+moreTxt+'</span></div><div>'+chips+'</div></div>';
+;    html+='<div style="border:1px solid #e3e3ee;border-radius:10px;padding:10px 12px;margin-bottom:9px;"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:5px;"><span style="font-weight:700;color:var(--ink);font-size:14px;">'+g+_p0c+'</span><span style="font-size:12px;color:var(--grey-d);">'+bTxt+'  \u00b7  '+zTxt+'  \u00b7  '+all.length+' name'+(all.length===1?'':'s')+moreTxt+'</span></div>'
+        +tdTable(['Ticker','Company','Strength (grade \u00b7 %)','Valuation','Zacks','6-mo move','Conviction'],body)+'</div>';
   });
   // ---- keystone universe layer (v5.153): the largest-cap cut + quality split, now live ----
   var _mu=(LIVE&&LIVE.m2_universe)||null;
@@ -5471,19 +5540,28 @@ function renderTopDown(){
         +'<b style="color:var(--green);">'+(_mu.n_disciplined||0).toLocaleString()+'</b> pass this first easy check (score '+_mu.gate+'+) and <b style="color:var(--grey-d);">'+(_mu.n_speculative||0).toLocaleString()+'</b> fall to the watch / turnaround side. '
         +'This first pass is deliberately easy; a much stricter quality bar then runs on the survivors, one by one. '
         +'<span style="color:var(--grey-d);">The pass-side feeds the steady 70% part of a portfolio; the watch-side feeds the riskier 30% turnaround part.</span></div>';
-    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:8px;">Each favored sector below now lists its <b>strongest big companies</b> from that check, best score first \u2014 the large, established names (the list further up holds the smaller, faster-growing ones).</div>';
+    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:8px;">Each favored sector below lists its <b>strongest big companies</b> from that check &mdash; the large, established names (the Step-3 lists hold the smaller, faster-growing ones). <b>How ranked:</b> by the quick check&rsquo;s 0&ndash;100 score &mdash; a first-pass read, <b>not</b> the full 122-point scorecard (many strong names tie near 100; the full scorecard separates them in Step 4) &mdash; or switch to the Zacks rating with the buttons above. Each score ingredient has its own column.</div>';
     favored.forEach(function(g){
-      var _rows=_disc.filter(function(r){return gicsOf(r.sector)===g;});
-      _rows.sort(function(a,b){return (b.score||0)-(a.score||0);});
-      var _top=_rows.slice(0,8);
-      var _chips=_top.length?_top.map(function(r){
-        return '<span style="display:inline-block;margin:3px 5px 3px 0;padding:3px 9px;border:1px solid #0A3161;border-radius:13px;font-size:12.5px;white-space:nowrap;"><b>'+r.ticker+'</b> <span style="color:#0A3161;font-weight:700;">'+Math.round(r.score||0)+'</span></span>';
-      }).join(''):'<span style="color:var(--grey-d);">no large-cap in the top-quality tier yet</span>';
+      var _rows=_disc.filter(function(r){return gicsOf(r.sector)===g;}).map(function(r){
+        var t=r.ticker;
+        return {t:t,name:(r.name&&r.name!==t)?r.name:(tdNameOf(t)||'\u2014'),_s:r.score,
+                rg:r.rev_growth,eg:r.eps_growth,roic:r.roic,p6:r.perf_6m,_z:tdZacksOf(t,null)};
+      });
+      var _top=tdSortRows(_rows).slice(0,8);
+      var _body=_top.length?_top.map(function(r){
+        return '<tr>'+tdCell('<b>'+r.t+'</b>')+tdCell(r.name)
+          +tdCell('<span style="color:#0A3161;font-weight:700;">'+Math.round(r._s||0)+'</span>')
+          +tdCell(tdPct(r.rg))+tdCell(tdPct(r.eg))
+          +tdCell(r.roic!=null?((Math.round(r.roic*10)/10)+'%'):'<span style="color:var(--grey-d);">\u2014</span>')
+          +tdCell(tdPct(r.p6))+tdCell(tdZacksChip(r._z))+'</tr>';
+      }).join(''):'<tr>'+tdCell('<span style="color:var(--grey-d);">no large-cap in the top-quality tier yet</span>')+'</tr>';
       var _more=(_rows.length>_top.length)?(' (top '+_top.length+' shown)'):'';
-      html+='<div style="border:1px solid #e3e3ee;border-radius:10px;padding:9px 12px;margin-bottom:8px;"><div style="font-weight:700;color:var(--ink);font-size:13.5px;margin-bottom:4px;">'+g+' <span style="font-size:11px;color:var(--grey-d);font-weight:400;">'+_rows.length+' in top-quality tier'+_more+'</span></div><div>'+_chips+'</div></div>';
+      html+='<div style="border:1px solid #e3e3ee;border-radius:10px;padding:9px 12px;margin-bottom:8px;"><div style="font-weight:700;color:var(--ink);font-size:13.5px;margin-bottom:4px;">'+g+' <span style="font-size:11px;color:var(--grey-d);font-weight:400;">'+_rows.length+' in top-quality tier'+_more+'</span></div>'
+        +tdTable(['Ticker','Company','Quick score','Sales growth','Profit growth','Return on capital','6-mo move','Zacks'],_body)+'</div>';
     });
   }
   html+='<div class="reading-box" style="margin-top:10px;border-left:4px solid var(--gold);font-size:12.5px;"><b>Step 4 &mdash; still being wired in:</b> take the companies that passed above, put each through the strict quality bar (the full 122-point scorecard), then rank them on value, and confirm with the Zacks rating and big-fund ownership \u2192 the final <b>5\u20138 buys</b>. Steps 1\u20133 are live now; this last auto-narrowing to a buy list is the piece still to come. A Pakistan version of this tab (which PSX sectors the interest-rate backdrop favors, plus their stocks and bank grades) is next.</div>';
+  html+='<div class="reading-box" style="margin-top:8px;border-left:4px solid #d8d8e0;font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Pakistan Top-Down &mdash; coming next.</b> Same four steps for the PSX: the interest-rate backdrop (SBP rate + rupee) decides the favored sectors, then each opens to its stocks with bank grades. Waiting for the build &mdash; nothing shown yet rather than guessed numbers.</div>';
   host.innerHTML=html;
 }
 
