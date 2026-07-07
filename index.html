@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.167</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.168</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5750,7 +5750,58 @@ function renderTopDown(){
   } else {
     html+='<div class="reading-box" style="border-left:4px solid var(--gold);font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Waiting for the first scored run.</b> The scanner deep-scores the Step-3b leaders (full scorecard, cash-conversion gate, Zacks + fund confirmation) and the ranked 5\u20138 buys will appear here. Nothing is shown until real scores exist \u2014 no guessed numbers.</div>';
   }
-  html+='<div class="reading-box" style="margin-top:8px;border-left:4px solid #d8d8e0;font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Pakistan Top-Down &mdash; coming next.</b> Same four steps for the PSX: the interest-rate backdrop (SBP rate + rupee) decides the favored sectors, then each opens to its stocks with bank grades. Waiting for the build &mdash; nothing shown yet rather than guessed numbers.</div>';
+  // \u2500\u2500 PAKISTAN TOP-DOWN (M1-PK, v5.168) \u2500\u2500
+  var _pk=(LIVE&&LIVE.psx_topdown)||null;
+  if(_pk&&_pk.regime){
+    var _rg=_pk.regime;
+    html+='<div style="margin-top:14px;border-top:2px solid #e2e8f0;padding-top:10px;">'
+      +tdHead('','Pakistan Top-Down (M1-PK)')
+      +'<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:6px;">The same four steps, for the PSX. <b>Step 1 \u2014 where Pakistan\u2019s economy is now:</b> <b style="color:'+(_rg.defensive?'var(--red)':'var(--green)')+';">'+_rg.label+'</b> \u2014 the SBP policy rate is <b>'+(_rg.sbp_rate!=null?_rg.sbp_rate+'%':'\u2014')+'</b>'+(_rg.defensive?' (at or above your 11% defensive trigger: favour banks, dividend payers and pricing power; go easy on leveraged cyclicals)':' (below the 11% trigger)')+'. '
+      +(_rg.ep_overweight?('<b style="color:#7c3aed;">Arab Light $'+(Math.round(_rg.arab_light*100)/100)+' &gt; $60 \u2014 your overweight-E&amp;P trigger is ON.</b> '):'')
+      +'Rupee '+(_rg.usd_pkr!=null?_rg.usd_pkr:'\u2014')+'/$ ('+(_rg.usd_pkr_wow!=null?((_rg.usd_pkr_wow>0?'+':'')+_rg.usd_pkr_wow+'% wk'):'\u2014')+') \u00b7 CPI '+(_rg.pak_cpi!=null?_rg.pak_cpi+'%':'\u2014')+' \u00b7 real rate '+(_rg.real_rate!=null?_rg.real_rate+'%':'\u2014')+' \u00b7 devaluation alert: <b>'+String(_rg.deval_level||'\u2014').toUpperCase()+'</b> ('+_rg.deval_score+'/'+_rg.deval_max+' \u2014 details on Tab 4).</div>';
+    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:6px;"><b>Step 2 \u2014 sectors this backdrop favors</b> (scored live from breadth + momentum + rate-sensitivity; not a fixed playbook): '
+      +(_pk.favored||[]).map(function(f){
+        return '<span style="display:inline-block;background:'+(f.trigger_tag?'#f3e8ff':'#eef2f7')+';border-radius:6px;padding:1px 7px;margin:1px 3px 1px 0;font-size:11.5px;'+(f.trigger_tag?'border:1px solid #c4b5fd;':'')+'"><b>'+f.sector+'</b> \u00b7 '+(f.rate_sensitivity||'')+(f.trigger_tag?(' \u00b7 <b style="color:#7c3aed;">\u26a1 '+f.trigger_tag+'</b>'):'')+'</span>';
+      }).join('')+'</div>';
+    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:4px;"><b>Step 3 \u2014 strongest stocks in each favored sector.</b> Every name carries a real grade from the full scoring engine \u2014 banks on the banking scorecard, companies on business strength (valuation shown separately, never a penalty).</div>';
+    var _pv={'Attractive':0,'Fair':1,'Rich':2};
+    Object.keys(_pk.sectors||{}).sort(function(a,b){
+      var fa=(_pk.favored||[]).find(function(f){return f.sector===a;})||{rank:99};
+      var fb=(_pk.favored||[]).find(function(f){return f.sector===b;})||{rank:99};
+      return (fa.rank||99)-(fb.rank||99);
+    }).forEach(function(sec){
+      var rows=(_pk.sectors[sec]||[]).slice(0,6).map(function(r){
+        var cash=(r.cash_gate==='bank-pass'||r.cash_gate==='bank-fail')?'<span style="color:var(--grey-d);">bank</span>':(r.cash_r!=null?('<span style="font-weight:600;color:'+(r.cash_gate==='pass'?'var(--green)':'var(--red)')+';">\u00d7'+r.cash_r.toFixed(2)+'</span>'):'<span style="color:var(--grey-d);">\u2014</span>');
+        return '<tr>'+tdCell('<b>'+r.ticker+'</b>')+tdCell(r.name||'\u2014')
+          +tdCell('<span style="color:'+tdGradeColor(r.grade)+';font-weight:700;">'+(r.grade||'\u2014')+' '+r.pct+'%</span>'+(r.is_bank?' <span style="font-size:10px;color:var(--grey-d);">BANK</span>':''))
+          +tdCell(r.valuation?('<span style="color:'+(r.valuation==='Attractive'?'var(--green)':r.valuation==='Rich'?'var(--red)':'var(--grey-d)')+';font-weight:600;">'+r.valuation+'</span>'):'<span style="color:var(--grey-d);">\u2014</span>')
+          +tdCell(cash)+tdCell(r.tce||'\u2014')
+          +tdCell(r.tgt_upside!=null?('+'+Math.round(r.tgt_upside)+'%'):'\u2014')
+          +tdCell(tdPerfChip(r.perf_3m))+'</tr>';
+      }).join('');
+      if(!rows) return;
+      var fv=(_pk.favored||[]).find(function(f){return f.sector===sec;})||{};
+      html+='<div style="font-weight:700;font-size:12.5px;margin:8px 0 2px;">'+sec+(fv.trigger_tag?' <span style="color:#7c3aed;">\u26a1</span>':'')+' <span style="font-weight:400;color:var(--grey-d);font-size:11.5px;">\u00b7 breadth '+(fv.breadth!=null?fv.breadth+'% >200-DMA':'\u2014')+' \u00b7 '+(_pk.sectors[sec]||[]).length+' names</span></div>'
+        +tdTable(['Ticker','Company','Strength','Valuation','Cash conv.','Conviction','Target upside','3-mo'],rows,['#64748b','#334155'],['9%','25%','14%','11%','10%','11%','10%','10%']);
+    });
+    if(Array.isArray(_pk.buys)&&_pk.buys.length){
+      html+='<div style="margin-top:10px;">'+tdHead('','STEP 4 \u2014 The Pakistan buy list')
+        +'<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:6px;"><b>How this list is made:</b> the exact same cash-conversion gate as the US list \u2014 on its own filings a company must show real profit, convert at least <b>'+Math.round((_pk.cash_r_min||0.9)*100)+'%</b> of that profit into operating cash, and generate positive free cash flow. Revenue \u2192 profit \u2192 cash: <b>cash is king</b>. Banks are gated on their own banking scorecard. Qualifiers are ordered by conviction first (a <b>HIGH</b> conviction rating and/or held by <b>3+ tracked Pakistani funds</b>), then valuation (cheapest first), then strength. '+_pk.n_eligible+' of '+(_pk.scored||[]).length+' passed the gate \u00b7 as of '+_pk.as_of+'. A short list means few passed \u2014 it is never padded.</div>'
+        +tdTable(['Ticker','Company','Sector','Strength','Valuation','Cash conv.','Conviction','Funds','Target upside'],
+          _pk.buys.map(function(b){
+            var cash=(b.cash_gate==='bank-pass')?'<span style="color:var(--grey-d);">bank</span>':(b.cash_r!=null?('<span style="font-weight:600;color:var(--green);">\u00d7'+b.cash_r.toFixed(2)+'</span>'):'\u2014');
+            return '<tr>'+tdCell('<b>'+b.ticker+'</b>')+tdCell(b.name||'\u2014')+tdCell(b.sector||'\u2014')
+              +tdCell('<span style="color:'+tdGradeColor(b.grade)+';font-weight:700;">'+b.grade+' '+b.pct+'%</span>'+(b.is_bank?' <span style="font-size:10px;color:var(--grey-d);">BANK</span>':''))
+              +tdCell(b.valuation?('<span style="color:'+(b.valuation==='Attractive'?'var(--green)':'var(--red)')+';font-weight:600;">'+b.valuation+'</span>'):'<span style="color:var(--grey-d);">\u2014</span>')
+              +tdCell(cash)+tdCell(b.tce||'\u2014')+tdCell(b.funds!=null?String(b.funds):'\u2014')
+              +tdCell(b.tgt_upside!=null?('+'+Math.round(b.tgt_upside)+'%'):'\u2014')+'</tr>';
+          }).join(''),['#64748b','#334155'],['8%','22%','14%','13%','10%','10%','11%','6%','6%'])
+        +'<div style="font-size:11.5px;color:var(--grey-d);margin-top:4px;">Candidates for the steady sleeve of a PSX portfolio \u2014 a starting shortlist for your own final check, not an order to buy. Grades come from the full canonical scoring engine; \u201cbank\u201d in Cash conv. means the name is judged on the banking scorecard instead.</div></div>';
+    }
+    html+='</div>';
+  } else {
+    html+='<div class="reading-box" style="margin-top:8px;border-left:4px solid #d8d8e0;font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Pakistan Top-Down</b> \u2014 waiting for the first scanner run with psx_topdown data (scanner v1.206.0+). Nothing shown rather than guessed numbers.</div>';
+  }
   host.innerHTML=html;
 }
 
