@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.163</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.165</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5590,7 +5590,7 @@ function renderTopDown(){
         if(e.e_momentum)bits.push('6-mo move '+(e.med_6m!=null?Math.round(e.med_6m*10)/10:'?')+'% vs market '+(e.mkt_6m!=null?Math.round(e.mkt_6m*10)/10:'?')+'%');
         if(e.e_zacks)bits.push('Zacks-heat '+e.zacks_pct_top+'% of names rated #1/#2');
         return '<b style="color:#7c3aed;">'+o.sector+'</b> ('+bits.join(' \u00b7 ')+')';}).join('; ')
-      +'. <span style="font-size:11px;color:var(--grey-d);">These sectors earned their way in on data \u2014 their stocks face the exact same 61% deep-score bar.</span></div>';
+      +'. <span style="font-size:11px;color:var(--grey-d);">These sectors earned their way in on data \u2014 their stocks face the exact same cash-conversion gate.</span></div>';
   }
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">';
   comp.forEach(function(c){var bg=c.live?(c.trig?'var(--red-l)':'var(--green-l)'):'var(--grey-l)';var bc=c.live?(c.trig?'var(--red)':'var(--green)'):'#d8d8e0';html+='<div style="flex:1;min-width:150px;border:1px solid '+bc+';background:'+bg+';border-radius:8px;padding:8px 10px;"><div style="font-size:12px;color:var(--grey-d);">'+c.k+'</div><div style="font-weight:600;font-size:13px;">'+c.txt+'</div></div>';});
@@ -5664,8 +5664,8 @@ function renderTopDown(){
   var _bl=(LIVE&&LIVE.m1_buylist)||null;
   html+=tdHead('STEP 4','The final buy list','#f59e0b','#ea580c');
   if(_bl&&Array.isArray(_bl.buys)&&_bl.buys.length){
-    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:6px;"><b>How this list is made:</b> the strongest big companies from Step 3b, each put through the <b>real deep scorecard</b> (not the quick score), kept only if they clear the strict <b>'+_bl.gate_pct+'%</b> quality bar, then ordered by confirmation first (a <b>Zacks #1/#2</b> rating and/or held by the tracked top funds), then by valuation (cheapest first), then strength. '
-        +_bl.n_scored+' of '+_bl.pool_n+' candidates deep-scored \u00b7 '+_bl.n_eligible+' cleared the bar \u00b7 as of '+(_bl.as_of||'\u2014')+'. A short list means few passed \u2014 it is never padded.</div>';
+    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:6px;">'+((_bl.gate_type==='cash_chain')?('<b>How this list is made:</b> the strongest big companies from Step 3b each face the <b>cash-conversion gate</b> \u2014 on their own filings (last 3 filed years, cumulative) they must show real profit, convert at least <b>'+Math.round((_bl.cash_r_min||0.9)*100)+'%</b> of that profit into operating cash, and end with positive free cash flow after capex. Revenue \u2192 profit \u2192 cash: <b>cash is king</b>. Banks are gated on their own banking scorecard; a company with no filed cash history cannot qualify. Qualifiers are then ordered by confirmation first (a <b>Zacks #1/#2</b> rating and/or held by the tracked top funds), then valuation (cheapest first), then business strength. '):('<b>How this list is made:</b> the strongest big companies from Step 3b, each put through the <b>real deep scorecard</b> (not the quick score), kept only if they clear the strict <b>'+_bl.gate_pct+'%</b> quality bar, then ordered by confirmation first (a <b>Zacks #1/#2</b> rating and/or held by the tracked top funds), then by valuation (cheapest first), then strength. '))+''
+        +_bl.n_scored+' of '+_bl.pool_n+' candidates deep-scored \u00b7 '+_bl.n_eligible+((_bl.gate_type==='cash_chain')?' passed the cash gate':' cleared the bar')+' \u00b7 as of '+(_bl.as_of||'\u2014')+'. A short list means few passed \u2014 it is never padded.</div>';
     var _bb=_bl.buys.map(function(b){
       var locks=(b.zacks_ok?'<span style="color:var(--green);font-weight:700;">Zacks \u2713</span> ':'')+(b.fund_ok?'<span style="color:var(--green);font-weight:700;">Funds \u2713</span>':'');
       return '<tr>'+tdCell('<b>'+b.ticker+'</b>')+tdCell(b.name||'\u2014')+tdCell((b.sector||'\u2014')+(b.off_regime?' <span title="Booming override \u2014 outside the regime table" style="color:#7c3aed;font-weight:800;">\u26A1</span>':''))
@@ -5682,25 +5682,36 @@ function renderTopDown(){
         +'<div style="font-size:11px;color:var(--grey-d);margin-top:6px;">These are the engine\u2019s candidates for the steady 70% sleeve \u2014 a starting shortlist for your own final human check, not an order to buy. Deep scores refresh on a rolling 7-day cycle. Returns are price moves from TradingView (YTD / 1-year / 5-year / 6-month \u2014 the free feed has no 3-year figure, so 5-year is shown); the Trend arrow compares the last 3 months against the 3 before them. Dashes mean the newest scanner hasn\u2019t filled that figure yet.</div></div></div>';
     // v5.162 — the FULL deep-scored table (every candidate, not just the 8 buys): GEV-class
     // names below the bar are now visible with their real score instead of living only in data.json.
-    var _all=(_bl.scored||[]).filter(function(r){return r.im3_pct!=null;}).slice().sort(function(a,b){return (b.im3_pct||0)-(a.im3_pct||0);});
+    var _all=(_bl.scored||[]).filter(function(r){return r.im3_pct!=null;}).slice();
+    if(_bl.gate_type==='cash_chain'){
+      // v5.165 -- ranked ACCORDING TO THE GATE: qualifiers first by cash-conversion ratio (desc),
+      // then bank qualifiers by their bank score, then chain failures, then no-cash-history names.
+      var _grp=function(r){return r.cash_gate==='pass'?0:r.cash_gate==='bank-pass'?1:r.cash_gate==='fail'?2:r.cash_gate==='bank-fail'?3:4;};
+      _all.sort(function(a,b){var g=_grp(a)-_grp(b); if(g) return g;
+        if(_grp(a)===1||_grp(a)===3) return (b.im3_pct||0)-(a.im3_pct||0);
+        var c=(b.cash_r||0)-(a.cash_r||0); return c||((b.im3_pct||0)-(a.im3_pct||0));});
+    } else {
+      _all.sort(function(a,b){return (b.im3_pct||0)-(a.im3_pct||0);});
+    }
     if(_all.length){
       var _buySet={}; _bl.buys.forEach(function(b){_buySet[b.ticker]=1;});
       var _rows=_all.map(function(r){
-        var below=r.im3_pct<_bl.gate_pct;
+        var below=(_bl.gate_type==='cash_chain')?!(r.cash_gate==='pass'||r.cash_gate==='bank-pass'):(r.im3_pct<_bl.gate_pct);
+        var cashCell=(r.cash_gate==='bank-pass'||r.cash_gate==='bank-fail')?'<span style="color:var(--grey-d);">bank</span>':(r.cash_r!=null?('<span style="font-weight:600;color:'+(r.cash_gate==='pass'?'var(--green)':'var(--red)')+';">\u00d7'+r.cash_r.toFixed(2)+'</span>'):'<span style="color:var(--grey-d);" title="no filed cash history">\u2014</span>');
         var badge=(r.scorer_rev===2)?' <span title="Re-graded on the strength-only scale" style="color:#7c3aed;font-weight:700;font-size:10px;">NEW SCALE</span>':' <span title="Still on the old scale — re-grades automatically within a few runs" style="color:#b45309;font-weight:700;font-size:10px;">OLD SCALE</span>';
         return '<tr style="'+(below?'opacity:.62;':'')+'">'+tdCell('<b>'+r.ticker+'</b>'+(_buySet[r.ticker]?' <span style="color:#f59e0b;font-weight:800;" title="On the buy list">\u2605</span>':''))
           +tdCell(r.name||'\u2014')+tdCell((r.sector||'\u2014')+(r.off_regime?' <span style="color:#7c3aed;font-weight:800;">\u26A1</span>':''))
           +tdCell('<span style="color:'+tdGradeColor(r.im3_grade)+';font-weight:700;">'+(r.im3_grade||'\u2014')+' '+(Math.round(r.im3_pct*10)/10)+'%</span>'+badge)
           +tdCell(r.valuation?('<span style="color:'+(r.valuation==='Attractive'?'var(--green)':r.valuation==='Rich'?'var(--red)':'var(--grey-d)')+';font-weight:600;">'+r.valuation+'</span>'):'<span style="color:var(--grey-d);">\u2014</span>')
-          +tdCell(r.scored_at||'\u2014')+tdCell(tdZacksChip(r.zacks!=null?r.zacks:null))+tdCell(tdPerfChip(r.perf_6m))+'</tr>';
+          +tdCell(cashCell)+tdCell(tdZacksChip(r.zacks!=null?r.zacks:null))+tdCell(tdPerfChip(r.perf_6m))+'</tr>';
       }).join('');
-      html+='<details style="margin-bottom:9px;"><summary style="cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink);padding:6px 2px;">All '+_all.length+' deep-scored candidates \u2014 every score, including the names below the '+_bl.gate_pct+'% bar (tap to open)</summary>'
-        +'<div style="font-size:11.5px;color:var(--grey-d);margin:4px 0 6px;">\u2605 = on the buy list \u00b7 dimmed rows scored below the bar \u00b7 <b>NEW SCALE</b> = re-graded strength-only (max adapts to the business) \u00b7 <b>OLD SCALE</b> = awaiting automatic re-grade. Young companies (e.g. GE Vernova, 2 filed years) score low here by design \u2014 unknowns earn nothing; their grade rises as filings accrue.</div>'
-        +tdTable(['Ticker','Company','Sector','Deep score','Valuation','Scored','Zacks','6-mo'],_rows,['#64748b','#334155'],['8%','22%','13%','18%','10%','11%','9%','9%'])
+      html+='<details style="margin-bottom:9px;"><summary style="cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink);padding:6px 2px;">All '+_all.length+' deep-scored candidates \u2014 every score, including the names that '+((_bl.gate_type==='cash_chain')?'fail the cash-conversion gate':('score below the '+_bl.gate_pct+'% bar'))+' (tap to open)</summary>'
+        +'<div style="font-size:11.5px;color:var(--grey-d);margin:4px 0 6px;">\u2605 = on the buy list \u00b7 dimmed rows fail the gate \u00b7 <b>Cash conv.</b> = 3-yr operating cash \u00f7 3-yr net profit (\u00d71.00 = every profit dollar arrived as cash); table ranked by this ratio \u2014 gate qualifiers first, then banks on their own bar, then failures. Ratios far above \u00d72\u20133 usually mean paper profit is depressed (heavy depreciation or acquisition accounting), not superior quality \u00b7 <b>NEW SCALE</b> = re-graded strength-only (max adapts to the business) \u00b7 <b>OLD SCALE</b> = awaiting automatic re-grade. Young companies (e.g. GE Vernova, 2 filed years) score low here by design \u2014 unknowns earn nothing; their grade rises as filings accrue.</div>'
+        +tdTable(['Ticker','Company','Sector','Strength','Valuation','Cash conv.','Zacks','6-mo'],_rows,['#64748b','#334155'],['8%','22%','13%','18%','10%','11%','9%','9%'])
         +'</details>';
     }
   } else {
-    html+='<div class="reading-box" style="border-left:4px solid var(--gold);font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Waiting for the first scored run.</b> The scanner deep-scores the Step-3b leaders (full scorecard, strict '+ (String(61)) +'% bar, Zacks + fund confirmation) and the ranked 5\u20138 buys will appear here. Nothing is shown until real scores exist \u2014 no guessed numbers.</div>';
+    html+='<div class="reading-box" style="border-left:4px solid var(--gold);font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Waiting for the first scored run.</b> The scanner deep-scores the Step-3b leaders (full scorecard, cash-conversion gate, Zacks + fund confirmation) and the ranked 5\u20138 buys will appear here. Nothing is shown until real scores exist \u2014 no guessed numbers.</div>';
   }
   html+='<div class="reading-box" style="margin-top:8px;border-left:4px solid #d8d8e0;font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Pakistan Top-Down &mdash; coming next.</b> Same four steps for the PSX: the interest-rate backdrop (SBP rate + rupee) decides the favored sectors, then each opens to its stocks with bank grades. Waiting for the build &mdash; nothing shown yet rather than guessed numbers.</div>';
   host.innerHTML=html;
