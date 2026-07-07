@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.161</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.162</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5599,7 +5599,7 @@ function renderTopDown(){
       +'Two are live (the yield curve and the high-yield credit spread); two more (a leading-indicator index and a factory-activity survey) are still being wired in. Below is where big futures traders are positioned on the major markets \u2014 context only: '
       +[cotTxt('SP500'),cotTxt('NASDAQ'),cotTxt('Russell'),cotTxt('DJIA'),cotTxt('10yr'),cotTxt('VIX'),cotTxt('Crude'),cotTxt('NatGas'),cotTxt('Agriculture')].join(' \u00b7 ')+'.</div>';
   html+=tdHead('STEP 3','Strongest stocks in each favored sector','#0d9488','#059669');
-  html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:6px;">Only the favored sectors from Step 2, each opened up to its actual scanned stocks. <b>How ranked:</b> by the real 122-point business-strength score (the deep scorer) &mdash; or switch to the Zacks rating with the buttons below. Every indicator has its own column; a dash means that service doesn&rsquo;t cover the name. In each sector&rsquo;s header, <b>breadth</b> = the share of that sector&rsquo;s stocks above their long-term (200-day) average price, and <b>Zacks #1/#2</b> = the share Zacks currently rates a top buy.</div>';
+  html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:6px;">Only the favored sectors from Step 2, each opened up to its actual scanned stocks. <b>How ranked:</b> by each name&rsquo;s <b>business-strength</b> score from the deep scorecard &mdash; valuation is a separate coloured flag and never lowers the grade, and the maximum adapts to the business (companies with factories face more checks than software; banks are graded on their own banking scorecard) &mdash; or switch to the Zacks rating with the buttons below. Every indicator has its own column; a dash means that service doesn&rsquo;t cover the name. In each sector&rsquo;s header, <b>breadth</b> = the share of that sector&rsquo;s stocks above their long-term (200-day) average price, and <b>Zacks #1/#2</b> = the share Zacks currently rates a top buy.</div>';
   html+=tdSortBar();
   favored.forEach(function(g){
     var bp=gBpct(g),z=zs[g]||{};
@@ -5640,7 +5640,7 @@ function renderTopDown(){
         +'<b style="color:var(--green);">'+(_mu.n_disciplined||0).toLocaleString()+'</b> pass this first easy check (score '+_mu.gate+'+) and <b style="color:var(--grey-d);">'+(_mu.n_speculative||0).toLocaleString()+'</b> fall to the watch / turnaround side. '
         +'This first pass is deliberately easy; a much stricter quality bar then runs on the survivors, one by one. '
         +'<span style="color:var(--grey-d);">The pass-side feeds the steady 70% part of a portfolio; the watch-side feeds the riskier 30% turnaround part.</span></div>';
-    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:8px;">Each favored sector below lists its <b>strongest big companies</b> from that check &mdash; the large, established names (the Step-3 lists hold the smaller, faster-growing ones). <b>How ranked:</b> by the quick check&rsquo;s 0&ndash;100 score &mdash; a first-pass read, <b>not</b> the full 122-point scorecard (many strong names tie near 100; the full scorecard separates them in Step 4) &mdash; or switch to the Zacks rating with the buttons above. Each score ingredient has its own column.</div>';
+    html+='<div style="color:var(--grey-d);font-size:12.5px;margin-bottom:8px;">Each favored sector below lists its <b>strongest big companies</b> from that check &mdash; the large, established names (the Step-3 lists hold the smaller, faster-growing ones). <b>How ranked:</b> by the quick check&rsquo;s 0&ndash;100 score &mdash; a first-pass read, <b>not</b> the full deep scorecard (many strong names tie near 100; the full scorecard separates them in Step 4) &mdash; or switch to the Zacks rating with the buttons above. Each score ingredient has its own column.</div>';
     favored.forEach(function(g){
       var _rows=_disc.filter(function(r){return gicsOf(r.sector)===g;}).map(function(r){
         var t=r.ticker;
@@ -5680,6 +5680,25 @@ function renderTopDown(){
         +tdTable(['Ticker','Company','Sector','Deep score','Valuation','YTD','1Y','5Y','6-mo','Trend','Zacks','Confirmations'],_bb,
                  ['#f59e0b','#ea580c'],['6%','17%','10%','9%','8%','7%','7%','7%','7%','8%','7%','7%'])
         +'<div style="font-size:11px;color:var(--grey-d);margin-top:6px;">These are the engine\u2019s candidates for the steady 70% sleeve \u2014 a starting shortlist for your own final human check, not an order to buy. Deep scores refresh on a rolling 7-day cycle. Returns are price moves from TradingView (YTD / 1-year / 5-year / 6-month \u2014 the free feed has no 3-year figure, so 5-year is shown); the Trend arrow compares the last 3 months against the 3 before them. Dashes mean the newest scanner hasn\u2019t filled that figure yet.</div></div></div>';
+    // v5.162 — the FULL deep-scored table (every candidate, not just the 8 buys): GEV-class
+    // names below the bar are now visible with their real score instead of living only in data.json.
+    var _all=(_bl.scored||[]).filter(function(r){return r.im3_pct!=null;}).slice().sort(function(a,b){return (b.im3_pct||0)-(a.im3_pct||0);});
+    if(_all.length){
+      var _buySet={}; _bl.buys.forEach(function(b){_buySet[b.ticker]=1;});
+      var _rows=_all.map(function(r){
+        var below=r.im3_pct<_bl.gate_pct;
+        var badge=(r.scorer_rev===2)?' <span title="Re-graded on the strength-only scale" style="color:#7c3aed;font-weight:700;font-size:10px;">NEW SCALE</span>':' <span title="Still on the old scale — re-grades automatically within a few runs" style="color:#b45309;font-weight:700;font-size:10px;">OLD SCALE</span>';
+        return '<tr style="'+(below?'opacity:.62;':'')+'">'+tdCell('<b>'+r.ticker+'</b>'+(_buySet[r.ticker]?' <span style="color:#f59e0b;font-weight:800;" title="On the buy list">\u2605</span>':''))
+          +tdCell(r.name||'\u2014')+tdCell((r.sector||'\u2014')+(r.off_regime?' <span style="color:#7c3aed;font-weight:800;">\u26A1</span>':''))
+          +tdCell('<span style="color:'+tdGradeColor(r.im3_grade)+';font-weight:700;">'+(r.im3_grade||'\u2014')+' '+(Math.round(r.im3_pct*10)/10)+'%</span>'+badge)
+          +tdCell(r.valuation?('<span style="color:'+(r.valuation==='Attractive'?'var(--green)':r.valuation==='Rich'?'var(--red)':'var(--grey-d)')+';font-weight:600;">'+r.valuation+'</span>'):'<span style="color:var(--grey-d);">\u2014</span>')
+          +tdCell(r.scored_at||'\u2014')+tdCell(tdZacksChip(r.zacks!=null?r.zacks:null))+tdCell(tdPerfChip(r.perf_6m))+'</tr>';
+      }).join('');
+      html+='<details style="margin-bottom:9px;"><summary style="cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink);padding:6px 2px;">All '+_all.length+' deep-scored candidates \u2014 every score, including the names below the '+_bl.gate_pct+'% bar (tap to open)</summary>'
+        +'<div style="font-size:11.5px;color:var(--grey-d);margin:4px 0 6px;">\u2605 = on the buy list \u00b7 dimmed rows scored below the bar \u00b7 <b>NEW SCALE</b> = re-graded strength-only (max adapts to the business) \u00b7 <b>OLD SCALE</b> = awaiting automatic re-grade. Young companies (e.g. GE Vernova, 2 filed years) score low here by design \u2014 unknowns earn nothing; their grade rises as filings accrue.</div>'
+        +tdTable(['Ticker','Company','Sector','Deep score','Valuation','Scored','Zacks','6-mo'],_rows,['#64748b','#334155'],['8%','22%','13%','18%','10%','11%','9%','9%'])
+        +'</details>';
+    }
   } else {
     html+='<div class="reading-box" style="border-left:4px solid var(--gold);font-size:12.5px;color:var(--grey-d);"><b style="color:var(--ink);">Waiting for the first scored run.</b> The scanner deep-scores the Step-3b leaders (full scorecard, strict '+ (String(61)) +'% bar, Zacks + fund confirmation) and the ranked 5\u20138 buys will appear here. Nothing is shown until real scores exist \u2014 no guessed numbers.</div>';
   }
