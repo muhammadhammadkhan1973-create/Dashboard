@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.166</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.167</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5726,9 +5726,12 @@ function renderTopDown(){
         var below=(_bl.gate_type==='cash_chain')?!(r.cash_gate==='pass'||r.cash_gate==='bank-pass'):(r.im3_pct<_bl.gate_pct);
         var cashCell=(r.cash_gate==='bank-pass'||r.cash_gate==='bank-fail')?'<span style="color:var(--grey-d);">bank</span>':(r.cash_r!=null?('<span style="font-weight:600;color:'+(r.cash_gate==='pass'?'var(--green)':'var(--red)')+';">\u00d7'+r.cash_r.toFixed(2)+'</span>'):'<span style="color:var(--grey-d);" title="no filed cash history">\u2014</span>');
         var badge=(r.scorer_rev===2)?'':' <span title="Still on the old scale \u2014 re-grades automatically within a few runs" style="color:#b45309;font-weight:700;font-size:10px;">OLD SCALE</span>';
+        var _am=((LIVE&&LIVE.m1_im3_audit&&LIVE.m1_im3_audit[r.ticker])||{}).metrics||[];
+        var _cov=_am.length?_am.filter(function(m){return String(m.verdict||'').toUpperCase()!=='NA';}).length:null;
+        var _thin=(_cov!=null&&_am.length>0&&(_cov/_am.length)<0.30);
         return '<tr style="'+(below?'opacity:.62;':'')+'">'+tdCell('<b>'+r.ticker+'</b>'+(_buySet[r.ticker]?' <span style="color:#f59e0b;font-weight:800;" title="On the buy list">\u2605</span>':''))
           +tdCell(r.name||'\u2014')+tdCell((r.sector||'\u2014')+(r.off_regime?' <span style="color:#7c3aed;font-weight:800;">\u26A1</span>':''))
-          +tdCell('<span style="color:'+tdGradeColor(r.im3_grade)+';font-weight:700;">'+(r.im3_grade||'\u2014')+' '+(Math.round(r.im3_pct*10)/10)+'%</span>'+badge)
+          +tdCell(_thin?('<span style="color:var(--grey-d);font-weight:600;" title="Grade withheld: this scorecard could read only '+_cov+' of '+_am.length+' checks">not measurable ('+_cov+'/'+_am.length+' checks)</span>'):('<span style="color:'+tdGradeColor(r.im3_grade)+';font-weight:700;">'+(r.im3_grade||'\u2014')+' '+(Math.round(r.im3_pct*10)/10)+'%</span>'+badge))
           +tdCell(r.valuation?('<span style="color:'+(r.valuation==='Attractive'?'var(--green)':r.valuation==='Rich'?'var(--red)':'var(--grey-d)')+';font-weight:600;">'+r.valuation+'</span>'):'<span style="color:var(--grey-d);">\u2014</span>')
           +tdCell(cashCell)+tdCell(tdZacksChip(r.zacks!=null?r.zacks:null))+tdCell(tdPerfChip(r.perf_6m))+'</tr>';
       }).join('');
@@ -5739,6 +5742,7 @@ function renderTopDown(){
         +'<b>Cash conv.</b> = for every $1 of reported profit over the last 3 years, how much real cash arrived: <span style="color:var(--green);font-weight:700;">green passes</span> your gate (\u00d70.90 or better), <span style="color:var(--red);font-weight:700;">red fails</span> (e.g. NVIDIA \u00d70.88 \u2014 12 cents of every profit dollar is still stuck in unpaid invoices). A ratio far above \u00d72\u2013\u00d73 is a flag to investigate, not a bonus \u2014 it usually means reported profit is artificially LOW (heavy depreciation or a big acquisition), not that the business is better<br>'
         +'<b>bank</b> = banks don\u2019t have this kind of cash flow, so they are judged on their own banking scorecard instead &nbsp;\u00b7&nbsp; <b>\u2014</b> = too young, no filed cash history yet, so it cannot qualify (never assumed)<br>'
         +'<b>Zacks</b> = independent analyst rating: 1 Strong Buy \u00b7 2 Buy \u00b7 3 Hold \u00b7 4 Sell \u00b7 5 Strong Sell<br>'
+        +'<b>not measurable</b> = the company\u2019s filings answer under a third of this scorecard\u2019s checks (insurance conglomerates like Berkshire, holding companies) \u2014 an honest \u201ccannot grade\u201d instead of a fake FAIL &nbsp;\u00b7&nbsp; a Zacks <b>4 Sell / 5 Strong Sell</b> can appear here for information, but is permanently banned from taking a buy seat<br>'
         +'<b>Dimmed rows</b> failed the gate \u2014 they are kept visible on purpose, so a rejection (like NVIDIA\u2019s) is always explainable, never hidden. Young companies such as GE Vernova score low on strength by design: unknowns earn nothing, and the grade rises as filings accrue.</div>'
         +tdTable(['Ticker','Company','Sector','Strength','Valuation','Cash conv.','Zacks','6-mo'],_rows,['#64748b','#334155'],['8%','22%','13%','18%','10%','11%','9%','9%'])
         +'</details>';
