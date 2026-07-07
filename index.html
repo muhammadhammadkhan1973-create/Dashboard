@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.165</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.166</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5680,6 +5680,33 @@ function renderTopDown(){
         +tdTable(['Ticker','Company','Sector','Deep score','Valuation','YTD','1Y','5Y','6-mo','Trend','Zacks','Confirmations'],_bb,
                  ['#f59e0b','#ea580c'],['6%','17%','10%','9%','8%','7%','7%','7%','7%','8%','7%','7%'])
         +'<div style="font-size:11px;color:var(--grey-d);margin-top:6px;">These are the engine\u2019s candidates for the steady 70% sleeve \u2014 a starting shortlist for your own final human check, not an order to buy. Deep scores refresh on a rolling 7-day cycle. Returns are price moves from TradingView (YTD / 1-year / 5-year / 6-month \u2014 the free feed has no 3-year figure, so 5-year is shown); the Trend arrow compares the last 3 months against the 3 before them. Dashes mean the newest scanner hasn\u2019t filled that figure yet.</div></div></div>';
+    // v5.166 -- the engine's own TOP 10%% strip (visible, layman wording), recomputed every load
+    if(_bl.gate_type==='cash_chain'){
+      var _elig=(_bl.scored||[]).filter(function(r){return r.cash_gate==='pass'||r.cash_gate==='bank-pass';});
+      var _vo={'Attractive':0,'Fair':1,'Rich':2};
+      _elig.sort(function(a,b){var l=((b.zacks_ok?1:0)+(b.fund_ok?1:0))-((a.zacks_ok?1:0)+(a.fund_ok?1:0)); if(l) return l;
+        var v=(_vo[a.valuation]!=null?_vo[a.valuation]:3)-(_vo[b.valuation]!=null?_vo[b.valuation]:3); if(v) return v;
+        return (b.im3_pct||0)-(a.im3_pct||0);});
+      var _nTop=Math.max(1,Math.round(_elig.length*0.10));
+      var _buySet2={}; _bl.buys.forEach(function(b){_buySet2[b.ticker]=1;});
+      var _chips=_elig.slice(0,_nTop).map(function(r,i){
+        var conf=r.zacks_ok&&r.fund_ok?'analysts + funds':r.zacks_ok?'analysts':r.fund_ok?'top funds':'\u2014';
+        var cash=(r.cash_gate==='bank-pass')?'bank scorecard':(r.cash_r!=null?('$'+r.cash_r.toFixed(2)+' cash per $1 profit'):'');
+        return '<div style="display:flex;gap:8px;align-items:baseline;padding:3px 0;border-bottom:1px dashed #eceef2;font-size:12.5px;">'
+          +'<span style="font-weight:800;color:#334155;min-width:22px;">'+(i+1)+'.</span>'
+          +'<span style="font-weight:800;">'+r.ticker+(_buySet2[r.ticker]?' <span style="color:#f59e0b;" title="also on the buy list">\u2605</span>':'')+'</span>'
+          +'<span style="color:var(--grey-d);flex:1;">'+(r.name||'')+'</span>'
+          +'<span style="color:'+tdGradeColor(r.im3_grade)+';font-weight:700;">'+r.im3_grade+' '+(Math.round(r.im3_pct*10)/10)+'%</span>'
+          +'<span style="color:#0f766e;">'+cash+'</span>'
+          +'<span style="color:var(--grey-d);">backed by: '+conf+'</span>'
+          +'</div>';
+      }).join('');
+      var _bench=_elig.slice(0,_nTop).filter(function(r){return !_buySet2[r.ticker];}).map(function(r){return r.ticker;});
+      html+='<div style="border:1px solid #e2e8f0;border-radius:10px;padding:9px 12px;margin-bottom:9px;background:#f8fafc;">'
+        +'<div style="font-weight:800;font-size:13px;color:var(--ink);margin-bottom:2px;">The top 10%% \u2014 the engine\u2019s '+_nTop+' best of all '+_elig.length+' qualifiers</div>'
+        +'<div style="font-size:11.5px;color:var(--grey-d);margin-bottom:6px;">Same ordering the buy list uses: expert backing first (Zacks top rating or held by tracked funds), then the cheapest price tag, then business strength. \u2605 = already on the buy list above'+(_bench.length?('; <b>'+_bench.join(', ')+'</b> '+(_bench.length===1?'is':'are')+' first in line outside it'):'')+'.</div>'
+        +_chips+'</div>';
+    }
     // v5.162 — the FULL deep-scored table (every candidate, not just the 8 buys): GEV-class
     // names below the bar are now visible with their real score instead of living only in data.json.
     var _all=(_bl.scored||[]).filter(function(r){return r.im3_pct!=null;}).slice();
@@ -5698,7 +5725,7 @@ function renderTopDown(){
       var _rows=_all.map(function(r){
         var below=(_bl.gate_type==='cash_chain')?!(r.cash_gate==='pass'||r.cash_gate==='bank-pass'):(r.im3_pct<_bl.gate_pct);
         var cashCell=(r.cash_gate==='bank-pass'||r.cash_gate==='bank-fail')?'<span style="color:var(--grey-d);">bank</span>':(r.cash_r!=null?('<span style="font-weight:600;color:'+(r.cash_gate==='pass'?'var(--green)':'var(--red)')+';">\u00d7'+r.cash_r.toFixed(2)+'</span>'):'<span style="color:var(--grey-d);" title="no filed cash history">\u2014</span>');
-        var badge=(r.scorer_rev===2)?' <span title="Re-graded on the strength-only scale" style="color:#7c3aed;font-weight:700;font-size:10px;">NEW SCALE</span>':' <span title="Still on the old scale — re-grades automatically within a few runs" style="color:#b45309;font-weight:700;font-size:10px;">OLD SCALE</span>';
+        var badge=(r.scorer_rev===2)?'':' <span title="Still on the old scale \u2014 re-grades automatically within a few runs" style="color:#b45309;font-weight:700;font-size:10px;">OLD SCALE</span>';
         return '<tr style="'+(below?'opacity:.62;':'')+'">'+tdCell('<b>'+r.ticker+'</b>'+(_buySet[r.ticker]?' <span style="color:#f59e0b;font-weight:800;" title="On the buy list">\u2605</span>':''))
           +tdCell(r.name||'\u2014')+tdCell((r.sector||'\u2014')+(r.off_regime?' <span style="color:#7c3aed;font-weight:800;">\u26A1</span>':''))
           +tdCell('<span style="color:'+tdGradeColor(r.im3_grade)+';font-weight:700;">'+(r.im3_grade||'\u2014')+' '+(Math.round(r.im3_pct*10)/10)+'%</span>'+badge)
@@ -5706,7 +5733,13 @@ function renderTopDown(){
           +tdCell(cashCell)+tdCell(tdZacksChip(r.zacks!=null?r.zacks:null))+tdCell(tdPerfChip(r.perf_6m))+'</tr>';
       }).join('');
       html+='<details style="margin-bottom:9px;"><summary style="cursor:pointer;font-size:12.5px;font-weight:700;color:var(--ink);padding:6px 2px;">All '+_all.length+' deep-scored candidates \u2014 every score, including the names that '+((_bl.gate_type==='cash_chain')?'fail the cash-conversion gate':('score below the '+_bl.gate_pct+'% bar'))+' (tap to open)</summary>'
-        +'<div style="font-size:11.5px;color:var(--grey-d);margin:4px 0 6px;">\u2605 = on the buy list \u00b7 dimmed rows fail the gate \u00b7 <b>Cash conv.</b> = 3-yr operating cash \u00f7 3-yr net profit (\u00d71.00 = every profit dollar arrived as cash); table ranked by this ratio \u2014 gate qualifiers first, then banks on their own bar, then failures. Ratios far above \u00d72\u20133 usually mean paper profit is depressed (heavy depreciation or acquisition accounting), not superior quality \u00b7 <b>NEW SCALE</b> = re-graded strength-only (max adapts to the business) \u00b7 <b>OLD SCALE</b> = awaiting automatic re-grade. Young companies (e.g. GE Vernova, 2 filed years) score low here by design \u2014 unknowns earn nothing; their grade rises as filings accrue.</div>'
+        +'<div style="font-size:11.5px;color:#334155;margin:4px 0 8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;line-height:1.55;">'
+        +'<b>How to read this table</b> \u2014 it shows EVERY company the engine examined, winners and losers, so you can check its homework:<br>'
+        +'<b>\u2605</b> = this name made the final buy list &nbsp;\u00b7&nbsp; <b>\u26A1</b> next to a sector = that sector forced its way in on live evidence, not the economic playbook<br>'
+        +'<b>Cash conv.</b> = for every $1 of reported profit over the last 3 years, how much real cash arrived: <span style="color:var(--green);font-weight:700;">green passes</span> your gate (\u00d70.90 or better), <span style="color:var(--red);font-weight:700;">red fails</span> (e.g. NVIDIA \u00d70.88 \u2014 12 cents of every profit dollar is still stuck in unpaid invoices). A ratio far above \u00d72\u2013\u00d73 is a flag to investigate, not a bonus \u2014 it usually means reported profit is artificially LOW (heavy depreciation or a big acquisition), not that the business is better<br>'
+        +'<b>bank</b> = banks don\u2019t have this kind of cash flow, so they are judged on their own banking scorecard instead &nbsp;\u00b7&nbsp; <b>\u2014</b> = too young, no filed cash history yet, so it cannot qualify (never assumed)<br>'
+        +'<b>Zacks</b> = independent analyst rating: 1 Strong Buy \u00b7 2 Buy \u00b7 3 Hold \u00b7 4 Sell \u00b7 5 Strong Sell<br>'
+        +'<b>Dimmed rows</b> failed the gate \u2014 they are kept visible on purpose, so a rejection (like NVIDIA\u2019s) is always explainable, never hidden. Young companies such as GE Vernova score low on strength by design: unknowns earn nothing, and the grade rises as filings accrue.</div>'
         +tdTable(['Ticker','Company','Sector','Strength','Valuation','Cash conv.','Zacks','6-mo'],_rows,['#64748b','#334155'],['8%','22%','13%','18%','10%','11%','9%','9%'])
         +'</details>';
     }
