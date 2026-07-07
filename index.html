@@ -601,7 +601,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.169</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.170</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2235,7 +2235,7 @@ function calcMbUs(){
     w.watch.forEach(function(x){
       var chips=(x.signals||[]).map(function(sg){return '<span style="display:inline-block;background:#eef2f7;border-radius:5px;padding:0 6px;margin:1px 2px 1px 0;font-size:11px;">'+sg+'</span>';}).join('');
       h+='<tr>'
-        +'<td><b>'+x.ticker+'</b></td><td>'+(x.name||'\u2014')+'</td><td>'+(x.sector||'\u2014')+'</td>'
+        +'<td><b>'+x.ticker+'</b>'+(x.ref?' <span title="engine self-test reference name (D-127): if this row ever disappears, the net is mistuned" style="display:inline-block;background:#f3e8ff;border:1px solid #c4b5fd;color:#7c3aed;border-radius:5px;padding:0 5px;font-size:10px;font-weight:700;">REF</span>':'')+'</td><td>'+(x.name||'\u2014')+'</td><td>'+(x.sector||'\u2014')+'</td>'
         +'<td>'+(x.lane==='speculative'?'<span style="color:#b45309;font-weight:600;">turnaround</span>':'<span style="color:var(--grey-d);">quality</span>')+'</td>'
         +'<td>'+(x.keystone!=null?Math.round(x.keystone):'\u2014')+'</td>'
         +'<td>'+chips+'</td>'
