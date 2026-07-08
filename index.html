@@ -620,7 +620,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.174</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.175</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2240,7 +2240,7 @@ function calcMbUs(){
   liveHtml+='<p style="margin-top:10px; font-size:12px; color:var(--grey-d);"><strong>Notes:</strong> Zacks Rank 1=Strong Buy, 2=Buy, 3=Hold, 4=Sell, 5=Strong Sell. Rev Growth = most recent quarterly YoY. Insider Signal = SEC Form 4 filings activity. Verify via 10-K / 10-Q + insider ownership % on SEC EDGAR before initiation.</p>';
   document.getElementById('us_mb_live_candidates').innerHTML=liveHtml;
   }
-  // -- BOTTOMS UP M2 tab (v5.174 -- PSX Turnaround Watch section added (same process as US); v5.173 moved OUT of the fallback-only else branch so it renders on every calcMbUs pass; v5.172 vibrant redesign; scanner v1.209.0: clock + volume + estimates + 9-stock panel) --
+  // -- BOTTOMS UP M2 tab (v5.175 -- PSX rows enrich name+grade from live explosive_psx (robust to im3 re-score timing); v5.174 PSX Turnaround Watch section added (same process as US); v5.173 moved OUT of the fallback-only else branch so it renders on every calcMbUs pass; v5.172 vibrant redesign; scanner v1.209.0: clock + volume + estimates + 9-stock panel) --
   (function(){
     var host=document.getElementById('us_m2_watch');
     var clockHost=document.getElementById('m2bu_clock');
@@ -2326,6 +2326,12 @@ function calcMbUs(){
         return;
       }
       var tw=pw.watch_turnaround;
+      // v5.175: enrich each row's name/grade/valuation from the FINAL explosive_psx im3 (keyed by
+      // ticker). build_psx_m2_watch runs mid-scanner, before the canonical im3 re-score writes the full
+      // grade back into explosive_psx, so the payload's stored name/grade can be a bare-ticker stub on a
+      // re-score run. The final data.json always has the full im3 here -> display reads it, falls back to
+      // the payload value, so names + grades are correct even right after an im3 version bump.
+      var exmap={}; try{ (LIVE.explosive_psx||[]).forEach(function(r){ exmap[r.ticker]=(r.im3||{}); }); }catch(e){}
       var ph_html='<div class="m2x-card" style="margin-top:14px;border-top:3px solid #059669;">'
         +'<div class="m2x-sec tr" style="color:#047857;">\uD83C\uDDF5\uD83C\uDDF0 PSX Turnaround Watch \u2014 '+pw.n_flagged+' flagged of '+pw.n_scanned+' scanned, top '+tw.length+' shown</div>'
         +'<div class="reading-box" style="font-size:12px;margin:6px 0 10px;background:#ecfdf5;border-color:#a7f3d0;">'
@@ -2333,10 +2339,14 @@ function calcMbUs(){
         +'The estimate-revision clock and volume families that sharpen the US engine have <b>no free PSX feed</b>, so this <b>flags leads to investigate \u2014 it does not filter or recommend</b>. Current PSX top-down buys are excluded.</div>'
         +'<table><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th title="canonical IM3 business-strength grade">Grade</th><th>Converging evidence</th><th>3-mo</th></tr></thead><tbody>';
       tw.forEach(function(x){
-        var gc={A:'#047857',B:'#0e7490',C:'#b45309',FAIL:'#b91c1c'}[x.grade]||'#64748b';
+        var xi=exmap[x.ticker]||{};
+        var nm=(xi.name)||x.name||x.ticker;
+        var gr=(xi.grade!=null?xi.grade:x.grade);
+        var val=((xi.valuation||{}).label)||x.valuation;
+        var gc={A:'#047857',B:'#0e7490',C:'#b45309',FAIL:'#b91c1c'}[gr]||'#64748b';
         ph_html+='<tr><td><b style="font-size:13px;">'+x.ticker+'</b>'+(x.is_financial?' <span class="m2x-chip" style="background:#e0e7ff;color:#3730a3;">bank</span>':'')+'</td>'
-          +'<td>'+(x.name||'\u2014')+'</td><td>'+(x.sector||'\u2014')+'</td>'
-          +'<td><b style="color:'+gc+';">'+(x.grade||'\u2014')+'</b>'+(x.valuation?' <span style="font-size:11px;color:#64748b;">'+x.valuation+'</span>':'')+'</td>'
+          +'<td>'+(nm||'\u2014')+'</td><td>'+(x.sector||'\u2014')+'</td>'
+          +'<td><b style="color:'+gc+';">'+(gr||'\u2014')+'</b>'+(val?' <span style="font-size:11px;color:#64748b;">'+val+'</span>':'')+'</td>'
           +'<td>'+(x.signals||[]).map(chip).join('')+'</td>'
           +'<td>'+pct(x.perf_3m)+'</td></tr>';
       });
