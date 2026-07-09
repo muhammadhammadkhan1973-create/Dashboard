@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.182</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.183</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2376,6 +2376,33 @@ function calcMbUs(){
   function ldTrend(ytd,ret1y,today){ var vals=[today,ytd,ret1y].filter(function(v){return typeof v==='number' && !isNaN(v);}); if(!vals.length) return null; var pos=vals.filter(function(v){return v>0;}).length, neg=vals.filter(function(v){return v<0;}).length; if(neg===0) return {a:'\u25B2',t:'Uptrend',c:'#047857'}; if(pos===0) return {a:'\u25BC',t:'Downtrend',c:'#b91c1c'}; var recent=(typeof today==='number')?today:ytd; if(recent>=0) return {a:'\u2197',t:'Recovering',c:'#059669'}; return {a:'\u2198',t:'Fading',c:'#d97706'}; }
   function ldTrendCell(ytd,ret1y,today){ var t=ldTrend(ytd,ret1y,today); if(!t) return '<span style="color:#94a3b8;">\u2014</span>'; return '<span title="Momentum trend from today / YTD / 1Y returns" style="color:'+t.c+';font-weight:700;white-space:nowrap;">'+t.a+' '+t.t+'</span>'; }
   function ldTrendArrow(ytd,ret1y,today){ var t=ldTrend(ytd,ret1y,today); if(!t) return ''; return ' <span title="Momentum trend ('+t.t+') from YTD / 1Y returns" style="color:'+t.c+';font-weight:700;">'+t.a+'</span>'; }
+  // v5.183: price-vs-50/200-DMA read with a plain-English deduction. Used by the Live Investment holdings table (visible columns + sentence) and every ETF live-price table (compact arrow + sentence on hover). Honest "\u2014" where TV served no MA.
+  function maRead(price,s50,s200){
+    var p=(typeof price==='number')?price:null, a=(typeof s50==='number')?s50:null, b=(typeof s200==='number')?s200:null;
+    if(a===null && b===null) return {ok:false};
+    var cross=(a!==null&&b!==null)?(a>=b?'golden':'death'):null;
+    var vs200=(p!==null&&b!==null)?(p>=b?'above':'below'):null;
+    var vs50 =(p!==null&&a!==null)?(p>=a?'above':'below'):null;
+    var label,color,sentence;
+    if(vs200==='above'&&cross==='golden'){
+      if(vs50==='above'){label='\u25B2 Uptrend';color='#047857';sentence='Trading above both its 50- and 200-day averages, with the 50-day above the 200-day \u2014 a textbook uptrend (a golden cross). Momentum is behind it.';}
+      else{label='\u25B2 Uptrend \u00b7 pullback';color='#059669';sentence='Above its 200-day average with the 50-day still over the 200-day (golden-cross structure), but the price has slipped below its 50-day \u2014 a pullback inside an uptrend.';}
+    } else if(vs200==='below'&&cross==='death'){
+      label='\u25BC Downtrend';color='#b91c1c';sentence='Trading below both its 50- and 200-day averages, with the 50-day under the 200-day \u2014 a downtrend (a death cross). The trend is against it for now.';
+    } else if(vs200==='above'&&cross==='death'){
+      label='\u2197 Recovering';color='#d97706';sentence='Back above its 200-day average, but the 50-day is still below the 200-day \u2014 an early recovery that has not yet confirmed (no golden cross yet).';
+    } else if(vs200==='below'&&cross==='golden'){
+      label='\u2198 Fading';color='#d97706';sentence='The 50-day is above the 200-day (golden-cross structure), but the price has dropped under its 200-day average \u2014 momentum is fading; watch whether it reclaims the 200-day.';
+    } else if(cross){
+      label=(cross==='golden')?'\u25B2 50>200':'\u25BC 50<200';color=(cross==='golden')?'#047857':'#b91c1c';sentence=(cross==='golden')?'Its 50-day average is above its 200-day average \u2014 a golden cross, the classic uptrend structure.':'Its 50-day average is below its 200-day average \u2014 a death cross, meaning the trend is against it.';
+    } else if(vs200){
+      label=(vs200==='above')?'\u25B2 Above 200-DMA':'\u25BC Below 200-DMA';color=(vs200==='above')?'#047857':'#b91c1c';sentence=(vs200==='above')?'Trading above its 200-day average \u2014 the long-term trend is up.':'Trading below its 200-day average \u2014 the long-term trend is down.';
+    } else return {ok:false};
+    return {ok:true,label:label,color:color,sentence:sentence};
+  }
+  function maNum(v){ return (typeof v==='number')?v.toLocaleString(undefined,{maximumFractionDigits:2}):'<span style="color:#cbd5e1;">\u2014</span>'; }
+  function maCell(price,s50,s200){ var m=maRead(price,s50,s200); if(!m.ok) return '<span style="color:#94a3b8;">\u2014</span>'; return '<span title="'+m.sentence+'" style="color:'+m.color+';font-weight:700;white-space:nowrap;cursor:help;">'+m.label+'</span>'; }
+  function maArrow(price,s50,s200){ var m=maRead(price,s50,s200); if(!m.ok) return ''; var tip=m.sentence+' (50-DMA '+((typeof s50==='number')?s50.toLocaleString(undefined,{maximumFractionDigits:2}):'\u2014')+', 200-DMA '+((typeof s200==='number')?s200.toLocaleString(undefined,{maximumFractionDigits:2}):'\u2014')+')'; return ' <span title="'+tip+'" style="color:'+m.color+';font-weight:700;cursor:help;">'+m.label.charAt(0)+'</span>'; }
   // v5.182: look-through underlying trend -- momentum (YTD/1Y) + 50/200-DMA cross, with a plain-English deduction on hover. Shows "\u2014" honestly where TV served no perf/MA for that line.
   function ltTrendCell(x){
     var t=ldTrend(x&&x.ytd,x&&x.ret_1y,null);
@@ -2422,7 +2449,7 @@ function calcMbUs(){
     // holdings table
     h+='<div class="m2x-card"><div class="m2x-sec">Holdings &mdash; your cost vs. now</div><table><thead><tr>'
       +'<th>Ticker</th><th>Fund</th><th>Shares</th><th>Cost</th><th>Price now</th><th>Value (USD)</th><th>Weight</th>'
-      +'<th>P&amp;L $</th><th>P&amp;L %</th><th>Today</th><th>YTD</th><th>Trend</th></tr></thead><tbody>';
+      +'<th>P&amp;L $</th><th>P&amp;L %</th><th>Today</th><th>YTD</th><th title="50-day moving average">50-DMA</th><th title="200-day moving average">200-DMA</th><th title="Price vs its 50/200-day averages and the golden/death cross — hover for the plain-English read">MA Trend</th><th>Trend</th></tr></thead><tbody>';
     (L.holdings||[]).forEach(function(r){
       h+='<tr><td><b>'+r.ticker+'</b></td><td style="font-size:12px;">'+(r.name||'')+'<div style="color:#94a3b8;font-size:11px;">'+(r.theme||'')+'</div></td>'
         +'<td>'+(r.shares!=null?Number(r.shares).toLocaleString(undefined,{maximumFractionDigits:2}):'\u2014')+'</td>'
@@ -2430,7 +2457,7 @@ function calcMbUs(){
         +'<td>'+(r.price!=null?(r.price.toFixed(2)+' '+(r.ccy||'')):'<span style="color:#b45309;">pending</span>')+'</td>'
         +'<td>'+money(r.mv_usd)+'</td><td>'+(r.weight!=null?r.weight.toFixed(1)+'%':'\u2014')+'</td>'
         +'<td>'+(r.pnl_usd!=null?('<span style="color:'+(r.pnl_usd>=0?'#047857':'#b91c1c')+';font-weight:600;">'+signed(r.pnl_usd)+'</span>'):'\u2014')+'</td>'
-        +'<td>'+pc(r.pnl_pct)+'</td><td>'+pc(r.daily_pct)+'</td><td>'+pc(r.ytd)+'</td><td>'+ldTrendCell(r.ytd,r.ret_1y,r.daily_pct)+'</td></tr>';
+        +'<td>'+pc(r.pnl_pct)+'</td><td>'+pc(r.daily_pct)+'</td><td>'+pc(r.ytd)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma50)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma200)+'</td>'+'<td style="font-size:12px;">'+maCell(r.price,r.sma50,r.sma200)+'</td>'+'<td>'+ldTrendCell(r.ytd,r.ret_1y,r.daily_pct)+'</td></tr>';
     });
     h+='</tbody></table><div style="font-size:11px;color:#94a3b8;margin-top:4px;">Cost = your entry price from the '+(L.inception_date||'entry')+' statement. P&amp;L is your real gain/loss since you bought \u2014 not the fund\u2019s calendar-year YTD.</div></div>';
 
@@ -6684,7 +6711,7 @@ function renderWorldEtfTab(){
           return '<div style="background:'+bgCol+';border:2px solid '+borderCol+';border-radius:12px;padding:14px 16px;flex:1;min-width:240px;max-width:340px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
             +'<div style="font-size:10px;color:#475569;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:5px;">'+doorIcon(r.door)+' '+r.signal+(conf?' <strong style="color:#0F766E">\u2605 double-confirmed</strong>':'')+'</div>'
             +'<div style="font-size:15px;font-weight:700;color:#0F172A;line-height:1.32;font-family:var(--font-head,inherit);">'+f.name+'</div>'
-            +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono,monospace);margin:5px 0;">'+f.isin+' \u00b7 TER '+(f.ter!=null?f.ter+'%':'\u2014')+ytdChip+'</div>'
+            +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono,monospace);margin:5px 0;">'+f.isin+' \u00b7 TER '+(f.ter!=null?f.ter+'%':'\u2014')+ytdChip+'</div>'+(maRead(f.live_price,f.live_sma50,f.live_sma200).ok?('<div style="font-size:11px;margin:3px 0 5px;">'+maCell(f.live_price,f.live_sma50,f.live_sma200)+'</div>'):'')
             +(f.holdings?'<div style="font-size:11.5px;color:#475569;margin:5px 0;line-height:1.4;"><b style="color:#1E293B;">Top holdings:</b> '+f.holdings+'</div>':'')
             +'<div style="margin-top:9px;padding-top:9px;border-top:1px solid '+borderCol+'55;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">'+fmtPrice(f, trendPct, trendLabel)+fmtTicker(f)+'</div>'
             +fmtTrailing(r)
@@ -6763,7 +6790,7 @@ function renderWorldEtfTab(){
           return '<tr style="border-bottom:1px solid #F1F5F9;">'
             +'<td style="padding:5px 8px;font-size:11px;color:#475569;font-weight:700;vertical-align:top;">'+e.rank+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;font-weight:600;color:#0F172A;vertical-align:top;word-break:break-word;">'+e.name+note+tierBadge+'</td>'
-            +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;vertical-align:top;white-space:nowrap;">'+ytdStr+ldTrendArrow(ytdVal,y1Val,null)+'</td>'
+            +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;vertical-align:top;white-space:nowrap;">'+ytdStr+ldTrendArrow(ytdVal,y1Val,null)+maArrow(e.live_price,e.live_sma50,e.live_sma200)+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;color:#0F172A;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+y1Str+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;color:#475569;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+terStr+'</td>'
             +'<td style="padding:5px 8px;font-size:10.5px;color:#475569;vertical-align:top;word-break:break-word;">'+(e.holdings||'\u2014')+'</td>'
@@ -6811,7 +6838,7 @@ function renderWorldEtfTab(){
         if(w.live_price==null) return '<span style="font-size:10px;color:#94A3B8;">price \u2014</span>';
         var ccy=w.live_ccy||''; var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
         var px=typeof w.live_price==='number'?w.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):w.live_price;
-        return '<span style="font-size:12px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>'+trendArrow(trendPct, '1Y trend');
+        return '<span style="font-size:12px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>'+trendArrow(trendPct, '1Y trend')+maArrow(w.live_price,w.live_sma50,w.live_sma200);
       };
       // v5.131: period pill guarded so a missing value shows a dash, never the literal "null%".
       // YTD prefers the live resolver figure (available on the very first run, including for a
@@ -6876,7 +6903,7 @@ function renderWorldEtfTab(){
         if(w.live_price==null) return '<span style="font-size:10px;color:#94A3B8;">price \u2014</span>';
         var ccy=w.live_ccy||''; var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
         var px=typeof w.live_price==='number'?w.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):w.live_price;
-        return '<span style="font-size:12px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>'+trendArrow(trendPct, 'YTD trend');
+        return '<span style="font-size:12px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>'+trendArrow(trendPct, 'YTD trend')+maArrow(w.live_price,w.live_sma50,w.live_sma200);
       };
       var html='';
       Object.keys(byTheme).forEach(function(theme){
@@ -6924,7 +6951,7 @@ function renderWorldEtfTab(){
         if(w.live_price==null) return '<span style="font-size:10px;color:#94A3B8;">price \u2014</span>';
         var ccy=w.live_ccy||''; var ccyS=ccy==='USD'?'$':ccy==='EUR'?'\u20ac':ccy==='GBP'?'\u00a3':'';
         var px=typeof w.live_price==='number'?w.live_price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):w.live_price;
-        return '<span style="font-size:15px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>'+trendArrow(trendPct, 'vs 200-DMA');
+        return '<span style="font-size:15px;font-weight:700;color:#0F172A;">'+ccyS+px+' '+ccy+'</span>'+trendArrow(trendPct, 'vs 200-DMA')+maArrow(w.live_price,w.live_sma50,w.live_sma200);
       };
       // pulls the SAME 4 fields Tab 12's dmaChip() renders, direct from macros.metals
       function techSignal(metalName){
