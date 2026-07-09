@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.181</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.182</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2376,6 +2376,25 @@ function calcMbUs(){
   function ldTrend(ytd,ret1y,today){ var vals=[today,ytd,ret1y].filter(function(v){return typeof v==='number' && !isNaN(v);}); if(!vals.length) return null; var pos=vals.filter(function(v){return v>0;}).length, neg=vals.filter(function(v){return v<0;}).length; if(neg===0) return {a:'\u25B2',t:'Uptrend',c:'#047857'}; if(pos===0) return {a:'\u25BC',t:'Downtrend',c:'#b91c1c'}; var recent=(typeof today==='number')?today:ytd; if(recent>=0) return {a:'\u2197',t:'Recovering',c:'#059669'}; return {a:'\u2198',t:'Fading',c:'#d97706'}; }
   function ldTrendCell(ytd,ret1y,today){ var t=ldTrend(ytd,ret1y,today); if(!t) return '<span style="color:#94a3b8;">\u2014</span>'; return '<span title="Momentum trend from today / YTD / 1Y returns" style="color:'+t.c+';font-weight:700;white-space:nowrap;">'+t.a+' '+t.t+'</span>'; }
   function ldTrendArrow(ytd,ret1y,today){ var t=ldTrend(ytd,ret1y,today); if(!t) return ''; return ' <span title="Momentum trend ('+t.t+') from YTD / 1Y returns" style="color:'+t.c+';font-weight:700;">'+t.a+'</span>'; }
+  // v5.182: look-through underlying trend -- momentum (YTD/1Y) + 50/200-DMA cross, with a plain-English deduction on hover. Shows "\u2014" honestly where TV served no perf/MA for that line.
+  function ltTrendCell(x){
+    var t=ldTrend(x&&x.ytd,x&&x.ret_1y,null);
+    var cross=null;
+    if(x && typeof x.sma50==='number' && typeof x.sma200==='number'){
+      cross = (x.sma50>=x.sma200) ? {t:'golden cross',c:'#047857',up:true} : {t:'death cross',c:'#b91c1c',up:false};
+    }
+    if(!t && !cross) return '<span style="color:#94a3b8;">\u2014</span>';
+    var parts=[], ded=[];
+    if(t){
+      parts.push('<span style="color:'+t.c+';font-weight:700;white-space:nowrap;">'+t.a+' '+t.t+'</span>');
+      ded.push(t.t==='Uptrend'?'up on both its year-to-date and 1-year returns':t.t==='Downtrend'?'down on both its year-to-date and 1-year returns':t.t==='Recovering'?'turning back up after a weak stretch':'losing momentum lately');
+    }
+    if(cross){
+      parts.push('<span class="m2x-chip" style="background:'+(cross.up?'#d1fae5':'#fee2e2')+';color:'+cross.c+';white-space:nowrap;">'+cross.t+'</span>');
+      ded.push(cross.up?'its 50-day average sits above its 200-day average \u2014 a golden cross, the textbook uptrend structure':'its 50-day average sits below its 200-day average \u2014 a death cross, meaning the trend is against it');
+    }
+    return '<span title="'+ded.join('; and ')+'.">'+parts.join(' &nbsp;')+'</span>';
+  }
 
   // -- LIVE INVESTMENT tab (v5.178: + Live Look-through section — holdings-level FactSet ratings/targets/upside/next-Q EPS on the real underlyings across US+Taiwan+Korea+China lines, plus Markets & Themes news, vibrant-green styled; v5.177 cost-basis P&L hero + Forward view + fund-name news): owner's real IBKR UCITS-ETF portfolio --
   (function(){
@@ -2464,7 +2483,7 @@ function calcMbUs(){
           +(f.theme?('<span class="m2x-chip" style="background:#d1fae5;color:#065f46;">'+f.theme+'</span>'):'')
           +'<span style="margin-left:auto;font-size:11px;color:#94a3b8;">'+rc+'/'+hs.length+' rated'+(f.exchange?(' \u2022 '+String(f.exchange).toUpperCase()):'')+'</span></div>';
         if(!hs.length){ h+='<div style="font-size:12px;color:#94a3b8;">'+(f.note||'holdings not available this run')+'</div></div>'; return; }
-        h+='<table><thead><tr><th>Holding</th><th>Weight</th><th>Rating</th><th>12-mo Target</th><th>Upside</th><th>Next-Q EPS</th><th>News</th></tr></thead><tbody>';
+        h+='<table><thead><tr><th>Holding</th><th>Weight</th><th>Rating</th><th>12-mo Target</th><th>Upside</th><th title="Live trend from the underlying\u2019s own YTD/1Y returns and its 50/200-day moving-average cross \u2014 hover a cell for the plain-English read">Trend</th><th>Next-Q EPS</th><th>News</th></tr></thead><tbody>';
         hs.forEach(function(x){
           var lab=x.tvsym||x.name||x.ticker;
           var nl=(x.news&&x.news.length&&x.news[0].link)?('<a href="'+x.news[0].link+'" target="_blank" style="color:#0e7490;text-decoration:none;">\uD83D\uDCF0 '+x.news.length+'</a>'):'<span style="color:#cbd5e1;">\u2014</span>';
@@ -2473,6 +2492,7 @@ function calcMbUs(){
             +'<td><span style="padding:2px 8px;border-radius:10px;font-size:11px;'+ltRatingStyle(x.rating)+'">'+(x.rating||'\u2014')+'</span></td>'
             +'<td style="font-size:12px;">'+ltNum(x.target)+'</td>'
             +'<td>'+ltUp(x.upside)+'</td>'
+            +'<td style="font-size:12px;">'+ltTrendCell(x)+'</td>'
             +'<td style="font-size:12px;">'+ltNum(x.eps_next_q)+'</td>'
             +'<td style="text-align:center;">'+nl+'</td></tr>';
         });
