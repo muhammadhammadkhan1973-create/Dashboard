@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.186</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.187</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -688,6 +688,7 @@
     <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#B45309;text-transform:uppercase;margin-bottom:10px;">US Sector Composite Rankings</div>
     <p style="font-size:12px;color:#64748B;margin:-4px 0 12px;line-height:1.4;">0–100 score from six signals: price momentum 25% · 200-DMA breadth 20% · forward targets + Zacks 20% · regime fit 15% · RS vs market 10% · COT 10%. COT mapped to 8 real contracts (Energy/Utilities/Staples/Materials/IT/CommSvcs/Financials/Industrials) — 3 sectors correctly show n/a (no tradeable proxy).</p>
     <div id="we_sector_booming_table" style="margin-bottom:8px;"></div>
+    <div id="we_bottom_up_sectors" style="margin-bottom:8px;"></div>
 
   </div>
 
@@ -2410,7 +2411,7 @@ function calcMbUs(){
         +'<td>'+pc(r.pnl_pct)+'</td><td>'+pc(r.daily_pct)+'</td><td>'+pc(r.ytd)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma50)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma200)+'</td>'+'<td style="font-size:12px;">'+maCell(r.price,r.sma50,r.sma200)+'</td>'+'<td>'+ldTrendCell(r.ytd,r.ret_1y,r.daily_pct)+'</td></tr>';
     });
     h+='</tbody></table><div style="font-size:11px;color:#94a3b8;margin-top:4px;">Cost = your entry price from the '+(L.inception_date||'entry')+' statement. P&amp;L is your real gain/loss since you bought \u2014 not the fund\u2019s calendar-year YTD.</div></div>';
-    // v5.186: trading hours (Dubai time) \u2014 where the ETFs list (when YOU trade) + when the underlying companies trade (what moves NAV)
+    // v5.187: trading hours (Dubai time) \u2014 where the ETFs list (when YOU trade) + when the underlying companies trade (what moves NAV)
     h+='<div id="li_trading_hours"></div>';
 
     // grow/deplete narrative
@@ -5467,7 +5468,7 @@ function renderPsxNarrative(){
     return '<span title="'+ded.join('; and ')+'.">'+parts.join(' &nbsp;')+'</span>';
   }
 
-// === v5.186: exchange trading hours in DUBAI time (GST, UTC+4). Static local windows + LIVE DST-correct Dubai conversion + open/closed. GLOBAL scope (v5.185 lesson: never nest a helper the render depends on). ===
+// === v5.187: exchange trading hours in DUBAI time (GST, UTC+4). Static local windows + LIVE DST-correct Dubai conversion + open/closed. GLOBAL scope (v5.185 lesson: never nest a helper the render depends on). ===
 var EXHOURS = {
   // ETF listing venues (from the holding's resolved sym prefix)
   'LSE':      {name:'London (LSE)',         tz:'Europe/London',    sess:[[8,0,16,30]]},
@@ -6270,6 +6271,7 @@ function renderWorldEconomy(){
   _renderWeGlobalTheme();
   _renderWeEtfRecs();
   _renderWeSectorBooming();
+  _renderBottomUpSectors();
 }
 
 function _renderWeHeroStrip(){
@@ -6543,6 +6545,7 @@ function _renderWeEtfRecs(){
         '<div style="font-size:10px;color:'+(cc>1?'#059669':'#94A3B8')+';font-weight:700;letter-spacing:0.5px;">'+doorLabel(r.door)+(cc>1?' ('+cc+' signals)':'')+' \u00b7 '+r.signal+'</div>'+
         '<div style="font-size:13px;font-weight:700;color:#0F172A;">'+f.name+'</div>'+
         '<div style="font-size:11px;color:#64748B;">'+r.reason+(f._fallback_from?' \u00b7 via '+f._resolved_via:'')+'</div>'+
+        (r.macro_confirmed!=null?'<div style="font-size:10px;margin-top:3px;font-weight:700;color:'+(r.macro_confirmed?'#059669':'#B45309')+';">'+(r.macro_confirmed?'✓ Macro-confirmed':'⚠ Return-led — macro not confirming')+' <span style="font-weight:400;color:#94A3B8;">'+(r.macro_reason||'')+'</span></div>':'')+
         '<div style="margin-top:4px;">'+fmtPrice(f)+'</div>'+
         '</div>'+
         '<div style="text-align:right;flex-shrink:0;">'+
@@ -6551,6 +6554,32 @@ function _renderWeEtfRecs(){
         '</div>';
     }).join('')+'</div>'+
     '<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;line-height:1.4;">Resolved from the largest-by-size UCITS fund in the matching category (fund size \u226510m EUR quality floor, 134 funds / 28 categories). Live price via TradingView scanner ISIN-filter (uk/scan USD \u00b7 germany/scan EUR). Not investment advice \u2014 verify current holdings and suitability before any trade.</p>';
+}
+
+function _renderBottomUpSectors(){
+  const el=document.getElementById('we_bottom_up_sectors');
+  if(!el) return;
+  const bu=(LIVE&&LIVE.bottom_up_sectors)||[];
+  if(!bu.length){el.innerHTML='';return;}
+  const col=function(b){return b==='Booming'?'#059669':b==='Favoured'?'#16A34A':b==='Neutral'?'#64748B':b==='Lagging'?'#D97706':'#DC2626';};
+  let html='<div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#64748B;margin:14px 0 6px;">BOTTOM-UP SECTORS \u2014 where the winning stocks actually cluster (cross-check to the top-down read above)</div>';
+  html+='<div style="display:flex;flex-direction:column;gap:6px;">';
+  bu.slice(0,8).forEach(function(r){
+    var c=col(r.band);
+    var tn=(r.top_names||[]).map(function(t){return t[0];}).slice(0,4).join(', ');
+    html+='<div style="background:#FAFAFA;border:1px solid '+(r.agree?'#059669':'#E2E8F0')+';border-radius:10px;padding:9px 13px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">'+
+      '<div style="width:22px;text-align:center;font-size:11px;font-weight:700;color:#94A3B8;">#'+r.rank+'</div>'+
+      '<div style="min-width:150px;flex:1;"><div style="font-size:13px;font-weight:700;color:#0F172A;">'+r.sector+'</div>'+
+      '<div style="font-size:10px;color:#94A3B8;">'+(tn||'')+'</div></div>'+
+      '<div style="text-align:center;"><div style="font-size:9px;color:#94A3B8;font-weight:700;">WINNERS</div><div style="font-size:12px;font-weight:700;color:#0F172A;">'+r.winner_share+'%</div></div>'+
+      '<div style="text-align:center;"><div style="font-size:9px;color:#94A3B8;font-weight:700;">MED RET</div><div style="font-size:12px;font-weight:700;color:'+(r.median_ret>=0?'#059669':'#DC2626')+';">'+r.median_ret+'%</div></div>'+
+      '<div style="font-size:18px;font-weight:900;color:'+c+';">'+r.score+'</div>'+
+      '<span style="font-size:11px;font-weight:800;padding:3px 12px;border-radius:20px;color:'+c+';border:1.5px solid '+c+';">'+r.band+'</span>'+
+      (r.agree?'<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:12px;background:#DCFCE7;color:#059669;">\u2713 agrees top-down</span>':(r.topdown_band?'<span style="font-size:10px;color:#94A3B8;">top-down: '+r.topdown_band+'</span>':''))+
+      '</div>';
+  });
+  html+='</div><p style="font-size:11px;color:#94A3B8;margin:8px 0 0;line-height:1.4;">Built bottom-up from the ~1,935 US foundation stocks: each sector\u2019s share of the top-quintile return names + how its median return beats the market. A green border / \u201cagrees top-down\u201d badge = booming in BOTH engines (high-confidence). Divergence (bottom-up Booming while top-down Lagging) = individual names are moving before the top-down momentum read catches it \u2014 worth a look, not a signal on its own.</p>';
+  el.innerHTML=html;
 }
 
 function _renderWeSectorBooming(){
@@ -6817,6 +6846,8 @@ function renderWorldEtfTab(){
   var elMW=document.getElementById('we_momentum40_main');
   if(elMW){
     var mw=(LIVE&&LIVE.etf_momentum_watch)||[];
+    var _mwSrc=(LIVE&&LIVE.etf_momentum_source)||'embedded';
+    var _mwBadge=(_mwSrc==='live'?'<div style="font-size:11px;font-weight:700;color:#059669;margin:0 0 8px;">● LIVE-DISCOVERED — screened fresh this run across 5 European venues (leveraged/inverse excluded); the quarterly ETF_Universe.xlsx upload is now an optional seed.</div>':'<div style="font-size:11px;font-weight:700;color:#B45309;margin:0 0 8px;">○ EMBEDDED SEED — the live screen returned nothing this run; showing the last uploaded list.</div>');
     if(!mw.length){
       elMW.innerHTML='<p style="color:#94A3B8;font-size:12px;">Momentum-Watch list loading (scanner v1.133.0+).</p>';
     } else {
@@ -6899,7 +6930,7 @@ function renderWorldEtfTab(){
         +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">ISIN</th>'
         +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">Ticker</th>'
         +'</tr></thead><tbody>'+bodyRows+'</tbody></table></div>';
-      elMW.innerHTML=table
+      elMW.innerHTML=_mwBadge+table
         +'<p style="font-size:10px;color:#94A3B8;margin:6px 0 0;">'
         +'\u26a0 Crypto ETP (rank 1) has different risk characteristics from equity ETFs. '
         +'Ranks 35-55 (badged) are the 35-39.99% YTD tier added when the threshold was lowered from 40%. '
