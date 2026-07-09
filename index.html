@@ -623,7 +623,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.177</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.178</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2358,7 +2358,7 @@ function calcMbUs(){
     })();
   })();
 
-  // -- LIVE INVESTMENT tab (v5.177: cost-basis P&L since entry as the hero number + per-holding Cost/P&L columns + Forward view (Zacks/analyst from underlyings) + fund-name news; v5.176 initial): owner's real IBKR UCITS-ETF portfolio --
+  // -- LIVE INVESTMENT tab (v5.178: + Live Look-through section — holdings-level FactSet ratings/targets/upside/next-Q EPS on the real underlyings across US+Taiwan+Korea+China lines, plus Markets & Themes news, vibrant-green styled; v5.177 cost-basis P&L hero + Forward view + fund-name news): owner's real IBKR UCITS-ETF portfolio --
   (function(){
     var host=document.getElementById('liveinv_body'); if(!host) return;
     var L=(typeof LIVE!=='undefined'&&LIVE&&LIVE.live_investment)||null;
@@ -2419,6 +2419,57 @@ function calcMbUs(){
         +'<td style="font-size:12px;">'+pc(f.ytd)+' / '+pc(f.ret_1y)+'</td></tr>';
     });
     h+='</tbody></table><div style="font-size:11px;color:#94a3b8;margin-top:4px;">ETFs don\u2019t carry their own Zacks rank or analyst rating, so this aggregates the dashboard\u2019s coverage of each fund\u2019s underlying holdings (Zacks 1=Strong Buy \u2026 5=Strong Sell). Foreign-listed underlyings (Taiwan/Korea/China) largely aren\u2019t covered \u2014 those rows fall back to the fund\u2019s trailing return + regional macro.</div></div>';
+
+    // -- LIVE LOOK-THROUGH (v5.178): the real companies inside each fund, with FactSet analyst rating / 12-mo target / upside / next-Q EPS on the actual underlyings (US + Taiwan/Korea/China lines) + market & theme news. Data: LIVE.live_lookthrough from scanner build_live_lookthrough. --
+    var LT=(typeof LIVE!=='undefined'&&LIVE&&LIVE.live_lookthrough)||null;
+    if(LT&&LT.funds&&LT.funds.length){
+      function ltRatingStyle(r){ if(!r||r==='\u2014') return 'color:#94a3b8;'; var s=String(r).toLowerCase();
+        if(s.indexOf('strong buy')>=0) return 'color:#065f46;background:#a7f3d0;font-weight:700;';
+        if(s.indexOf('strong sell')>=0) return 'color:#7f1d1d;background:#fecaca;font-weight:700;';
+        if(s.indexOf('sell')>=0) return 'color:#991b1b;background:#fee2e2;font-weight:600;';
+        if(s.indexOf('buy')>=0) return 'color:#166534;background:#dcfce7;font-weight:600;';
+        return 'color:#92400e;background:#fef3c7;font-weight:600;'; }
+      function ltNum(v){ if(v==null) return '\u2014'; return Number(v).toLocaleString(undefined,{maximumFractionDigits:2}); }
+      function ltUp(v){ if(v==null) return '\u2014'; var s=v>=0?'+':''; var c=v>=0?'#047857':'#b91c1c'; return '<span style="color:'+c+';font-weight:600;">'+s+Number(v).toFixed(1)+'%</span>'; }
+      var ltpr=LT.probe||{}; var ltTot=(ltpr.by_market?Object.keys(ltpr.by_market).reduce(function(a,k){return a+(ltpr.by_market[k].n||0);},0):null);
+      h+='<div class="m2x-card" style="border:2px solid #10B981;background:linear-gradient(180deg,#ecfdf5,#ffffff);">'
+        +'<div class="m2x-sec" style="color:#065f46;font-size:16px;">\uD83D\uDD0D Live Look-through \u2014 the real companies inside your funds</div>'
+        +'<div style="font-size:12px;color:#475569;">Not the ETF wrapper \u2014 the actual top holdings (Samsung, TSMC, SK Hynix, NVIDIA\u2026), each with its sell-side analyst rating, 12-month price target, implied upside and next-quarter EPS, from the same FactSet feed across US <b>and</b> Taiwan / Korea / China lines. '
+        +'<b style="color:#065f46;">Rated this run: '+(ltpr.rated!=null?ltpr.rated:'\u2014')+(ltTot?('/'+ltTot):'')+' holdings.</b></div></div>';
+      LT.funds.forEach(function(f){
+        var hs=f.holdings||[]; var rc=hs.filter(function(x){return x.rating&&x.rating!=='\u2014';}).length;
+        h+='<div class="m2x-card" style="border-left:4px solid #10B981;">'
+          +'<div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:6px;">'
+          +'<span style="font-size:15px;font-weight:800;color:#065f46;">'+f.ticker+'</span>'
+          +'<span style="font-size:12px;color:#475569;">'+(f.name||'')+'</span>'
+          +(f.theme?('<span class="m2x-chip" style="background:#d1fae5;color:#065f46;">'+f.theme+'</span>'):'')
+          +'<span style="margin-left:auto;font-size:11px;color:#94a3b8;">'+rc+'/'+hs.length+' rated'+(f.exchange?(' \u2022 '+String(f.exchange).toUpperCase()):'')+'</span></div>';
+        if(!hs.length){ h+='<div style="font-size:12px;color:#94a3b8;">'+(f.note||'holdings not available this run')+'</div></div>'; return; }
+        h+='<table><thead><tr><th>Holding</th><th>Weight</th><th>Rating</th><th>12-mo Target</th><th>Upside</th><th>Next-Q EPS</th><th>News</th></tr></thead><tbody>';
+        hs.forEach(function(x){
+          var lab=x.tvsym||x.name||x.ticker;
+          var nl=(x.news&&x.news.length&&x.news[0].link)?('<a href="'+x.news[0].link+'" target="_blank" style="color:#0e7490;text-decoration:none;">\uD83D\uDCF0 '+x.news.length+'</a>'):'<span style="color:#cbd5e1;">\u2014</span>';
+          h+='<tr><td><b style="font-size:12px;">'+lab+'</b></td>'
+            +'<td>'+(x.weight!=null?Number(x.weight).toFixed(1)+'%':'\u2014')+'</td>'
+            +'<td><span style="padding:2px 8px;border-radius:10px;font-size:11px;'+ltRatingStyle(x.rating)+'">'+(x.rating||'\u2014')+'</span></td>'
+            +'<td style="font-size:12px;">'+ltNum(x.target)+'</td>'
+            +'<td>'+ltUp(x.upside)+'</td>'
+            +'<td style="font-size:12px;">'+ltNum(x.eps_next_q)+'</td>'
+            +'<td style="text-align:center;">'+nl+'</td></tr>';
+        });
+        h+='</tbody></table></div>';
+      });
+      h+='<div class="m2x-card" style="border:1px solid #a7f3d0;"><div class="m2x-sec" style="color:#065f46;">\uD83C\uDF0F Markets &amp; Themes \u2014 news on the exchanges &amp; stories you\u2019re exposed to</div>';
+      var ltAnyNews=false;
+      LT.funds.forEach(function(f){
+        var en=(f.exchange_news||[]),tn=(f.theme_news||[]); if(!en.length&&!tn.length) return; ltAnyNews=true;
+        h+='<div style="margin-bottom:10px;"><div style="font-size:12px;font-weight:700;color:#334155;">'+f.ticker+' \u2014 '+(f.theme||f.exchange||'')+'</div>';
+        en.concat(tn).slice(0,4).forEach(function(n){ h+='<div style="font-size:12px;color:#334155;margin-left:10px;">\u2022 '+(n.link?('<a href="'+n.link+'" target="_blank" style="color:#0e7490;text-decoration:none;">'+n.title+'</a>'):n.title)+'</div>'; });
+        h+='</div>';
+      });
+      if(!ltAnyNews) h+='<div style="font-size:12px;color:#94a3b8;">Market &amp; theme news populates next run.</div>';
+      h+='<div style="font-size:11px;color:#94a3b8;margin-top:4px;">'+(LT.forward_note||'')+'</div></div>';
+    }
 
     // rebalancing wired to World ETF + World Economy
     var rb=L.rebalance||{};
