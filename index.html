@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.184</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.185</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2372,56 +2372,6 @@ function calcMbUs(){
     })();
   })();
 
-  // -- Trend helper (v5.181): momentum direction from live returns (today / YTD / 1Y). Shared by the Live Investment holdings table and the World ETF live-price list. No new data -- reads returns already resolved this run; shows an em-dash when a name has no returns yet. --
-  function ldTrend(ytd,ret1y,today){ var vals=[today,ytd,ret1y].filter(function(v){return typeof v==='number' && !isNaN(v);}); if(!vals.length) return null; var pos=vals.filter(function(v){return v>0;}).length, neg=vals.filter(function(v){return v<0;}).length; if(neg===0) return {a:'\u25B2',t:'Uptrend',c:'#047857'}; if(pos===0) return {a:'\u25BC',t:'Downtrend',c:'#b91c1c'}; var recent=(typeof today==='number')?today:ytd; if(recent>=0) return {a:'\u2197',t:'Recovering',c:'#059669'}; return {a:'\u2198',t:'Fading',c:'#d97706'}; }
-  function ldTrendCell(ytd,ret1y,today){ var t=ldTrend(ytd,ret1y,today); if(!t) return '<span style="color:#94a3b8;">\u2014</span>'; return '<span title="Momentum trend from today / YTD / 1Y returns" style="color:'+t.c+';font-weight:700;white-space:nowrap;">'+t.a+' '+t.t+'</span>'; }
-  function ldTrendArrow(ytd,ret1y,today){ var t=ldTrend(ytd,ret1y,today); if(!t) return ''; return ' <span title="Momentum trend ('+t.t+') from YTD / 1Y returns" style="color:'+t.c+';font-weight:700;">'+t.a+'</span>'; }
-  // v5.183: price-vs-50/200-DMA read with a plain-English deduction. Used by the Live Investment holdings table (visible columns + sentence) and every ETF live-price table (compact arrow + sentence on hover). Honest "\u2014" where TV served no MA.
-  function maRead(price,s50,s200){
-    var p=(typeof price==='number')?price:null, a=(typeof s50==='number')?s50:null, b=(typeof s200==='number')?s200:null;
-    if(a===null && b===null) return {ok:false};
-    var cross=(a!==null&&b!==null)?(a>=b?'golden':'death'):null;
-    var vs200=(p!==null&&b!==null)?(p>=b?'above':'below'):null;
-    var vs50 =(p!==null&&a!==null)?(p>=a?'above':'below'):null;
-    var label,color,sentence;
-    if(vs200==='above'&&cross==='golden'){
-      if(vs50==='above'){label='\u25B2 Uptrend';color='#047857';sentence='Trading above both its 50- and 200-day averages, with the 50-day above the 200-day \u2014 a textbook uptrend (a golden cross). Momentum is behind it.';}
-      else{label='\u25B2 Uptrend \u00b7 pullback';color='#059669';sentence='Above its 200-day average with the 50-day still over the 200-day (golden-cross structure), but the price has slipped below its 50-day \u2014 a pullback inside an uptrend.';}
-    } else if(vs200==='below'&&cross==='death'){
-      label='\u25BC Downtrend';color='#b91c1c';sentence='Trading below both its 50- and 200-day averages, with the 50-day under the 200-day \u2014 a downtrend (a death cross). The trend is against it for now.';
-    } else if(vs200==='above'&&cross==='death'){
-      label='\u2197 Recovering';color='#d97706';sentence='Back above its 200-day average, but the 50-day is still below the 200-day \u2014 an early recovery that has not yet confirmed (no golden cross yet).';
-    } else if(vs200==='below'&&cross==='golden'){
-      label='\u2198 Fading';color='#d97706';sentence='The 50-day is above the 200-day (golden-cross structure), but the price has dropped under its 200-day average \u2014 momentum is fading; watch whether it reclaims the 200-day.';
-    } else if(cross){
-      label=(cross==='golden')?'\u25B2 50>200':'\u25BC 50<200';color=(cross==='golden')?'#047857':'#b91c1c';sentence=(cross==='golden')?'Its 50-day average is above its 200-day average \u2014 a golden cross, the classic uptrend structure.':'Its 50-day average is below its 200-day average \u2014 a death cross, meaning the trend is against it.';
-    } else if(vs200){
-      label=(vs200==='above')?'\u25B2 Above 200-DMA':'\u25BC Below 200-DMA';color=(vs200==='above')?'#047857':'#b91c1c';sentence=(vs200==='above')?'Trading above its 200-day average \u2014 the long-term trend is up.':'Trading below its 200-day average \u2014 the long-term trend is down.';
-    } else return {ok:false};
-    return {ok:true,label:label,color:color,sentence:sentence};
-  }
-  function maNum(v){ return (typeof v==='number')?v.toLocaleString(undefined,{maximumFractionDigits:2}):'<span style="color:#cbd5e1;">\u2014</span>'; }
-  function maCell(price,s50,s200){ var m=maRead(price,s50,s200); if(!m.ok) return '<span style="color:#94a3b8;">\u2014</span>'; return '<span title="'+m.sentence+'" style="color:'+m.color+';font-weight:700;white-space:nowrap;cursor:help;">'+m.label+'</span>'; }
-  function maArrow(price,s50,s200){ var m=maRead(price,s50,s200); if(!m.ok) return ''; var tip=m.sentence+' (50-DMA '+((typeof s50==='number')?s50.toLocaleString(undefined,{maximumFractionDigits:2}):'\u2014')+', 200-DMA '+((typeof s200==='number')?s200.toLocaleString(undefined,{maximumFractionDigits:2}):'\u2014')+')'; return ' <span title="'+tip+'" style="color:'+m.color+';font-weight:700;cursor:help;">'+m.label.charAt(0)+'</span>'; }
-  // v5.182: look-through underlying trend -- momentum (YTD/1Y) + 50/200-DMA cross, with a plain-English deduction on hover. Shows "\u2014" honestly where TV served no perf/MA for that line.
-  function ltTrendCell(x){
-    var t=ldTrend(x&&x.ytd,x&&x.ret_1y,null);
-    var cross=null;
-    if(x && typeof x.sma50==='number' && typeof x.sma200==='number'){
-      cross = (x.sma50>=x.sma200) ? {t:'golden cross',c:'#047857',up:true} : {t:'death cross',c:'#b91c1c',up:false};
-    }
-    if(!t && !cross) return '<span style="color:#94a3b8;">\u2014</span>';
-    var parts=[], ded=[];
-    if(t){
-      parts.push('<span style="color:'+t.c+';font-weight:700;white-space:nowrap;">'+t.a+' '+t.t+'</span>');
-      ded.push(t.t==='Uptrend'?'up on both its year-to-date and 1-year returns':t.t==='Downtrend'?'down on both its year-to-date and 1-year returns':t.t==='Recovering'?'turning back up after a weak stretch':'losing momentum lately');
-    }
-    if(cross){
-      parts.push('<span class="m2x-chip" style="background:'+(cross.up?'#d1fae5':'#fee2e2')+';color:'+cross.c+';white-space:nowrap;">'+cross.t+'</span>');
-      ded.push(cross.up?'its 50-day average sits above its 200-day average \u2014 a golden cross, the textbook uptrend structure':'its 50-day average sits below its 200-day average \u2014 a death cross, meaning the trend is against it');
-    }
-    return '<span title="'+ded.join('; and ')+'.">'+parts.join(' &nbsp;')+'</span>';
-  }
 
   // -- LIVE INVESTMENT tab (v5.178: + Live Look-through section — holdings-level FactSet ratings/targets/upside/next-Q EPS on the real underlyings across US+Taiwan+Korea+China lines, plus Markets & Themes news, vibrant-green styled; v5.177 cost-basis P&L hero + Forward view + fund-name news): owner's real IBKR UCITS-ETF portfolio --
   (function(){
@@ -5461,6 +5411,58 @@ function renderPsxNarrative(){
   el.innerHTML='<div class="reading-box" style="border-left:4px solid #065F46;line-height:1.7;font-size:13px;background:#F0FDF4;">'
     +parts.map(function(p){return '<p style="margin:0 0 8px;">'+p+'</p>';}).join('')+note+'</div>';
 }
+
+// === v5.185: MA/trend helpers hoisted to GLOBAL scope (were nested in the Live Investment render, which broke the World ETF render calls at load and nulled LIVE) ===
+  // -- Trend helper (v5.181): momentum direction from live returns (today / YTD / 1Y). Shared by the Live Investment holdings table and the World ETF live-price list. No new data -- reads returns already resolved this run; shows an em-dash when a name has no returns yet. --
+  function ldTrend(ytd,ret1y,today){ var vals=[today,ytd,ret1y].filter(function(v){return typeof v==='number' && !isNaN(v);}); if(!vals.length) return null; var pos=vals.filter(function(v){return v>0;}).length, neg=vals.filter(function(v){return v<0;}).length; if(neg===0) return {a:'\u25B2',t:'Uptrend',c:'#047857'}; if(pos===0) return {a:'\u25BC',t:'Downtrend',c:'#b91c1c'}; var recent=(typeof today==='number')?today:ytd; if(recent>=0) return {a:'\u2197',t:'Recovering',c:'#059669'}; return {a:'\u2198',t:'Fading',c:'#d97706'}; }
+  function ldTrendCell(ytd,ret1y,today){ var t=ldTrend(ytd,ret1y,today); if(!t) return '<span style="color:#94a3b8;">\u2014</span>'; return '<span title="Momentum trend from today / YTD / 1Y returns" style="color:'+t.c+';font-weight:700;white-space:nowrap;">'+t.a+' '+t.t+'</span>'; }
+  function ldTrendArrow(ytd,ret1y,today){ var t=ldTrend(ytd,ret1y,today); if(!t) return ''; return ' <span title="Momentum trend ('+t.t+') from YTD / 1Y returns" style="color:'+t.c+';font-weight:700;">'+t.a+'</span>'; }
+  // v5.183: price-vs-50/200-DMA read with a plain-English deduction. Used by the Live Investment holdings table (visible columns + sentence) and every ETF live-price table (compact arrow + sentence on hover). Honest "\u2014" where TV served no MA.
+  function maRead(price,s50,s200){
+    var p=(typeof price==='number')?price:null, a=(typeof s50==='number')?s50:null, b=(typeof s200==='number')?s200:null;
+    if(a===null && b===null) return {ok:false};
+    var cross=(a!==null&&b!==null)?(a>=b?'golden':'death'):null;
+    var vs200=(p!==null&&b!==null)?(p>=b?'above':'below'):null;
+    var vs50 =(p!==null&&a!==null)?(p>=a?'above':'below'):null;
+    var label,color,sentence;
+    if(vs200==='above'&&cross==='golden'){
+      if(vs50==='above'){label='\u25B2 Uptrend';color='#047857';sentence='Trading above both its 50- and 200-day averages, with the 50-day above the 200-day \u2014 a textbook uptrend (a golden cross). Momentum is behind it.';}
+      else{label='\u25B2 Uptrend \u00b7 pullback';color='#059669';sentence='Above its 200-day average with the 50-day still over the 200-day (golden-cross structure), but the price has slipped below its 50-day \u2014 a pullback inside an uptrend.';}
+    } else if(vs200==='below'&&cross==='death'){
+      label='\u25BC Downtrend';color='#b91c1c';sentence='Trading below both its 50- and 200-day averages, with the 50-day under the 200-day \u2014 a downtrend (a death cross). The trend is against it for now.';
+    } else if(vs200==='above'&&cross==='death'){
+      label='\u2197 Recovering';color='#d97706';sentence='Back above its 200-day average, but the 50-day is still below the 200-day \u2014 an early recovery that has not yet confirmed (no golden cross yet).';
+    } else if(vs200==='below'&&cross==='golden'){
+      label='\u2198 Fading';color='#d97706';sentence='The 50-day is above the 200-day (golden-cross structure), but the price has dropped under its 200-day average \u2014 momentum is fading; watch whether it reclaims the 200-day.';
+    } else if(cross){
+      label=(cross==='golden')?'\u25B2 50>200':'\u25BC 50<200';color=(cross==='golden')?'#047857':'#b91c1c';sentence=(cross==='golden')?'Its 50-day average is above its 200-day average \u2014 a golden cross, the classic uptrend structure.':'Its 50-day average is below its 200-day average \u2014 a death cross, meaning the trend is against it.';
+    } else if(vs200){
+      label=(vs200==='above')?'\u25B2 Above 200-DMA':'\u25BC Below 200-DMA';color=(vs200==='above')?'#047857':'#b91c1c';sentence=(vs200==='above')?'Trading above its 200-day average \u2014 the long-term trend is up.':'Trading below its 200-day average \u2014 the long-term trend is down.';
+    } else return {ok:false};
+    return {ok:true,label:label,color:color,sentence:sentence};
+  }
+  function maNum(v){ return (typeof v==='number')?v.toLocaleString(undefined,{maximumFractionDigits:2}):'<span style="color:#cbd5e1;">\u2014</span>'; }
+  function maCell(price,s50,s200){ var m=maRead(price,s50,s200); if(!m.ok) return '<span style="color:#94a3b8;">\u2014</span>'; return '<span title="'+m.sentence+'" style="color:'+m.color+';font-weight:700;white-space:nowrap;cursor:help;">'+m.label+'</span>'; }
+  function maArrow(price,s50,s200){ var m=maRead(price,s50,s200); if(!m.ok) return ''; var tip=m.sentence+' (50-DMA '+((typeof s50==='number')?s50.toLocaleString(undefined,{maximumFractionDigits:2}):'\u2014')+', 200-DMA '+((typeof s200==='number')?s200.toLocaleString(undefined,{maximumFractionDigits:2}):'\u2014')+')'; return ' <span title="'+tip+'" style="color:'+m.color+';font-weight:700;cursor:help;">'+m.label.charAt(0)+'</span>'; }
+  // v5.182: look-through underlying trend -- momentum (YTD/1Y) + 50/200-DMA cross, with a plain-English deduction on hover. Shows "\u2014" honestly where TV served no perf/MA for that line.
+  function ltTrendCell(x){
+    var t=ldTrend(x&&x.ytd,x&&x.ret_1y,null);
+    var cross=null;
+    if(x && typeof x.sma50==='number' && typeof x.sma200==='number'){
+      cross = (x.sma50>=x.sma200) ? {t:'golden cross',c:'#047857',up:true} : {t:'death cross',c:'#b91c1c',up:false};
+    }
+    if(!t && !cross) return '<span style="color:#94a3b8;">\u2014</span>';
+    var parts=[], ded=[];
+    if(t){
+      parts.push('<span style="color:'+t.c+';font-weight:700;white-space:nowrap;">'+t.a+' '+t.t+'</span>');
+      ded.push(t.t==='Uptrend'?'up on both its year-to-date and 1-year returns':t.t==='Downtrend'?'down on both its year-to-date and 1-year returns':t.t==='Recovering'?'turning back up after a weak stretch':'losing momentum lately');
+    }
+    if(cross){
+      parts.push('<span class="m2x-chip" style="background:'+(cross.up?'#d1fae5':'#fee2e2')+';color:'+cross.c+';white-space:nowrap;">'+cross.t+'</span>');
+      ded.push(cross.up?'its 50-day average sits above its 200-day average \u2014 a golden cross, the textbook uptrend structure':'its 50-day average sits below its 200-day average \u2014 a death cross, meaning the trend is against it');
+    }
+    return '<span title="'+ded.join('; and ')+'.">'+parts.join(' &nbsp;')+'</span>';
+  }
 
 function applyLive(){
   if(LIVE&&LIVE.macros&&LIVE.macros.psx&&LIVE.macros.psx.usd_pkr){safe_lgPkr=LIVE.macros.psx.usd_pkr;}
