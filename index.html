@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.183</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.184</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2496,7 +2496,7 @@ function calcMbUs(){
         return 'color:#92400e;background:#fef3c7;font-weight:600;'; }
       function ltNum(v){ if(v==null) return '\u2014'; return Number(v).toLocaleString(undefined,{maximumFractionDigits:2}); }
       function ltUp(v){ if(v==null) return '\u2014'; var s=v>=0?'+':''; var c=v>=0?'#047857':'#b91c1c'; return '<span style="color:'+c+';font-weight:600;">'+s+Number(v).toFixed(1)+'%</span>'; }
-      var ltpr=LT.probe||{}; var ltTot=(ltpr.by_market?Object.keys(ltpr.by_market).reduce(function(a,k){return a+(ltpr.by_market[k].n||0);},0):null);
+      var ltpr=LT.probe||{}; var ltTot=(LT.funds||[]).reduce(function(a,f){return a+((f.holdings||[]).length);},0);
       h+='<div class="m2x-card" style="border:2px solid #10B981;background:linear-gradient(180deg,#ecfdf5,#ffffff);">'
         +'<div class="m2x-sec" style="color:#065f46;font-size:16px;">\uD83D\uDD0D Live Look-through \u2014 the real companies inside your funds</div>'
         +'<div style="font-size:12px;color:#475569;">Not the ETF wrapper \u2014 the actual top holdings (Samsung, TSMC, SK Hynix, NVIDIA\u2026), each with its sell-side analyst rating, 12-month price target, implied upside and next-quarter EPS, from the same FactSet feed across US <b>and</b> Taiwan / Korea / China lines. '
