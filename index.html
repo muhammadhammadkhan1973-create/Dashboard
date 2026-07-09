@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.187</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.188</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -6742,6 +6742,17 @@ function renderTceEtfPicks(){
 }
 
 
+function holdChips(str){
+  // Holdings -> the SAME chip style the Explosive/TCE proxy trackers use (v5.188): mono, bold,
+  // 10px, blue #EFF6FF/#1D4ED8, radius 3. Corporate suffixes (", Inc." / ", Ltd.") re-merge into
+  // the preceding name so "SK hynix, Inc." is ONE chip, not two.
+  if(!str||str==='\u2014'||str==='not sourced') return '';
+  var toks=String(str).split(/,\s+/), parts=[], i, t,
+      sfx=/^(Inc\.?|Ltd\.?|LLC|L\.?P\.?|Corp\.?|Co\.?|plc|PLC|S\.?A\.?|N\.?V\.?|AG|SE|SpA|Oyj|AB|ASA|KGaA|Bhd)$/;
+  for(i=0;i<toks.length;i++){ t=toks[i].trim(); if(!t) continue;
+    if(parts.length&&sfx.test(t)){ parts[parts.length-1]+=', '+t; } else { parts.push(t); } }
+  return parts.map(function(n){ return '<span style="display:inline-block;font-size:10px;font-weight:700;font-family:var(--font-mono);background:#EFF6FF;color:#1D4ED8;padding:1px 5px;margin:1px;border-radius:3px;">'+n+'</span>'; }).join('');
+}
 function renderWorldEtfTab(){
   // v1.142.0: shared trend-arrow helper -- a small up/down indicator derived from data
   // ALREADY populated and displayed elsewhere on the card (country 3M trailing return when
@@ -6827,7 +6838,7 @@ function renderWorldEtfTab(){
             +'<div style="font-size:10px;color:#475569;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:5px;">'+doorIcon(r.door)+' '+r.signal+(conf?' <strong style="color:#0F766E">\u2605 double-confirmed</strong>':'')+'</div>'
             +'<div style="font-size:15px;font-weight:700;color:#0F172A;line-height:1.32;font-family:var(--font-head,inherit);">'+f.name+'</div>'
             +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono,monospace);margin:5px 0;">'+f.isin+' \u00b7 TER '+(f.ter!=null?f.ter+'%':'\u2014')+ytdChip+'</div>'+(maRead(f.live_price,f.live_sma50,f.live_sma200).ok?('<div style="font-size:11px;margin:3px 0 5px;">'+maCell(f.live_price,f.live_sma50,f.live_sma200)+'</div>'):'')
-            +(f.holdings?'<div style="font-size:11.5px;color:#475569;margin:5px 0;line-height:1.4;"><b style="color:#1E293B;">Top holdings:</b> '+f.holdings+'</div>':'')
+            +(f.holdings?'<div style="font-size:11.5px;margin:5px 0;line-height:1.6;"><b style="color:#1E293B;">Top holdings:</b> '+holdChips(f.holdings)+'</div>':'')
             +'<div style="margin-top:9px;padding-top:9px;border-top:1px solid '+borderCol+'55;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">'+fmtPrice(f, trendPct, trendLabel)+fmtTicker(f)+'</div>'
             +fmtTrailing(r)
             +'<div style="font-size:9.5px;color:#94A3B8;margin-top:6px;">'+r.reason+'</div>'
@@ -6910,7 +6921,7 @@ function renderWorldEtfTab(){
             +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;vertical-align:top;white-space:nowrap;">'+ytdStr+ldTrendArrow(ytdVal,y1Val,null)+maArrow(e.live_price,e.live_sma50,e.live_sma200)+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;color:#0F172A;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+y1Str+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;color:#475569;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+terStr+'</td>'
-            +'<td style="padding:5px 8px;font-size:10.5px;color:#475569;vertical-align:top;word-break:break-word;">'+(e.holdings||'\u2014')+'</td>'
+            +'<td style="padding:5px 8px;vertical-align:top;line-height:1.7;">'+(holdChips(e.holdings)||'<span style="color:#94A3B8;font-size:10.5px;">\u2014</span>')+'</td>'
             +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#475569;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(e.isin||'')+'</td>'
             +'<td style="padding:5px 8px;font-size:10px;color:#475569;vertical-align:top;white-space:nowrap;">'+tickerStr+'</td>'
             +'</tr>';
@@ -6990,7 +7001,7 @@ function renderWorldEtfTab(){
           return '<div style="background:#F0F9FF;border:2px solid #0EA5E9;border-radius:12px;padding:12px 16px;flex:1;min-width:230px;max-width:300px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
             +'<div style="font-size:14px;font-weight:700;color:#0F172A;line-height:1.3;font-family:var(--font-head,inherit);">'+w.name+'</div>'
             +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 \u20ac'+w.size_m_eur+'m AUM</div>'
-            +'<div style="font-size:11px;color:#475569;margin:5px 0;line-height:1.4;"><b style="color:#1E293B;">Top holdings:</b> '+w.holdings+'</div>'
+            +'<div style="font-size:11px;margin:5px 0;line-height:1.6;"><b style="color:#1E293B;">Top holdings:</b> '+holdChips(w.holdings)+'</div>'
             +metricRow+note
             +'</div>';
         }).join('')+'</div>';
@@ -7031,7 +7042,7 @@ function renderWorldEtfTab(){
             var trendPct=typeof w.live_ytd==='number'?w.live_ytd:w.ytd;
             var holdOk=w.holdings && w.holdings!=='not sourced';
             var holdLine=holdOk
-              ? '<div style="font-size:11px;color:#475569;margin:5px 0;line-height:1.4;"><b style="color:#1E293B;">Top holdings:</b> '+w.holdings+'</div>'
+              ? '<div style="font-size:11px;margin:5px 0;line-height:1.6;"><b style="color:#1E293B;">Top holdings:</b> '+holdChips(w.holdings)+'</div>'
               : '<div style="font-size:10.5px;color:#94A3B8;margin:5px 0;font-style:italic;">Holdings not sourced</div>';
             return '<div style="background:#FAF5FF;border:2px solid '+col+';border-radius:12px;padding:12px 16px;flex:1;min-width:230px;max-width:300px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
               +'<div style="font-size:14px;font-weight:700;color:#0F172A;line-height:1.3;font-family:var(--font-head,inherit);">'+w.name+'</div>'
@@ -7177,7 +7188,7 @@ function renderPakistanProxyCards(){
       +'<div style="font-size:11px;font-weight:700;color:#16A34A;letter-spacing:0.5px;">PAKISTAN UCITS PROXY</div>'
       +'<div style="font-size:14px;font-weight:700;color:#0F172A;margin-top:2px;">'+p.name+'</div>'
       +'<div style="font-size:10px;color:#64748B;font-family:monospace;margin:4px 0;">'+p.isin+' \u00b7 TER '+p.ter+'% \u00b7 '+(p.dist||'')+'</div>'
-      +(p.holdings?'<div style="font-size:10px;color:#94A3B8;">Top: '+p.holdings+'</div>':'')
+      +(p.holdings?'<div style="font-size:10px;line-height:1.7;"><span style="color:#94A3B8;">Top:</span> '+holdChips(p.holdings)+'</div>':'')
       +'<div style="margin-top:6px;">'+priceStr+tickerStr+'</div>'
       +'<div style="font-size:10px;color:#B45309;margin-top:6px;line-height:1.4;">\u26a0 This is the <b>only</b> UCITS ETF with direct Pakistan exposure. '
       +'Small, broad, and can be thinly traded \u2014 check liquidity before trading. Not a recommendation, purely an availability note for a UAE-resident investor.</div>'
