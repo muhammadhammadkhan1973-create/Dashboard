@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.185</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.186</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2410,6 +2410,8 @@ function calcMbUs(){
         +'<td>'+pc(r.pnl_pct)+'</td><td>'+pc(r.daily_pct)+'</td><td>'+pc(r.ytd)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma50)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma200)+'</td>'+'<td style="font-size:12px;">'+maCell(r.price,r.sma50,r.sma200)+'</td>'+'<td>'+ldTrendCell(r.ytd,r.ret_1y,r.daily_pct)+'</td></tr>';
     });
     h+='</tbody></table><div style="font-size:11px;color:#94a3b8;margin-top:4px;">Cost = your entry price from the '+(L.inception_date||'entry')+' statement. P&amp;L is your real gain/loss since you bought \u2014 not the fund\u2019s calendar-year YTD.</div></div>';
+    // v5.186: trading hours (Dubai time) \u2014 where the ETFs list (when YOU trade) + when the underlying companies trade (what moves NAV)
+    h+='<div id="li_trading_hours"></div>';
 
     // grow/deplete narrative
     var nr=L.narrative||{};
@@ -2458,7 +2460,7 @@ function calcMbUs(){
           +'<span style="font-size:15px;font-weight:800;color:#065f46;">'+f.ticker+'</span>'
           +'<span style="font-size:12px;color:#475569;">'+(f.name||'')+'</span>'
           +(f.theme?('<span class="m2x-chip" style="background:#d1fae5;color:#065f46;">'+f.theme+'</span>'):'')
-          +'<span style="margin-left:auto;font-size:11px;color:#94a3b8;">'+rc+'/'+hs.length+' rated'+(f.exchange?(' \u2022 '+String(f.exchange).toUpperCase()):'')+'</span></div>';
+          +'<span style="margin-left:auto;font-size:11px;color:#94a3b8;">'+rc+'/'+hs.length+' rated'+(f.exchange?(' \u2022 '+String(f.exchange).toUpperCase()):'')+'</span>'+(f.exchange?exHoursChip(f.exchange):'')+'</div>';
         if(!hs.length){ h+='<div style="font-size:12px;color:#94a3b8;">'+(f.note||'holdings not available this run')+'</div></div>'; return; }
         h+='<table><thead><tr><th>Holding</th><th>Weight</th><th>Rating</th><th>12-mo Target</th><th>Upside</th><th title="Live trend from the underlying\u2019s own YTD/1Y returns and its 50/200-day moving-average cross \u2014 hover a cell for the plain-English read">Trend</th><th>Next-Q EPS</th><th>News</th></tr></thead><tbody>';
         hs.forEach(function(x){
@@ -2510,6 +2512,7 @@ function calcMbUs(){
     });
     h+='<div style="font-size:11px;color:#94a3b8;">News is matched by fund name + theme (not ticker), so results track the actual ETF, its market/economy, and its earnings drivers.</div></div>';
     host.innerHTML=h;
+    try{ renderTradingHoursDubai(); if(!window.__thTimer){ window.__thTimer=setInterval(renderTradingHoursDubai,60000); } }catch(e){}
 
     // compact strip on World ETF + Results tabs (P&L since entry + daily at a glance)
     var stripPnl=(L.pnl_total==null?'\u2014':((L.pnl_total>=0?'+$':'-$')+Math.round(Math.abs(L.pnl_total)).toLocaleString()));
@@ -5463,6 +5466,87 @@ function renderPsxNarrative(){
     }
     return '<span title="'+ded.join('; and ')+'.">'+parts.join(' &nbsp;')+'</span>';
   }
+
+// === v5.186: exchange trading hours in DUBAI time (GST, UTC+4). Static local windows + LIVE DST-correct Dubai conversion + open/closed. GLOBAL scope (v5.185 lesson: never nest a helper the render depends on). ===
+var EXHOURS = {
+  // ETF listing venues (from the holding's resolved sym prefix)
+  'LSE':      {name:'London (LSE)',         tz:'Europe/London',    sess:[[8,0,16,30]]},
+  'EURONEXT': {name:'Euronext (Amsterdam)', tz:'Europe/Amsterdam', sess:[[9,0,17,30]]},
+  'XETR':     {name:'Xetra (Frankfurt)',    tz:'Europe/Berlin',    sess:[[9,0,17,30]]},
+  'GETTEX':   {name:'gettex (Munich)',      tz:'Europe/Berlin',    sess:[[8,0,22,0]]},
+  'SIX':      {name:'SIX (Zurich)',         tz:'Europe/Zurich',    sess:[[9,0,17,30]]},
+  // underlying markets (from look-through 'market')
+  'america':  {name:'US (NYSE / Nasdaq)',   tz:'America/New_York', sess:[[9,30,16,0]]},
+  'taiwan':   {name:'Taiwan (TWSE)',        tz:'Asia/Taipei',      sess:[[9,0,13,30]]},
+  'korea':    {name:'Korea (KRX)',          tz:'Asia/Seoul',       sess:[[9,0,15,30]]},
+  'china':    {name:'China (SSE STAR)',     tz:'Asia/Shanghai',    sess:[[9,30,11,30],[13,0,15,0]]}
+};
+function _tzOffMin(iana, date){ // UTC offset (minutes) for an IANA tz at a given instant (DST-correct)
+  try{
+    var dtf=new Intl.DateTimeFormat('en-US',{timeZone:iana,hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    var m={}; dtf.formatToParts(date).forEach(function(p){m[p.type]=p.value;});
+    var hh=(m.hour==='24'?'00':m.hour);
+    var asUTC=Date.UTC(+m.year,+m.month-1,+m.day,+hh,+m.minute,+m.second);
+    return Math.round((asUTC-date.getTime())/60000);
+  }catch(e){ return null; }
+}
+function _dubaiHM(localMin, exchOff, dubOff){ // a local wall-clock minute in exch tz -> Dubai HH:MM
+  var d=(((localMin+(dubOff-exchOff))%1440)+1440)%1440;
+  var hh=Math.floor(d/60), mm=d%60;
+  return (hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;
+}
+function _exOpenNow(ex, now){ // is the exchange open right now? (weekday + within a session, in its own tz)
+  try{
+    var dtf=new Intl.DateTimeFormat('en-US',{timeZone:ex.tz,weekday:'short',hour12:false,hour:'2-digit',minute:'2-digit'});
+    var m={}; dtf.formatToParts(now).forEach(function(p){m[p.type]=p.value;});
+    if(m.weekday==='Sat'||m.weekday==='Sun') return false;
+    var cur=(+(m.hour==='24'?'0':m.hour))*60+(+m.minute);
+    return ex.sess.some(function(s){return cur>=(s[0]*60+s[1])&&cur<(s[2]*60+s[3]);});
+  }catch(e){ return null; }
+}
+function exHoursDubai(key){ // -> {name, window(Dubai), open} or null
+  var ex=EXHOURS[key]||EXHOURS[String(key||'').toUpperCase()]; if(!ex) return null;
+  var now=new Date();
+  var exOff=_tzOffMin(ex.tz,now), dubOff=_tzOffMin('Asia/Dubai',now);
+  if(exOff==null) exOff=0; if(dubOff==null) dubOff=240;
+  var win=ex.sess.map(function(s){ return _dubaiHM(s[0]*60+s[1],exOff,dubOff)+'\u2013'+_dubaiHM(s[2]*60+s[3],exOff,dubOff); }).join(', ');
+  return {name:ex.name, window:win, open:_exOpenNow(ex,now)};
+}
+function exHoursChip(key){ // compact inline read for a header
+  var e=exHoursDubai(key); if(!e) return '';
+  var dot=e.open===true?' \u2022 \uD83D\uDFE2 open':(e.open===false?' \u2022 \uD83D\uDD34 closed':'');
+  return '<span style="font-size:11px;color:#64748b;white-space:nowrap;"> \u00b7 '+e.name+' '+e.window+' Dubai'+dot+'</span>';
+}
+function buildTradingHoursPanel(etfKeys, mktKeys){
+  function row(key, tickers){
+    var e=exHoursDubai(key); if(!e) return '';
+    var dot=e.open===true?'<span style="color:#047857;font-weight:700;">\uD83D\uDFE2 Open now</span>':(e.open===false?'<span style="color:#b91c1c;font-weight:700;">\uD83D\uDD34 Closed</span>':'');
+    return '<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;padding:3px 0;border-top:1px solid #f1f5f9;">'
+      +'<span style="min-width:190px;font-weight:600;color:#0f172a;">'+e.name+'</span>'
+      +'<span style="font-family:monospace;font-size:13px;color:#334155;min-width:130px;">'+e.window+'</span>'
+      +'<span>'+dot+'</span>'
+      +(tickers&&tickers.length?('<span style="margin-left:auto;font-size:11px;color:#94a3b8;">'+tickers.join(', ')+'</span>'):'')
+      +'</div>';
+  }
+  var h='<div class="m2x-card"><div class="m2x-sec">\uD83D\uDD52 Trading hours \u2014 all times Dubai (GST, UTC+4)</div>';
+  h+='<div style="font-size:12px;font-weight:700;color:#065f46;margin:6px 0 2px;">Where your ETFs list \u2014 this is when YOU can buy or sell them</div>';
+  Object.keys(etfKeys).forEach(function(k){ h+=row(k, etfKeys[k]); });
+  h+='<div style="font-size:12px;font-weight:700;color:#065f46;margin:12px 0 2px;">When the companies inside your funds trade \u2014 this is what moves each fund\u2019s value (NAV)</div>';
+  (mktKeys||[]).forEach(function(k){ h+=row(k, null); });
+  h+='<div style="font-size:11px;color:#94a3b8;margin-top:8px;line-height:1.6;">Green/red updates live while this page is open. Your ETFs are London- and Amsterdam-listed, so you trade them from late morning into the evening Dubai time; the US and Asian companies they hold trade on their own clocks (Asia in your morning, the US in your evening/night) \u2014 that overseas trading is what actually drives the daily NAV, even when your London listing is shut.</div></div>';
+  return h;
+}
+function renderTradingHoursDubai(){ // (re)builds the Dubai hours panel from LIVE; safe to call on a timer
+  var el=document.getElementById('li_trading_hours'); if(!el) return;
+  var L=(typeof LIVE!=='undefined'&&LIVE&&LIVE.live_investment)||null; if(!L){ el.innerHTML=''; return; }
+  var etf={};
+  (L.holdings||[]).forEach(function(r){ var k=String(r.sym||'').split(':')[0].toUpperCase(); if(EXHOURS[k]) (etf[k]=etf[k]||[]).push(r.ticker); });
+  var mkts={};
+  (((typeof LIVE!=='undefined'&&LIVE&&LIVE.live_lookthrough)||{}).funds||[]).forEach(function(f){ (f.holdings||[]).forEach(function(u){ if(u.market&&EXHOURS[u.market]) mkts[u.market]=1; }); });
+  var order=['america','taiwan','korea','china'];
+  var mktKeys=Object.keys(mkts).sort(function(a,b){return order.indexOf(a)-order.indexOf(b);});
+  el.innerHTML=(Object.keys(etf).length||mktKeys.length)?buildTradingHoursPanel(etf,mktKeys):'';
+}
 
 function applyLive(){
   if(LIVE&&LIVE.macros&&LIVE.macros.psx&&LIVE.macros.psx.usd_pkr){safe_lgPkr=LIVE.macros.psx.usd_pkr;}
