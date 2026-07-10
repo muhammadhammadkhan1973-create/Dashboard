@@ -622,7 +622,7 @@
     <div id="world_tce_etf_box"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Momentum-40 &mdash; Non-Leveraged ETFs Already Up &ge;40% YTD</h3>
-    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">Independent watchlist &mdash; tracked separately from the engine&rsquo;s own recommendations, <strong>not</strong> engine picks. 55 non-leveraged UCITS products (including 1 crypto ETP, owner-confirmed) with YTD &ge;35% from ETF_Universe_8.xlsx, grouped below by category so you can see at a glance which are country plays (Korea, Taiwan, Japan) versus sector/theme plays (Technology, Clean Energy, Emerging Markets ex-China). Plus 5 more: the top Nasdaq-100 UCITS ETFs by trailing 1-year return, added by request even though all 18 real Nasdaq-100 funds in the source file sit at 18.74&ndash;20.19% YTD &mdash; well under the 35% bar the rest of this list holds to. They&rsquo;re numbered and badged separately so that distinction stays visible, not blended into the &ldquo;&ge;35%&rdquo; claim above. Each fund shows TER, 1-year return where the source data has it, and major holdings. Leveraged/short products excluded.</div>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">Independent watchlist &mdash; tracked separately from the engine&rsquo;s own recommendations, <strong>not</strong> engine picks. The list is <strong>discovered live</strong> each run: the scanner screens all five European venues, keeps only genuine long-only UCITS funds (leveraged/inverse/ETP products and funds under the $50M size floor excluded), and ranks the top 60 by YTD return, grouped by category so country plays (Korea, Taiwan, Japan) read separately from sector/theme plays (Semiconductors, Technology, Energy). The banner below states the source each run; if the live screen ever returns nothing, the last uploaded ETF_Universe file serves as the fallback seed. Each fund shows TER, live YTD/1Y where resolved, and its major holdings.</div>
     <div id="we_momentum40_main"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Hydrogen Economy Thematic Watch</h3>
@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.190</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.191</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -6859,7 +6859,7 @@ function renderWorldEtfTab(){
     var mw=(LIVE&&LIVE.etf_momentum_watch)||[];
     var _mwSrc=(LIVE&&LIVE.etf_momentum_source)||'embedded';
     var _mwBadge=(_mwSrc==='live'?'<div style="font-size:11px;font-weight:700;color:#059669;margin:0 0 8px;">● LIVE-DISCOVERED — screened fresh this run across 5 European venues (leveraged/inverse excluded); the quarterly ETF_Universe.xlsx upload is now an optional seed.</div>':'<div style="font-size:11px;font-weight:700;color:#B45309;margin:0 0 8px;">○ EMBEDDED SEED — the live screen returned nothing this run; showing the last uploaded list.</div>');
-    var _mwLegend='<div style="font-size:10.5px;line-height:1.7;color:#475569;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 12px;margin:0 0 10px;"><b style="color:#0F172A;">How to read this table \u2014</b> <span style="color:#16A34A;font-weight:700;">\u25cf</span> before a return = <b>live number fetched this run</b> (no dot = the last uploaded file\u2019s snapshot). <b>First \u25b2/\u25bc</b> = return momentum, read from the YTD and 1-year returns together. <b>Second \u25b2/\u25bc</b> = price trend vs the 50/200-day moving averages \u2014 \u25b2 above the 200-day (uptrend), \u25bc below (downtrend); hover it for the plain-English read. <b>\u26a0 live/<i>country</i></b> = this fund was <b>discovered live this run</b>, and the country names the European exchange listing the screen found it on (many funds trade on several exchanges; the Ticker column shows the listing used for live pricing, which can differ). <b>No band badge</b> = top of the momentum list (strongest YTD). <span style="background:#EEF2FF;color:#4F46E5;border-radius:3px;padding:0 4px;font-size:9px;">35-40%</span> = second band, YTD in the 35\u201340% zone. <span style="background:#FEF3C7;color:#92400E;border-radius:3px;padding:0 4px;font-size:9px;">below 35% \u2014 added by request</span> = under the 35% momentum bar but included because you asked for it (e.g. Nasdaq-100 / energy names). <b>Green chips</b> = the actual top companies inside the fund; <b>\u2014</b> in Holdings = a swap-based fund that holds a bank contract, not stocks \u2014 there are no companies to list. <b>TER</b> = the fund\u2019s annual fee.</div>';
+    var _mwLegend='<div style="font-size:10.5px;line-height:1.7;color:#475569;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 12px;margin:0 0 10px;"><b style="color:#0F172A;">How to read this table \u2014</b> <span style="color:#16A34A;font-weight:700;">\u25cf</span> before a return = <b>live number fetched this run</b> (no dot = the last uploaded file\u2019s snapshot). <b>First \u25b2/\u25bc</b> = return momentum, read from the YTD and 1-year returns together. <b>Second \u25b2/\u25bc</b> = price trend vs the 50/200-day moving averages \u2014 \u25b2 above the 200-day (uptrend), \u25bc below (downtrend); hover it for the plain-English read. <b>\u26a0 live/<i>country</i></b> = this fund was <b>discovered live this run</b>, and the country names the European exchange listing the screen found it on (many funds trade on several exchanges; the Ticker column shows the listing used for live pricing, which can differ). <b>No band badge</b> = top 34 by YTD; lower entries carry a small grey rank tag so the ordering stays visible inside category groups. <b>Green chips</b> = the actual top companies inside the fund; <b>\u2014</b> in Holdings = a swap-based fund that holds a bank contract, not stocks \u2014 there are no companies to list. <b>TER</b> = the fund\u2019s annual fee.</div>';
       if(!mw.length){
       elMW.innerHTML='<p style="color:#94A3B8;font-size:12px;">Momentum-Watch list loading (scanner v1.133.0+).</p>';
     } else {
@@ -6914,8 +6914,10 @@ function renderWorldEtfTab(){
           // leading literal space (not just CSS margin) so the badge stays visually AND
           // text-copy separated from the fund name -- margin alone vanishes on copy/paste.
           var tierBadge=e.rank<=34?''
-            :e.rank<=55?' <span style="font-size:8px;background:#EEF2FF;color:#4F46E5;border-radius:3px;padding:0 4px;white-space:nowrap;">35-40%</span>'
-            :' <span style="font-size:8px;background:#FEF3C7;color:#92400E;border-radius:3px;padding:0 4px;white-space:nowrap;">below 35% &mdash; added by request</span>';
+            :(_mwSrc==='live'
+              ?' <span style="font-size:8px;background:#F1F5F9;color:#64748B;border-radius:3px;padding:0 4px;white-space:nowrap;">rank '+e.rank+' of 60</span>'
+              :(e.rank<=55?' <span style="font-size:8px;background:#EEF2FF;color:#4F46E5;border-radius:3px;padding:0 4px;white-space:nowrap;">35-40%</span>'
+               :' <span style="font-size:8px;background:#FEF3C7;color:#92400E;border-radius:3px;padding:0 4px;white-space:nowrap;">below 35% &mdash; added by request</span>'));
           return '<tr style="border-bottom:1px solid #F1F5F9;">'
             +'<td style="padding:5px 8px;font-size:11px;color:#475569;font-weight:700;vertical-align:top;">'+e.rank+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;font-weight:600;color:#0F172A;vertical-align:top;word-break:break-word;">'+e.name+note+tierBadge+'</td>'
@@ -6944,10 +6946,8 @@ function renderWorldEtfTab(){
         +'</tr></thead><tbody>'+bodyRows+'</tbody></table></div>';
       elMW.innerHTML=_mwBadge+_mwLegend+table
         +'<p style="font-size:10px;color:#94A3B8;margin:6px 0 0;">'
-        +'\u26a0 Crypto ETP (rank 1) has different risk characteristics from equity ETFs. '
-        +'Ranks 35-55 (badged) are the 35-39.99% YTD tier added when the threshold was lowered from 40%. '
-        +'<b>Ranks 56-60 (badged separately)</b> are the top 5 Nasdaq-100 UCITS ETFs by trailing 1-year return, added by request \u2014 all 18 real Nasdaq-100 funds in the source file sit at 18.74\u201320.19% YTD, genuinely below the 35% bar the rest of this list holds to; included anyway for direct US mega-cap tech coverage, kept visually separate rather than folded into the qualifying list. '
-        +'<b>YTD</b>\u25cf<b>1Y</b> shown with a green dot are live, this run \u2014 the same TradingView resolver already pricing every fund here, not the 31-May source-file snapshot. '
+        +'Ranks follow this run\u2019s YTD ordering across the whole discovered list; ranks 35+ carry a small grey rank tag inside their category groups. '
+        +'<b>YTD</b>\u25cf<b>1Y</b> shown with a green dot are live, this run \u2014 the same TradingView resolver already pricing every fund here, not a file snapshot. '
         +'<b>Ticker</b> is a live, run-fresh exchange symbol from the same resolver \u2014 shows \u2014 only on the rare run where that specific fund did not resolve; the same runs also fall back to the static May snapshot for YTD/1Y (no dot shown), never fabricated. '
         +'<b>Holdings</b> are indicative top constituents from the fund provider, not the full portfolio. '
         +'Franklin-branded funds here (Korea/Taiwan/Asia-ex-China) hold the local Asian companies those markets contain '
@@ -7001,7 +7001,7 @@ function renderWorldEtfTab(){
               +'</div>';
           return '<div style="background:#F0F9FF;border:2px solid #0EA5E9;border-radius:12px;padding:12px 16px;flex:1;min-width:230px;max-width:300px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
             +'<div style="font-size:14px;font-weight:700;color:#0F172A;line-height:1.3;font-family:var(--font-head,inherit);">'+w.name+'</div>'
-            +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 \u20ac'+w.size_m_eur+'m AUM</div>'
+            +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+w.isin+' \u00b7 TER '+w.ter+'%'+(typeof w.size_m_eur==='number'?' \u00b7 \u20ac'+w.size_m_eur+'m AUM':'')+'</div>'
             +'<div style="font-size:11px;margin:5px 0;line-height:1.6;"><b style="color:#1E293B;">Top holdings:</b> '+holdChips(w.holdings)+'</div>'
             +metricRow+note
             +'</div>';
@@ -7047,7 +7047,7 @@ function renderWorldEtfTab(){
               : '<div style="font-size:10.5px;color:#94A3B8;margin:5px 0;font-style:italic;">Holdings not sourced</div>';
             return '<div style="background:#FAF5FF;border:2px solid '+col+';border-radius:12px;padding:12px 16px;flex:1;min-width:230px;max-width:300px;box-shadow:0 4px 16px rgba(67,56,202,0.08);">'
               +'<div style="font-size:14px;font-weight:700;color:#0F172A;line-height:1.3;font-family:var(--font-head,inherit);">'+w.name+'</div>'
-              +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+w.isin+' \u00b7 TER '+w.ter+'% \u00b7 \u20ac'+w.size_m_eur+'m AUM</div>'
+              +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+w.isin+' \u00b7 TER '+w.ter+'%'+(typeof w.size_m_eur==='number'?' \u00b7 \u20ac'+w.size_m_eur+'m AUM':'')+'</div>'
               +holdLine
               +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid '+col+'33;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;">'
               +'<span style="font-size:10px;color:'+col+';font-weight:600;">YTD <b>'+((typeof w.live_ytd==='number')?((w.live_ytd>=0?'+':'')+w.live_ytd.toFixed(2)+'%'):(typeof w.ytd==='number'?((w.ytd>=0?'+':'')+w.ytd.toFixed(2)+'%'):'\u2014'))+'</b></span>'
