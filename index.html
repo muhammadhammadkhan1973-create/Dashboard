@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.189</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.190</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -6859,7 +6859,8 @@ function renderWorldEtfTab(){
     var mw=(LIVE&&LIVE.etf_momentum_watch)||[];
     var _mwSrc=(LIVE&&LIVE.etf_momentum_source)||'embedded';
     var _mwBadge=(_mwSrc==='live'?'<div style="font-size:11px;font-weight:700;color:#059669;margin:0 0 8px;">● LIVE-DISCOVERED — screened fresh this run across 5 European venues (leveraged/inverse excluded); the quarterly ETF_Universe.xlsx upload is now an optional seed.</div>':'<div style="font-size:11px;font-weight:700;color:#B45309;margin:0 0 8px;">○ EMBEDDED SEED — the live screen returned nothing this run; showing the last uploaded list.</div>');
-    if(!mw.length){
+    var _mwLegend='<div style="font-size:10.5px;line-height:1.7;color:#475569;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 12px;margin:0 0 10px;"><b style="color:#0F172A;">How to read this table \u2014</b> <span style="color:#16A34A;font-weight:700;">\u25cf</span> before a return = <b>live number fetched this run</b> (no dot = the last uploaded file\u2019s snapshot). <b>First \u25b2/\u25bc</b> = return momentum, read from the YTD and 1-year returns together. <b>Second \u25b2/\u25bc</b> = price trend vs the 50/200-day moving averages \u2014 \u25b2 above the 200-day (uptrend), \u25bc below (downtrend); hover it for the plain-English read. <b>\u26a0 live/<i>country</i></b> = this fund was <b>discovered live this run</b>, and the country names the European exchange listing the screen found it on (many funds trade on several exchanges; the Ticker column shows the listing used for live pricing, which can differ). <b>No band badge</b> = top of the momentum list (strongest YTD). <span style="background:#EEF2FF;color:#4F46E5;border-radius:3px;padding:0 4px;font-size:9px;">35-40%</span> = second band, YTD in the 35\u201340% zone. <span style="background:#FEF3C7;color:#92400E;border-radius:3px;padding:0 4px;font-size:9px;">below 35% \u2014 added by request</span> = under the 35% momentum bar but included because you asked for it (e.g. Nasdaq-100 / energy names). <b>Green chips</b> = the actual top companies inside the fund; <b>\u2014</b> in Holdings = a swap-based fund that holds a bank contract, not stocks \u2014 there are no companies to list. <b>TER</b> = the fund\u2019s annual fee.</div>';
+      if(!mw.length){
       elMW.innerHTML='<p style="color:#94A3B8;font-size:12px;">Momentum-Watch list loading (scanner v1.133.0+).</p>';
     } else {
       var catColor=function(cat){
@@ -6941,7 +6942,7 @@ function renderWorldEtfTab(){
         +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">ISIN</th>'
         +'<th style="background:#EEF2F7;padding:7px 8px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">Ticker</th>'
         +'</tr></thead><tbody>'+bodyRows+'</tbody></table></div>';
-      elMW.innerHTML=_mwBadge+table
+      elMW.innerHTML=_mwBadge+_mwLegend+table
         +'<p style="font-size:10px;color:#94A3B8;margin:6px 0 0;">'
         +'\u26a0 Crypto ETP (rank 1) has different risk characteristics from equity ETFs. '
         +'Ranks 35-55 (badged) are the 35-39.99% YTD tier added when the threshold was lowered from 40%. '
