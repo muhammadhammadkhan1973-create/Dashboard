@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.188</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.189</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -6743,15 +6743,15 @@ function renderTceEtfPicks(){
 
 
 function holdChips(str){
-  // Holdings -> the SAME chip style the Explosive/TCE proxy trackers use (v5.188): mono, bold,
-  // 10px, blue #EFF6FF/#1D4ED8, radius 3. Corporate suffixes (", Inc." / ", Ltd.") re-merge into
-  // the preceding name so "SK hynix, Inc." is ONE chip, not two.
+  // Holdings -> the SAME chip shape/font as the Explosive/TCE proxy trackers, recoloured per owner
+  // instruction (v5.189): vibrant green #16A34A on lighter green #F0FDF4 (the established PSX-chip
+  // pairing). Corporate suffixes (", Inc." / ", Ltd.") re-merge so "SK hynix, Inc." is ONE chip.
   if(!str||str==='\u2014'||str==='not sourced') return '';
   var toks=String(str).split(/,\s+/), parts=[], i, t,
       sfx=/^(Inc\.?|Ltd\.?|LLC|L\.?P\.?|Corp\.?|Co\.?|plc|PLC|S\.?A\.?|N\.?V\.?|AG|SE|SpA|Oyj|AB|ASA|KGaA|Bhd)$/;
   for(i=0;i<toks.length;i++){ t=toks[i].trim(); if(!t) continue;
     if(parts.length&&sfx.test(t)){ parts[parts.length-1]+=', '+t; } else { parts.push(t); } }
-  return parts.map(function(n){ return '<span style="display:inline-block;font-size:10px;font-weight:700;font-family:var(--font-mono);background:#EFF6FF;color:#1D4ED8;padding:1px 5px;margin:1px;border-radius:3px;">'+n+'</span>'; }).join('');
+  return parts.map(function(n){ return '<span style="display:inline-block;font-size:10px;font-weight:700;font-family:var(--font-mono);background:#F0FDF4;color:#16A34A;padding:1px 5px;margin:1px;border-radius:3px;">'+n+'</span>'; }).join('');
 }
 function renderWorldEtfTab(){
   // v1.142.0: shared trend-arrow helper -- a small up/down indicator derived from data
