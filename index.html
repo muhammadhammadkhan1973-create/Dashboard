@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.196</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.197</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2377,6 +2377,7 @@ function calcMbUs(){
   // -- LIVE INVESTMENT tab (v5.178: + Live Look-through section — holdings-level FactSet ratings/targets/upside/next-Q EPS on the real underlyings across US+Taiwan+Korea+China lines, plus Markets & Themes news, vibrant-green styled; v5.177 cost-basis P&L hero + Forward view + fund-name news): owner's real IBKR UCITS-ETF portfolio --
   (function(){
     var host=document.getElementById('liveinv_body'); if(!host) return;
+    try{   // v5.197 isolation: an error in THIS tab paints here, and cannot take down the page
     var L=(typeof LIVE!=='undefined'&&LIVE&&LIVE.live_investment)||null;
     if(!L){ host.innerHTML='<div class="reading-box">Live Investment populates after the next scanner run (v1.211.0+).</div>'; return; }
     function money(v,c){ if(v==null) return '\u2014'; return (c||'$')+Math.round(v).toLocaleString(); }
@@ -2542,6 +2543,7 @@ function calcMbUs(){
     });
     h+='<div style="font-size:11px;color:#94a3b8;">News is matched by fund name + theme (not ticker), so results track the actual ETF, its market/economy, and its earnings drivers.</div></div>';
     host.innerHTML=h;
+    }catch(_lie){ host.innerHTML='<div style="background:#FEE2E2;border:2px solid #DC2626;border-radius:8px;padding:10px 14px;font-size:13px;color:#7F1D1D;"><b>Live Investment render error:</b> '+String((_lie&&_lie.message)||_lie).replace(/</g,'&lt;')+'<br><span style="font-size:11px;">'+(((_lie&&_lie.stack)||'').split('\n')[1]||'').replace(/</g,'&lt;')+'</span></div>'; }
     try{ renderTradingHoursDubai(); if(!window.__thTimer){ window.__thTimer=setInterval(renderTradingHoursDubai,60000); } }catch(e){}
 
     // compact strip on World ETF + Results tabs (P&L since entry + daily at a glance)
@@ -5636,7 +5638,18 @@ async function loadLiveData(){
     let isStale=false;
     if(meta.last_scan_utc){const ageH=(Date.now()-new Date(meta.last_scan_utc).getTime())/3.6e6;if(ageH>48)isStale=true;}
     setLiveStatus(isStale?'stale':'ok',scan,ver);
-    applyLive();
+    // v5.197: RENDER errors no longer wipe LIVE and blank the whole dashboard. The data stays,
+    // and the exact error is painted on screen so a failure self-identifies instead of hiding.
+    try{
+      applyLive();
+    }catch(re){
+      try{
+        var _loc=((re&&re.stack)||'').split('\n')[1]||'';
+        var _msg='<div style="background:#FEE2E2;border:2px solid #DC2626;border-radius:8px;padding:10px 14px;margin:8px;font-size:13px;color:#7F1D1D;"><b>Dashboard render error (data loaded fine):</b> '+String((re&&re.message)||re)+'<br><span style="font-size:11px;color:#991B1B;">'+_loc.replace(/</g,'&lt;')+'</span><br><span style="font-size:11px;">Screenshot this box and share it — it identifies the exact failing line.</span></div>';
+        var _b=document.body; if(_b&&_b.insertAdjacentHTML) _b.insertAdjacentHTML('afterbegin',_msg);
+        var _lv=document.getElementById('liveinv_body'); if(_lv&&!_lv.innerHTML) _lv.innerHTML=_msg;
+      }catch(_ee){}
+    }
   }catch(e){
     LIVE=null;setLiveStatus('none','—','—');calcExplosive();calcMetals();
   }
