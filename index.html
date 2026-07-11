@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.192</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.193</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -3542,7 +3542,7 @@ function renderTceTable(elId, rows, market) {
   const ignore=rows.filter(r=>(r.tier||'').toUpperCase()==='IGNORE');
 
   let html=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:600;align-items:center;">`;
-  if(high.length)   html+=`<span style="background:var(--green-l);color:var(--green);padding:4px 10px;border-radius:6px;">🔥 ${high.length} HIGH</span>`;
+  if(high.length)   html+=`<span style="background:var(--green-l);color:var(--green);padding:4px 10px;border-radius:6px;">🔥 ${high.length} HIGH ${trendChip(market==='us'?'us_tce_high_n':'psx_tce_high_n')}</span>`;
   if(watch.length)  html+=`<span style="background:var(--orange-l);color:var(--orange);padding:4px 10px;border-radius:6px;">👀 ${watch.length} WATCH</span>`;
   if(ignore.length) html+=`<span style="background:#F3F4F6;color:#6B7280;padding:4px 10px;border-radius:6px;">— ${ignore.length} IGNORE</span>`;
   if(market==='us' && high.length) html+=`<span style="margin-left:auto;font-size:11px;color:var(--grey-d);">IM3 scores auto-updated by scanner</span>`;
@@ -4643,7 +4643,7 @@ function renderRecession(rec){
         +'<td><b>'+(c.title||'')+'</b><div style="font-size:11px;color:var(--grey-d);line-height:1.4;margin-top:2px;">'+whyEvent(c.title)+'</div></td>'
         +'<td style="text-align:right;">'+(c.forecast||'\u2014')+'</td><td style="text-align:right;">'+(c.previous||'\u2014')+'</td></tr>';
     }).join(''):'<tr><td colspan="5" style="color:var(--grey-d);">No upcoming high-impact US releases in the feed.</td></tr>';
-  el.innerHTML='<div class="alert-banner" style="background:'+col+';color:#fff;"><h3 style="margin:0;">RECESSION RISK: '+rec.risk+' <span style="font-weight:400;">(score '+(rec.score!=null?rec.score:'\u2014')+'/100)</span></h3></div>'
+  el.innerHTML='<div class="alert-banner" style="background:'+col+';color:#fff;"><h3 style="margin:0;">RECESSION RISK: '+rec.risk+' <span style="font-weight:400;">(score '+(rec.score!=null?rec.score:'\u2014')+'/100)'+(function(){var _t=trendChip('recession_score');return _t?' '+_t.replace(/#8a8a8a|#1a7f37|#b42318/g,'#ffffff'):'';})()+'</span></h3></div>'
     +'<div class="grid grid-3" style="margin-top:12px;">'+cards+'</div>'
     +'<div style="margin-top:14px;"><strong>Triggers</strong> '+trig+'<div style="font-size:11px;color:var(--grey-d);margin-top:6px;">Forecast/previous from ForexFactory; realized values from FRED. Source: '+(rec.source||'FRED + faireconomy')+'.</div></div>'
     +'<h3 class="subsection-title">Upcoming high-impact US releases</h3>'
@@ -6285,7 +6285,7 @@ function _renderWeHeroStrip(){
   if(d){
     const phase=d.phase||d.regime||'?';
     const col=phase==='Expansion'?'#34D399':'#F87171';
-    chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">US Diffusion</div><div style="font-size:16px;font-weight:800;color:${col};">${phase}</div></div>`);
+    chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">US Diffusion</div><div style="font-size:16px;font-weight:800;color:${col};">${phase} ${trendChip('us_diffusion_net')}</div></div>`);
   }
   if(crs&&crs.length>0){
     const top=crs[0];
@@ -6294,13 +6294,13 @@ function _renderWeHeroStrip(){
   if(sb&&sb.length>0){
     const top=sb[0];
     const bc={'Booming':'#34D399','Favoured':'#38BDF8','Neutral':'#FCD34D','Lagging':'#F97316','Avoid':'#F87171'};
-    chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">Top US Sector</div><div style="font-size:16px;font-weight:800;color:${bc[top.band]||'#94A3B8'};">${top.sector.replace('Information Technology','IT').replace('Consumer ','')}</div></div>`);
+    chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">Top US Sector</div><div style="font-size:16px;font-weight:800;color:${bc[top.band]||'#94A3B8'};">${top.sector.replace('Information Technology','IT').replace('Consumer ','')} ${trendChip('sector_top_score')}</div></div>`);
   }
   if(lei){
     const expCount=Object.values(lei).filter(v=>v.signal==='expansion').length;
     const total=Object.keys(lei).length;
-    chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">LEI Expanding</div><div style="font-size:16px;font-weight:800;color:#A78BFA;">${expCount}/${total} countries</div></div>`);
-  if(crs&&crs.length>0){const abv200=crs.filter(r=>r.above_200dma===true).length;const tot200=crs.filter(r=>r.above_200dma!=null).length;if(tot200>0){const col200=abv200/tot200>=0.6?'#34D399':abv200/tot200>=0.4?'#FCD34D':'#F87171';chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">Above 200-DMA</div><div style="font-size:16px;font-weight:800;color:${col200};">${abv200}/${tot200} markets</div></div>`);}}
+    chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">LEI Expanding</div><div style="font-size:16px;font-weight:800;color:#A78BFA;">${expCount}/${total} countries ${trendChip('lei_expansion_count')}</div></div>`);
+  if(crs&&crs.length>0){const abv200=crs.filter(r=>r.above_200dma===true).length;const tot200=crs.filter(r=>r.above_200dma!=null).length;if(tot200>0){const col200=abv200/tot200>=0.6?'#34D399':abv200/tot200>=0.4?'#FCD34D':'#F87171';chips.push(`<div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:8px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><div style="font-size:10px;color:#94A3B8;margin-bottom:3px;">Above 200-DMA</div><div style="font-size:16px;font-weight:800;color:${col200};">${abv200}/${tot200} markets ${trendChip('global_breadth_abv')}</div></div>`);}}
   }
   el.innerHTML = chips.join('');
 }
