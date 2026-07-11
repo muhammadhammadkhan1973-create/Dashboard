@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.195</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.196</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2391,7 +2391,7 @@ function calcMbUs(){
       +'<div><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#64748b;">Net Value (USD)</div><div style="font-size:26px;font-weight:800;color:#0f172a;">'+money(L.nav_usd)+'</div>'
       +'<div style="font-size:12px;color:#64748b;">holdings '+money(L.holdings_usd)+' + cash '+money(L.cash_usd)+'</div></div>'
       +'<div style="margin-left:auto;text-align:right;font-size:13px;line-height:1.7;">'
-      +'<div>Today: '+pc(t.daily)+' &nbsp; Since entry: '+pc(t.since_inception)+'</div>'
+      +'<div>Daily P&amp;L: '+(t.day_pnl_usd!=null?('<b style="color:'+(t.day_pnl_usd>=0?'#047857':'#b91c1c')+';">'+signed(t.day_pnl_usd)+' ('+pc(t.day_pnl_pct)+')</b>'):pc(t.daily))+' &nbsp; Since entry: '+pc(t.since_inception)+'</div>'
       +'<div>Week: '+pc(t.wow)+' &nbsp; Month: '+pc(t.mom)+'</div>'
       +'<div style="font-size:11px;color:#94a3b8;">fund-level YTD '+pc(t.ytd)+' \u2022 1Y '+pc(t.ret_1y)+' \u2022 as of '+(L.as_of||'')+'</div></div></div>';
     if(L.n_pending) h+='<div style="font-size:11px;color:#b45309;margin-top:6px;">'+L.n_pending+' holding(s) awaiting a live price this run (will fill next scan).</div>';
@@ -2400,7 +2400,7 @@ function calcMbUs(){
     // holdings table
     h+='<div class="m2x-card"><div class="m2x-sec">Holdings &mdash; your cost vs. now</div><table><thead><tr>'
       +'<th>Ticker</th><th>Fund</th><th>Shares</th><th>Cost</th><th>Price now</th><th>Value (USD)</th><th>Weight</th>'
-      +'<th>P&amp;L $</th><th>P&amp;L %</th><th>Today</th><th>YTD</th><th title="50-day moving average">50-DMA</th><th title="200-day moving average">200-DMA</th><th title="Price vs its 50/200-day averages and the golden/death cross — hover for the plain-English read">MA Trend</th><th>Trend</th></tr></thead><tbody>';
+      +'<th>P&amp;L $</th><th>P&amp;L %</th><th title="Last session move; the $ underneath is that move in dollars on your position (IBKR\u2019s Daily P&amp;L convention)">Today</th><th title="Price change over the last ~7 days (from the daily price store)">WoW</th><th title="Price change over the last ~30 days; shows \u2014 until the store accrues 30 days (seeded 6 Jul)">MoM</th><th>YTD</th><th title="50-day moving average">50-DMA</th><th title="200-day moving average">200-DMA</th><th title="Price vs its 50/200-day averages and the golden/death cross — hover for the plain-English read">MA Trend</th><th>Trend</th></tr></thead><tbody>';
     (L.holdings||[]).forEach(function(r){
       h+='<tr><td><b>'+r.ticker+'</b></td><td style="font-size:12px;">'+(r.name||'')+'<div style="color:#94a3b8;font-size:11px;">'+(r.theme||'')+'</div></td>'
         +'<td>'+(r.shares!=null?Number(r.shares).toLocaleString(undefined,{maximumFractionDigits:2}):'\u2014')+'</td>'
@@ -2408,9 +2408,38 @@ function calcMbUs(){
         +'<td>'+(r.price!=null?(r.price.toFixed(2)+' '+(r.ccy||'')):'<span style="color:#b45309;">pending</span>')+'</td>'
         +'<td>'+money(r.mv_usd)+'</td><td>'+(r.weight!=null?r.weight.toFixed(1)+'%':'\u2014')+'</td>'
         +'<td>'+(r.pnl_usd!=null?('<span style="color:'+(r.pnl_usd>=0?'#047857':'#b91c1c')+';font-weight:600;">'+signed(r.pnl_usd)+'</span>'):'\u2014')+'</td>'
-        +'<td>'+pc(r.pnl_pct)+'</td><td>'+pc(r.daily_pct)+'</td><td>'+pc(r.ytd)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma50)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma200)+'</td>'+'<td style="font-size:12px;">'+maCell(r.price,r.sma50,r.sma200)+'</td>'+'<td>'+ldTrendCell(r.ytd,r.ret_1y,r.daily_pct)+'</td></tr>';
+        +'<td>'+pc(r.pnl_pct)+'</td><td>'+pc(r.daily_pct)+(r.day_pnl_usd!=null?('<div style="font-size:10.5px;color:'+(r.day_pnl_usd>=0?'#047857':'#b91c1c')+';">'+signed(r.day_pnl_usd)+'</div>'):'')+'</td><td>'+pc(r.wow)+'</td><td>'+pc(r.mom)+'</td><td>'+pc(r.ytd)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma50)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma200)+'</td>'+'<td style="font-size:12px;">'+maCell(r.price,r.sma50,r.sma200)+'</td>'+'<td>'+ldTrendCell(r.ytd,r.ret_1y,r.daily_pct)+'</td></tr>';
     });
-    h+='</tbody></table><div style="font-size:11px;color:#94a3b8;margin-top:4px;">Cost = your entry price from the '+(L.inception_date||'entry')+' statement. P&amp;L is your real gain/loss since you bought \u2014 not the fund\u2019s calendar-year YTD.</div></div>';
+    h+='</tbody></table><div style="font-size:11px;color:#94a3b8;margin-top:4px;">Cost = your entry price from the '+(L.inception_date||'entry')+' statement. P&amp;L is your real gain/loss since you bought \u2014 not the fund\u2019s calendar-year YTD.</div>'
+      +'<div style="font-size:11px;color:#94a3b8;margin-top:2px;"><b>Why numbers can differ slightly from your IBKR app:</b> prices here come from a free feed that is ~15 minutes delayed on London lines (and shows the last close outside market hours), while IBKR is real-time; and the cost basis is seeded from your 6-Jul statement, so IBKR\u2019s unrealized P&amp;L can sit a few hundred dollars apart. Direction and size will track; to re-align the cost basis exactly, share a fresh IBKR statement any time.</div></div>';
+
+    // v5.196 BEST PERFORMERS -- funds ranked per window + top underlying companies (scanner v1.218.0)
+    (function(){
+      var ld=L.leaders||{}, ul=L.underlying_leaders||[];
+      function strip(title, arr, suffix){
+        if(!arr||!arr.length) return suffix?('<div style="margin-top:6px;"><span style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:.5px;min-width:70px;display:inline-block;">'+title+'</span> '+suffix+'</div>'):'';
+        var chips=arr.slice(0,7).map(function(x,i){
+          var c=x.val>=0?'#047857':'#b91c1c';
+          return '<span style="display:inline-block;background:'+(i===0?'#DCFCE7':'#F8FAFC')+';border:1px solid '+(i===0?'#86EFAC':'#E2E8F0')+';border-radius:6px;padding:3px 9px;margin:2px 5px 2px 0;font-size:12px;">'+(i===0?'\uD83C\uDFC6 ':'')+'<b>'+x.ticker+'</b> <span style="color:'+c+';font-weight:700;">'+(x.val>0?'+':'')+Number(x.val).toFixed(1)+'%</span></span>';
+        }).join('');
+        return '<div style="margin-top:6px;"><span style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:.5px;min-width:70px;display:inline-block;">'+title+'</span> '+chips+(suffix||'')+'</div>';
+      }
+      var bp='<div class="m2x-card"><div class="m2x-sec">Best Performers \u2014 your funds, ranked</div>'
+        +'<div style="font-size:11.5px;color:#64748b;margin-bottom:4px;">Each row ranks your seven funds over one time window \u2014 the trophy marks the leader. Month view stays \u2014 until 30 days of price history accrue (started 6 Jul).</div>'
+        +strip('TODAY', ld.today)
+        +strip('WEEK', ld.wow)
+        +strip('MONTH', ld.mom, (!ld.mom||!ld.mom.length)?'<span style="font-size:11px;color:#94a3b8;">accruing \u2014 30-day window not yet available</span>':'')
+        +strip('YTD', ld.ytd);
+      if(ul.length){
+        bp+='<div class="m2x-sec" style="margin-top:12px;">Best performers inside the funds \u2014 the companies doing the lifting</div>'
+          +'<div style="font-size:11.5px;color:#64748b;margin-bottom:4px;">The top underlying companies across your funds by this year\u2019s return (live data exists for the iShares-fed funds; the four justETF-fed funds publish names only, so their companies can\u2019t be ranked \u2014 honestly excluded).</div>'
+          +ul.slice(0,8).map(function(u){
+            return '<span style="display:inline-block;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;padding:3px 9px;margin:2px 5px 2px 0;font-size:12px;"><b>'+(u.ticker||u.name)+'</b> <span style="color:#64748b;">('+(u.fund||'')+')</span> <span style="color:#047857;font-weight:700;">+'+Number(u.ytd).toFixed(1)+'% YTD</span>'+(u.ret_1y!=null?' <span style="color:#94a3b8;font-size:11px;">1Y +'+Number(u.ret_1y).toFixed(0)+'%</span>':'')+'</span>';
+          }).join('');
+      }
+      bp+='</div>';
+      h+=bp;
+    })();
     // v5.187: trading hours (Dubai time) \u2014 where the ETFs list (when YOU trade) + when the underlying companies trade (what moves NAV)
     h+='<div id="li_trading_hours"></div>';
 
