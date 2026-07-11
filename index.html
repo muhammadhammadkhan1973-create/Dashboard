@@ -637,7 +637,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.197</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.198</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2393,7 +2393,7 @@ function calcMbUs(){
       +'<div style="font-size:12px;color:#64748b;">holdings '+money(L.holdings_usd)+' + cash '+money(L.cash_usd)+'</div></div>'
       +'<div style="margin-left:auto;text-align:right;font-size:13px;line-height:1.7;">'
       +'<div>Daily P&amp;L: '+(t.day_pnl_usd!=null?('<b style="color:'+(t.day_pnl_usd>=0?'#047857':'#b91c1c')+';">'+signed(t.day_pnl_usd)+' ('+pc(t.day_pnl_pct)+')</b>'):pc(t.daily))+' &nbsp; Since entry: '+pc(t.since_inception)+'</div>'
-      +'<div>Week: '+pc(t.wow)+' &nbsp; Month: '+pc(t.mom)+'</div>'
+      +'<div>Week: '+pc(t.wow)+((L.wow_span_days&&L.wow_span_days<7&&t.wow!=null)?'<span style="font-size:10px;color:#94a3b8;"> (over '+L.wow_span_days+' days \u2014 full week from 13 Jul)</span>':'')+' &nbsp; Month: '+pc(t.mom)+'</div>'
       +'<div style="font-size:11px;color:#94a3b8;">fund-level YTD '+pc(t.ytd)+' \u2022 1Y '+pc(t.ret_1y)+' \u2022 as of '+(L.as_of||'')+'</div></div></div>';
     if(L.n_pending) h+='<div style="font-size:11px;color:#b45309;margin-top:6px;">'+L.n_pending+' holding(s) awaiting a live price this run (will fill next scan).</div>';
     h+='</div>';
@@ -2409,7 +2409,7 @@ function calcMbUs(){
         +'<td>'+(r.price!=null?(r.price.toFixed(2)+' '+(r.ccy||'')):'<span style="color:#b45309;">pending</span>')+'</td>'
         +'<td>'+money(r.mv_usd)+'</td><td>'+(r.weight!=null?r.weight.toFixed(1)+'%':'\u2014')+'</td>'
         +'<td>'+(r.pnl_usd!=null?('<span style="color:'+(r.pnl_usd>=0?'#047857':'#b91c1c')+';font-weight:600;">'+signed(r.pnl_usd)+'</span>'):'\u2014')+'</td>'
-        +'<td>'+pc(r.pnl_pct)+'</td><td>'+pc(r.daily_pct)+(r.day_pnl_usd!=null?('<div style="font-size:10.5px;color:'+(r.day_pnl_usd>=0?'#047857':'#b91c1c')+';">'+signed(r.day_pnl_usd)+'</div>'):'')+'</td><td>'+pc(r.wow)+'</td><td>'+pc(r.mom)+'</td><td>'+pc(r.ytd)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma50)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma200)+'</td>'+'<td style="font-size:12px;">'+maCell(r.price,r.sma50,r.sma200)+'</td>'+'<td>'+ldTrendCell(r.ytd,r.ret_1y,r.daily_pct)+'</td></tr>';
+        +'<td>'+pc(r.pnl_pct)+'</td><td>'+pc(r.daily_pct)+(r.day_pnl_usd!=null?('<div style="font-size:10.5px;color:'+(r.day_pnl_usd>=0?'#047857':'#b91c1c')+';">'+signed(r.day_pnl_usd)+'</div>'):'')+'</td><td>'+pc(r.wow)+((L.wow_span_days&&L.wow_span_days<7&&r.wow!=null)?'<span style="font-size:9.5px;color:#94a3b8;"> '+L.wow_span_days+'d</span>':'')+'</td><td>'+pc(r.mom)+'</td><td>'+pc(r.ytd)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma50)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma200)+'</td>'+'<td style="font-size:12px;">'+maCell(r.price,r.sma50,r.sma200)+'</td>'+'<td>'+ldTrendCell(r.ytd,r.ret_1y,r.daily_pct)+'</td></tr>';
     });
     h+='</tbody></table><div style="font-size:11px;color:#94a3b8;margin-top:4px;">Cost = your entry price from the '+(L.inception_date||'entry')+' statement. P&amp;L is your real gain/loss since you bought \u2014 not the fund\u2019s calendar-year YTD.</div>'
       +'<div style="font-size:11px;color:#94a3b8;margin-top:2px;"><b>Why numbers can differ slightly from your IBKR app:</b> prices here come from a free feed that is ~15 minutes delayed on London lines (and shows the last close outside market hours), while IBKR is real-time; and the cost basis is seeded from your 6-Jul statement, so IBKR\u2019s unrealized P&amp;L can sit a few hundred dollars apart. Direction and size will track; to re-align the cost basis exactly, share a fresh IBKR statement any time.</div></div>';
@@ -2428,7 +2428,7 @@ function calcMbUs(){
       var bp='<div class="m2x-card"><div class="m2x-sec">Best Performers \u2014 your funds, ranked</div>'
         +'<div style="font-size:11.5px;color:#64748b;margin-bottom:4px;">Each row ranks your seven funds over one time window \u2014 the trophy marks the leader. Month view stays \u2014 until 30 days of price history accrue (started 6 Jul).</div>'
         +strip('TODAY', ld.today)
-        +strip('WEEK', ld.wow)
+        +strip('WEEK'+((L.wow_span_days&&L.wow_span_days<7)?' ('+L.wow_span_days+'d)':''), ld.wow, (!ld.wow||!ld.wow.length)?'<span style="font-size:11px;color:#94a3b8;">accruing \u2014 needs 3+ days of price history</span>':'')
         +strip('MONTH', ld.mom, (!ld.mom||!ld.mom.length)?'<span style="font-size:11px;color:#94a3b8;">accruing \u2014 30-day window not yet available</span>':'')
         +strip('YTD', ld.ytd);
       if(ul.length){
