@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.202 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
+<!-- index.html v5.203 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
@@ -623,7 +623,7 @@
     <div id="world_tce_etf_box"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">M1 Recommended ETFs &mdash; from the Dashboard</h3>
-    <div style="font-size:11px;color:#64748B;border-left:3px solid #0F766E;padding-left:9px;margin:2px 0 12px;">The UCITS ETF proxies for the dashboard&rsquo;s <strong>M1 top-down</strong> buy list (US + PSX from Tab 6) &mdash; the same names Wave PB&rsquo;s paper portfolio is built from, now with a tax-efficient wrapper path for a UAE resident. Each ETF is priced live (YTD, 1-year, today&rsquo;s move, same TradingView resolver) and lists the buy-list name it stands in for. US names map on holdings/sector; PSX names map to the one UCITS Pakistan wrapper (Chimera physical basket &mdash; <strong>thin &amp; illiquid, use limit orders</strong>). Sector/region proxies &mdash; the <strong>Match</strong> column shows how close.</div>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #0F766E;padding-left:9px;margin:2px 0 12px;">The UCITS ETF proxies for the dashboard&rsquo;s <strong>M1 top-down</strong> buy list (US + PSX from Tab 6) &mdash; the same names Wave PB&rsquo;s paper portfolio is built from, now with a tax-efficient wrapper path for a UAE resident. Grouped one row per ETF, with the buy-list names it stands in for shown as chips. US names map on holdings/sector; PSX names map to the one UCITS Pakistan wrapper (Chimera physical basket &mdash; <strong>thin &amp; illiquid, use limit orders</strong>). Sector/region proxies &mdash; the <strong>Match</strong> column shows how close.<br><span style="color:#0F766E;"><strong>Returns are USD-basis</strong>, priced live off TradingView&rsquo;s USD listing (same resolver as every fund on this tab). They will <strong>not</strong> match local-currency sources like investing.com or a TV chart set to a non-USD listing &mdash; a fund&rsquo;s USD return and its home-currency return differ by the FX move. <strong>Exception:</strong> the Chimera Pakistan ETF lists only on ADX (AED) with tiny AUM &mdash; its TradingView figure is currency-ambiguous and thinly-traded, so treat its return as indicative only and verify against the issuer factsheet.</span></div>
     <div id="world_m1_etf_box"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">M2 Recommended ETFs &mdash; from the Dashboard</h3>
@@ -650,7 +650,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.202</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.203</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5123,12 +5123,14 @@ function renderM1M2Themes(){
         var holdLine=f.holdings?'<div style="font-size:11px;margin:5px 0;line-height:1.5;"><b style="color:#1E293B;">Holdings:</b> <span style="color:#475569;">'+f.holdings+'</span></div>':'';
         var ytd=(typeof f.ytd==='number')?((f.ytd>=0?'+':'')+f.ytd.toFixed(2)+'%'):'\u2014';
         var ytdCol=(typeof f.ytd==='number'&&f.ytd<0)?'#B91C1C':'#15803D';
+        var y1=(typeof f.ret_1y==='number')?('<span style="font-size:10px;color:#64748B;font-weight:600;margin-left:8px;">1Y <b style="color:'+((f.ret_1y<0)?'#B91C1C':'#15803D')+';">'+(f.ret_1y>=0?'+':'')+f.ret_1y.toFixed(2)+'%</b></span>'):'';
+        var ccy=f.live_ccy?('<span style="font-size:9px;color:#94A3B8;margin-left:6px;">'+f.live_ccy+'</span>'):'';
         return '<div style="background:#FAF5FF;border:2px solid '+col+';border-radius:12px;padding:12px 16px;flex:1;min-width:230px;max-width:300px;box-shadow:0 4px 16px rgba(124,58,237,0.08);">'
           +'<div style="font-size:13.5px;font-weight:700;color:#0F172A;line-height:1.3;font-family:var(--font-head,inherit);">'+f.name+'</div>'
-          +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+f.isin+' \u00b7 TER '+(f.ter!=null?f.ter+'%':'\u2014')+(typeof f.size_m_eur==='number'?' \u00b7 \u20ac'+f.size_m_eur+'m AUM':'')+'</div>'
+          +'<div style="font-size:10px;color:#475569;font-family:var(--font-mono,monospace);margin:5px 0;">'+f.isin+' \u00b7 TER '+(f.ter!=null?f.ter+'%':'\u2014')+(typeof f.live_price==='number'?' \u00b7 '+(f.live_ccy||'')+' '+f.live_price.toFixed(2):'')+'</div>'
           +holdLine
           +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid '+col+'33;">'
-          +'<span style="font-size:10px;color:'+col+';font-weight:600;">YTD <b style="color:'+ytdCol+';">'+ytd+'</b></span>'
+          +'<span style="font-size:10px;color:'+col+';font-weight:600;">YTD <b style="color:'+ytdCol+';">'+ytd+'</b></span>'+y1+ccy
           +'</div></div>';
       }).join('')+'</div>';
   });
