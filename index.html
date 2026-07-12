@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.205 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
+<!-- index.html v5.206 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
@@ -664,7 +664,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.205</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.206</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -7212,7 +7212,7 @@ function renderWorldEtfTab(){
             +'<td style="padding:5px 8px;font-size:12px;font-weight:700;color:#059669;vertical-align:top;white-space:nowrap;">'+ytdStr+ldTrendArrow(ytdVal,y1Val,null)+maArrow(e.live_price,e.live_sma50,e.live_sma200)+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;color:#0F172A;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+y1Str+'</td>'
             +'<td style="padding:5px 8px;font-size:11px;color:#475569;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+terStr+'</td>'
-            +'<td style="padding:5px 8px;vertical-align:top;line-height:1.7;">'+(holdChips(e.holdings)||'<span style="color:#94A3B8;font-size:10.5px;">\u2014</span>')+'</td>'
+            +'<td style="padding:5px 8px;vertical-align:top;line-height:1.7;">'+(holdChips(e.holdings)||('<span style="color:#94A3B8;font-size:10px;font-style:italic;" title="Swap-based (synthetic) funds hold a total-return swap, not the underlying shares, so they publish no per-stock holdings list. Physical funds do; see the factsheet for the index it tracks.">'+((e.note&&/swap|synthetic/i.test(e.note))?'synthetic (swap) \u2014 no published holdings':'holdings not published')+'</span>'))+'</td>'
             +'<td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#475569;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(e.isin||'')+'</td>'
             +'<td style="padding:5px 8px;font-size:10px;color:#475569;vertical-align:top;white-space:nowrap;">'+tickerStr+'</td>'
             +'</tr>';
