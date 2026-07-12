@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.201 (supersedes v5.199) : Wave ETF-M Tab-16 blocks (M1 Recommended ETFs [US+PSX], M2 Recommended ETFs w/ turnaround caveat, M1/M2 Booming-Sector Themes) reading LIVE.etf_m1m2 from scanner v1.230.0. Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
+<!-- index.html v5.202 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
@@ -631,7 +631,7 @@
     <div id="world_m2_etf_box"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">M1 / M2 Booming-Sector Themes &mdash; where the buy lists cluster</h3>
-    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">Derived from the engines&rsquo; <strong>own</strong> buy lists: any GICS sector holding <strong>&ge;2 engine names</strong> (M1 + M2 combined) becomes a theme, carrying 3&ndash;4 UCITS sector ETFs. Where the picks cluster is itself a top-down signal &mdash; so when the buy lists churn, these themes follow automatically (buy-list churn = theme churn = signal). Member tickers are colour-tagged by engine (<span style="color:#0F766E;font-weight:700;">M1</span> / <span style="color:#EA580C;font-weight:700;">M2</span>).</div>
+    <div style="font-size:11px;color:#64748B;border-left:3px solid #7C3AED;padding-left:9px;margin:2px 0 12px;">Derived from the engines&rsquo; <strong>own</strong> buy lists: any GICS sector holding <strong>&ge;2 engine names</strong> (M1 + M2 combined) becomes a theme, carrying 3&ndash;4 UCITS sector ETFs. Member tickers are colour-tagged by engine (<span style="color:#0F766E;font-weight:700;">M1</span> / <span style="color:#EA580C;font-weight:700;">M2</span>).<br><strong style="color:#5B21B6;">How this differs from the other theme lists on this tab:</strong> the <strong>Engine Recommendations</strong> (top of tab) are a <em>macro top-down</em> funnel &mdash; country LEIs &amp; global themes pick <em>region/country</em> ETFs. The <strong>Emerging Themes Watch</strong> (below) is a <em>fixed, curated</em> list of narrow forward-looking themes (AI, cyber, quantum, space&hellip;) that have <em>no</em> engine signal &mdash; a hand-maintained watchlist. These M1/M2 themes are neither: they&rsquo;re <strong>bottom-up</strong>, <strong>broad GICS-sector</strong> baskets computed live from where your <em>actual stock picks</em> land &mdash; so when the buy lists churn, these themes churn automatically (churn = signal). Same sector can appear in more than one list (e.g. IT here vs. narrow AI/semis in Emerging Themes); that&rsquo;s expected &mdash; different lens, different granularity.</div>
     <div id="world_m1m2_themes_box"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">Momentum-40 &mdash; Non-Leveraged ETFs Already Up &ge;40% YTD</h3>
@@ -650,7 +650,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.201</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.202</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5100,74 +5100,8 @@ function renderTceEtfTracker(elId, showIntro){
     blurb:'Every <b style="color:#0F172A;">TCE HIGH and WATCH</b> name (US + PSX) is mapped to the closest UCITS-domiciled ETF \u2014 the tax-efficient way for you to take the exposure \u2014 and that ETF is tracked live here: <b style="color:#0F172A;">YTD</b>, <b style="color:#0F172A;">1-year</b>, and today\u2019s move, priced through the same TradingView resolver as Tab 16. Chips are tier-coloured (<span style="color:#166534;font-weight:700;">HIGH</span> / <span style="color:#92400E;font-weight:700;">WATCH</span>); the <b style="color:#0F172A;">Match</b> column shows how close each proxy is to the name\u2019s business.',
     noun:'HIGH/WATCH name', namesCol:'HIGH / WATCH names'});
 }
-// === v5.201 Wave ETF-M: M1/M2 recommended-ETF proxies + booming-sector themes (reads LIVE.etf_m1m2) ===
-// Matches the Explosive/TCE proxy-table grammar exactly (same #EEF7F5 header, #99C2BA rule, 7px8px cells,
-// green/red returns, mono ISIN) with an M1=teal / M2=orange accent, and the Emerging-Themes card grammar
-// for the themes block. DATA/display-only; every field comes from the scanner's etf_m1m2 payload.
-function _etfmPct(v){ if(typeof v!=='number') return '<span style="color:#94A3B8;">n/a</span>';
-  var up=v>=0; return '<span style="color:'+(up?'#15803D':'#B91C1C')+';font-weight:700;">'+(up?'+':'')+v.toFixed(1)+'%</span>'; }
-function _etfmDaily(v){ if(typeof v!=='number') return '<span style="color:#94A3B8;">\u2014</span>';
-  var up=v>=0; return '<span style="color:'+(up?'#15803D':'#B91C1C')+';font-weight:700;">'+(up?'\u25B2':'\u25BC')+' '+(up?'+':'')+v.toFixed(2)+'%</span>'; }
-function _etfmMatchCell(tl){
-  var lab=/holdings/.test(tl||'')?'holdings':/sector/.test(tl||'')?'sector':'broad';
-  var bg=lab==='holdings'?'#D1FAE5':lab==='sector'?'#EDE9FE':'#FEF3C7';
-  var col=lab==='holdings'?'#065F46':lab==='sector'?'#5B21B6':'#92400E';
-  return '<span style="display:inline-block;font-size:9.5px;font-weight:700;font-family:var(--font-mono);background:'+bg+';color:'+col+';padding:1px 6px;border-radius:3px;">'+lab+'</span>';
-}
-// live-price enrichment: the scanner's build_recommended_etf_trackers already prices proxy ISINs into
-// LIVE.recommended_etf_trackers-style maps; reuse the same live fields if present on the proxy, else show catalog.
-function _etfmProxyRow(x, accent, isPsx){
-  var p=x.proxy||{}; if(!p||!p.isin) return '';
-  var ytd=(typeof p.live_ytd==='number')?p.live_ytd:p.ytd;
-  var y1=(typeof p.ret_1y==='number')?p.ret_1y:null;
-  var day=(typeof p.daily_chg==='number')?p.daily_chg:null;
-  var px=(typeof p.live_price==='number')?('<span style="color:#64748B;font-size:10px;"> \u00b7 '+(p.live_ccy||'')+' '+p.live_price.toFixed(2)+'</span>'):'';
-  var flag=isPsx?'\uD83C\uDDF5\uD83C\uDDF0 ':'';
-  var tkBg=isPsx?'#F0FDF4':'#EFF6FF', tkCol=isPsx?'#15803D':'#1D4ED8';
-  return '<tr style="border-bottom:1px solid #F1F5F9;">'
-    +'<td style="padding:7px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'+(p.name||p.isin)+'</div>'
-      +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono);">'+p.isin+(p.ter!=null?' \u00b7 TER '+p.ter+'%':'')+px+'</div></td>'
-    +'<td style="padding:7px 8px;">'+_etfmMatchCell(p.tier_label)+'</td>'
-    +'<td style="padding:7px 8px;"><span style="display:inline-block;font-size:10px;font-weight:700;font-family:var(--font-mono);background:'+tkBg+';color:'+tkCol+';padding:1px 6px;border-radius:3px;">'+flag+x.ticker+'</span>'
-      +' <span style="font-size:10.5px;color:#475569;">'+(x.name||'')+'</span>'
-      +(x.im3_pct!=null?' <span style="font-size:9.5px;color:'+accent+';font-weight:700;">IM3 '+x.im3_pct+'%</span>':'')
-      +(x.grade?' <span style="font-size:9.5px;color:'+accent+';font-weight:700;">'+x.grade+(x.tce?'\u00b7'+x.tce:'')+'</span>':'')+'</td>'
-    +'<td style="padding:7px 8px;font-size:12px;text-align:right;">'+_etfmPct(ytd)+'</td>'
-    +'<td style="padding:7px 8px;font-size:12px;text-align:right;">'+_etfmPct(y1)+'</td>'
-    +'<td style="padding:7px 8px;font-size:12px;text-align:right;">'+_etfmDaily(day)+'</td>'
-    +'</tr>';
-}
-function _etfmTable(rows, namesCol){
-  var th=function(t,align){return '<th style="background:#EEF7F5;padding:7px 8px;text-align:'+(align||'left')+';font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">'+t+'</th>';};
-  return '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'
-    +'<thead><tr style="background:#EEF7F5;border-bottom:2px solid #99C2BA;">'
-    +th('UCITS ETF (proxy)')+th('Match')+th(namesCol)+th('YTD','right')+th('1Y','right')+th('Today','right')
-    +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
-}
-function renderM1EtfTracker(){
-  var el=document.getElementById('world_m1_etf_box'); if(!el) return;
-  var D=(typeof LIVE!=='undefined'&&LIVE&&LIVE.etf_m1m2)?LIVE.etf_m1m2:null;
-  if(!D||((!D.m1_us||!D.m1_us.length)&&(!D.m1_psx||!D.m1_psx.length))){
-    el.innerHTML='<p style="color:var(--grey-d);font-size:12px;margin:0 0 16px;">M1 recommended ETFs fill in after the scanner (v1.230.0+) has run and the M1 buy lists are populated.</p>'; return;
-  }
-  var us=(D.m1_us||[]).map(function(x){return _etfmProxyRow(x,'#0F766E',false);}).join('');
-  var pk=(D.m1_psx||[]).map(function(x){return _etfmProxyRow(x,'#0F766E',true);}).join('');
-  var html='';
-  if(us) html+='<div style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#0F766E;margin:2px 0 6px;">US &mdash; M1 top-down buys</div>'+_etfmTable(us,'M1 name');
-  if(pk) html+='<div style="font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#0F766E;margin:16px 0 6px;">Pakistan &mdash; M1 top-down buys <span style="font-weight:500;text-transform:none;color:#94A3B8;">(Chimera physical PSX wrapper &mdash; thin/illiquid)</span></div>'+_etfmTable(pk,'M1 PSX name');
-  el.innerHTML=html;
-}
-function renderM2EtfTracker(){
-  var el=document.getElementById('world_m2_etf_box'); if(!el) return;
-  var D=(typeof LIVE!=='undefined'&&LIVE&&LIVE.etf_m1m2)?LIVE.etf_m1m2:null;
-  if(!D||!D.m2_turnaround||!D.m2_turnaround.length){
-    el.innerHTML='<p style="color:var(--grey-d);font-size:12px;margin:0 0 16px;">M2 recommended ETFs fill in after the scanner (v1.230.0+) has run and the M2 turnaround watch is populated.</p>'; return;
-  }
-  var caveat='<div style="background:#FFF7ED;border-left:3px solid #EA580C;border-radius:0 8px 8px 0;padding:9px 13px;margin:0 0 12px;font-size:11.5px;color:#9A3412;line-height:1.5;">'
-    +'<b>Sector proxy \u2014 not the single name.</b> A turnaround is a single-stock story; the sector ETF gives you the neighbourhood exposure while you do the work on the name. It will not track the individual stock 1:1.</div>';
-  var rows=(D.m2_turnaround||[]).map(function(x){return _etfmProxyRow(x,'#EA580C',false);}).join('');
-  el.innerHTML=caveat+_etfmTable(rows,'M2 turnaround name');
-}
+// === v5.202 Wave ETF-M: M1/M2 recommended-ETF blocks reuse the shared renderProxyTracker (grouped by
+// ETF, live-priced) \u2014 see the render calls. Only the themes renderer is bespoke (card grammar). ===
 function renderM1M2Themes(){
   var el=document.getElementById('world_m1m2_themes_box'); if(!el) return;
   var D=(typeof LIVE!=='undefined'&&LIVE&&LIVE.etf_m1m2)?LIVE.etf_m1m2:null;
@@ -5796,8 +5730,8 @@ function applyLive(){
   try{renderExplosiveEtfTracker('world_explosive_etf_box', false);}catch(e){if(window.console)console.warn('world explosive etf tracker render',e);}
   try{renderTceEtfTracker('tce_etf_box', true);}catch(e){if(window.console)console.warn('tce etf tracker render',e);}
   try{renderTceEtfTracker('world_tce_etf_box', false);}catch(e){if(window.console)console.warn('world tce etf tracker render',e);}
-  try{renderM1EtfTracker();}catch(e){if(window.console)console.warn('m1 etf tracker render',e);}
-  try{renderM2EtfTracker();}catch(e){if(window.console)console.warn('m2 etf tracker render',e);}
+  try{renderProxyTracker('world_m1_etf_box', false, {key:'m1_etf_tracker', kicker:'M1 Top-Down \\u2192 UCITS ETF Tracker', namesCol:'M1 buy-list names'});}catch(e){if(window.console)console.warn('m1 etf tracker render',e);}
+  try{renderProxyTracker('world_m2_etf_box', false, {key:'m2_etf_tracker', kicker:'M2 Turnaround \\u2192 UCITS ETF Tracker', namesCol:'M2 turnaround names'});}catch(e){if(window.console)console.warn('m2 etf tracker render',e);}
   try{renderM1M2Themes();}catch(e){if(window.console)console.warn('m1m2 themes render',e);}
   try{renderEtfResultsTracker();}catch(e){if(window.console)console.warn('etf results tracker render',e);}
   try{renderResults();}catch(e){if(window.console)console.warn('results render',e);}
