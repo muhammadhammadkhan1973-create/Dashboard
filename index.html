@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.204 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
+<!-- index.html v5.205 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
@@ -664,7 +664,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.204</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.205</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -5083,8 +5083,12 @@ function renderProxyTracker(elId, showIntro, cfg){
     var chips=(r.stocks_us||[]).map(function(s){return chip(s,false);})
       .concat((r.stocks_psx||[]).map(function(s){return chip(s,true);})).join('');
     var px=(typeof r.live_price==='number')?('<span style="color:#64748B;font-size:10px;">'+(r.live_ccy||'')+' '+r.live_price.toFixed(2)+'</span>'):'';
+    var ccyTag=(r.live_ccy)?(r.live_ccy==='USD'
+        ? '<span style="display:inline-block;font-size:9px;font-weight:700;font-family:var(--font-mono);background:#EFF6FF;color:#1D4ED8;padding:0 5px;margin-left:6px;border-radius:3px;vertical-align:middle;" title="Returns are in US dollars">USD</span>'
+        : '<span style="display:inline-block;font-size:9px;font-weight:700;font-family:var(--font-mono);background:#FEF3C7;color:#92400E;padding:0 5px;margin-left:6px;border-radius:3px;vertical-align:middle;" title="Returns are in '+r.live_ccy+' (this fund has no USD listing) \\u2014 not comparable to USD figures; verify on the issuer factsheet">'+r.live_ccy+'</span>')
+        : '';
     return '<tr style="border-bottom:1px solid #F1F5F9;">'
-      +'<td style="padding:7px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'+(r.name||r.isin)+'</div>'
+      +'<td style="padding:7px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'+(r.name||r.isin)+ccyTag+'</div>'
         +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono);">'+r.isin+(r.ter!=null?' \u00b7 TER '+r.ter+'%':'')+(px?' \u00b7 '+px:'')+'</div></td>'
       +'<td style="padding:7px 8px;font-size:10.5px;color:#475569;">'+(r.tier_label||'\u2014')+'</td>'
       +'<td style="padding:7px 8px;">'+chips+'</td>'
