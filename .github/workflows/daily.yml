@@ -32,11 +32,58 @@ jobs:
         run: |
           pip install requests yfinance pandas feedparser python-dateutil fredapi pdfplumber openpyxl
 
+      - name: Compute scanner inputs hash (skip-guard)
+        id: inputs_hash
+        run: |
+          python3 << 'EOF'
+          import hashlib, os, json
+          # Hash the scanner code + every config/data INPUT the scanner reads. If none of
+          # these changed AND this is a manual re-run AND a valid data.json already exists,
+          # the expensive scanner run is skipped (identical output guaranteed). Scheduled
+          # (cron) runs ALWAYS execute — live market data moves regardless of input hashes.
+          FILES = ['scanner.py', 'live_portfolio.json', 'psx_financials.json',
+                   'psx_macros_manual.json', 'bank_ig2_inputs.json', 'bank_ig2_overrides.json',
+                   'ETF_Universe.xlsx', 'GICS_Breakdown_For_US_Market_Only.xlsx',
+                   'm1_force_rescore.json']
+          h = hashlib.sha256()
+          for fn in FILES:
+              try:
+                  with open(fn, 'rb') as f: h.update(f.read())
+              except Exception: h.update(b'\x00')  # missing file is part of the state
+          cur = h.hexdigest()
+          try:    prev = open('.scanner_inputs_hash').read().strip()
+          except Exception: prev = ''
+          inputs_unchanged = bool(cur) and cur == prev
+          # data.json must already exist and be valid JSON to safely skip regeneration.
+          data_ok = False
+          try:
+              with open('data.json') as f: json.load(f); data_ok = True
+          except Exception: data_ok = False
+          is_manual = os.environ.get('GITHUB_EVENT_NAME', '') == 'workflow_dispatch'
+          forced = str(os.environ.get('FORCE_IM3', '')).lower() == 'true'
+          # Skip ONLY on a manual, unforced re-run with unchanged inputs and a good data.json.
+          skip = bool(is_manual and inputs_unchanged and data_ok and not forced)
+          print(f"inputs_unchanged={inputs_unchanged} (cur {cur[:8]} vs prev {prev[:8]})")
+          print(f"is_manual={is_manual} data_ok={data_ok} forced={forced} -> skip_scanner={skip}")
+          # Always write the current hash so the NEXT run compares against this state.
+          try: open('.scanner_inputs_hash', 'w').write(cur)
+          except Exception: pass
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"skip_scanner={'true' if skip else 'false'}\n")
+          EOF
+        env:
+          FORCE_IM3: ${{ github.event.inputs.force_im3 }}
+
       - name: Run scanner
+        if: steps.inputs_hash.outputs.skip_scanner != 'true'
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
         run: python scanner.py
+
+      - name: Scanner skipped (inputs unchanged)
+        if: steps.inputs_hash.outputs.skip_scanner == 'true'
+        run: echo "Scanner skipped — manual re-run with unchanged inputs and a valid data.json already present. IM3 steps below still run against the existing data.json."
 
       - name: Check if explosive list changed
         id: check_explosive
@@ -429,7 +476,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data.json .im3_scorer_hash
+          git add data.json .im3_scorer_hash .scanner_inputs_hash
           [ -f .im3_psx_hash ] && git add .im3_psx_hash || true
           [ -f psx_history_cache.json ] && git add psx_history_cache.json || true
           [ -f us_history_cache.json ] && git add us_history_cache.json || true
