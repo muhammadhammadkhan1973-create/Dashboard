@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.212 (supersedes v5.211): (1) WHALE WATCH (13F) -- new section on the US Macro Dashboard (renderWhale13f, reads LIVE.whale_13f from scanner v1.239.0): consensus buys/sells chips (>=2 whales same move, green up / red down, hover shows which whales), per-whale new-buys/exits table, honest quarter note (shows the latest available quarter, auto-upgrades when Q2 13Fs land ~Aug 14), and a name-guard skip count. (2) PB BACKTEST readout -- _renderPB's placeholder line now renders the real backtest (LIVE.pb.backtest from scanner v1.240.0): per book model return vs S&P500/KSE-100, alpha, max drawdown when ready, else an honest 'accruing -- N days, needs ~30 (~mid-August)' line that fills automatically. Prior v5.211 (supersedes v5.210): Live Investment tab gains a WEEKLY + MONTHLY STATEMENTS section (reads live_investment.statements from scanner v1.238.2, derived from the daily NAV history) -- period NAV, P&L $/%, since-inception, best/worst holding, in-progress flag. Prior v5.210 (supersedes v5.209): PB rows now also show a bearish INSIDER-SELLING chip (red \u25bc) when Form-4 shows heavy net insider selling on a name in the paper book -- pairs with scanner v1.238.1 sec_insider_sell. Prior v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
+<!-- index.html v5.213 (supersedes v5.212): WHALE WATCH FULL ANALYSIS -- the consensus buys/sells are now a DATA TABLE (Ticker | Company | #Whales | Price | YTD | 1Y | vs 50-DMA | vs 200-DMA | Trend[uptrend/downtrend/mixed + golden/death cross] | Zacks/Valuation), reading the new per-name `info` block on whale_13f.consensus_* from scanner v1.241.0. Matched dashboard names show full analysis; unmatched stay name-only (honest em-dashes). Replaces the name-only chips the owner flagged ("without tickers... YTD/1Y/moving averages"). Prior v5.212 (supersedes v5.211): (1) WHALE WATCH (13F) -- new section on the US Macro Dashboard (renderWhale13f, reads LIVE.whale_13f from scanner v1.239.0): consensus buys/sells chips (>=2 whales same move, green up / red down, hover shows which whales), per-whale new-buys/exits table, honest quarter note (shows the latest available quarter, auto-upgrades when Q2 13Fs land ~Aug 14), and a name-guard skip count. (2) PB BACKTEST readout -- _renderPB's placeholder line now renders the real backtest (LIVE.pb.backtest from scanner v1.240.0): per book model return vs S&P500/KSE-100, alpha, max drawdown when ready, else an honest 'accruing -- N days, needs ~30 (~mid-August)' line that fills automatically. Prior v5.211 (supersedes v5.210): Live Investment tab gains a WEEKLY + MONTHLY STATEMENTS section (reads live_investment.statements from scanner v1.238.2, derived from the daily NAV history) -- period NAV, P&L $/%, since-inception, best/worst holding, in-progress flag. Prior v5.210 (supersedes v5.209): PB rows now also show a bearish INSIDER-SELLING chip (red \u25bc) when Form-4 shows heavy net insider selling on a name in the paper book -- pairs with scanner v1.238.1 sec_insider_sell. Prior v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
@@ -664,7 +664,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.212</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.213</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -6506,19 +6506,40 @@ function renderWhale13f(){
   var W=LIVE&&LIVE.whale_13f;
   if(!W||!W.whales||!W.whales.length){ el.innerHTML=''; return; }
   var esc=function(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-  function chips(list,dir){
-    if(!list||!list.length) return '<span style="color:#94a3b8;font-size:12px;">none this quarter</span>';
-    var bg=(dir==='buy')?'#d1fae5':'#FEE2E2', fg=(dir==='buy')?'#047857':'#b42318', ic=(dir==='buy')?'\u25b2':'\u25bc';
-    return list.slice(0,10).map(function(c){
-      return '<span title="'+c.n_whales+' whales '+(dir==='buy'?'bought/added':'trimmed/exited')+': '+esc((c.whales||[]).join(', '))+'" style="display:inline-block;background:'+bg+';color:'+fg+';border-radius:6px;padding:3px 10px;margin:3px 6px 3px 0;font-size:12px;font-weight:700;">'+ic+' '+esc(c.issuer)+' \u00b7 '+c.n_whales+'</span>';
+  function pctCell(v){ if(v===null||v===undefined) return '<td style="text-align:right;color:#cbd5e1;">\u2014</td>'; var c=v>=0?'#047857':'#b42318'; return '<td style="text-align:right;color:'+c+';font-weight:600;">'+(v>=0?'+':'')+v.toFixed(1)+'%</td>'; }
+  function maCell(v){ if(v===null||v===undefined) return '<td style="text-align:right;color:#cbd5e1;">\u2014</td>'; var up=v>=0; return '<td style="text-align:right;color:'+(up?'#047857':'#b42318')+';">'+(up?'\u25b2':'\u25bc')+(v>=0?'+':'')+v.toFixed(0)+'%</td>'; }
+  function consTable(list,dir){
+    if(!list||!list.length) return '<div style="color:#94a3b8;font-size:12px;padding:4px 0;">none this quarter</div>';
+    var head=(dir==='buy')?'#047857':'#b42318';
+    var rows=list.slice(0,15).map(function(c){
+      var i=c.info||{}; var tk=i.ticker||'';
+      var wtitle='Which funds: '+esc((c.whales||[]).join(', '));
+      var zv=(i.zacks!=null?('Zacks '+i.zacks):'')+(i.valuation?((i.zacks!=null?' \u00b7 ':'')+esc(i.valuation)):'');
+      var trend = i.trend? '<span style="font-size:10px;padding:1px 5px;border-radius:4px;background:'+(i.trend==='uptrend'?'#d1fae5':i.trend==='downtrend'?'#FEE2E2':'#FEF3C7')+';color:'+(i.trend==='uptrend'?'#047857':i.trend==='downtrend'?'#b42318':'#92400e')+';">'+i.trend+(i.cross==='golden'?' \u00b7 golden':i.cross==='death'?' \u00b7 death':'')+'</span>':'\u2014';
+      return '<tr style="border-top:1px solid #F1F5F9;" title="'+wtitle+'">'
+        +'<td style="padding:4px 6px;font-weight:800;color:#0f172a;">'+esc(tk||'\u2014')+'</td>'
+        +'<td style="padding:4px 6px;color:#334155;">'+esc(c.issuer)+'</td>'
+        +'<td style="text-align:center;font-weight:700;color:'+head+';">'+c.n_whales+'</td>'
+        +'<td style="text-align:right;color:#475569;">'+(i.price!=null?('$'+i.price.toFixed(2)):'\u2014')+'</td>'
+        +pctCell(i.ytd)+pctCell(i.ret_1y)
+        +maCell(i.vs_sma50)+maCell(i.vs_sma200)
+        +'<td style="text-align:center;">'+trend+'</td>'
+        +'<td style="text-align:center;color:#64748b;font-size:11px;">'+(zv||'\u2014')+'</td></tr>';
     }).join('');
+    return '<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+      +'<tr style="color:#64748b;font-size:10px;text-align:left;letter-spacing:.02em;">'
+      +'<th style="padding:3px 6px;">TICKER</th><th>COMPANY</th><th style="text-align:center;">#</th>'
+      +'<th style="text-align:right;">PRICE</th><th style="text-align:right;">YTD</th><th style="text-align:right;">1Y</th>'
+      +'<th style="text-align:right;">vs 50-DMA</th><th style="text-align:right;">vs 200-DMA</th>'
+      +'<th style="text-align:center;">TREND</th><th style="text-align:center;">ZACKS/VAL</th></tr>'
+      +rows+'</table>';
   }
   var h='<div style="border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;background:#fff;">'
     +'<div style="font-weight:800;font-size:14px;color:#0f172a;margin-bottom:2px;">\uD83D\uDC0B Whale Watch \u2014 institutional 13F holdings</div>'
     +'<div style="font-size:12px;line-height:1.55;color:var(--grey-d);margin:2px 0 10px 0;border-left:3px solid #0EA5E9;padding-left:10px;">'
-    +'<b>What this is:</b> what the biggest investors (Buffett, Burry, Ackman, Bridgewater, and others) actually <b>bought and sold</b> last quarter, from their SEC 13F filings. <b>Consensus</b> means two or more of them made the same move on the same stock \u2014 a stronger signal than any single fund. '+esc(W.note||'')+'</div>';
-  h+='<div style="margin-bottom:8px;"><div style="font-size:11px;color:#64748b;font-weight:700;letter-spacing:.03em;margin-bottom:3px;">CONSENSUS BUYS (\u22652 whales opened or added)</div>'+chips(W.consensus_buys,'buy')+'</div>';
-  h+='<div style="margin-bottom:10px;"><div style="font-size:11px;color:#64748b;font-weight:700;letter-spacing:.03em;margin-bottom:3px;">CONSENSUS SELLS (\u22652 whales trimmed or exited)</div>'+chips(W.consensus_sells,'sell')+'</div>';
+    +'<b>What this is:</b> what the biggest investors (Buffett, Burry, Ackman, Bridgewater, and others) actually <b>bought and sold</b> last quarter, from their SEC 13F filings. <b>Consensus</b> means two or more of them made the same move on the same stock \u2014 a stronger signal than any single fund. Each row shows the stock\u2019s <b>ticker</b>, <b>YTD & 1-year return</b>, and how it trades <b>vs its 50/200-day average</b> (\u25b2 above = strength, \u25bc below = weakness). '+esc(W.note||'')+'</div>';
+  h+='<div style="margin-bottom:10px;"><div style="font-size:11px;color:#047857;font-weight:700;letter-spacing:.03em;margin-bottom:3px;">\u25b2 CONSENSUS BUYS (\u22652 whales opened or added)</div>'+consTable(W.consensus_buys,'buy')+'</div>';
+  h+='<div style="margin-bottom:10px;"><div style="font-size:11px;color:#b42318;font-weight:700;letter-spacing:.03em;margin-bottom:3px;">\u25bc CONSENSUS SELLS (\u22652 whales trimmed or exited)</div>'+consTable(W.consensus_sells,'sell')+'</div>';
   // per-whale highlights
   h+='<table style="width:100%;border-collapse:collapse;font-size:12px;"><tr style="color:#64748b;font-size:11px;text-align:left;"><th style="padding:3px 6px;">WHALE</th><th>NEW BUYS</th><th>EXITS</th></tr>';
   W.whales.forEach(function(w){
