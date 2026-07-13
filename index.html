@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.210 (supersedes v5.209): PB rows now also show a bearish INSIDER-SELLING chip (red \u25bc) when Form-4 shows heavy net insider selling on a name in the paper book -- pairs with scanner v1.238.1 sec_insider_sell. Prior v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
+<!-- index.html v5.211 (supersedes v5.210): Live Investment tab gains a WEEKLY + MONTHLY STATEMENTS section (reads live_investment.statements from scanner v1.238.2, derived from the daily NAV history) -- period NAV, P&L $/%, since-inception, best/worst holding, in-progress flag. Prior v5.210 (supersedes v5.209): PB rows now also show a bearish INSIDER-SELLING chip (red \u25bc) when Form-4 shows heavy net insider selling on a name in the paper book -- pairs with scanner v1.238.1 sec_insider_sell. Prior v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
@@ -664,7 +664,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.210</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.211</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -2572,6 +2572,42 @@ function calcMbUs(){
       h+='</div>';
     });
     h+='<div style="font-size:11px;color:#94a3b8;">News is matched by fund name + theme (not ticker), so results track the actual ETF, its market/economy, and its earnings drivers.</div></div>';
+
+    // v5.211 WEEKLY + MONTHLY STATEMENTS (from the daily NAV history the engine keeps)
+    var ST=L.statements||null;
+    if(ST){
+      var stTbl=function(rows,note){
+        var t='';
+        if(!rows||!rows.length){ return '<div style="font-size:12px;color:#94a3b8;">'+(note||'accruing')+'</div>'; }
+        t+='<table style="width:100%;border-collapse:collapse;font-size:12.5px;"><tr style="text-align:left;color:#64748b;border-bottom:1px solid #d1fae5;">'
+          +'<th style="padding:4px 6px;">Period</th><th>Dates</th><th style="text-align:right;">NAV end</th>'
+          +'<th style="text-align:right;">P&amp;L</th><th style="text-align:right;">%</th><th style="text-align:right;">Since inception</th><th>Best / Worst</th></tr>';
+        rows.slice().reverse().forEach(function(s){
+          var pc=(s.pnl_usd||0)<0?'#b42318':'#047857';
+          var bw=(s.best?('<span style=\"color:#047857;\">'+s.best.ticker+' '+(s.best.pct>=0?'+':'')+s.best.pct+'%</span>'):'')
+                +(s.best&&s.worst?' / ':'')
+                +(s.worst?('<span style=\"color:#b42318;\">'+s.worst.ticker+' '+(s.worst.pct>=0?'+':'')+s.worst.pct+'%</span>'):'')
+                +(!s.best&&!s.worst?'\u2014':'');
+          t+='<tr style="border-bottom:1px solid #f1f5f9;">'
+            +'<td style="padding:4px 6px;font-weight:700;">'+s.period+(s.complete?'':' <span style=\"font-size:10px;color:#b45309;font-weight:600;\">in progress</span>')+'</td>'
+            +'<td style="color:#64748b;">'+s.start+' \u2192 '+s.end+'</td>'
+            +'<td style="text-align:right;font-weight:700;">'+money(s.nav_end)+'</td>'
+            +'<td style="text-align:right;color:'+pc+';font-weight:700;">'+(s.pnl_usd>=0?'+':'')+money(s.pnl_usd)+'</td>'
+            +'<td style="text-align:right;color:'+pc+';">'+(s.pnl_pct>=0?'+':'')+s.pnl_pct+'%</td>'
+            +'<td style="text-align:right;color:'+((s.since_inception_pct||0)<0?'#b42318':'#047857')+';">'+(s.since_inception_pct>=0?'+':'')+s.since_inception_pct+'%</td>'
+            +'<td>'+bw+'</td></tr>';
+        });
+        t+='</table>';
+        if(note){ t+='<div style="font-size:11px;color:#94a3b8;margin-top:4px;">'+note+'</div>'; }
+        return t;
+      };
+      h+='<div class="m2x-card"><div class="m2x-sec">Statements &mdash; weekly &amp; monthly</div>'
+        +'<div style="font-size:11.5px;color:#64748b;margin-bottom:8px;">Generated from the daily NAV history since inception ('+(ST.inception||'')+'). Each period shows NAV, period profit/loss, and the since-inception figure &mdash; a running record like a broker statement. A period is marked <i>in progress</i> until it closes.</div>'
+        +'<div style="font-weight:700;color:#065f46;margin:6px 0 4px;">Weekly</div>'+stTbl(ST.weekly,ST.weekly_note)
+        +'<div style="font-weight:700;color:#065f46;margin:12px 0 4px;">Monthly</div>'+stTbl(ST.monthly,ST.monthly_note)
+        +'</div>';
+    }
+
     host.innerHTML=h;
     }catch(_lie){ host.innerHTML='<div style="background:#FEE2E2;border:2px solid #DC2626;border-radius:8px;padding:10px 14px;font-size:13px;color:#7F1D1D;"><b>Live Investment render error:</b> '+String((_lie&&_lie.message)||_lie).replace(/</g,'&lt;')+'<br><span style="font-size:11px;">'+(((_lie&&_lie.stack)||'').split('\n')[1]||'').replace(/</g,'&lt;')+'</span></div>'; }
     try{ renderTradingHoursDubai(); if(!window.__thTimer){ window.__thTimer=setInterval(renderTradingHoursDubai,60000); } }catch(e){}
