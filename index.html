@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
+<!-- index.html v5.210 (supersedes v5.209): PB rows now also show a bearish INSIDER-SELLING chip (red \u25bc) when Form-4 shows heavy net insider selling on a name in the paper book -- pairs with scanner v1.238.1 sec_insider_sell. Prior v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
@@ -664,7 +664,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.209</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.210</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -6481,10 +6481,12 @@ function _renderPB(){
       var barw=Math.min(100, r.weight*4);
       var ins=(r.sec_insider&&r.sec_insider.buy_ct)?'<span title="SEC Form 4: open-market insider buying" style="display:inline-block;background:#d1fae5;color:#047857;border-radius:5px;padding:1px 7px;margin-left:6px;font-size:10.5px;font-weight:700;">\u25b2 insider buying</span>':'';
       var adv=(r.sec_adverse||[]).map(function(e){return '<span title="SEC 8-K material event on a name you hold" style="display:inline-block;background:#FEE2E2;color:#b42318;border:1px solid #fca5a5;border-radius:5px;padding:1px 7px;margin-left:6px;font-size:10.5px;font-weight:700;">\u26a0 '+e.label+'</span>';}).join('');
+      var isell='';
+      if(r.sec_insider_sell){var s=r.sec_insider_sell;var mm=Math.abs(s.net_usd_6m||0);var mstr=mm>=1e6?('$'+(mm/1e6).toFixed(1)+'M'):('$'+Math.round(mm/1e3)+'K');var who=s.ceo_cfo_sell?'CEO/CFO ':'';isell='<span title="SEC Form 4: heavy net insider SELLING (trailing 6mo) on a name you hold \u2014 a bearish downside signal, not a buy trigger" style="display:inline-block;background:#FEE2E2;color:#b42318;border:1px solid #fca5a5;border-radius:5px;padding:1px 7px;margin-left:6px;font-size:10.5px;font-weight:700;">\u25bc '+who+'insider selling '+mstr+'</span>';}
       html+='<tr style="border-top:1px solid #F1F5F9;">'
         +'<td style="padding:5px 6px;font-weight:800;">'+r.ticker+'<div style="font-size:10px;color:#94A3B8;font-weight:400;">'+((r.name||'').slice(0,26))+'</div></td>'
         +'<td style="min-width:120px;"><div style="display:flex;align-items:center;gap:6px;"><div style="background:#0EA5E9;height:8px;border-radius:4px;width:'+barw+'px;"></div><b>'+r.weight.toFixed(1)+'%</b></div></td>'
-        +'<td style="color:#475569;">'+(r.why||'')+ins+adv+'</td></tr>';
+        +'<td style="color:#475569;">'+(r.why||'')+ins+adv+isell+'</td></tr>';
     });
     html+='</table>';
     var T=PB.track||{};
