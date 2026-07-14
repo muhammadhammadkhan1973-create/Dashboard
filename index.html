@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.213 (supersedes v5.212): WHALE WATCH FULL ANALYSIS -- the consensus buys/sells are now a DATA TABLE (Ticker | Company | #Whales | Price | YTD | 1Y | vs 50-DMA | vs 200-DMA | Trend[uptrend/downtrend/mixed + golden/death cross] | Zacks/Valuation), reading the new per-name `info` block on whale_13f.consensus_* from scanner v1.241.0. Matched dashboard names show full analysis; unmatched stay name-only (honest em-dashes). Replaces the name-only chips the owner flagged ("without tickers... YTD/1Y/moving averages"). Prior v5.212 (supersedes v5.211): (1) WHALE WATCH (13F) -- new section on the US Macro Dashboard (renderWhale13f, reads LIVE.whale_13f from scanner v1.239.0): consensus buys/sells chips (>=2 whales same move, green up / red down, hover shows which whales), per-whale new-buys/exits table, honest quarter note (shows the latest available quarter, auto-upgrades when Q2 13Fs land ~Aug 14), and a name-guard skip count. (2) PB BACKTEST readout -- _renderPB's placeholder line now renders the real backtest (LIVE.pb.backtest from scanner v1.240.0): per book model return vs S&P500/KSE-100, alpha, max drawdown when ready, else an honest 'accruing -- N days, needs ~30 (~mid-August)' line that fills automatically. Prior v5.211 (supersedes v5.210): Live Investment tab gains a WEEKLY + MONTHLY STATEMENTS section (reads live_investment.statements from scanner v1.238.2, derived from the daily NAV history) -- period NAV, P&L $/%, since-inception, best/worst holding, in-progress flag. Prior v5.210 (supersedes v5.209): PB rows now also show a bearish INSIDER-SELLING chip (red \u25bc) when Form-4 shows heavy net insider selling on a name in the paper book -- pairs with scanner v1.238.1 sec_insider_sell. Prior v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
+<!-- index.html v5.214 (supersedes v5.213): (1) PER-WHALE TICKERS -- the per-whale table (WHALE|NEW BUYS|EXITS) now prefixes each name with its ticker (reads the new `ticker` field on whale_13f.whales[].new_buys/adds/exits/top_holdings from scanner v1.242.0), closing the owner's "tickers are missing under whale purchase or sell" gap (consensus tables already had them). (2) PPI CARDS -- new PPI YoY (headline, Producer Prices) + Core PPI YoY cards on the US Macro Dashboard, right after CPI, reading macros.us.ppi_yoy / ppi_core_yoy, each with a plain-language "how it affects markets" read (PPI leads CPI: producer/input costs feed consumer prices with a lag; rising = margin pressure + stickier inflation -> fewer Fed cuts, USD firm, tech+gold pressured; falling = disinflation tailwind -> cut odds up, risk-on) + the YoY-rate accelerating/cooling trend line. Prior v5.213 (supersedes v5.212): WHALE WATCH FULL ANALYSIS -- the consensus buys/sells are now a DATA TABLE (Ticker | Company | #Whales | Price | YTD | 1Y | vs 50-DMA | vs 200-DMA | Trend[uptrend/downtrend/mixed + golden/death cross] | Zacks/Valuation), reading the new per-name `info` block on whale_13f.consensus_* from scanner v1.241.0. Matched dashboard names show full analysis; unmatched stay name-only (honest em-dashes). Replaces the name-only chips the owner flagged ("without tickers... YTD/1Y/moving averages"). Prior v5.212 (supersedes v5.211): (1) WHALE WATCH (13F) -- new section on the US Macro Dashboard (renderWhale13f, reads LIVE.whale_13f from scanner v1.239.0): consensus buys/sells chips (>=2 whales same move, green up / red down, hover shows which whales), per-whale new-buys/exits table, honest quarter note (shows the latest available quarter, auto-upgrades when Q2 13Fs land ~Aug 14), and a name-guard skip count. (2) PB BACKTEST readout -- _renderPB's placeholder line now renders the real backtest (LIVE.pb.backtest from scanner v1.240.0): per book model return vs S&P500/KSE-100, alpha, max drawdown when ready, else an honest 'accruing -- N days, needs ~30 (~mid-August)' line that fills automatically. Prior v5.211 (supersedes v5.210): Live Investment tab gains a WEEKLY + MONTHLY STATEMENTS section (reads live_investment.statements from scanner v1.238.2, derived from the daily NAV history) -- period NAV, P&L $/%, since-inception, best/worst holding, in-progress flag. Prior v5.210 (supersedes v5.209): PB rows now also show a bearish INSIDER-SELLING chip (red \u25bc) when Form-4 shows heavy net insider selling on a name in the paper book -- pairs with scanner v1.238.1 sec_insider_sell. Prior v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
@@ -664,7 +664,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.213</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.214</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -904,6 +904,22 @@ const MACRO_READS_US = [
     if(v>2.3) return _mr('Above target','warn','Above the 2% target.');
     return _mr('At target','pos','Near target → cut room.');
   }},
+ {key:'ppi_yoy', label:'PPI YoY (Producer Prices)', lens:'Monetary · Economy', unit:'%',
+  read:function(v,c){
+    // PPI = what PRODUCERS pay/charge at the factory gate. It LEADS CPI: input & wholesale
+    // costs feed shop prices with a ~1–3 month lag, so PPI is an early warning on inflation.
+    if(v>3)   return _mr('Hot / rising costs','neg','Producer costs >3% → cost pressure builds into CPI with a lag; squeezes company margins; keeps the Fed cautious (fewer cuts). Bias: USD firm, long-duration tech & gold pressured.');
+    if(v>2)   return _mr('Above target','warn','Above ~2% → some cost pressure in the pipeline; watch whether it feeds through to CPI.');
+    if(v>=0)  return _mr('Cooling / benign','pos','Low/falling producer prices = disinflation tailwind → margins ease, cut odds rise → risk-on.');
+    return _mr('Deflating','warn','Negative PPI = falling factory-gate prices; demand-weakness signal as much as an inflation relief.');
+  }},
+ {key:'ppi_core_yoy', label:'Core PPI YoY (ex food & energy)', lens:'Monetary · Economy', unit:'%',
+  read:function(v,c){
+    // Core PPI strips the volatile food & energy — the underlying producer-price trend the Fed watches.
+    if(v>3)   return _mr('Sticky','neg','Underlying producer inflation >3% (ex food/energy) → the sticky part; hawkish, harder for the Fed to cut.');
+    if(v>2)   return _mr('Above target','warn','Core producer prices above ~2% → underlying cost pressure persists.');
+    return _mr('Contained','pos','Core producer prices contained → supports the disinflation case.');
+  }},
  {key:'unemployment', label:'Unemployment', lens:'Economy', unit:'%',
   read:function(v,c){
     if(v>5)   return _mr('Recessionary','neg','>5% & rising = recessionary; Sahm-rule risk.');
@@ -1003,6 +1019,8 @@ function calcUS(){
     fed_rate:gv(usLive.fed_rate,'fed_rate'),
     core_pce:gv(usLive.core_pce,'core_pce'),
     cpi_yoy:(usLive.cpi_yoy!=null?usLive.cpi_yoy:NaN),
+    ppi_yoy:(usLive.ppi_yoy!=null?usLive.ppi_yoy:NaN),
+    ppi_core_yoy:(usLive.ppi_core_yoy!=null?usLive.ppi_core_yoy:NaN),
     us_10y:gv(usLive.us_10y,'us_10y'),
     us_2y:gv(usLive.us_2y,'us_2y'),
     unemployment:(usLive.unemployment!=null?usLive.unemployment:NaN),
@@ -1020,7 +1038,7 @@ function calcUS(){
     if(!U) return '';
     function a(x){ return x>0?'\u25b2':x<0?'\u25bc':'\u25ac'; }
     function pp(x){ return (x>0?'+':'')+x; }
-    if((key==='cpi_yoy'||key==='core_pce') && U[key+'_mom']!=null){ var d=U[key+'_mom']; return '<br><span style="color:#555;">Trend: YoY rate '+pp(d)+'pp MoM '+a(d)+' \u2014 '+(d>0?'accelerating':d<0?'cooling':'flat')+'</span>'; }
+    if((key==='cpi_yoy'||key==='core_pce'||key==='ppi_yoy'||key==='ppi_core_yoy') && U[key+'_mom']!=null){ var d=U[key+'_mom']; return '<br><span style="color:#555;">Trend: YoY rate '+pp(d)+'pp MoM '+a(d)+' \u2014 '+(d>0?'accelerating':d<0?'cooling':'flat')+'</span>'; }
     if(key==='unemployment' && U.unemployment_mom!=null){ var u=U.unemployment_mom; return '<br><span style="color:#555;">Trend: '+pp(u)+'pp MoM '+a(u)+' \u2014 '+(u>0?'rising (softening)':u<0?'falling (tightening)':'flat')+'</span>'; }
     if(key==='gdp_growth' && U.gdp_growth_qoq!=null){ var g=U.gdp_growth_qoq; return '<br><span style="color:#555;">Trend: '+pp(g)+'pp QoQ '+a(g)+' \u2014 '+(g>0?'accelerating':g<0?'decelerating':'flat')+'</span>'; }
     if(key==='umcsi' && U.umcsi_mom!=null){ var sv=U.umcsi_mom; return '<br><span style="color:#555;">Trend: '+pp(sv)+' MoM '+a(sv)+' \u2014 '+(sv>0?'improving':sv<0?'weakening':'flat')+'</span>'; }
@@ -6543,8 +6561,9 @@ function renderWhale13f(){
   // per-whale highlights
   h+='<table style="width:100%;border-collapse:collapse;font-size:12px;"><tr style="color:#64748b;font-size:11px;text-align:left;"><th style="padding:3px 6px;">WHALE</th><th>NEW BUYS</th><th>EXITS</th></tr>';
   W.whales.forEach(function(w){
-    var nb=(w.new_buys||[]).slice(0,4).map(function(m){return esc(m.issuer);}).join(', ')||'\u2014';
-    var ex=(w.exits||[]).slice(0,4).map(function(m){return esc(m.issuer);}).join(', ')||'\u2014';
+    var _mv=function(m){return (m.ticker?('<b>'+esc(m.ticker)+'</b> '):'')+esc(m.issuer);};
+    var nb=(w.new_buys||[]).slice(0,4).map(_mv).join(', ')||'\u2014';
+    var ex=(w.exits||[]).slice(0,4).map(_mv).join(', ')||'\u2014';
     h+='<tr style="border-top:1px solid #F1F5F9;"><td style="padding:4px 6px;font-weight:700;">'+esc(w.name)+'<div style="font-size:10px;color:#94a3b8;font-weight:400;">'+(w.n_positions||0)+' positions'+(w.has_prior?'':' \u00b7 no prior quarter yet')+'</div></td>'
       +'<td style="color:#047857;">'+nb+'</td><td style="color:#b42318;">'+ex+'</td></tr>';
   });
