@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.220 (supersedes v5.219): CROWDEDNESS (second-order layer #1, pairs with scanner v1.245.0 Wave O injection + crowdedness). (1) Whale Watch (Tab 2) gains an "Already crowded" strip above the consensus tables (_crowdedStrip, reads whale_13f.crowded + .crowd_min_holders + .n_whales): amber chips per name with "TICKER . N of 15", hover = which funds hold it, plain-language explanation that a widely-owned idea has fewer new buyers left; when nothing is crowded it renders an honest GREEN "nothing is crowded right now" note rather than vanishing (the v5.218 blank-panel lesson). (2) M1 buy list (Tab 6) rows carry a CROWDED chip in the Confirmations cell (_crowdChip, reads the crowded/crowd_holders/crowd_pct fields the scanner stamps onto m1_buylist.buys) -- live today AMZN is 8 of 15. Context only: never removes a name, never changes a score. Both helpers declare their own local esc (v5.218 scope lesson). Prior v5.219: ECONOMY CLOCK (owner: "I want a clock in graphics not a bar. it should be in both pakistan dashboard and us dashboard"). New econClockSvg/econClockPanel draw the classic investment-cycle clock as an SVG dial -- four quadrants the cycle turns through CLOCKWISE (12-3 GROWING/calm prices, 3-6 GROWING/prices climbing, 6-9 SLOWING/prices high, 9-12 SLOWING/prices cooling), live quadrant highlighted, hand at econ_clock.angle, ECONOMY PICKING UP / SLOWING axis captions. (1) US Macro tab: the compass bar-dial is REPLACED by the clock (LIVE.econ_clock.us). (2) Pakistan tab: NEW pak_econ_clock panel at the top (renderEconClockPak, LIVE.econ_clock.psx) with plain growth/inflation reads, the sectors that quadrant favours, and an HONEST basis line stating Pakistan growth is read from the KSE-100 3-month trend because no live Pakistani growth feed exists. Each render declares its own local esc (the v5.218 scope lesson). Prior v5.218: **THE COMPASS BUG** -- renderEconCompass called esc(), but esc is a LOCAL var declared INSIDE renderWhale13f (~L6656), NOT a global. The compass (defined before it) threw "ReferenceError: esc is not defined" on EVERY render; the try/catch at the call site swallowed it, so the panel rendered EMPTY -- no compass AND no self-diagnostic note, which is why v5.215/216/217 all looked like a cache/deploy problem when the file was correct all along. FIX: renderEconCompass now declares its own local esc (no cross-function scope dependency). Verified by executing the REAL deployed index.html in jsdom against the live data.json: box.innerHTML 0 chars + "esc is not defined" BEFORE, 6783 chars + 0 console errors AFTER. Prior v5.217: compass SELF-DIAGNOSING -- if us_diffusion lacks the new components (browser showing an older cached data file) it shows a visible amber "do a hard refresh" note instead of hiding silently, so "no graphic" can always be diagnosed (missing note = old cached INDEX still served by the CDN -> hard refresh index; amber note = old cached DATA -> hard refresh). Headless-verified the full compass renders from run-411 data. Prior v5.216: ECONOMY COMPASS -> FULLY PLAIN-LANGUAGE (owner: "no graphic showing; the tab must not have a single technical sentence -- explain in plain language for a layman"). renderEconCompass rewritten with ZERO jargon: a red->green arrow dial from SLOWING/SHRINKING to GROWING with a word verdict ("The economy is clearly growing"), a plain one-liner ("N of 15 things look healthy, M look worrying..."), a "what this means for interest rates and your investments" box (Fed/inflation/sectors in everyday words -- no QE/QT/PPI/CPI/basis-points), plain-named helping/holding-back/in-the-middle columns (e.g. "Factory-gate prices (early inflation warning)", "The recession warning gauge"), and a "where this points your money" strip with plain sector names. NOTE: the graphic was absent on the exported tab because index v5.215 was not the deployed index at export time (the scanner ran, data has components/policy/heading, but the live page lacked the compass code) -- deploy this index to show it. Prior v5.215 (supersedes v5.214): ECONOMY COMPASS -- a graphical "where is the economy heading?" summary panel at the TOP of the US Macro Dashboard (renderEconCompass, reads LIVE.us_diffusion.{components,policy,heading} + LIVE.m1_buylist.favored_effective from scanner v1.243.0). Shows: a diverging SVG needle gauge (Contraction<->Expansion, marker at the net score); an inflation->QE/QT trajectory callout (hawkish/easing/neutral, with the PPI>CPI pipeline note + balance-sheet/rate chips); three adds/subtracts columns (PUSHING UP / DRAGGING DOWN / NEUTRAL -- every indicator itemised with its value + plain note); and a "steers capital toward these sectors" strip (favored_effective chips) noting the same engine drives the M1 buy list (Tab 6) + paper portfolio (Results). Prior v5.214 (supersedes v5.213): (1) PER-WHALE TICKERS -- the per-whale table (WHALE|NEW BUYS|EXITS) now prefixes each name with its ticker (reads the new `ticker` field on whale_13f.whales[].new_buys/adds/exits/top_holdings from scanner v1.242.0), closing the owner's "tickers are missing under whale purchase or sell" gap (consensus tables already had them). (2) PPI CARDS -- new PPI YoY (headline, Producer Prices) + Core PPI YoY cards on the US Macro Dashboard, right after CPI, reading macros.us.ppi_yoy / ppi_core_yoy, each with a plain-language "how it affects markets" read (PPI leads CPI: producer/input costs feed consumer prices with a lag; rising = margin pressure + stickier inflation -> fewer Fed cuts, USD firm, tech+gold pressured; falling = disinflation tailwind -> cut odds up, risk-on) + the YoY-rate accelerating/cooling trend line. Prior v5.213 (supersedes v5.212): WHALE WATCH FULL ANALYSIS -- the consensus buys/sells are now a DATA TABLE (Ticker | Company | #Whales | Price | YTD | 1Y | vs 50-DMA | vs 200-DMA | Trend[uptrend/downtrend/mixed + golden/death cross] | Zacks/Valuation), reading the new per-name `info` block on whale_13f.consensus_* from scanner v1.241.0. Matched dashboard names show full analysis; unmatched stay name-only (honest em-dashes). Replaces the name-only chips the owner flagged ("without tickers... YTD/1Y/moving averages"). Prior v5.212 (supersedes v5.211): (1) WHALE WATCH (13F) -- new section on the US Macro Dashboard (renderWhale13f, reads LIVE.whale_13f from scanner v1.239.0): consensus buys/sells chips (>=2 whales same move, green up / red down, hover shows which whales), per-whale new-buys/exits table, honest quarter note (shows the latest available quarter, auto-upgrades when Q2 13Fs land ~Aug 14), and a name-guard skip count. (2) PB BACKTEST readout -- _renderPB's placeholder line now renders the real backtest (LIVE.pb.backtest from scanner v1.240.0): per book model return vs S&P500/KSE-100, alpha, max drawdown when ready, else an honest 'accruing -- N days, needs ~30 (~mid-August)' line that fills automatically. Prior v5.211 (supersedes v5.210): Live Investment tab gains a WEEKLY + MONTHLY STATEMENTS section (reads live_investment.statements from scanner v1.238.2, derived from the daily NAV history) -- period NAV, P&L $/%, since-inception, best/worst holding, in-progress flag. Prior v5.210 (supersedes v5.209): PB rows now also show a bearish INSIDER-SELLING chip (red \u25bc) when Form-4 shows heavy net insider selling on a name in the paper book -- pairs with scanner v1.238.1 sec_insider_sell. Prior v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
+<!-- index.html v5.221 (supersedes v5.220): WAVE PL + WAVE H-LITE. WAVE PL (owner: "The tab should not have a single technical sentence. It should all be explained in plain language for a layman to read") -- the US Macro tab now reads in everyday English END TO END, not just the compass/clock: (a) all 15 macro cards relabelled ("Fed Funds Rate"->"The interest rate the Fed sets", "Core PCE"->"Underlying inflation (the Fed's own measure)", "10Y-2Y Curve"->"Recession warning gauge", "HY Credit Spread"->"Stress in risky company loans", "Fed Balance Sheet (QE/QT)"->"Money the Fed is adding or taking out", "US Dollar Index"->"How strong the dollar is", "CPI YoY"->"Everyday prices in the shops", PPI->"Factory-gate prices (early inflation warning)" etc) and every lens retagged (Monetary->Interest rates, Regime->Market mood); (b) regime banner verdicts rewritten ("Rate-driven correction / rotation - story intact"->"Wobbly because of interest rates, not because anything is broken"; "QT-leaning / higher-for-longer"->"Money kept tight - rates likely stay high for a while"; "Soft, late-cycle"->"Growing slowly - late in the good times") and its tiles renamed to questions ("What kind of market is this?", "What the Fed is doing with money", "How the economy is doing"); (c) "Growth/inflation quadrant: REFLATION" -> "Where we are in the cycle: growing, but prices are climbing" via _quadPlain(), which reuses the Economy Clock's EXACT wording so the banner and the clock can never describe the same state differently; (d) the "Structural-break tripwire ... HY OAS >5% OR 2s10s re-inverts OR GDP <0" box rewritten as a plain three-part early-warning check; (e) diffusion bar: "NET SCORE / 15"->"HEALTHY MINUS WORRYING (OUT OF 15)", "Expansion breadth"->"How widespread the good news is", SUPPORTIVE/NEUTRAL/HARMFUL->LOOK HEALTHY/IN BETWEEN/LOOK WORRYING, and the "Expansion . Decelerating" chip->"GROWING . LOSING PACE". WAVE H-LITE: (G1) dev_fx_stress on Tab 4 rendered NOTHING when 0 markets were stressed -- the healthy "Contained" state was indistinguishable from a broken panel, the same silent-blank failure as the v5.218 compass bug. It now ALWAYS paints, green + plain ("None of the 14 currencies we track has lost more than 5% against the US dollar over six months - no dollar squeeze right now"). (G2) orphan tce_etf_picks div + renderTceEtfPicks() (whose whole body blanked it since ETF picks moved to Tab 16 in v5.115) DELETED. (G3) orphan banks_fin_psx_table div + its blanking line DELETED (US+PSX other-financials have rendered as one combined table for versions). Display-only; no scoring/TCE/IM3/screen touched. Prior v5.220: CROWDEDNESS (second-order layer #1, pairs with scanner v1.245.0 Wave O injection + crowdedness). (1) Whale Watch (Tab 2) gains an "Already crowded" strip above the consensus tables (_crowdedStrip, reads whale_13f.crowded + .crowd_min_holders + .n_whales): amber chips per name with "TICKER . N of 15", hover = which funds hold it, plain-language explanation that a widely-owned idea has fewer new buyers left; when nothing is crowded it renders an honest GREEN "nothing is crowded right now" note rather than vanishing (the v5.218 blank-panel lesson). (2) M1 buy list (Tab 6) rows carry a CROWDED chip in the Confirmations cell (_crowdChip, reads the crowded/crowd_holders/crowd_pct fields the scanner stamps onto m1_buylist.buys) -- live today AMZN is 8 of 15. Context only: never removes a name, never changes a score. Both helpers declare their own local esc (v5.218 scope lesson). Prior v5.219: ECONOMY CLOCK (owner: "I want a clock in graphics not a bar. it should be in both pakistan dashboard and us dashboard"). New econClockSvg/econClockPanel draw the classic investment-cycle clock as an SVG dial -- four quadrants the cycle turns through CLOCKWISE (12-3 GROWING/calm prices, 3-6 GROWING/prices climbing, 6-9 SLOWING/prices high, 9-12 SLOWING/prices cooling), live quadrant highlighted, hand at econ_clock.angle, ECONOMY PICKING UP / SLOWING axis captions. (1) US Macro tab: the compass bar-dial is REPLACED by the clock (LIVE.econ_clock.us). (2) Pakistan tab: NEW pak_econ_clock panel at the top (renderEconClockPak, LIVE.econ_clock.psx) with plain growth/inflation reads, the sectors that quadrant favours, and an HONEST basis line stating Pakistan growth is read from the KSE-100 3-month trend because no live Pakistani growth feed exists. Each render declares its own local esc (the v5.218 scope lesson). Prior v5.218: **THE COMPASS BUG** -- renderEconCompass called esc(), but esc is a LOCAL var declared INSIDE renderWhale13f (~L6656), NOT a global. The compass (defined before it) threw "ReferenceError: esc is not defined" on EVERY render; the try/catch at the call site swallowed it, so the panel rendered EMPTY -- no compass AND no self-diagnostic note, which is why v5.215/216/217 all looked like a cache/deploy problem when the file was correct all along. FIX: renderEconCompass now declares its own local esc (no cross-function scope dependency). Verified by executing the REAL deployed index.html in jsdom against the live data.json: box.innerHTML 0 chars + "esc is not defined" BEFORE, 6783 chars + 0 console errors AFTER. Prior v5.217: compass SELF-DIAGNOSING -- if us_diffusion lacks the new components (browser showing an older cached data file) it shows a visible amber "do a hard refresh" note instead of hiding silently, so "no graphic" can always be diagnosed (missing note = old cached INDEX still served by the CDN -> hard refresh index; amber note = old cached DATA -> hard refresh). Headless-verified the full compass renders from run-411 data. Prior v5.216: ECONOMY COMPASS -> FULLY PLAIN-LANGUAGE (owner: "no graphic showing; the tab must not have a single technical sentence -- explain in plain language for a layman"). renderEconCompass rewritten with ZERO jargon: a red->green arrow dial from SLOWING/SHRINKING to GROWING with a word verdict ("The economy is clearly growing"), a plain one-liner ("N of 15 things look healthy, M look worrying..."), a "what this means for interest rates and your investments" box (Fed/inflation/sectors in everyday words -- no QE/QT/PPI/CPI/basis-points), plain-named helping/holding-back/in-the-middle columns (e.g. "Factory-gate prices (early inflation warning)", "The recession warning gauge"), and a "where this points your money" strip with plain sector names. NOTE: the graphic was absent on the exported tab because index v5.215 was not the deployed index at export time (the scanner ran, data has components/policy/heading, but the live page lacked the compass code) -- deploy this index to show it. Prior v5.215 (supersedes v5.214): ECONOMY COMPASS -- a graphical "where is the economy heading?" summary panel at the TOP of the US Macro Dashboard (renderEconCompass, reads LIVE.us_diffusion.{components,policy,heading} + LIVE.m1_buylist.favored_effective from scanner v1.243.0). Shows: a diverging SVG needle gauge (Contraction<->Expansion, marker at the net score); an inflation->QE/QT trajectory callout (hawkish/easing/neutral, with the PPI>CPI pipeline note + balance-sheet/rate chips); three adds/subtracts columns (PUSHING UP / DRAGGING DOWN / NEUTRAL -- every indicator itemised with its value + plain note); and a "steers capital toward these sectors" strip (favored_effective chips) noting the same engine drives the M1 buy list (Tab 6) + paper portfolio (Results). Prior v5.214 (supersedes v5.213): (1) PER-WHALE TICKERS -- the per-whale table (WHALE|NEW BUYS|EXITS) now prefixes each name with its ticker (reads the new `ticker` field on whale_13f.whales[].new_buys/adds/exits/top_holdings from scanner v1.242.0), closing the owner's "tickers are missing under whale purchase or sell" gap (consensus tables already had them). (2) PPI CARDS -- new PPI YoY (headline, Producer Prices) + Core PPI YoY cards on the US Macro Dashboard, right after CPI, reading macros.us.ppi_yoy / ppi_core_yoy, each with a plain-language "how it affects markets" read (PPI leads CPI: producer/input costs feed consumer prices with a lag; rising = margin pressure + stickier inflation -> fewer Fed cuts, USD firm, tech+gold pressured; falling = disinflation tailwind -> cut odds up, risk-on) + the YoY-rate accelerating/cooling trend line. Prior v5.213 (supersedes v5.212): WHALE WATCH FULL ANALYSIS -- the consensus buys/sells are now a DATA TABLE (Ticker | Company | #Whales | Price | YTD | 1Y | vs 50-DMA | vs 200-DMA | Trend[uptrend/downtrend/mixed + golden/death cross] | Zacks/Valuation), reading the new per-name `info` block on whale_13f.consensus_* from scanner v1.241.0. Matched dashboard names show full analysis; unmatched stay name-only (honest em-dashes). Replaces the name-only chips the owner flagged ("without tickers... YTD/1Y/moving averages"). Prior v5.212 (supersedes v5.211): (1) WHALE WATCH (13F) -- new section on the US Macro Dashboard (renderWhale13f, reads LIVE.whale_13f from scanner v1.239.0): consensus buys/sells chips (>=2 whales same move, green up / red down, hover shows which whales), per-whale new-buys/exits table, honest quarter note (shows the latest available quarter, auto-upgrades when Q2 13Fs land ~Aug 14), and a name-guard skip count. (2) PB BACKTEST readout -- _renderPB's placeholder line now renders the real backtest (LIVE.pb.backtest from scanner v1.240.0): per book model return vs S&P500/KSE-100, alpha, max drawdown when ready, else an honest 'accruing -- N days, needs ~30 (~mid-August)' line that fills automatically. Prior v5.211 (supersedes v5.210): Live Investment tab gains a WEEKLY + MONTHLY STATEMENTS section (reads live_investment.statements from scanner v1.238.2, derived from the daily NAV history) -- period NAV, P&L $/%, since-inception, best/worst holding, in-progress flag. Prior v5.210 (supersedes v5.209): PB rows now also show a bearish INSIDER-SELLING chip (red \u25bc) when Form-4 shows heavy net insider selling on a name in the paper book -- pairs with scanner v1.238.1 sec_insider_sell. Prior v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSX + US Active Macro Dashboard — IM3 Framework | PKR Devaluation Alert</title>
@@ -412,7 +412,7 @@
 <div id="m2bu" class="panel"><div class="m2x-hero"><h2>&#9889; Bottoms Up M2 &mdash; the 30% engine</h2><p><b>Sector-blind by design.</b> While M1 (Tab 6) picks sectors top-down for the disciplined 70%, this engine scans <b>every</b> company in the universe &mdash; favoured sector or not &mdash; for early, converging evidence that something big is starting: the price turning, the business inflecting, analysts raising their profit estimates, trading volume surging. <b>It flags, it never filters</b> &mdash; every name is an invitation to investigate, not a recommendation.</p><p style="margin-top:8px;font-size:12px;line-height:1.6;opacity:.95;"><b>New &mdash; what company insiders are doing with their own money (SEC filings):</b> a <span style="background:#d1fae5;color:#047857;border-radius:4px;padding:1px 6px;font-weight:700;">\u25b2 insider buying</span> chip means officers or directors bought shares on the open market (SEC Form&nbsp;4) &mdash; the strongest outside confirmation a turnaround is real, and it counts toward a name being flagged. A red <span style="background:#FEE2E2;color:#b42318;border:1px solid #fca5a5;border-radius:4px;padding:1px 6px;font-weight:700;">\u26a0</span> chip means the company just filed a <b>material 8-K</b> (bankruptcy, a CFO/CEO leaving, an auditor change, a big write-down) &mdash; a warning shown beside the name, never counted as a positive. US-listed names only; Pakistani names show nothing here because they don\u2019t file with the SEC.</p></div><div id="m2bu_clock"></div><div id="m2bu_nine"></div><div id="us_m2_watch"></div><div id="psx_m2_watch"></div></div>
 <div id="liveinv" class="panel"><div class="m2x-hero"><h2>&#9733; Live Investment &mdash; your actual IBKR portfolio</h2><p>Your real UCITS-ETF book, priced live off the same World-ETF resolver, tracked daily against <b>your actual entry price</b> &mdash; real profit/loss since you invested (daily / weekly / monthly), with per-holding cost-vs-now, a <b>Forward view</b> (analyst &amp; Zacks on the underlyings), fund-relevant news, and a rebalancing check wired straight to the <b>World ETF</b> theme scores and the <b>World Economy</b> regime. Holdings, cost basis and cash are configurable in <code>live_portfolio.json</code>.</p></div><div id="liveinv_body"></div></div>
   <div id="mbpsx" class="panel"><h2 class="section-title">PSX Multibagger Hunter</h2><div class="mb-note"><b>What this tab is for:</b> finding Pakistani companies that could multiply your money many times over several years &mdash; the smaller, fast-growing names before they become household stocks. Read it top to bottom: the funnel narrows the whole market, then you grade a company, see the verdict, project the upside, and review the live and SCS-flagged candidates.</div><div class="mb-note"><b>The funnel.</b> How the entire Pakistani market gets narrowed step by step down to a handful of names worth a serious look. Each row strips out what doesn&rsquo;t fit.</div><div id="psx_mb_funnel"></div><div class="mb-note"><b>Where they cluster.</b> Which sectors today&rsquo;s candidates come from. Multibaggers tend to bunch up in a few areas at a time, so this shows where to focus.</div><div id="psx_mb_sector_table"></div><div class="mb-note"><b>Grade one company.</b> Type a company&rsquo;s numbers here and the tool grades how &lsquo;multibagger-like&rsquo; it is. Strong growth, high returns on capital, low debt, profit backed by real cash, committed owners, room to keep reinvesting, and a cheap entry price all score well.</div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="psx_mb_rev" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="psx_mb_eps" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="psx_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROCE 5-yr avg (%)</label><input type="number" id="psx_mb_roce" value="24" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="psx_mb_de" value="0.3" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="psx_mb_ocf" value="1.1" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Sponsor %</label><input type="number" id="psx_mb_sponsor" value="45" step="1" oninput="recalc()"></div><div class="input-group"><label>Market Cap (PKR bn)</label><input type="number" id="psx_mb_mcap" value="8" step="0.5" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="psx_mb_ig" value="72" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="psx_mb_pe" value="6" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="psx_mb_wacc" value="20" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="psx_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3" selected>5-10x</option><option value="4">10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="psx_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3" selected>Cost/Switching</option><option value="4">Brand/Network</option><option value="5">Regulatory</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="psx_mb_reinv" onchange="recalc()"><option value="1">Returning all cash</option><option value="2">Limited</option><option value="3" selected>Moderate</option><option value="4">Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner-Operator</label><select id="psx_mb_owner" onchange="recalc()"><option value="1">Diluted</option><option value="2">Holding</option><option value="3" selected>Stable &gt;5yr</option><option value="4">Founder 10yr+</option><option value="5">Founder + rising</option></select></div></div><div class="mb-note"><b>The grade.</b> The score your inputs produced, and what it means.</div><div id="psx_mb_score_box"></div><div class="mb-note"><b>Buy, watch, or pass.</b> Combines the multibagger score with the quality (IG) score into one suggested action.</div><div id="psx_mb_decision_matrix"></div><div class="mb-note"><b>How the money could grow.</b> A rough projection of what an investment could compound to at the growth rate you entered. An illustration, not a promise.</div><div id="psx_mb_compound_box"></div><div class="mb-note"><b>Size tiers.</b> Which market-cap band a name sits in. The sweet spot for multibaggers is small-but-not-tiny; the biggest names belong on the other tracks.</div><div id="psx_mb_tiers_table"></div><h3 class="subsection-title">Standard Capital Securities (SCS) Suggested Names &mdash; review to add</h3><div class="mb-note">The dashboard reads Standard Capital Securities&rsquo; (SCS) weekly Valuation Matrix and finds names that show up in at least two of its four quality screens (highest return on equity, highest return on assets, highest EBITDA margin, highest dividend yield). After filtering out the ones that are too big, too illiquid, or banks, it shows the rest as suggestions &mdash; &ldquo;SCS flags these, you decide.&rdquo; It will never add them to your watchlist on its own. You stay in control of what actually enters the screen. Nothing about these names &mdash; their P/E, dividend yield, ROE, and so on &mdash; ever changes a score or filters anything.</div><div id="psx_mb_scs_suggest"></div><div class="mb-note"><b>Names on the radar now.</b> Broker-curated PSX candidates with a short thesis. Verify each one yourself before acting &mdash; this is a starting list, not advice.</div><div id="psx_mb_live_candidates"></div><div class="mb-note"><b>Past winners.</b> Real PSX stocks that already multiplied, and why &mdash; pattern templates to help you recognise the next one.</div><div id="psx_mb_history_table"></div><div class="mb-note"><b>Multibagger vs compounder.</b> How this hunt differs from buying steady quality names: different goals, different rules.</div><div id="psx_mb_comparison_table"></div></div>
-  <div id="tce" class="panel"><h2 class="panel-title">Trend Convergence Engine (TCE) — Live Scan</h2><div id="inst_consensus_box" style="margin:0 0 18px 0;"></div><div id="tce_etf_picks" style="margin:0 0 18px 0;"></div><div class="card" id="tceMacroBanner" style="border-left:4px solid var(--blue);"><p style="margin:0; font-size:13px; color:var(--grey-d);"><strong>9-stream convergence model.</strong> Attention (news · sponsor · insider · volume) + <b>conviction</b> (momentum · margin inflection · short-interest capital · EPS-revision · revenue-revision), with an <b>RS guardrail</b> vs SPY. HIGH needs real conviction (≥4 conviction streams) AND the guardrail to hold — pure news/volume can no longer reach HIGH. WATCH = ≥3 conviction or ≥5 total.</p><div id="tce_regime_gate" style="margin-top:8px;font-size:12px;color:var(--grey-d);"></div></div><div class="card"><h3>US TCE Results</h3><div id="tce_us_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>PSX TCE Results</h3><div id="tce_psx_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>TCE Forward-Validation — Predictions Ledger</h3><div id="tce_predictions"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>Interim Read &mdash; Weekly &amp; Monthly Trend</h3><div id="tce_interim"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div></div>
+  <div id="tce" class="panel"><h2 class="panel-title">Trend Convergence Engine (TCE) — Live Scan</h2><div id="inst_consensus_box" style="margin:0 0 18px 0;"></div><div class="card" id="tceMacroBanner" style="border-left:4px solid var(--blue);"><p style="margin:0; font-size:13px; color:var(--grey-d);"><strong>9-stream convergence model.</strong> Attention (news · sponsor · insider · volume) + <b>conviction</b> (momentum · margin inflection · short-interest capital · EPS-revision · revenue-revision), with an <b>RS guardrail</b> vs SPY. HIGH needs real conviction (≥4 conviction streams) AND the guardrail to hold — pure news/volume can no longer reach HIGH. WATCH = ≥3 conviction or ≥5 total.</p><div id="tce_regime_gate" style="margin-top:8px;font-size:12px;color:var(--grey-d);"></div></div><div class="card"><h3>US TCE Results</h3><div id="tce_us_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>PSX TCE Results</h3><div id="tce_psx_table"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>TCE Forward-Validation — Predictions Ledger</h3><div id="tce_predictions"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div><div class="card"><h3>Interim Read &mdash; Weekly &amp; Monthly Trend</h3><div id="tce_interim"><p style="color:var(--grey-d);">Waiting for live scan data…</p></div></div></div>
   <div id="explosive" class="panel">
     <h2 class="section-title">Explosive Stocks (US + PSX) — Live Scanner Feed</h2>
     <details open style="margin:6px 0 16px;border:1px solid #A7F3D0;border-radius:10px;background:#F0FDF4;">
@@ -450,7 +450,6 @@
     <div id="banks_us_table"><p style="color:var(--grey-d);">Waiting for scan data…</p></div>
     <h3 class="subsection-title">Other Financials — non-bank (Explosive-scored)</h3>
     <div id="banks_fin_us_table"><p style="color:var(--grey-d);">Waiting for scan data…</p></div>
-    <div id="banks_fin_psx_table" style="margin-top:14px;"></div>
   </div>
 
   <!-- ============ PANEL 12: GOLD & METALS ============ -->
@@ -664,7 +663,7 @@
     <div style="font-size:11px;color:#64748B;border-left:3px solid #B45309;padding-left:9px;margin:2px 0 12px;">Physical-backed ETCs (Exchange-Traded Commodities) &mdash; the metal itself, held in allocated vaults, no equity counterparty risk (Copper is the one exception &mdash; it&rsquo;s a synthetic/swap-based ETC, since copper has no practical physical-vault structure at retail scale the way precious metals do). All 5 metals Tab 12 Metals tracks (Gold, Silver, Platinum, Palladium, Copper) are covered here, each fund grouped under its metal with that metal&rsquo;s live 200-DMA trend, RSI, and (Gold/Silver/Copper) COT positioning shown directly below the heading &mdash; the same numbers Tab 12 computes, wired here so you don&rsquo;t have to cross-reference tabs to see whether now is a good entry.</div>
     <div id="we_metals_main"></div>
   </div>
-<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.220</div>
+<div class="footer" style="display:none;">Muhammad Hammad Khan | Active Macro Dashboard v5.221</div>
 
   <!-- ============ PANEL 15: WORLD ECONOMY ============ -->
   <div id="worldecon" class="panel">
@@ -843,7 +842,7 @@ function usRegimePlaybook(regName, pce, ycSlope, favoredArr){
   }
   var fav = (favoredArr && favoredArr.length) ? favoredArr.join(', ') : '\u2014';
   return '<div class="reading-box" style="margin-bottom:10px;border-left:4px solid #0A3161;font-size:11px;">'
-    + '<b>Regime playbook \u2014 '+regName+':</b> growth is read off '+slopeTxt+', inflation off core PCE.'+realTxt
+    + '<b>How this reading is made \u2014 '+_quadPlain(regName)+':</b> growth is judged from '+slopeTxt+", and inflation from the Fed's own preferred price measure."+realTxt
     + ' Historically this regime <b>rewards</b> '+rewards+'; it <b>tends to penalise</b> '+avoids+'. '
     + '<b>How to position:</b> '+posture
     + ' <span style="color:var(--grey-d);">This is the top-down layer (regime-favored: '+fav+'); the Zacks #1/#2 breadth and COT columns below confirm or veto each sector, and the 200-DMA breadth tempers a favored-but-weak name. Direction of the wind, not a buy/sell on its own \u2014 it never changes a stock\u2019s grade, valuation, TCE tier or screening.</span></div>';
@@ -861,50 +860,50 @@ function usRegimePlaybook(regName, pce, ycSlope, favoredArr){
 // =========================================================
 function _mr(state,cls,implies){return {state:state,cls:cls,implies:implies};}
 const MACRO_READS_US = [
- {key:'fed_rate', label:'Fed Funds Rate', lens:'Monetary', unit:'%',
+ {key:'fed_rate', label:'The interest rate the Fed sets', lens:'Interest rates', unit:'%',
   read:function(v,c){
     var real=(!isNaN(c.core_pce))?(v-c.core_pce):null;
-    var rt=real!=null?(' Real rate '+(real>0?'+':'')+real.toFixed(1)+'% vs core PCE.'):'';
+    var rt=real!=null?(' After inflation the rate is really '+(real>0?'+':'')+real.toFixed(1)+'%.'):'';
     if(v>5)  return _mr('Very restrictive','neg','Very restrictive.'+rt+' Cuts off the table → USD bid, growth/tech headwind.');
     if(v>=4) return _mr('Restrictive','warn','Restrictive.'+rt+' Limited room to cut.');
     if(v>=3) return _mr('Mildly restrictive','neutral','Mildly restrictive.'+rt+' Direction (cut vs hold) sets the regime.');
     return _mr('Accommodative','pos','Accommodative.'+rt+' Lower discount rate → tech/growth re-rate, USD softer, gold up.');
   }},
- {key:'us_2y', label:'2Y Treasury', lens:'Monetary · Regime', unit:'%',
+ {key:'us_2y', label:'Short-term government borrowing rate (2-year)', lens:'Interest rates · Market mood', unit:'%',
   read:function(v,c){
     var gap=(!isNaN(c.fed_rate))?(v-c.fed_rate):null;
     if(gap!=null&&gap>0.10)  return _mr('Above funds — hawkish','warn','2y '+gap.toFixed(2)+' above funds → market pricing FEWER/NO cuts (higher-for-longer). USD up, long-duration tech down, gold pressured.');
     if(gap!=null&&gap<-0.25) return _mr('Below funds — cuts priced','pos','2y '+Math.abs(gap).toFixed(2)+' below funds → market pricing CUTS. Risk-on; tech/gold tailwind.');
     return _mr('Near funds','neutral','2y ≈ funds → market balanced on the next move.');
   }},
- {key:'us_10y', label:'10Y Treasury', lens:'Regime', unit:'%',
+ {key:'us_10y', label:'Long-term government borrowing rate (10-year)', lens:'Market mood', unit:'%',
   read:function(v,c){
     if(v>5)    return _mr('>5% compression','neg','Discount-rate shock → broad multiple compression; gold/tech down, USD up.');
     if(v>4.5)  return _mr('Valuation headwind','warn','>4.5% → long-duration/tech de-rating; higher real yield → gold down, USD up.');
     if(v>=3.5) return _mr('Neutral','neutral','3.5–4.5% neutral-to-mild headwind for rich multiples.');
     return _mr('Supports multiples','pos','<3.5% supports rich multiples; tailwind for growth/tech and gold.');
   }},
- {key:'curve', label:'10Y–2Y Curve', lens:'Economy',
-  fmt:function(v){return (v>0?'+':'')+v.toFixed(0)+' bps';},
+ {key:'curve', label:'Recession warning gauge (long vs short rates)', lens:'Economy',
+  fmt:function(v){return (v>0?'+':'')+(v/100).toFixed(2)+'%';},  // Wave PL: plain % gap, not "bps"
   read:function(v,c){
     if(v<0)   return _mr('INVERTED','neg','Inverted = classic recession pre-condition (regime-dependent; weight with credit). A re-inversion is a TRIPWIRE.');
-    if(v<50)  return _mr('Flat / late-cycle','warn','Positive but narrow → late-cycle, not recessionary. Watch for re-inversion, not the level.');
+    if(v<50)  return _mr('Flat \u2014 late in the good times','warn','Positive but narrow \u2014 typical of the late stage of a good run rather than a recession. Watch for re-inversion, not the level.');
     if(v<150) return _mr('Normalising','pos','Normalising/healthy slope.');
     return _mr('Steep','pos','Steep → early-recovery signal.');
   }},
- {key:'core_pce', label:'Core PCE', lens:'Monetary', unit:'%',
+ {key:'core_pce', label:'Underlying inflation (the Fed\u2019s own measure)', lens:'Interest rates', unit:'%',
   read:function(v,c){
     if(v>3)   return _mr('HOT','neg','>3% sticky → cuts constrained, hawkish bias; USD up, tech headwind.');
     if(v>2.3) return _mr('Above target','warn','Above the 2% target → cautious Fed.');
     return _mr('At target','pos','At/near 2% target → cut-enabling; risk-on.');
   }},
- {key:'cpi_yoy', label:'CPI YoY', lens:'Monetary · Economy', unit:'%',
+ {key:'cpi_yoy', label:'Everyday prices in the shops', lens:'Interest rates · Economy', unit:'%',
   read:function(v,c){
-    if(v>3)   return _mr('Above target','warn','Headline >3% keeps the Fed cautious; pairs with core PCE to block cuts.');
+    if(v>3)   return _mr('Above target','warn','Above 3% keeps the Fed cautious; together with underlying inflation it blocks rate cuts.');
     if(v>2.3) return _mr('Above target','warn','Above the 2% target.');
     return _mr('At target','pos','Near target → cut room.');
   }},
- {key:'ppi_yoy', label:'PPI YoY (Producer Prices)', lens:'Monetary · Economy', unit:'%',
+ {key:'ppi_yoy', label:'Factory-gate prices (early inflation warning)', lens:'Interest rates · Economy', unit:'%',
   read:function(v,c){
     // PPI = what PRODUCERS pay/charge at the factory gate. It LEADS CPI: input & wholesale
     // costs feed shop prices with a ~1–3 month lag, so PPI is an early warning on inflation.
@@ -913,21 +912,21 @@ const MACRO_READS_US = [
     if(v>=0)  return _mr('Cooling / benign','pos','Low/falling producer prices = disinflation tailwind → margins ease, cut odds rise → risk-on.');
     return _mr('Deflating','warn','Negative PPI = falling factory-gate prices; demand-weakness signal as much as an inflation relief.');
   }},
- {key:'ppi_core_yoy', label:'Core PPI YoY (ex food & energy)', lens:'Monetary · Economy', unit:'%',
+ {key:'ppi_core_yoy', label:'Factory-gate prices, ignoring food & fuel', lens:'Interest rates · Economy', unit:'%',
   read:function(v,c){
     // Core PPI strips the volatile food & energy — the underlying producer-price trend the Fed watches.
     if(v>3)   return _mr('Sticky','neg','Underlying producer inflation >3% (ex food/energy) → the sticky part; hawkish, harder for the Fed to cut.');
     if(v>2)   return _mr('Above target','warn','Core producer prices above ~2% → underlying cost pressure persists.');
     return _mr('Contained','pos','Core producer prices contained → supports the disinflation case.');
   }},
- {key:'unemployment', label:'Unemployment', lens:'Economy', unit:'%',
+ {key:'unemployment', label:'How many people are out of work', lens:'Economy', unit:'%',
   read:function(v,c){
     if(v>5)   return _mr('Recessionary','neg','>5% & rising = recessionary; Sahm-rule risk.');
     if(v>4.5) return _mr('Softening','warn','4.5–5% softening labour.');
     if(v>=4)  return _mr('Full employment','pos','Near full employment. Strong jobs = fewer Fed cuts ("good news is bad news" for tech).');
     return _mr('Tight / hot','warn','<4% tight labour → wage/inflation pressure, hawkish.');
   }},
- {key:'umcsi', label:'Consumer Sentiment', lens:'Economy',
+ {key:'umcsi', label:'How confident shoppers feel', lens:'Economy',
   read:function(v,c){
     var healthy=(!isNaN(c.hy_spread)&&c.hy_spread<3)&&(!isNaN(c.unemployment)&&c.unemployment<4.5);
     var disc=healthy?' DISCOUNT — contradicted by tight credit + healthy labour (gas/politics-driven this cycle).':'';
@@ -936,14 +935,14 @@ const MACRO_READS_US = [
     if(v<90)  return _mr('Normal','neutral','Normal range.');
     return _mr('Strong','pos','Strong consumer.');
   }},
- {key:'gdp_growth', label:'GDP Growth', lens:'Economy', unit:'%',
+ {key:'gdp_growth', label:'How fast the whole economy is growing', lens:'Economy', unit:'%',
   read:function(v,c){
     if(v<0)   return _mr('Contraction','neg','Negative GDP = contraction. TRIPWIRE.');
     if(v<1.5) return _mr('Below trend','warn','Below ~2% trend → slowing, not contracting.');
     if(v<2.5) return _mr('Trend / soft-landing','pos','Trend growth; underwrites the "buyable correction" read.');
     return _mr('Above trend','pos','Above-trend growth.');
   }},
- {key:'hy_spread', label:'HY Credit Spread', lens:'Regime', unit:'%',
+ {key:'hy_spread', label:'Stress in risky company loans', lens:'Market mood', unit:'%',
   read:function(v,c){
     if(v>6)   return _mr('Recession-imminent','neg','>6% → credit event; risk-off, defend. STRUCTURAL.');
     if(v>5)   return _mr('STRESS','neg','>5% credit stress → flips the tape to structural risk-off. TRIPWIRE.');
@@ -951,21 +950,21 @@ const MACRO_READS_US = [
     if(v>=3)  return _mr('Normal','neutral','3–4.5% normal/watch.');
     return _mr('Calm / risk-on','pos','<3% credit calm → the equity drop is a CORRECTION, not structural. The key "is the story intact" test.');
   }},
- {key:'permits', label:'Building Permits', lens:'Economy', unit:'k',
+ {key:'permits', label:'New homes getting the go-ahead', lens:'Economy', unit:'k',
   read:function(v,c){
     if(v<900)  return _mr('Recessionary','neg','<900k = recessionary (8 of last 9 recessions).');
     if(v<1300) return _mr('Weak','warn','Weak housing; monitor a break lower.');
     if(v<1500) return _mr('Soft','warn','Soft but not recessionary — the lone cautionary minority vs the risk-on tape (Moody\u2019s most-leading variable).');
     return _mr('Healthy','pos','Healthy housing (~60yr avg 1.5M).');
   }},
- {key:'walcl_change', label:'Fed Balance Sheet (QE/QT)', lens:'Monetary',
+ {key:'walcl_change', label:'Money the Fed is adding or taking out', lens:'Interest rates',
   fmt:function(v){return (v>0?'+':'')+v+'% 4-wk';},
   read:function(v,c){
     if(v>0.5)  return _mr('Expanding (QE)','pos','Balance sheet expanding → liquidity adding, risk-on; term premium down, gold up.');
     if(v<-0.5) return _mr('Shrinking (QT)','warn','QT draining liquidity → tightening, risk-off.');
     return _mr('Flat / neutral','neutral','Flat post-QT → liquidity headwind removed, but no new QE tailwind (QT-end \u2260 QE-restart).');
   }},
- {key:'dxy', label:'US Dollar Index', lens:'Regime · Monetary',
+ {key:'dxy', label:'How strong the dollar is', lens:'Market mood · Interest rates',
   read:function(v,c){
     if(v>110) return _mr('Very strong — stress','neg','>110 global stress → EM dollar-debt crises; gold/silver/commodities/EM/tech all down hard.');
     if(v>105) return _mr('Strong','neg','>105 strong USD → gold↓, silver↓, EM equities↓, US multinational EPS↓.');
@@ -981,17 +980,17 @@ function usRollup(c){
           || (!isNaN(c.curve)&&c.curve<0)
           || (!isNaN(c.gdp_growth)&&c.gdp_growth<0);
   var regime, regimeCls;
-  if(trip){ regime='Structural risk-off — defend'; regimeCls='red'; }
-  else    { regime='Rate-driven correction / rotation — story intact'; regimeCls='yellow'; }
+  if(trip){ regime='Something is genuinely breaking \u2014 play defence'; regimeCls='red'; }
+  else    { regime='Wobbly because of interest rates, not because anything is broken'; regimeCls='yellow'; }
   var gap=(!isNaN(c.us_2y)&&!isNaN(c.fed_rate))?(c.us_2y-c.fed_rate):NaN;
   var mon, monCls;
-  if((!isNaN(gap)&&gap>0.1)||(!isNaN(c.core_pce)&&c.core_pce>3)){ mon='QT-leaning / higher-for-longer'; monCls='yellow'; }
-  else if(!isNaN(gap)&&gap<-0.25){ mon='Easing-biased'; monCls='green'; }
-  else { mon='Neutral'; monCls='neutral'; }
+  if((!isNaN(gap)&&gap>0.1)||(!isNaN(c.core_pce)&&c.core_pce>3)){ mon='Money kept tight \u2014 rates likely stay high for a while'; monCls='yellow'; }
+  else if(!isNaN(gap)&&gap<-0.25){ mon='Leaning towards cheaper money'; monCls='green'; }
+  else { mon='Steady \u2014 no strong push either way'; monCls='neutral'; }
   var econ, econCls;
-  if((!isNaN(c.gdp_growth)&&c.gdp_growth<0)||(!isNaN(c.unemployment)&&c.unemployment>5)){ econ='Contraction'; econCls='red'; }
-  else if(!isNaN(c.gdp_growth)&&c.gdp_growth<2.0){ econ='Soft, late-cycle'; econCls='yellow'; }
-  else { econ='Expansion'; econCls='green'; }
+  if((!isNaN(c.gdp_growth)&&c.gdp_growth<0)||(!isNaN(c.unemployment)&&c.unemployment>5)){ econ='Shrinking'; econCls='red'; }
+  else if(!isNaN(c.gdp_growth)&&c.gdp_growth<2.0){ econ='Growing slowly \u2014 late in the good times'; econCls='yellow'; }
+  else { econ='Growing'; econCls='green'; }
   return {trip:trip, regime:regime, regimeCls:regimeCls, mon:mon, monCls:monCls, econ:econ, econCls:econCls};
 }
 
@@ -1072,18 +1071,21 @@ function calcUS(){
   const regime=regimeOf(gdp,pce);
   const RU=usRollup(c);
   const tripColor=RU.trip?'#c0392b':'#BF8F00';
-  const curveTxt=isNaN(c.curve)?'\u2014':((c.curve>0?'+':'')+c.curve.toFixed(0)+'bps');
-  let usBanner='<h3>US Market Regime</h3>'
+  const curveTxt=isNaN(c.curve)?'\u2014':((c.curve>0?'+':'')+(c.curve/100).toFixed(2)+'%');
+  let usBanner='<h3>What kind of market are we in?</h3>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 10px;">'
-      +lensTile('Regime',RU.regime,RU.regimeCls)
-      +lensTile('Monetary · QE/QT',RU.mon,RU.monCls)
-      +lensTile('Economy',RU.econ,RU.econCls)
+      +lensTile('Overall read',RU.regime,RU.regimeCls)
+      +lensTile('What the Fed is doing with money',RU.mon,RU.monCls)
+      +lensTile('How the economy is doing',RU.econ,RU.econCls)
     +'</div>'
-    +'<div style="font-size:12px;color:var(--grey-d);margin:0 0 8px;"><b>Growth/inflation quadrant:</b> '+regime.name+' \u2014 favored sectors: '+regime.sectors+'</div>'
+    +'<div style="font-size:12px;color:var(--grey-d);margin:0 0 8px;"><b>Where we are in the cycle:</b> '+_quadPlain(regime.name)+' \u2014 the parts of the market this tends to favour: '+regime.sectors+'</div>'
     +'<div class="reading-box" style="border-left:4px solid '+tripColor+';">'
-      +'<b>'+(RU.trip?'\u26A0 Structural-break tripwire TRIPPED':'Structural-break tripwire: clear')+'</b> — flips to risk-off if '
-      +'HY OAS &gt;5% (now '+(isNaN(c.hy_spread)?'\u2014':c.hy_spread+'%')+') OR 2s10s re-inverts (now '+curveTxt+') OR GDP &lt;0 (now '+(isNaN(c.gdp_growth)?'\u2014':c.gdp_growth+'%')+'). '
-      +(RU.trip?'One or more breached — treat weakness as structural; defend.':'None breached — read tech/AI weakness as a rate-driven correction: lean energy / value / quality, size down rate-sensitive growth.')
+      +'<b>'+(RU.trip?'\u26A0 Early-warning check: something has tripped':'Early-warning check: all clear')+'</b><br>'
+      +'<span style="color:var(--grey-d);">We watch three things that would mean the market is really breaking rather than just having a wobble: '
+      +'whether risky companies are struggling to borrow (now '+(isNaN(c.hy_spread)?'\u2014':c.hy_spread+'%')+', trouble above 5%); '
+      +'whether the bond market flips into its recession-warning shape (now '+curveTxt+'); '
+      +'and whether the economy actually shrinks (now '+(isNaN(c.gdp_growth)?'\u2014':c.gdp_growth+'%')+', trouble below 0%).</span><br>'
+      +(RU.trip?'<b>One of them has tripped</b> \u2014 treat this weakness as the real thing, not a passing dip, and play defence.':'<b>None of them has tripped</b> \u2014 so weakness in technology and AI shares reads as an interest-rate wobble, not something broken. That favours energy, cheaper "value" shares and steady quality companies, and argues for owning less of the expensive fast-growers that suffer most when rates stay high.')
     +'</div>';
   if(fomc&&fomc.title){
     const when=fomc.date?(fomc.date+(fomc.days_ago!=null?(' \u00b7 '+fomc.days_ago+'d ago'):'')):'';
@@ -1094,8 +1096,8 @@ function calcUS(){
   (function(){ var b=document.getElementById('us_regime_banner'); if(!b||!LIVE||!LIVE.macros||!LIVE.macros.us)return; var U=LIVE.macros.us;
     function arr(w){ return w==null?'':(w>0?' \u25b2':w<0?' \u25bc':' \u25ac'); }
     if(U.us_10y_wow==null && U.hy_spread_wow==null) return;
-    var drift='Regime drift (WoW): 10y '+(U.us_10y!=null?U.us_10y+'%':'')+arr(U.us_10y_wow)+(U.us_2s10s!=null?' \u00b7 2s10s '+U.us_2s10s+arr((U.us_10y_wow||0)-(U.us_2y_wow||0)):'')+(U.hy_spread!=null?' \u00b7 HY '+U.hy_spread+arr(U.hy_spread_wow):'');
-    b.innerHTML += '<div style="font-size:11px;color:#555;margin-top:6px;border-top:1px solid #eee;padding-top:5px;">'+drift+' \u2014 yields \u25b2 tightening drift / \u25bc easing; HY \u25b2 stress building</div>';
+    var drift='What moved this week: long-term borrowing rate '+(U.us_10y!=null?U.us_10y+'%':'')+arr(U.us_10y_wow)+(U.us_2s10s!=null?' \u00b7 recession warning gauge '+U.us_2s10s+arr((U.us_10y_wow||0)-(U.us_2y_wow||0)):'')+(U.hy_spread!=null?' \u00b7 stress in risky company loans '+U.hy_spread+arr(U.hy_spread_wow):'');
+    b.innerHTML += '<div style="font-size:11px;color:#555;margin-top:6px;border-top:1px solid #eee;padding-top:5px;">'+drift+'<br><span style="color:#777;">An up arrow on borrowing rates means money is getting tighter; a down arrow means it is getting easier. An up arrow on loan stress means lenders are getting more nervous.</span></div>';
   })();
   (function(){ var b=document.getElementById('us_regime_banner'); if(!b||!LIVE||!LIVE.macros||!LIVE.macros.us)return; var U=LIVE.macros.us;
     // WAVE T3: macro momentum vs prior RELEASE (MoM on the YoY inflation rate, MoM on labor, QoQ on growth)
@@ -1104,13 +1106,13 @@ function calcUS(){
     function pp(x){ return (x>0?'+':'')+x; }
     var parts=[];
     var ci=U.cpi_yoy_mom, pc=U.core_pce_mom;
-    if(ci!=null||pc!=null){ var iv=(ci!=null?ci:0)+(pc!=null?pc:0); parts.push('inflation '+(iv>0.05?'accelerating':iv<-0.05?'cooling':'steady')+' (CPI YoY '+(ci!=null?pp(ci)+'pp '+sg(ci):'\u2014')+(pc!=null?' \u00b7 core PCE '+pp(pc)+'pp '+sg(pc):'')+')'); }
-    if(U.unemployment_mom!=null){ var um=U.unemployment_mom; parts.push('labor '+(um>0?'softening':um<0?'tightening':'steady')+' (unemp '+pp(um)+'pp '+sg(um)+')'); }
-    if(U.gdp_growth_qoq!=null){ var gq=U.gdp_growth_qoq; parts.push('growth '+(gq>0?'re-accelerating':gq<0?'decelerating':'flat')+' (GDP '+pp(gq)+'pp QoQ '+sg(gq)+')'); }
+    if(ci!=null||pc!=null){ var iv=(ci!=null?ci:0)+(pc!=null?pc:0); parts.push('prices are '+(iv>0.05?'rising faster':iv<-0.05?'cooling down':'steady')+' (everyday prices '+(ci!=null?pp(ci)+'pp '+sg(ci):'\u2014')+(pc!=null?' \u00b7 underlying inflation '+pp(pc)+'pp '+sg(pc):'')+')'); }
+    if(U.unemployment_mom!=null){ var um=U.unemployment_mom; parts.push('the job market is '+(um>0?'weakening':um<0?'getting tighter':'steady')+' (people out of work '+pp(um)+'pp '+sg(um)+')'); }
+    if(U.gdp_growth_qoq!=null){ var gq=U.gdp_growth_qoq; parts.push('the economy is '+(gq>0?'speeding up again':gq<0?'slowing down':'flat')+' (growth '+pp(gq)+'pp vs last quarter '+sg(gq)+')'); }
     if(!parts.length) return;
-    b.innerHTML += '<div style="font-size:11px;color:#555;margin-top:5px;border-top:1px solid #eee;padding-top:5px;"><b>Macro momentum (vs prior release):</b> '+parts.join(' \u00b7 ')+' \u2014 the direction the prints are moving, independent of their level (Wave T3).</div>';
+    b.innerHTML += '<div style="font-size:11px;color:#555;margin-top:5px;border-top:1px solid #eee;padding-top:5px;"><b>What changed since the last official figures:</b> '+parts.join(' \u00b7 ')+' \u2014 the direction the prints are moving, independent of their level (Wave T3).</div>';
   })();
-  document.getElementById('yield_curve_box').innerHTML=`<div class="reading-box"><strong>10Y-2Y Spread: ${(spread>0?'+':'')+spread.toFixed(0)} bps</strong>${(function(){var _pj=_wtPrior();if(!_pj)return '';return computedArrow(spread,(_wtp(_pj,'us.us_10y')-_wtp(_pj,'us.us_2y'))*100,0,'bps');})()} — ${spread>30?'Normal curve, expansion expected.':spread>-30?'Flat, transition zone.':'Inverted, recession signal.'}</div>`;
+  document.getElementById('yield_curve_box').innerHTML=`<div class="reading-box"><strong>Recession warning gauge: ${(spread>0?'+':'')+(spread/100).toFixed(2)}% (how much more the government pays to borrow long-term than short-term)</strong>${(function(){var _pj=_wtPrior();if(!_pj)return '';return computedArrow(spread,(_wtp(_pj,'us.us_10y')-_wtp(_pj,'us.us_2y'))*100,0,'');})()} — ${spread>30?'Normal and healthy \u2014 no recession being signalled.':spread>-30?'Flat \u2014 the economy is in between; worth watching.':'Upside-down \u2014 the classic recession warning.'}</div>`;
   document.getElementById('us_quadrant').innerHTML=quadrant(gdp>0?'Positive':'Negative',pce>2.5?'High':'Low',regime.name);
   document.getElementById('us_sector_rec').innerHTML=generateUSRec(ism,svc,umcsi,spread,pce,gdp,dxy);
   (function(){var Z=(LIVE&&LIVE.zacks_sectors)?LIVE.zacks_sectors:null; if(!Z)return;
@@ -1120,7 +1122,7 @@ function calcUS(){
     function a(x){return x>0?'\u25b2':x<0?'\u25bc':'\u25ac';}function pp(x){return (x>0?'+':'')+x;}
     var inn=rows.filter(function(r){return r[1]>0;}).slice(0,3).map(function(r){return r[0]+' '+pp(r[1])+'pp '+a(r[1]);});
     var outg=rows.filter(function(r){return r[1]<0;}).slice(-3).map(function(r){return r[0]+' '+pp(r[1])+'pp '+a(r[1]);});
-    var html='<div class="reading-box" style="margin-top:10px;"><b>Sector rotation (Zacks #1/#2 breadth vs prior scrape):</b> '
+    var html='<div class="reading-box" style="margin-top:10px;"><b>Which sectors analysts are warming to</b> <span style="color:var(--grey-d);font-weight:400;">(how many top-rated stocks each sector holds now, versus the last check)</span> '
       +(inn.length?'<span style="color:#047857;">rotating IN \u2014 '+inn.join(', ')+'</span>':'')
       +(inn.length&&outg.length?' \u00b7 ':'')
       +(outg.length?'<span style="color:#b91c1c;">rotating OUT \u2014 '+outg.join(', ')+'</span>':'')
@@ -1130,13 +1132,13 @@ function calcUS(){
 }
 function quadrant(growth,inflation,currentRegime){
   const cells=[{name:'GOLDILOCKS',g:'Positive',i:'Low',color:'#FFF2CC'},{name:'REFLATION',g:'Positive',i:'High',color:'#C6EFCE'},{name:'DISINFLATION',g:'Negative',i:'Low',color:'#FFC7CE'},{name:'STAGFLATION',g:'Negative',i:'High',color:'#FCE4D6'}];
-  let html='<table style="text-align:center;"><tr><th></th><th>LOW INFLATION</th><th>HIGH INFLATION</th></tr>';
+  let html='<table style="text-align:center;"><tr><th></th><th>PRICES CALM</th><th>PRICES RISING FAST</th></tr>';
   ['Positive','Negative'].forEach(g=>{
-    html+=`<tr><th>${g.toUpperCase()} GROWTH</th>`;
+    html+=`<tr><th>${g==='Positive'?'ECONOMY GROWING':'ECONOMY SHRINKING'}</th>`;
     ['Low','High'].forEach(i=>{
       const cell=cells.find(c=>c.g===g&&c.i===i);
       const isActive=cell.name===currentRegime;
-      html+=`<td style="background:${isActive?'#1F3864':cell.color};color:${isActive?'white':'black'};font-weight:${isActive?'700':'500'};padding:18px;${isActive?'box-shadow:0 0 0 3px #BF8F00;':''}">${cell.name}${isActive?' ★':''}</td>`;
+      html+=`<td style="background:${isActive?'#1F3864':cell.color};color:${isActive?'white':'black'};font-weight:${isActive?'700':'500'};padding:18px;${isActive?'box-shadow:0 0 0 3px #BF8F00;':''}">${_quadShort(cell.name)}${isActive?' ★':''}</td>`;
     });
     html+='</tr>';
   });
@@ -1259,7 +1261,12 @@ function calcDevAlert(){
   const _fxs=_cda.filter(r=>r.fx_drag_6m!=null&&r.fx_drag_6m<-5).length;
   const _fxel=document.getElementById('dev_fx_stress');
   if(_fxel&&_cda.length>0){const _fc=_fxs>=5?'#DC2626':_fxs>=3?'#D97706':'#059669',_fl=_fxs>=5?'⚠ Strong USD pressure':_fxs>=3?'Elevated FX drag':'Contained';
-  _fxel.innerHTML=_fxs>0?`<div style="background:${_fxs>=3?'#FEF3C7':'#F0FDF4'};border:1px solid ${_fc}33;border-radius:8px;padding:6px 12px;margin-bottom:10px;font-size:12px;"><span style="font-weight:700;color:${_fc};">${_fl}</span> <span style="color:#64748B;">${_fxs}/${_cda.length} markets losing >5% to USD (6M)</span></div>`:'';
+  // v5.221 G1 FIX: this used to render NOTHING when _fxs===0, so the healthy "Contained"
+  // state looked identical to a broken panel -- the same silent-blank failure as the compass.
+  // It now ALWAYS paints: green + plain wording when no market is under pressure.
+  _fxel.innerHTML=`<div style="background:${_fxs>=3?'#FEF3C7':'#F0FDF4'};border:1px solid ${_fc}33;border-radius:8px;padding:6px 12px;margin-bottom:10px;font-size:12px;"><span style="font-weight:700;color:${_fc};">${_fl}</span> <span style="color:#64748B;">${_fxs>0
+      ? `${_fxs} of ${_cda.length} currencies we track have lost more than 5% against the US dollar over six months.`
+      : `None of the ${_cda.length} currencies we track has lost more than 5% against the US dollar over six months \u2014 no dollar squeeze right now.`}</span></div>`;
   }
 
   // ---- inputs ----
@@ -1629,7 +1636,7 @@ function calcZone(){
   const active = cells.find(c=>c.rr===rr&&c.dir===dir) || cells[3];
   const curr = active.name;
   let qHtml='<table style="text-align:center;"><tr><th></th><th>DECREASING</th><th>INCREASING</th></tr>';
-  ['Lesser','Greater'].forEach(rrx=>{qHtml+=`<tr><th>${rrx.toUpperCase()} THAN MEAN (11.01%)</th>`;['Decreasing','Increasing'].forEach(dirx=>{const cell=cells.find(c=>c.rr===rrx&&c.dir===dirx);const isActive=cell.name===curr;qHtml+=`<td style="background:${cell.color};color:${cell.tc};padding:20px;font-weight:700;${isActive?'box-shadow:0 0 0 4px #BF8F00;':''}">${cell.name} (${cell.w})<br><small>${cell.alloc}</small>${isActive?'<br><b>★ YOU ARE HERE</b>':''}</td>`;});qHtml+='</tr>';});
+  ['Lesser','Greater'].forEach(rrx=>{qHtml+=`<tr><th>${rrx.toUpperCase()} THAN MEAN (11.01%)</th>`;['Decreasing','Increasing'].forEach(dirx=>{const cell=cells.find(c=>c.rr===rrx&&c.dir===dirx);const isActive=cell.name===curr;qHtml+=`<td style="background:${cell.color};color:${cell.tc};padding:20px;font-weight:700;${isActive?'box-shadow:0 0 0 4px #BF8F00;':''}">${_quadShort(cell.name)} (${cell.w})<br><small>${cell.alloc}</small>${isActive?'<br><b>★ YOU ARE HERE</b>':''}</td>`;});qHtml+='</tr>';});
   document.getElementById('zone_quadrant_box').innerHTML=qHtml+'</table>';
   // Dynamic banner (was a frozen RED string in the HTML)
   const zb=document.getElementById('zone_banner');
@@ -3543,7 +3550,8 @@ function renderBanksTab(){
   _eus.concat(_eps).forEach(function(r){ if(_isFinancial(r)&&!_isBank(r)&&r.im3&&!r.im3.error) im3Scores[r.ticker]=r.im3; });
   // One combined Other-Financials table (US + PSX) — single caption, single toggle.
   renderExplosiveTable('banks_fin_us_table', _eus.concat(_eps), 'us', 'financials');
-  var _fp=document.getElementById('banks_fin_psx_table'); if(_fp) _fp.innerHTML='';
+  // v5.221 G3: the orphan banks_fin_psx_table container is gone -- US+PSX other-financials
+  // render as ONE combined table above (banks_fin_us_table). Nothing left to blank.
 }
 
 function renderBankTable(elId, rows, market){
@@ -6498,8 +6506,11 @@ function renderUsDiffusionBar(){
   const col = isExp?'#10b981':'#ef4444';
   const bg = isExp?'#ECFDF5':'#FEF2F2';
   const arrow = dir==='Accelerating'?'▲':dir==='Decelerating'?'▼':'→';
+  // Wave PL (v5.221): words, not engine labels.
+  const phaseTxt = (phase==='Expansion'?'The economy is growing':phase==='Contraction'?'The economy is shrinking':'The economy is balanced');
+  const dirTxt   = (dir==='Accelerating'?'and picking up speed':dir==='Decelerating'?'but losing pace':'');
   el.style.cssText='margin:6px 0 10px;padding:8px 14px;border-radius:6px;border-left:4px solid '+col+';background:'+bg+';font-size:13px;';
-  el.innerHTML=`<span style="font-weight:800;color:${col};font-size:15px;">${phase}</span> <span style="color:#64748B;margin-left:8px;">${arrow} ${dir} &middot; Net <strong style="color:#0F172A;">${net>0?'+':''}${net}</strong>/${tot} &middot; ${sup} supportive · ${harm} harmful · <strong style="color:${col};">${pct}%</strong> breadth</span>`;
+  el.innerHTML=`<span style="font-weight:800;color:${col};font-size:15px;">${arrow} ${phaseTxt} ${dirTxt}</span> <span style="color:#64748B;margin-left:8px;">Of the ${tot} things we watch, <b>${sup} look healthy</b> and <b>${harm} look worrying</b> &middot; the good news reaches ${pct}% of them.</span>`;
 }
 
 function renderWorldEconomy(){
@@ -6589,6 +6600,20 @@ function renderEconClockPak(){
   box.innerHTML=econClockPanel(m,'Economy Clock \u2014 where Pakistan is in the cycle');
 }
 
+// Wave PL (v5.221): the clock's quadrant names in everyday English -- ONE vocabulary
+// across the tab, so the banner and the clock can never describe the same thing differently.
+function _quadShort(q){
+  var M={GOLDILOCKS:'Growing<br>calm prices',REFLATION:'Growing<br>prices climbing',
+         STAGFLATION:'Slowing<br>prices high',DISINFLATION:'Slowing<br>prices cooling'};
+  return M[String(q||'').toUpperCase()] || (q||'\u2014');
+}
+function _quadPlain(q){
+  var M={GOLDILOCKS:'growing with calm prices (the sweet spot)',
+         REFLATION:'growing, but prices are climbing',
+         STAGFLATION:'slowing down while prices stay high (the hard corner)',
+         DISINFLATION:'slowing, but prices are cooling off'};
+  return M[String(q||'').toUpperCase()] || (q||'\u2014');
+}
 function renderEconCompass(){
   var box=document.getElementById('econ_compass_box'); if(!box) return;
   // v5.218 FIX: `esc` is a LOCAL var inside renderWhale13f, not a global -- calling it here
@@ -6963,18 +6988,21 @@ function _renderWeDiffusion(){
   const pct=tot>0?Math.round((sup/tot)*100):0;
   const barW=Math.min(100,Math.max(0,pct));
   const arrow=dir==='Accelerating'?'▲':dir==='Decelerating'?'▼':'→';
+  // Wave PL (v5.221): say it in words, not engine labels.
+  const phasePlain=(phase==='Expansion'?'GROWING':phase==='Contraction'?'SHRINKING':'BALANCED')
+    + (dir==='Accelerating'?' \u00b7 PICKING UP SPEED':dir==='Decelerating'?' \u00b7 LOSING PACE':'');
   el.innerHTML=`
     <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
       <div>
         <div style="font-size:48px;font-weight:900;color:${col};line-height:1;letter-spacing:-2px;font-family:var(--font-head);">${net>0?'+':''}${net}</div>${(function(){var _pj=_wtPrior();if(!_pj)return '';return '<div style=\'margin-top:2px;\'>'+computedArrow(net,_wtp(_pj,'us_diffusion_net'),0,'')+'</div>';})()}
-        <div style="font-size:11px;color:#64748B;margin-top:2px;letter-spacing:0.5px;">NET SCORE / ${tot}</div>
+        <div style="font-size:11px;color:#64748B;margin-top:2px;letter-spacing:0.5px;">HEALTHY MINUS WORRYING (OUT OF ${tot})</div>
         <div style="margin-top:10px;">
-          <span style="display:inline-block;background:${isExp?'#DBEAFE':'#FEE2E2'};color:${col};font-size:13px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;">${arrow} ${phase}${accel?' · Accelerating':''}</span>
+          <span style="display:inline-block;background:${isExp?'#DBEAFE':'#FEE2E2'};color:${col};font-size:13px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;">${arrow} ${phasePlain}${accel?' · Accelerating':''}</span>
         </div>
       </div>
       <div style="flex:1;min-width:200px;padding-top:4px;">
         <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748B;margin-bottom:6px;">
-          <span>Expansion breadth</span><strong style="color:${col};">${pct}%</strong>
+          <span>How widespread the good news is</span><strong style="color:${col};">${pct}%</strong>
         </div>
         <div style="height:12px;background:#E2E8F0;border-radius:6px;overflow:hidden;margin-bottom:16px;">
           <div style="height:100%;width:${barW}%;background:linear-gradient(90deg,${isExp?'#3B82F6,#1D4ED8':'#F87171,#DC2626'});border-radius:6px;transition:width 0.6s ease;"></div>
@@ -6982,15 +7010,15 @@ function _renderWeDiffusion(){
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
           <div style="background:#ECFDF5;border-radius:8px;padding:8px 4px;">
             <div style="font-size:20px;font-weight:800;color:#059669;">${sup}</div>
-            <div style="font-size:10px;color:#6EE7B7;font-weight:600;letter-spacing:1px;margin-top:1px;">SUPPORTIVE</div>
+            <div style="font-size:10px;color:#6EE7B7;font-weight:600;letter-spacing:1px;margin-top:1px;">LOOK HEALTHY</div>
           </div>
           <div style="background:#F8FAFC;border-radius:8px;padding:8px 4px;">
             <div style="font-size:20px;font-weight:800;color:#94A3B8;">${neu}</div>
-            <div style="font-size:10px;color:#CBD5E1;font-weight:600;letter-spacing:1px;margin-top:1px;">NEUTRAL</div>
+            <div style="font-size:10px;color:#CBD5E1;font-weight:600;letter-spacing:1px;margin-top:1px;">IN BETWEEN</div>
           </div>
           <div style="background:#FEF2F2;border-radius:8px;padding:8px 4px;">
             <div style="font-size:20px;font-weight:800;color:#DC2626;">${harm}</div>
-            <div style="font-size:10px;color:#FCA5A5;font-weight:600;letter-spacing:1px;margin-top:1px;">HARMFUL</div>
+            <div style="font-size:10px;color:#FCA5A5;font-weight:600;letter-spacing:1px;margin-top:1px;">LOOK WORRYING</div>
           </div>
         </div>
         <p style="font-size:11px;color:#94A3B8;margin:12px 0 0;line-height:1.4;">Scores 14 indicators: fed rate, yield curve, core PCE, CPI, unemployment, consumer sentiment, permits, industrial output, GDP, HY spread, mfg employment, WTI, financial conditions, Brent-WTI spread.</p>
@@ -7380,12 +7408,6 @@ function renderPsxSectorBoomingStrip(){
 
 
 // ─── Wave Z: Institutional Consensus (double-confirmed smart money) v5.107 ──
-function renderTceEtfPicks(){
-  // v5.115: ETF picks moved to dedicated Tab 16 (World ETF Engine). Tab 9 shows TCE only.
-  var el=document.getElementById('tce_etf_picks');
-  if(el) el.innerHTML='';
-}
-
 
 function holdChips(str){
   // Holdings -> the SAME chip shape/font as the Explosive/TCE proxy trackers, recoloured per owner
@@ -7918,7 +7940,6 @@ function recalc(){
   renderSectorsBoomingStrip();
   renderPsxSectorBoomingStrip();
   renderInstConsensus();
-  renderTceEtfPicks();
   renderWorldEtfTab();
   renderPakistanProxyCards();
 }
