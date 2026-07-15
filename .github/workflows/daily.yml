@@ -27,10 +27,17 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+          # CI OVERHEAD FIX (2026-07-15). The owner's workflow reads ~7m07s while the SCANNER
+          # itself is 5m37s (meta.runtime_sec) -- the ~90s gap is checkout/pip/im3/commit, NOT
+          # scanner code. This step was re-downloading and re-building EIGHT packages (pandas +
+          # yfinance are the expensive ones) on EVERY run because pip caching was never switched
+          # on. setup-python has it built in; it keys the cache off the dependency file below.
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
-          pip install requests yfinance pandas feedparser python-dateutil fredapi pdfplumber openpyxl
+          pip install -r requirements.txt
 
       - name: Compute scanner inputs hash (skip-guard)
         id: inputs_hash
