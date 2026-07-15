@@ -1,0 +1,514 @@
+name: Daily Dashboard Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 06:00 Dubai (UTC+4)
+    - cron: '0 14 * * *'  # 18:00 Dubai (UTC+4)
+  workflow_dispatch:
+    inputs:
+      force_im3:
+        description: 'Force a full IM3 re-score (re-scores all current explosive / TCE-HIGH tickers even if the list is unchanged)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests yfinance pandas feedparser python-dateutil fredapi pdfplumber openpyxl
+
+      - name: Compute scanner inputs hash (skip-guard)
+        id: inputs_hash
+        run: |
+          python3 << 'EOF'
+          import hashlib, os, json, datetime
+          # Hash the scanner code + every config/data INPUT the scanner reads. If none of
+          # these changed AND this is a manual re-run AND a valid data.json already exists,
+          # the expensive scanner run is skipped (identical output guaranteed). Scheduled
+          # (cron) runs ALWAYS execute — live market data moves regardless of input hashes.
+          FILES = ['scanner.py', 'live_portfolio.json', 'psx_financials.json',
+                   'psx_macros_manual.json', 'bank_ig2_inputs.json', 'bank_ig2_overrides.json',
+                   'ETF_Universe.xlsx', 'GICS_Breakdown_For_US_Market_Only.xlsx',
+                   'm1_force_rescore.json']
+          h = hashlib.sha256()
+          for fn in FILES:
+              try:
+                  with open(fn, 'rb') as f: h.update(f.read())
+              except Exception: h.update(b'\x00')  # missing file is part of the state
+          cur = h.hexdigest()
+          try:    prev = open('.scanner_inputs_hash').read().strip()
+          except Exception: prev = ''
+          inputs_unchanged = bool(cur) and cur == prev
+          # data.json must already exist, be valid JSON, AND still be FRESH to safely skip.
+          # FRESHNESS GUARD: input hashes only cover CONFIG. Live market data moves even when
+          # no input file changed, so a stale data.json must always trigger a real scan --
+          # this is why a manual re-run previously needed the "force" tick just to get fresh
+          # prices. We read the scan time from INSIDE data.json (meta.last_scan_utc): the file
+          # mtime is useless here because git checkout rewrites it to the checkout time.
+          MAX_AGE_MIN = 90
+          data_ok = False
+          try:
+              with open('data.json') as f: _dj = json.load(f)
+              _ts = ((_dj.get('meta') or {}).get('last_scan_utc') or '').replace('Z', '+00:00')
+              _age = (datetime.datetime.now(datetime.timezone.utc)
+                      - datetime.datetime.fromisoformat(_ts)).total_seconds() / 60.0
+              data_ok = _age < MAX_AGE_MIN
+              print(f"data.json age={_age:.0f} min (limit {MAX_AGE_MIN}) -> fresh={data_ok}")
+          except Exception as _e:
+              print(f"data.json freshness check failed ({_e}) -> treating as STALE (will scan)")
+              data_ok = False
+          is_manual = os.environ.get('GITHUB_EVENT_NAME', '') == 'workflow_dispatch'
+          forced = str(os.environ.get('FORCE_IM3', '')).lower() == 'true'
+          # Skip ONLY on a manual, unforced re-run with unchanged inputs and a good data.json.
+          skip = bool(is_manual and inputs_unchanged and data_ok and not forced)
+          print(f"inputs_unchanged={inputs_unchanged} (cur {cur[:8]} vs prev {prev[:8]})")
+          print(f"is_manual={is_manual} data_ok={data_ok} forced={forced} -> skip_scanner={skip}")
+          # Always write the current hash so the NEXT run compares against this state.
+          try: open('.scanner_inputs_hash', 'w').write(cur)
+          except Exception: pass
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"skip_scanner={'true' if skip else 'false'}\n")
+          EOF
+        env:
+          FORCE_IM3: ${{ github.event.inputs.force_im3 }}
+
+      - name: Run scanner
+        if: steps.inputs_hash.outputs.skip_scanner != 'true'
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: python scanner.py
+
+      - name: Scanner skipped (inputs unchanged)
+        if: steps.inputs_hash.outputs.skip_scanner == 'true'
+        run: echo "Scanner skipped — manual re-run with unchanged inputs and a valid data.json already present. IM3 steps below still run against the existing data.json."
+
+      - name: Check if explosive list changed
+        id: check_explosive
+        run: |
+          python3 << 'EOF'
+          import json, os
+
+          # Read new explosive list from data.json
+          with open('data.json') as f:
+              data = json.load(f)
+
+          # Explosive both-signal tickers
+          explosive = sorted([
+              r['ticker'] for r in data.get('explosive_us', [])
+              if r.get('verdict', '').startswith('EXPLOSIVE')
+          ])
+          # TCE HIGH tickers (US only)
+          tce_high = sorted([
+              r['ticker'] for r in data.get('tce_us', [])
+              if r.get('tier') == 'HIGH'
+          ])
+          # Financial both-signal tickers — flagged "FINANCIAL — score via bank model"
+          # (their EXPLOSIVE verdict is overwritten in scanner.py), so they must be added
+          # explicitly or they never reach im3_score.py (they would sit "Pending" forever).
+          financial = sorted([
+              r['ticker'] for r in data.get('explosive_us', [])
+              if r.get('verdict', '').startswith('FINANCIAL')
+          ])
+          # Watchlist verdicts (P3 widen): QUALITY-GROWTH + INFLECTION — the names you
+          # might actually act on. NOT-EXPLOSIVE stays unscored.
+          watchlist = sorted([
+              r['ticker'] for r in data.get('explosive_us', [])
+              if r.get('verdict', '').startswith('QUALITY-GROWTH')
+              or r.get('verdict', '').startswith('INFLECTION')
+          ])
+          # Combined — score explosives, banks (System B), TCE-HIGH, and the watchlist
+          new_tickers = sorted(set(explosive + financial + tce_high + watchlist))
+
+          # Read previous list (stored in data.json from last run)
+          prev_tickers = sorted(data.get('im3_explosive_tickers', []))
+
+          names_changed = new_tickers != prev_tickers
+
+          # Self-heal: also re-score if any current explosive / TCE-HIGH ticker
+          # is MISSING its im3 score (e.g. after a data.json state loss / restore).
+          def _has_im3(records, tk):
+              for r in records:
+                  if r.get('ticker') == tk:
+                      v = r.get('im3')
+                      return isinstance(v, dict) and len(v) > 0
+              return False
+
+          ex_recs  = data.get('explosive_us', [])
+          tce_recs = data.get('tce_us', [])
+          missing_im3 = [
+              t for t in new_tickers
+              if not (_has_im3(ex_recs, t) or _has_im3(tce_recs, t))
+          ]
+          needs_heal = bool(missing_im3)
+
+          # Scorer-version auto-force: if im3_score.py itself changed since the last
+          # successful score, re-score even when the ticker set is unchanged (so a
+          # scorer upgrade like System B propagates automatically — no manual checkbox).
+          import hashlib
+          # Hash the scorer AND the bank-input files, so editing bank_ig2_inputs.json /
+          # bank_ig2_overrides.json alone also forces a re-score (US banks are scored here).
+          try:
+              _h = hashlib.sha256()
+              _h.update(open('im3_score.py','rb').read())
+              for _bf in ('bank_ig2_inputs.json','bank_ig2_overrides.json'):
+                  try: _h.update(open(_bf,'rb').read())
+                  except Exception: pass
+              cur_hash = _h.hexdigest()
+          except Exception: cur_hash = ''
+          try:    prev_hash = open('.im3_scorer_hash').read().strip()
+          except Exception: prev_hash = ''
+          scorer_changed = bool(cur_hash) and cur_hash != prev_hash
+          print(f"Scorer changed: {scorer_changed} (cur {cur_hash[:8]} vs prev {prev_hash[:8]})")
+
+          # Max-age (P4): re-score every 14 days even if nothing changed — a staleness
+          # ceiling so grades never drift stale (standard freshness-vs-compute cache rule).
+          from datetime import datetime, timezone
+          MAX_AGE_DAYS = 14
+          stale = True
+          _last = data.get('im3_last_scored_utc')
+          if _last:
+              try:
+                  _dt = datetime.fromisoformat(str(_last).replace('Z', '+00:00'))
+                  stale = (datetime.now(timezone.utc) - _dt).days >= MAX_AGE_DAYS
+              except Exception:
+                  stale = True
+
+          changed = names_changed or needs_heal or scorer_changed or stale
+          print(f"Stale (>{MAX_AGE_DAYS}d): {stale} (last scored {_last})")
+          print(f"Previous:      {prev_tickers}")
+          print(f"New:           {new_tickers}")
+          print(f"Names changed: {names_changed}")
+          print(f"Missing im3:   {missing_im3}")
+          print(f"Changed:       {changed}")
+
+          # Write output for next step
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"changed={'true' if changed else 'false'}\n")
+              f.write(f"tickers={' '.join(new_tickers)}\n")
+          EOF
+
+      - name: Score explosive stocks with IM3
+        # Runs when the explosive/TCE-HIGH set changed OR a score is missing (self-heal),
+        # OR when manually forced via the "force_im3" Run-workflow toggle. The force path
+        # re-scores the CURRENT set with the live im3_score.py (e.g. after a scorer change),
+        # without any hand-edit of data.json.
+        if: steps.check_explosive.outputs.changed == 'true' || github.event.inputs.force_im3 == 'true'
+        run: |
+          python3 << 'EOF'
+          import json, subprocess, sys
+
+          with open('data.json') as f:
+              data = json.load(f)
+
+          # Explosive both-signal tickers
+          explosive = [
+              r['ticker'] for r in data.get('explosive_us', [])
+              if r.get('verdict', '').startswith('EXPLOSIVE')
+          ]
+          # TCE HIGH tickers (US only)
+          tce_high = [
+              r['ticker'] for r in data.get('tce_us', [])
+              if r.get('tier') == 'HIGH'
+          ]
+          # Financial both-signal tickers — scored via the bank model (IM3 System B).
+          # MUST be included here: scanner.py overwrites their EXPLOSIVE verdict with
+          # "FINANCIAL — score via bank model", so a startswith('EXPLOSIVE') filter alone
+          # would leave every bank unscored ("Pending next scan").
+          financial = [
+              r['ticker'] for r in data.get('explosive_us', [])
+              if r.get('verdict', '').startswith('FINANCIAL')
+          ]
+          # Watchlist verdicts (P3 widen): QUALITY-GROWTH + INFLECTION. NOT-EXPLOSIVE skipped.
+          watchlist = sorted([
+              r['ticker'] for r in data.get('explosive_us', [])
+              if r.get('verdict', '').startswith('QUALITY-GROWTH')
+              or r.get('verdict', '').startswith('INFLECTION')
+          ])
+          explosive_tickers = sorted(set(explosive + financial + tce_high + watchlist))
+
+          if not explosive_tickers:
+              print("No explosive stocks to score")
+              sys.exit(0)
+
+          print(f"Scoring {len(explosive_tickers)} explosive stocks: {explosive_tickers}")
+
+          # Run im3_score.py with --json flag
+          # timeout=1800: the set now includes ~55 financials (bank model) on top of the
+          # explosive + TCE-HIGH names; ~60 tickers x ~15s ~= 15 min, well under the job's
+          # 55-min budget but over the old 600s subprocess cap.
+          result = subprocess.run(
+              [sys.executable, 'im3_score.py', '--json'] + explosive_tickers,
+              capture_output=True, text=True, timeout=1800
+          )
+
+          # stdout should be pure JSON; stderr has any debug output
+          if result.stderr:
+              print("STDERR:", result.stderr[:500])
+          if result.returncode != 0:
+              import os
+              _msg = f"im3_score.py exited with code {result.returncode}. Keeping last-good IM3 scores."
+              print(f"::warning title=IM3 scoring nonzero exit::{_msg}")
+              _sf = os.environ.get('GITHUB_STEP_SUMMARY')
+              if _sf:
+                  with open(_sf, 'a') as _s:
+                      _s.write(f"\n### ⚠️ IM3 scoring nonzero exit\n{_msg}\n")
+
+          # Find JSON in output - look for the [ that starts the array
+          raw = result.stdout.strip()
+          json_start = raw.find('[')
+          if json_start > 0:
+              raw = raw[json_start:]  # Strip any non-JSON prefix
+
+          # Parse JSON output
+          try:
+              scores = json.loads(raw)
+          except json.JSONDecodeError as e:
+              # Surface the failure in the Actions UI instead of passing as clean green.
+              msg = f"IM3 scoring FAILED to parse output: {e}. Keeping last-good IM3 scores."
+              print(f"::warning title=IM3 scoring failed::{msg}")
+              import os
+              _sf = os.environ.get('GITHUB_STEP_SUMMARY')
+              if _sf:
+                  with open(_sf, 'a') as _s:
+                      _s.write(f"\n### ⚠️ IM3 scoring failed\n{msg}\n\nOutput head: `{result.stdout[:200]}`\n")
+              print("Output was:", result.stdout[:200])
+              sys.exit(0)  # Soft-exit so the dashboard still deploys, but the warning above flags it.
+
+          # Map scores by ticker; SURFACE per-ticker errors instead of silently dropping
+          # them (the dropped {'ticker','error'} records were the only diagnostic for names
+          # like ABCL/GAU that raise inside score_ticker on the runner — printed here + in
+          # the Actions step summary so the exact cause is visible on the next run).
+          import os
+          score_map = {s['ticker']: s for s in scores if 'error' not in s}
+          error_map = {s['ticker']: s.get('error') for s in scores if 'error' in s}
+          print(f"Successfully scored: {list(score_map.keys())}")
+          if error_map:
+              print(f"IM3 per-ticker errors ({len(error_map)}): "
+                    + "; ".join(f"{t}: {e}" for t, e in error_map.items()))
+              _sf = os.environ.get('GITHUB_STEP_SUMMARY')
+              if _sf:
+                  with open(_sf, 'a') as _s:
+                      _s.write("\n### ⚠️ IM3 per-ticker errors\n"
+                               + "\n".join(f"- **{t}** — {e}" for t, e in error_map.items())
+                               + "\n")
+
+          # Write scores back into explosive_us AND tce_us records
+          for record in data.get('explosive_us', []):
+              tk = record['ticker']
+              if tk in score_map:
+                  record['im3'] = score_map[tk]
+          for record in data.get('tce_us', []):
+              tk = record['ticker']
+              if tk in score_map:
+                  record['im3'] = score_map[tk]
+
+          # Store ticker list for change detection next run
+          data['im3_explosive_tickers'] = explosive_tickers
+          # P4: stamp the score time so the next run can apply a 14-day staleness ceiling
+          from datetime import datetime, timezone
+          data['im3_last_scored_utc'] = datetime.now(timezone.utc).isoformat()
+
+          # Write updated data.json
+          with open('data.json', 'w') as f:
+              json.dump(data, f, indent=2, default=str)
+
+          print(f"data.json updated with IM3 scores for {len(score_map)} stocks")
+
+          # Stamp the scorer version so the next run only re-scores on a real change.
+          import hashlib
+          try:
+              _wh = hashlib.sha256()
+              _wh.update(open('im3_score.py','rb').read())
+              for _bf in ('bank_ig2_inputs.json','bank_ig2_overrides.json'):
+                  try: _wh.update(open(_bf,'rb').read())
+                  except Exception: pass
+              open('.im3_scorer_hash','w').write(_wh.hexdigest())
+              print('Updated .im3_scorer_hash')
+          except Exception as _e:
+              print('scorer hash write failed:', _e)
+          EOF
+
+      - name: Update explosive ticker list (no change)
+        if: steps.check_explosive.outputs.changed == 'false' && github.event.inputs.force_im3 != 'true'
+        run: |
+          python3 << 'EOF'
+          import json
+          print("Explosive list unchanged — keeping existing IM3 scores")
+          # Preserve existing im3 scores from previous data.json
+          # (scanner already loaded EXISTING data, so scores are intact)
+          EOF
+
+      - name: Score PSX stocks with IM3 (reduced / System B)
+        # ADDITIVE — does not touch the US IM3 steps above. Scores the 5 holdings + the live
+        # PSX screen via im3_score.py with the "PSX:" prefix (TV pakistan/scan single-period,
+        # empty history, reduced denominator, PKR risk-free). Self-gates: re-scores only when
+        # the PSX set changes, the scorer changes, a score is missing, or force_im3 is set, so
+        # identical runs don't churn data.json. Writes scores into explosive_psx / tce_psx /
+        # psx_candidates so the dashboard's PSX IM3 column picks them up.
+        env:
+          FORCE_IM3: ${{ github.event.inputs.force_im3 }}
+        run: |
+          python3 << 'EOF'
+          import json, subprocess, sys, os, hashlib
+
+          with open('data.json') as f:
+              data = json.load(f)
+
+          HOLDINGS = ['OGDC', 'PPL', 'MCB', 'FFC', 'HUBC']
+          psx_syms = sorted(set(HOLDINGS + [r['ticker'] for r in data.get('psx_candidates', []) if r.get('ticker')]))
+          if not psx_syms:
+              print("No PSX names to score"); sys.exit(0)
+
+          # --- self-gate: only re-score on a real change ---
+          prev = sorted(data.get('im3_psx_tickers', []))
+          set_changed = psx_syms != prev
+
+          def _has_im3(records, tk):
+              for r in records:
+                  if r.get('ticker') == tk:
+                      v = r.get('im3'); return isinstance(v, dict) and len(v) > 0
+              return False
+          missing = [t for t in psx_syms
+                     if not (_has_im3(data.get('psx_candidates', []), t) or _has_im3(data.get('explosive_psx', []), t))]
+
+          # Hash BOTH the scorer AND the broker-financials file, so adding/editing a name's
+          # multi-year statements in psx_financials.json triggers a re-score on the next run
+          # (without it, a financials-only edit would be carried-forward as "unchanged").
+          try:
+              _h = hashlib.sha256()
+              _h.update(open('im3_score.py', 'rb').read())
+              try: _h.update(open('psx_financials.json', 'rb').read())
+              except Exception: pass
+              for _bf in ('bank_ig2_inputs.json', 'bank_ig2_overrides.json'):
+                  try: _h.update(open(_bf, 'rb').read())
+                  except Exception: pass
+              cur_hash = _h.hexdigest()
+          except Exception: cur_hash = ''
+          try:    prev_hash = open('.im3_psx_hash').read().strip()
+          except Exception: prev_hash = ''
+          inputs_changed = bool(cur_hash) and cur_hash != prev_hash
+          forced = str(os.environ.get('FORCE_IM3', '')).lower() == 'true'
+
+          # Version trigger: re-score whenever the scorer's stamped version differs from the
+          # version already in data.json. Unlike the hash gate (which writes its hash even on a
+          # skip and can get "stuck"), this reliably fires once after any im3_score.py deploy,
+          # so a scorer change auto-re-scores on the next run with NO manual force_im3.
+          try:
+              _vl = next((l for l in open('im3_score.py') if l.strip().startswith('IM3_VERSION')), '')
+              cur_ver = _vl.split('=', 1)[1].strip().strip('"\'') if _vl else ''
+          except Exception:
+              cur_ver = ''
+          def _im3_ver(records):
+              for r in records:
+                  v = r.get('im3')
+                  if isinstance(v, dict) and v.get('ver'):
+                      return v.get('ver')
+              return None
+          data_ver = _im3_ver(data.get('psx_candidates', [])) or _im3_ver(data.get('explosive_psx', []))
+          ver_changed = bool(cur_ver) and cur_ver != data_ver
+
+          if not (set_changed or missing or inputs_changed or ver_changed or forced):
+              print(f"PSX IM3 unchanged ({len(psx_syms)} names) — keeping last-good")
+              try: open('.im3_psx_hash', 'w').write(cur_hash)
+              except Exception: pass
+              sys.exit(0)
+
+          print(f"Scoring {len(psx_syms)} PSX names (set_changed={set_changed} missing={len(missing)} inputs_changed={inputs_changed} ver_changed={ver_changed} forced={forced})")
+          tickers = ['PSX:' + s for s in psx_syms]
+          result = subprocess.run([sys.executable, 'im3_score.py', '--json'] + tickers,
+                                  capture_output=True, text=True, timeout=900)
+          if result.stderr: print("STDERR:", result.stderr[:500])
+
+          raw = result.stdout.strip()
+          js = raw.find('[')
+          if js > 0: raw = raw[js:]
+          try:
+              scores = json.loads(raw)
+          except Exception as e:
+              print(f"::warning title=PSX IM3 parse failed::{e}. Keeping last-good PSX scores.")
+              print("Output head:", result.stdout[:200]); sys.exit(0)
+
+          smap = {s['ticker'].split(':')[-1]: s for s in scores
+                  if 'error' not in s and str(s.get('ticker', '')).startswith('PSX:')}
+          emap = {s['ticker'].split(':')[-1]: s.get('error') for s in scores
+                  if 'error' in s and str(s.get('ticker', '')).startswith('PSX:')}
+          print(f"PSX scored: {sorted(smap.keys())}")
+          if emap:
+              print(f"PSX IM3 per-ticker errors ({len(emap)}): "
+                    + "; ".join(f"{t}: {e}" for t, e in emap.items()))
+              _sf = os.environ.get('GITHUB_STEP_SUMMARY')
+              if _sf:
+                  with open(_sf, 'a') as _s:
+                      _s.write("\n### ⚠️ PSX IM3 per-ticker errors\n"
+                               + "\n".join(f"- **{t}** — {e}" for t, e in emap.items()) + "\n")
+
+          for key in ('explosive_psx', 'tce_psx', 'psx_candidates'):
+              for rec in data.get(key, []):
+                  if rec.get('ticker') in smap:
+                      sc = smap[rec['ticker']]
+                      rec['im3'] = sc
+                      # Finalise the PSX explosive verdict from IM3's statement-derived
+                      # canonical conditions (same G1/G2/A1/A2/C1/C3 as the US screen, fed
+                      # real operating/net/cash growth — no eps/rev proxy). Only the
+                      # PARTIAL (pending) rows are finalised; a true-bank carve-out stands.
+                      if key == 'explosive_psx' \
+                         and str(rec.get('verdict', '')).startswith('PARTIAL') \
+                         and isinstance(sc.get('explosive'), dict):
+                          exp = sc['explosive']
+                          for _f in ('verdict', 'rev_growth', 'op_growth', 'np_growth',
+                                     'pbt_growth', 'op_np_ratio', 'signal_a', 'signal_b',
+                                     'conditions'):
+                              if _f in exp:
+                                  rec[_f] = exp[_f]
+
+          data['im3_psx_tickers'] = psx_syms
+          with open('data.json', 'w') as f:
+              json.dump(data, f, indent=2, default=str)
+          try: open('.im3_psx_hash', 'w').write(cur_hash)
+          except Exception: pass
+          print(f"data.json updated with PSX IM3 for {len(smap)} names")
+          EOF
+
+      - name: Commit data.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.json .im3_scorer_hash .scanner_inputs_hash
+          [ -f .im3_psx_hash ] && git add .im3_psx_hash || true
+          [ -f psx_history_cache.json ] && git add psx_history_cache.json || true
+          [ -f us_history_cache.json ] && git add us_history_cache.json || true
+          git diff --quiet --cached || git commit -m "Scan run"
+          # Concurrent-run hardening. data.json is FULLY regenerated each run, so when two runs
+          # overlap (manual + scheduled, or back-to-back forced runs), the loser's push is rejected
+          # and a plain rebase hits an unresolvable data.json conflict (two different whole-file
+          # rewrites — git can't line-merge them) and aborts with exit 1. Retry loop: try push; on
+          # rejection, fetch latest main and rebase our scan commit on top, resolving any conflict in
+          # favour of OUR freshly-generated files (`-X theirs` == the commit being replayed during a
+          # rebase, i.e. ours). Non-conflicting files from the other commit merge normally and are
+          # preserved. Up to 5 attempts with linear backoff. The freshest scan's data.json wins.
+          export GIT_EDITOR=true GIT_SEQUENCE_EDITOR=true
+          pushed=""
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then pushed=1; echo "pushed on attempt $i"; break; fi
+            echo "push rejected (attempt $i) — rebasing scan commit onto latest main"
+            git fetch origin main
+            git rebase -X theirs origin/main || { echo "rebase failed; aborting and retrying"; git rebase --abort || true; }
+            sleep $((i * 4))
+          done
+          [ -n "$pushed" ] || { echo "::error title=Scan push failed::could not push after 5 attempts (persistent concurrent writes)"; exit 1; }
