@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.229 (supersedes v5.228): SECTOR TICKERS IN FULL (owner: 'all stocks of the sector should be displayed in tickers' — previously only a few hardcoded names showed in the holdings column and the Zacks top-rated list was never rendered). Each US sector row now carries (a) chip badges for ALL of today's Zacks #1/#2-rated tickers (zacks_sectors.top_tickers, stored in full — IT shows all 23) and (b) an expandable '▸ All N tracked <sector> tickers' list resolving the sector's complete membership from the ~1,900-name foundation universe via the existing GICS_TV_MAP (e.g. IT ≈ Electronic Technology + Technology Services). Real Estate has no TV-sector mapping so it shows chips only — honest. PSX table unchanged (48-name tracked pool, different sector taxonomy — separate ask if wanted). Display only; no scoring/engine change. -->
 <!-- index.html v5.228 (supersedes v5.227): VERDICT BOARD PROMINENCE (owner: the scoreboard must catch the eye, not be scrolled past). The four-voices scoreboard is restyled as a hero 'Verdict Board' card — deep gradient background, amber border with a gentle pulsing glow (svPulse keyframes), animated badge, high-contrast agree chips and ADD/WATCH verdict pills — and MOVED to the TOP of Tab 5, before the regime banner, so it is the first thing read. Tab 2's condensed strip restyled to a bold gradient bar. Also fixed from the owner's screenshot: the raw ISO timestamp in the sources line now renders as a clean date (2026-07-14), and the deciding-vote sentence grammar corrected ('the analysts’ rating — X of N — casts the deciding vote'). Display styling only; no verdict logic, engine, or scanner change. -->
 <!-- index.html v5.227 (supersedes v5.226): FOUR-VOICES RECONCILIATION, owner-directed 18 Jul 2026. The Sector Implications and US Macro tabs disagreed (Tab 2 favoured Technology/Healthcare via m1 favored_effective; Tab 5's local REGIME_FAVORED + COT gates said REDUCE). Owner ruling: honest contradiction from different data sources is GOOD — display it, label it, source it. Shipped: (1) shared _svData/_svBoard four-voices model — economy engine (favored_effective), analyst ratings (Zacks, always displayed with its numbers and tagged 'deciding vote' when it breaks a tie), trader positioning (CFTC, dedicated contracts only), metals feed; (2) full scoreboard on Tab 5 + condensed agree/disagree line on Tab 2's compass; (3) OPTION A ruling: Financials' bond-futures signal is INFORMATION ONLY, never scored — the bet cuts both ways for banks; (4) SP500-fallback gates (HC/CD/RE) labeled weak proxy, not scored; (5) Tab 5 regime name now prefers the scanner's econ_clock (single source with Tab 2), favoured-chain line shows base + evidence-earned overrides; (6) LEI strip tip dynamic from the effective list (was hardcoded 'cyclicals incl IT' contradicting the table); (7) ISM input updated to the real Jun release 53.3 and labeled manual/no-live-feed (independently verified vs ISM's 1 Jul release); (8) Metals tab cross-link + 250k threshold-margin note on the Materials cell. Display logic only — M1 engine, scanner, TCE, IM3 all untouched. -->
 <!-- index.html v5.226 (supersedes v5.225): DISPLAY-HONESTY BATCH from the owner's demanded cross-tab audit (jsdom execution of the real page vs the live data.json, every undefined read traced). (1) Allocation Zone quadrant now reads the LIVE SBP rate (input = what-if override, stops seeding once touched) and derives rate DIRECTION from LIVE.rate_path by walking back to the last different rate -- it previously ran on the HTML default 11.50 + hand constant SBP_PREV_RATE=10.50, correct only by maintenance luck and silently wrong after the next MPC move. (2) Tab 13 backtest labeled as the static historical teaching exhibit with a pointer to the LIVE PB backtest on Results. (3) US CPI card carries a series-basis note (SA feed vs NSA headline: 3.73 vs 3.5 for June-26, validated vs TE/BLS). AUDIT CORRECTION, on the record: the audit's TCE 'eight dead columns' item was STALE -- v5.225's _vgm*/_ma* helpers already fall back to IM3 sections, TCE streams and ticker-lookups; the tracer's misses were first-probe noise, so NO TCE edit ships (no redundant churn). No engine/scoring logic touched; scanner untouched. -->
@@ -1505,6 +1506,29 @@ function _svBoard(SV,full){
     +'</div>';
   return h;
 }
+// v5.229: every sector row lists its stocks in tickers (owner request) — Zacks #1/#2 chips + the
+// full tracked membership from the foundation universe (~1,900 names) via GICS_TV_MAP, expandable.
+function _secTickers(sec){
+  try{
+    var tv=(typeof GICS_TV_MAP!=='undefined')?GICS_TV_MAP[sec]:null;
+    if(!tv||!(typeof LIVE!=='undefined'&&LIVE&&LIVE.foundation_universe))return [];
+    var set={};
+    LIVE.foundation_universe.forEach(function(r){ if(r&&r.ticker&&tv.indexOf(r.sector)>-1) set[r.ticker]=1; });
+    return Object.keys(set).sort();
+  }catch(e){return [];}
+}
+function _secTickerBlock(sec,z){
+  var chips=(z&&z.top_tickers&&z.top_tickers.length)
+    ? '<div style="margin-top:4px;"><span style="font-size:10px;color:#4F46E5;font-weight:800;">Zacks #1/#2 today:</span> '
+      + z.top_tickers.map(function(t){return '<span style="display:inline-block;background:#EEF2FF;border:1px solid #6366F1;color:#3730A3;border-radius:8px;padding:0 6px;font-size:10px;font-weight:700;margin:1px 2px 1px 0;">'+t+'</span>';}).join('')+'</div>'
+    : '';
+  var L=_secTickers(sec);
+  var all=L.length
+    ? '<details style="margin-top:2px;"><summary style="cursor:pointer;font-size:10.5px;color:#0F766E;font-weight:700;">\u25B8 All '+L.length+' tracked '+sec+' tickers</summary>'
+      + '<div style="font-size:10px;color:#475569;line-height:1.8;max-height:130px;overflow:auto;margin-top:3px;background:#F8FAFC;border-radius:6px;padding:5px 7px;">'+L.join(' \u00b7 ')+'</div></details>'
+    : '';
+  return chips+all;
+}
 function calcSectors() {
   const _SV=_svData();  // v5.227 four-voices data, computed once
   const _lei=LIVE&&LIVE.world_lei||{};
@@ -1650,11 +1674,11 @@ function calcSectors() {
         cotCell += '<div style="font-size:10px;color:var(--grey-d);">gold + copper combined — full detail on the Metals tab'
           + ((Math.abs(_mg)<=25000)?('. Only '+Math.abs(_mg).toLocaleString()+' contracts '+(_mg>=0?'above':'below')+' the 250,000 “very bullish” line — this label can flip week to week'):'')+'</div>';
       }
-      usHtml += `<tr class="${cls}"><td><b>${sec}</b>${gicsBreadthLine(sec)}${gicsSummaryLine(sec)}</td><td>${regCell}</td><td style="background:${Z_BG};">${zCell}</td><td>${cotCell}</td><td><b>${status}</b></td><td>${holdings[sec]||''}</td></tr>`;
+      usHtml += `<tr class="${cls}"><td><b>${sec}</b>${gicsBreadthLine(sec)}${gicsSummaryLine(sec)}${_secTickerBlock(sec,z)}</td><td>${regCell}</td><td style="background:${Z_BG};">${zCell}</td><td>${cotCell}</td><td><b>${status}</b></td><td>${holdings[sec]||''}</td></tr>`;
     });
     usHtml += '</tbody></table>';
     const cotDate = String(CF && (CF.SP500||CF.Crude||{}).date || '').slice(0,10);  // v5.228: clean date, no raw ISO timestamp
-    usHtml += `<div class="reading-box" style="margin-top:10px;font-size:11px;"><span style="color:#4F46E5;font-weight:700;">■ Zacks</span> = % of sector\'s stocks ranked #1/#2 (indigo). <span style="color:#0F766E;font-weight:700;">■ COT</span> = CFTC longs-vs-shorts: <span style="color:#059669;font-weight:700;">🟢 net long = bullish, proceed</span> / <span style="color:#DC2626;font-weight:700;">🔴 net short = bearish, halt</span>. SP500 gates the broad market; Crude→Energy, 10yr→Financials, NASDAQ→Tech. <b>⚠ weak trend</b> = sector is favored on macro/Zacks/COT but under 40% of its names are above their 200-day line (a price-breadth caution).${cotDate?' COT as of '+cotDate+'.':''}</div>`;
+    usHtml += `<div class="reading-box" style="margin-top:10px;font-size:11px;"><span style="color:#4F46E5;font-weight:700;">■ Zacks</span> = % of sector\'s stocks ranked #1/#2 (indigo). Under each sector: chips = today\'s Zacks #1/#2 names; expand \u25B8 for the sector\'s full tracked ticker list. <span style="color:#0F766E;font-weight:700;">■ COT</span> = CFTC longs-vs-shorts: <span style="color:#059669;font-weight:700;">🟢 net long = bullish, proceed</span> / <span style="color:#DC2626;font-weight:700;">🔴 net short = bearish, halt</span>. SP500 gates the broad market; Crude→Energy, 10yr→Financials, NASDAQ→Tech. <b>⚠ weak trend</b> = sector is favored on macro/Zacks/COT but under 40% of its names are above their 200-day line (a price-breadth caution).${cotDate?' COT as of '+cotDate+'.':''}</div>`;
   } else {
     // Fallback: original macro-regime reads (never blank if scanner blocks absent)
     usHtml = '<table><thead><tr><th>GICS Sector</th><th>ETF</th><th>Regime Read</th><th>Our Holdings</th></tr></thead><tbody>';
