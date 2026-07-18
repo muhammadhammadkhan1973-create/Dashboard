@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.233 (supersedes v5.232): THE MONEY STORY DRAWN (owner: 'convert this as graphical representation \u2014 statement reading is too boring'). Tab 17 now opens with pure-SVG graphics built from the same confirmed data: (1) scoreboard tiles \u2014 today / this week / this month / since-you-started, red-green; (2) a spend DONUT \u2014 how the deposited dollars split across the seven funds + kept cash, with a dollar legend; (3) a money-JOURNEY waterfall \u2014 You sent \u2192 You took back \u2192 At work \u2192 Market so far \u2192 Worth today; (4) fund-by-fund horizontal LOSS BARS, biggest first, dark = since purchase, light = this week; (5) a charges-vs-paid-back BALANCE bar pair with the net verdict line. The full written story survives intact under a collapsible '\uD83D\uDCD6 Prefer it in words?'. No libraries, no logic change, confirmed-only rule unchanged. -->
 <!-- index.html v5.232 (supersedes v5.231): BROKER CHARGES PAID BACK + CONFIRMED-ONLY RULE (owner-directed). New Section 6 on the money story: buying fees fund by fund (total $118.11), the AINF fractional-crumb fee explained in plain words (a \u00a31 minimum fee applied to a 2p leftover fraction), the dirham conversion spread computed live with its arithmetic shown (AED sold / official peg vs dollars received = $96.62), the free withdrawal ($0.00), the paybacks (interest +$163.22, currency settlements +$151.57, revaluation +$1.98 = +$316.77), and the verdict line: net, the broker has PAID the owner ~$102 so far. Sections 1 and 3 now narrate each transfer with its statement-confirmed note (brought-forward $272.28 \u00b7 deposit $272,260 \u00b7 withdrawal $4,999.97 \u2192 net $267,532.31, correcting the true loss ~$847 smaller). STANDING OWNER RULE enforced structurally: the section renders only from the confirmed broker_costs block; the suspected sending-bank charge (~AED 18, pre-IBKR) is excluded entirely until a bank statement confirms it. Display only. -->
 <!-- index.html v5.231 (supersedes v5.230): EVERY DOLLAR EXPLAINED WITH HEADINGS (owner: 'i did not see every dollar spend while buying each etf'). The money story is now a five-part headed accounting: 1\u00b7What you sent (each transfer, dated) \u00b7 2\u00b7How it was spent (each fund purchase: units \u00d7 unit price paid in its own currency \u2192 dollars, then Total spent + Kept as cash + a live CHECK LINE proving spent+cash = sent, with any residual honestly labeled as FX-conversion rounding on the London-listed lines) \u00b7 3\u00b7What you took back (withdrawals, and cash now) \u00b7 4\u00b7What it is worth right now (made/lost + cents per dollar) \u00b7 5\u00b7Where the gains and losses came from (the fund-by-fund day/week/month ledger). Display only; data unchanged from v1.272.x. -->
 <!-- index.html v5.230 (supersedes v5.229): PLAIN-LANGUAGE MONEY STORY on the Live Investment tab (owner: 'track each dollar transferred — where it was lost and where profit was made, daily/weekly/monthly — and the display must be layman plain language'). The tab now opens with 'Where each of your dollars went': you sent / you took back / money at work / worth today / made-or-lost in whole dollars and cents-per-dollar; a pure-market scoreboard (today · this week · this month — withdrawals never counted as losses, per scanner v1.272.0's flow-adjusted statements); a fund-by-fund worst-first ledger (put in / worth now / made-or-lost since purchase / today / week / month) from the per-ISIN price history; the cash line; and honest notes (per-fund month unlocks at 30 days ≈ 5 Aug; reconciled to the 17 Jul 2026 IBKR statements). Degrades gracefully until v1.272.0 deploys (no capital block -> transfer lines simply absent). Display only. -->
@@ -2572,6 +2573,109 @@ function calcMbUs(){
 
 
 
+
+  // v5.233 (owner: "statement reading is too boring") -- the money story drawn as GRAPHICS:
+  // journey waterfall, spend donut, scoreboard tiles, worst-first fund bars, charges-vs-payback
+  // balance. Pure inline SVG, same confirmed data; the words survive under a collapsible.
+  function _liMoneyViz(L){
+   try{
+    if(!L) return '';
+    var cap=L.capital||null, bc=L.broker_costs||null, t=L.totals||{}, st=L.statements||{}, hs=L.holdings||[];
+    var mo=(st.monthly&&st.monthly.length)?st.monthly[st.monthly.length-1]:null;
+    var wk=null; hs.forEach(function(x){ if(x.pnl_wow_usd!=null) wk=(wk||0)+x.pnl_wow_usd; });
+    function K(v){ v=Math.round(v); return (v<0?'\u2212$':'$')+Math.abs(v).toLocaleString(); }
+    var PAL=['#4338CA','#0F766E','#B45309','#7C3AED','#DC2626','#0EA5E9','#DB2777','#64748B'];
+    var out='<div class="m2x-card" style="border:2px solid #059669;background:linear-gradient(180deg,#ECFDF5,#ffffff 110px);">';
+    out+='<div class="m2x-sec" style="font-size:15px;">\uD83D\uDCB5 Your money, drawn \u2014 where each dollar went</div>';
+
+    // ---- scoreboard tiles ----
+    function tile(lbl,v){ var neg=(v!=null&&v<0);
+      return '<div style="flex:1;min-width:130px;background:#fff;border:1.5px solid '+(v==null?'#CBD5E1':(neg?'#FCA5A5':'#6EE7B7'))+';border-radius:10px;padding:8px 10px;text-align:center;">'
+        +'<div style="font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#64748B;">'+lbl+'</div>'
+        +'<div style="font-size:21px;font-weight:800;color:'+(v==null?'#94A3B8':(neg?'#B91C1C':'#047857'))+';">'+(v==null?'\u2014':K(v))+'</div></div>'; }
+    out+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px;">'+tile('Today',t.day_pnl_usd)+tile('This week',wk)+tile('This month',mo?mo.pnl_usd:null)
+      +(cap?tile('Since you started',cap.true_pnl_usd):'')+'</div>';
+
+    var row='<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;">';
+
+    // ---- spend donut ----
+    var spent=0; hs.forEach(function(x){spent+=(x.cost_usd||0);});
+    if(cap&&cap.in_usd){
+      var kept=cap.in_usd-spent, total=cap.in_usd, a0=-Math.PI/2, cx=95,cy=95,r=88,ri=52, dsvg='', leg='';
+      var slices=hs.map(function(x,i){return {n:(x.ticker),f:(x.cost_usd||0)/total,c:PAL[i%PAL.length],v:x.cost_usd||0};});
+      slices.push({n:'Cash kept',f:kept/total,c:'#94A3B8',v:kept});
+      slices.forEach(function(sl){ var a1=a0+sl.f*2*Math.PI;
+        var x0=cx+r*Math.cos(a0),y0=cy+r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1);
+        var xi1=cx+ri*Math.cos(a1),yi1=cy+ri*Math.sin(a1),xi0=cx+ri*Math.cos(a0),yi0=cy+ri*Math.sin(a0);
+        var big=(a1-a0)>Math.PI?1:0;
+        dsvg+='<path d="M'+x0.toFixed(1)+' '+y0.toFixed(1)+' A'+r+' '+r+' 0 '+big+' 1 '+x1.toFixed(1)+' '+y1.toFixed(1)
+          +' L'+xi1.toFixed(1)+' '+yi1.toFixed(1)+' A'+ri+' '+ri+' 0 '+big+' 0 '+xi0.toFixed(1)+' '+yi0.toFixed(1)+' Z" fill="'+sl.c+'" opacity="0.92"></path>';
+        leg+='<div style="font-size:10.5px;line-height:1.55;color:#334155;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+sl.c+';margin-right:5px;"></span>'+sl.n+' \u00b7 <b>'+K(sl.v)+'</b></div>';
+        a0=a1; });
+      row+='<div style="flex:0 0 auto;"><div style="font-size:11px;font-weight:800;color:#065F46;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">How your '+K(cap.in_usd)+' was spent</div>'
+        +'<div style="display:flex;gap:10px;align-items:center;"><svg viewBox="0 0 190 190" style="width:150px;height:150px;">'+dsvg
+        +'<text x="95" y="90" text-anchor="middle" style="font-size:13px;font-weight:800;fill:#0F172A;">7 funds</text>'
+        +'<text x="95" y="106" text-anchor="middle" style="font-size:11px;fill:#64748B;">+ cash</text></svg>'
+        +'<div>'+leg+'</div></div></div>';
+    }
+
+    // ---- journey waterfall ----
+    if(cap&&cap.in_usd&&L.nav_usd){
+      var steps=[{l:'You sent',v:cap.in_usd,abs:1,c:'#4338CA'},
+                 {l:'You took back',v:cap.out_usd,c:'#B45309'},
+                 {l:'At work',v:cap.net_usd,abs:1,c:'#0F766E'},
+                 {l:'Market so far',v:cap.true_pnl_usd,c:(cap.true_pnl_usd<0?'#DC2626':'#059669')},
+                 {l:'Worth today',v:L.nav_usd,abs:1,c:'#059669'}];
+      var W=430,Hh=190,pad=26,bw=62,gap=(W-2*pad-5*bw)/4,maxV=cap.in_usd,run=0,wsvg='';
+      function Y(v){ return 14+(Hh-40)*(1-v/maxV); }
+      steps.forEach(function(sp,i){ var x=pad+i*(bw+gap),y0,y1;
+        if(sp.abs){ run=sp.v; y0=Y(sp.v); y1=Y(0); }
+        else { var from=run; run+=sp.v; y0=Y(Math.max(from,run)); y1=Y(Math.min(from,run)); }
+        wsvg+='<rect x="'+x+'" y="'+y0.toFixed(1)+'" width="'+bw+'" height="'+Math.max(3,(y1-y0)).toFixed(1)+'" rx="4" fill="'+sp.c+'" opacity="0.9"></rect>'
+          +'<text x="'+(x+bw/2)+'" y="'+(y0-4).toFixed(1)+'" text-anchor="middle" style="font-size:10.5px;font-weight:800;fill:#0F172A;">'+K(sp.abs?sp.v:sp.v)+'</text>'
+          +'<text x="'+(x+bw/2)+'" y="'+(Hh-8)+'" text-anchor="middle" style="font-size:9.5px;fill:#475569;">'+sp.l+'</text>';
+        if(i<steps.length-1){ var yc=Y(run); wsvg+='<line x1="'+(x+bw)+'" y1="'+yc.toFixed(1)+'" x2="'+(x+bw+gap)+'" y2="'+yc.toFixed(1)+'" stroke="#94A3B8" stroke-dasharray="3 3"></line>'; }
+      });
+      row+='<div style="flex:1;min-width:300px;"><div style="font-size:11px;font-weight:800;color:#065F46;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">The journey of your money</div>'
+        +'<svg viewBox="0 0 '+W+' '+Hh+'" style="width:100%;max-width:470px;">'+wsvg+'</svg></div>';
+    }
+    out+=row+'</div>';
+
+    // ---- fund bars, worst first: total loss + this-week ----
+    var rows=hs.slice().sort(function(a,b){return (a.pnl_usd||0)-(b.pnl_usd||0);});
+    var maxA=1; rows.forEach(function(x){maxA=Math.max(maxA,Math.abs(x.pnl_usd||0));});
+    out+='<div style="font-size:11px;font-weight:800;color:#065F46;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 4px;">Fund by fund \u2014 biggest loss first (dark = since you bought, light = this week)</div>';
+    rows.forEach(function(x){ var v=x.pnl_usd||0, w=Math.round(Math.abs(v)/maxA*100), neg=v<0;
+      var wv=x.pnl_wow_usd, ww=(wv!=null)?Math.round(Math.abs(wv)/maxA*100):0;
+      out+='<div style="display:flex;align-items:center;gap:8px;margin:3px 0;">'
+        +'<div style="flex:0 0 215px;font-size:11.5px;color:#1E293B;"><b>'+(x.theme||x.ticker)+'</b> ('+x.ticker+')</div>'
+        +'<div style="flex:1;">'
+        +'<div style="height:13px;border-radius:4px;background:'+(neg?'#DC2626':'#059669')+';width:'+w+'%;min-width:2px;"></div>'
+        +((wv!=null)?'<div style="height:6px;border-radius:3px;background:'+((wv<0)?'#FCA5A5':'#6EE7B7')+';width:'+ww+'%;min-width:2px;margin-top:2px;"></div>':'')
+        +'</div>'
+        +'<div style="flex:0 0 150px;font-size:11px;text-align:right;color:'+(neg?'#B91C1C':'#047857')+';font-weight:800;">'+K(v)+' <span style="color:#94A3B8;font-weight:600;">\u00b7 wk '+(wv!=null?K(wv):'\u2014')+'</span></div></div>';
+    });
+
+    // ---- charges vs paid back balance ----
+    if(bc&&bc.commissions_total_usd!=null){
+      var fx=bc.fx_spread||{}, spr=fx.aed_sold?(fx.aed_sold/fx.peg-fx.usd_received):0;
+      var chg=(bc.commissions_total_usd||0)+spr;
+      var pay=(bc.interest_accrued_usd||0)+(bc.forex_realized_usd||0)+(bc.fx_translation_usd||0);
+      var mx=Math.max(chg,pay), net=pay-chg;
+      out+='<div style="font-size:11px;font-weight:800;color:#065F46;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 4px;">Broker charges vs what came back to you</div>'
+        +'<div style="display:flex;align-items:center;gap:8px;margin:2px 0;"><div style="flex:0 0 215px;font-size:11.5px;color:#1E293B;">Charged (fees $'+bc.commissions_total_usd.toFixed(2)+' + spread $'+spr.toFixed(2)+')</div>'
+        +'<div style="flex:1;"><div style="height:15px;border-radius:4px;background:#DC2626;width:'+Math.round(chg/mx*100)+'%;"></div></div>'
+        +'<div style="flex:0 0 90px;font-size:11.5px;font-weight:800;color:#B91C1C;text-align:right;">$'+chg.toFixed(2)+'</div></div>'
+        +'<div style="display:flex;align-items:center;gap:8px;margin:2px 0;"><div style="flex:0 0 215px;font-size:11.5px;color:#1E293B;">Paid back (interest + currency gains)</div>'
+        +'<div style="flex:1;"><div style="height:15px;border-radius:4px;background:#059669;width:'+Math.round(pay/mx*100)+'%;"></div></div>'
+        +'<div style="flex:0 0 90px;font-size:11.5px;font-weight:800;color:#047857;text-align:right;">$'+pay.toFixed(2)+'</div></div>'
+        +'<div style="font-size:12.5px;font-weight:800;color:'+(net>=0?'#047857':'#B91C1C')+';margin-top:3px;">Net: the broker has '+(net>=0?'PAID YOU':'cost you')+' $'+Math.abs(net).toFixed(2)+' so far.</div>';
+    }
+    out+='<div style="font-size:10.5px;color:#94A3B8;margin-top:7px;">Every figure from your IBKR statements \u00b7 nothing unconfirmed is shown \u00b7 updates every scan.</div>';
+    out+='</div>';
+    return out;
+   }catch(e){ return ''; }
+  }
   // v5.230 (owner-directed): the Live Investment tab opens with a PLAIN-LANGUAGE money story --
   // "where each dollar went" -- no jargon: sent/took back/at work/worth/made/lost, whole dollars.
   // Data from scanner v1.272.0's money-flow engine (capital ledger + flow-adjusted periods +
@@ -2668,7 +2772,7 @@ function calcMbUs(){
     var t=L.totals||{};
     function signed(v){ if(v==null) return '\u2014'; return (v>=0?'+$':'-$')+Math.round(Math.abs(v)).toLocaleString(); }
     var pnlCol=(L.pnl_total==null?'#0f172a':(L.pnl_total>=0?'#047857':'#b91c1c'));
-    var h=_liMoneyStory(L)+'<div class="m2x-card"><div style="display:flex;flex-wrap:wrap;gap:22px;align-items:baseline;">'
+    var h=_liMoneyViz(L)+'<details style="margin:0 0 12px;"><summary style="cursor:pointer;font-size:12.5px;font-weight:800;color:#065F46;">\uD83D\uDCD6 Prefer it in words? Read the full dollar-by-dollar story</summary>'+_liMoneyStory(L)+'</details>'+'<div class="m2x-card"><div style="display:flex;flex-wrap:wrap;gap:22px;align-items:baseline;">'
       +'<div><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#64748b;">Your P&amp;L since you invested'+(L.inception_date?(' ('+L.inception_date+')'):'')+'</div>'
       +'<div style="font-size:32px;font-weight:800;color:'+pnlCol+';">'+signed(L.pnl_total)+' <span style="font-size:20px;">'+pc(L.pnl_total_pct)+'</span></div>'
       +'<div style="font-size:12px;color:#64748b;">invested $'+(L.cost_total!=null?Math.round(L.cost_total).toLocaleString():'\u2014')+' \u2192 now '+money(L.holdings_usd)+' (ETF holdings)</div></div>'
