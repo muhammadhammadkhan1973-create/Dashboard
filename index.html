@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.232 (supersedes v5.231): BROKER CHARGES PAID BACK + CONFIRMED-ONLY RULE (owner-directed). New Section 6 on the money story: buying fees fund by fund (total $118.11), the AINF fractional-crumb fee explained in plain words (a \u00a31 minimum fee applied to a 2p leftover fraction), the dirham conversion spread computed live with its arithmetic shown (AED sold / official peg vs dollars received = $96.62), the free withdrawal ($0.00), the paybacks (interest +$163.22, currency settlements +$151.57, revaluation +$1.98 = +$316.77), and the verdict line: net, the broker has PAID the owner ~$102 so far. Sections 1 and 3 now narrate each transfer with its statement-confirmed note (brought-forward $272.28 \u00b7 deposit $272,260 \u00b7 withdrawal $4,999.97 \u2192 net $267,532.31, correcting the true loss ~$847 smaller). STANDING OWNER RULE enforced structurally: the section renders only from the confirmed broker_costs block; the suspected sending-bank charge (~AED 18, pre-IBKR) is excluded entirely until a bank statement confirms it. Display only. -->
 <!-- index.html v5.231 (supersedes v5.230): EVERY DOLLAR EXPLAINED WITH HEADINGS (owner: 'i did not see every dollar spend while buying each etf'). The money story is now a five-part headed accounting: 1\u00b7What you sent (each transfer, dated) \u00b7 2\u00b7How it was spent (each fund purchase: units \u00d7 unit price paid in its own currency \u2192 dollars, then Total spent + Kept as cash + a live CHECK LINE proving spent+cash = sent, with any residual honestly labeled as FX-conversion rounding on the London-listed lines) \u00b7 3\u00b7What you took back (withdrawals, and cash now) \u00b7 4\u00b7What it is worth right now (made/lost + cents per dollar) \u00b7 5\u00b7Where the gains and losses came from (the fund-by-fund day/week/month ledger). Display only; data unchanged from v1.272.x. -->
 <!-- index.html v5.230 (supersedes v5.229): PLAIN-LANGUAGE MONEY STORY on the Live Investment tab (owner: 'track each dollar transferred — where it was lost and where profit was made, daily/weekly/monthly — and the display must be layman plain language'). The tab now opens with 'Where each of your dollars went': you sent / you took back / money at work / worth today / made-or-lost in whole dollars and cents-per-dollar; a pure-market scoreboard (today · this week · this month — withdrawals never counted as losses, per scanner v1.272.0's flow-adjusted statements); a fund-by-fund worst-first ledger (put in / worth now / made-or-lost since purchase / today / week / month) from the per-ISIN price history; the cash line; and honest notes (per-fund month unlocks at 30 days ≈ 5 Aug; reconciled to the 17 Jul 2026 IBKR statements). Degrades gracefully until v1.272.0 deploys (no capital block -> transfer lines simply absent). Display only. -->
 <!-- index.html v5.229 (supersedes v5.228): SECTOR TICKERS IN FULL (owner: 'all stocks of the sector should be displayed in tickers' — previously only a few hardcoded names showed in the holdings column and the Zacks top-rated list was never rendered). Each US sector row now carries (a) chip badges for ALL of today's Zacks #1/#2-rated tickers (zacks_sectors.top_tickers, stored in full — IT shows all 23) and (b) an expandable '▸ All N tracked <sector> tickers' list resolving the sector's complete membership from the ~1,900-name foundation universe via the existing GICS_TV_MAP (e.g. IT ≈ Electronic Technology + Technology Services). Real Estate has no TV-sector mapping so it shows chips only — honest. PSX table unchanged (48-name tracked pool, different sector taxonomy — separate ask if wanted). Display only; no scoring/engine change. -->
@@ -2596,7 +2597,7 @@ function calcMbUs(){
       var wdr=(cap.flows||[]).filter(function(f){return (f.usd||0)<0;});
       // v5.231: EVERY DOLLAR EXPLAINED, WITH HEADINGS (owner-directed)
       out+=H('1 \u00b7 What you sent');
-      dep.forEach(function(f){ out+='<div style="font-size:13px;line-height:1.8;">You transferred <b>'+usd(f.usd)+'</b> to your broker on '+dshort(f.date)+'.</div>'; });
+      dep.forEach(function(f){ out+='<div style="font-size:13px;line-height:1.8;"><b>'+usd(f.usd)+'</b> \u2014 '+(f.note||('transferred on '+dshort(f.date)))+'</div>'; });
       out+=H('2 \u00b7 How it was spent \u2014 every dollar');
       var spent=0;
       hs.forEach(function(x){ var c=x.cost_usd||0; spent+=c;
@@ -2608,7 +2609,7 @@ function calcMbUs(){
       out+='<div style="font-size:12px;line-height:1.8;color:#065f46;font-weight:700;">Check: '+usd(spent)+' + '+usd(kept)+' = '+usd(cap.in_usd)+' \u2014 every dollar accounted for \u2713</div>'
         +'<div style="font-size:10.5px;color:#94a3b8;line-height:1.6;">(The two London-listed funds are converted at today\u2019s exchange rate, so their dollar figures can drift a few dollars against the broker statement \u2014 currency-conversion rounding, nothing missing.)</div>';
       out+=H('3 \u00b7 What you took back');
-      if(wdr.length){ wdr.forEach(function(f){ out+='<div style="font-size:13px;line-height:1.8;">You withdrew <b>'+usd(f.usd)+'</b> from cash on '+dshort(f.date)+' \u2014 cash is now <b>'+usd(L.cash_usd||0)+'</b>.</div>'; }); }
+      if(wdr.length){ wdr.forEach(function(f){ out+='<div style="font-size:13px;line-height:1.8;"><b>'+usd(f.usd)+'</b> \u2014 '+(f.note||('withdrawn on '+dshort(f.date)))+' Cash is now <b>'+usd(L.cash_usd||0)+'</b>.</div>'; }); }
       else out+='<div style="font-size:13px;line-height:1.8;">Nothing yet.</div>';
       out+='<div style="font-size:12.5px;line-height:1.8;">That leaves <b>'+usd(cap.net_usd)+'</b> of your own money at work.</div>';
       out+=H('4 \u00b7 What it is worth right now');
@@ -2626,6 +2627,30 @@ function calcMbUs(){
         +'<b>'+(x.theme||x.name||x.ticker)+'</b> ('+x.ticker+') \u2014 you put in '+usd(x.cost_usd||0)+', it is now worth '+usd(x.mv_usd||0)+': '+sgn(x.pnl_usd,true)
         +' \u00b7 today '+sgn(x.day_pnl_usd)+' \u00b7 this week '+sgn(x.pnl_wow_usd)+' \u00b7 this month '+sgn(x.pnl_mom_usd)+'</div>';
     });
+    var bc=L.broker_costs||null;
+    if(bc&&bc.commissions_total_usd!=null){
+      var themeOf={}; hs.forEach(function(x){themeOf[x.ticker]=x.theme||x.name||x.ticker;});
+      out+=H('6 \u00b7 What the broker charged you \u2014 and how it was paid back');
+      out+='<div style="font-size:12.5px;line-height:1.8;color:#1e293b;"><b>Buying fees, fund by fund:</b></div>';
+      (bc.commissions_usd||[]).forEach(function(c){ out+='<div style="font-size:12.5px;line-height:1.7;color:#1e293b;">'+(themeOf[c.ticker]||c.ticker)+' ('+c.ticker+'): <b>$'+c.usd.toFixed(2)+'</b></div>'; });
+      out+='<div style="font-size:12.5px;line-height:1.8;">Total buying fees: <b>$'+bc.commissions_total_usd.toFixed(2)+'</b></div>';
+      if(bc.ainf_fraction_note) out+='<div style="font-size:11.5px;line-height:1.7;color:#64748b;background:#F8FAFC;border-radius:6px;padding:5px 8px;margin:3px 0;">One odd-looking line explained: '+bc.ainf_fraction_note+'</div>';
+      var fx=bc.fx_spread||null;
+      if(fx&&fx.aed_sold){ var atPeg=fx.aed_sold/fx.peg, spr=atPeg-fx.usd_received;
+        out+='<div style="font-size:12.5px;line-height:1.8;margin-top:4px;"><b>Changing your dirhams into dollars:</b> you sold AED '+Math.round(fx.aed_sold).toLocaleString()
+          +'. At the dirham\u2019s fixed official rate ('+fx.peg+') that is $'+Math.round(atPeg).toLocaleString()+'. You received $'+Math.round(fx.usd_received).toLocaleString()
+          +'. The difference \u2014 <b>$'+spr.toFixed(2)+'</b> \u2014 is the exchange spread, the only conversion cost. Commission on every conversion: <b>$0.00</b>.</div>'; }
+      out+='<div style="font-size:12.5px;line-height:1.8;"><b>Taking your $5,000 out:</b> <b>$'+(bc.withdrawal_fee_usd||0).toFixed(2)+'</b> \u2014 this month\u2019s free withdrawal.</div>';
+      var pay=(bc.interest_accrued_usd||0)+(bc.forex_realized_usd||0)+(bc.fx_translation_usd||0);
+      out+='<div style="font-size:12.5px;line-height:1.8;margin-top:4px;"><b>Paid back to you:</b> interest earned on your cash <b style="color:#047857;">+$'+(bc.interest_accrued_usd||0).toFixed(2)
+        +'</b> \u00b7 currency moves settled in your favour <b style="color:#047857;">+$'+(bc.forex_realized_usd||0).toFixed(2)+'</b> \u00b7 small cash revaluation <b style="color:#047857;">+$'+(bc.fx_translation_usd||0).toFixed(2)
+        +'</b> \u2192 <b style="color:#047857;">+$'+pay.toFixed(2)+'</b>.</div>';
+      var fx2=bc.fx_spread||{}, sprv=(fx2.aed_sold?(fx2.aed_sold/fx2.peg-fx2.usd_received):0);
+      var chg=(bc.commissions_total_usd||0)+sprv, net=pay-chg;
+      out+='<div style="font-size:13px;line-height:1.9;font-weight:700;color:'+(net>=0?'#047857':'#b91c1c')+';">The verdict: charges $'+(bc.commissions_total_usd||0).toFixed(2)+' + $'+sprv.toFixed(2)+' spread = $'+chg.toFixed(2)
+        +'. Paid back to you: $'+pay.toFixed(2)+'. Net \u2014 so far the broker relationship has '+(net>=0?'PAID YOU':'cost you')+' <b>$'+Math.abs(net).toFixed(2)+'</b>.</div>';
+      out+='<div style="font-size:10.5px;color:#94a3b8;line-height:1.6;">Every figure in this section is taken from '+(bc.source||'your broker statement')+'. Nothing unconfirmed is shown.</div>';
+    }
     out+='<div style="font-size:12.5px;margin-top:6px;color:#334155;">Plus <b>'+usd(L.cash_usd||0)+'</b> sitting in cash (dirhams \u2014 pegged to the dollar, it does not move).</div>';
     out+='<div style="font-size:10.5px;color:#94a3b8;margin-top:5px;">Updates every scan \u00b7 per-fund \u201Cthis month\u201D unlocks once 30 days of history accrue (\u2248 5 Aug) \u00b7 figures reconciled to your IBKR statements of 17 Jul 2026.</div>';
     out+='</div>';
