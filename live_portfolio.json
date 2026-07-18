@@ -102,14 +102,64 @@
   "reconciled": "IBKR statement 2026-07-17 (U21094978): shares+cost bases exact; cash after AED 18,364 (~$5,000) disbursement of 2026-07-20; interest accruals $163.23 not modelled (immaterial)",
   "capital_flows": [
     {
-      "date": "2026-07-06",
-      "usd": 273379.0,
-      "note": "Initial capital at inception (positions at cost + cash). Refine with pre-July statements if available."
+      "date": "2026-07-01",
+      "usd": 272.28,
+      "note": "Balance already at the broker when the period opened (AED 1,000) \u2014 IBKR statement starting value."
+    },
+    {
+      "date": "2026-07-02",
+      "usd": 272260.0,
+      "note": "Your deposit: AED 1,000,000 electronic transfer \u2014 IBKR statement Deposits line."
     },
     {
       "date": "2026-07-17",
       "usd": -4999.97,
-      "note": "Withdrawal: AED 18,364 disbursement initiated 17 Jul, settles 20 Jul (IBKR statement)."
+      "note": "Your withdrawal: AED 18,364 disbursement (settles 20 Jul) \u2014 IBKR statement."
     }
-  ]
+  ],
+  "broker_costs": {
+    "source": "IBKR Activity Statement U21094978, 1\u201317 Jul 2026",
+    "commissions_usd": [
+      {
+        "ticker": "SMH",
+        "usd": 21.01
+      },
+      {
+        "ticker": "AINF",
+        "usd": 18.34
+      },
+      {
+        "ticker": "FLXK",
+        "usd": 18.29
+      },
+      {
+        "ticker": "ITWN",
+        "usd": 17.98
+      },
+      {
+        "ticker": "PHPM",
+        "usd": 16.3
+      },
+      {
+        "ticker": "KSTR",
+        "usd": 13.23
+      },
+      {
+        "ticker": "STOR",
+        "usd": 12.96
+      }
+    ],
+    "commissions_total_usd": 118.11,
+    "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units \u2014 worth about 2 pence. IBKR's minimum fee (\u00a31.00) applied to that crumb like any order: a \u00a31 fee on a 2p purchase.",
+    "fx_spread": {
+      "aed_sold": 801249.98,
+      "usd_received": 218079.0,
+      "peg": 3.6725,
+      "note": "AED 801,249.98 \u00f7 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
+    },
+    "interest_accrued_usd": 163.22,
+    "forex_realized_usd": 151.57,
+    "fx_translation_usd": 1.98,
+    "withdrawal_fee_usd": 0.0
+  }
 }
