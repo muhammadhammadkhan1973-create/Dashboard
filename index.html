@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.230 (supersedes v5.229): PLAIN-LANGUAGE MONEY STORY on the Live Investment tab (owner: 'track each dollar transferred — where it was lost and where profit was made, daily/weekly/monthly — and the display must be layman plain language'). The tab now opens with 'Where each of your dollars went': you sent / you took back / money at work / worth today / made-or-lost in whole dollars and cents-per-dollar; a pure-market scoreboard (today · this week · this month — withdrawals never counted as losses, per scanner v1.272.0's flow-adjusted statements); a fund-by-fund worst-first ledger (put in / worth now / made-or-lost since purchase / today / week / month) from the per-ISIN price history; the cash line; and honest notes (per-fund month unlocks at 30 days ≈ 5 Aug; reconciled to the 17 Jul 2026 IBKR statements). Degrades gracefully until v1.272.0 deploys (no capital block -> transfer lines simply absent). Display only. -->
 <!-- index.html v5.229 (supersedes v5.228): SECTOR TICKERS IN FULL (owner: 'all stocks of the sector should be displayed in tickers' — previously only a few hardcoded names showed in the holdings column and the Zacks top-rated list was never rendered). Each US sector row now carries (a) chip badges for ALL of today's Zacks #1/#2-rated tickers (zacks_sectors.top_tickers, stored in full — IT shows all 23) and (b) an expandable '▸ All N tracked <sector> tickers' list resolving the sector's complete membership from the ~1,900-name foundation universe via the existing GICS_TV_MAP (e.g. IT ≈ Electronic Technology + Technology Services). Real Estate has no TV-sector mapping so it shows chips only — honest. PSX table unchanged (48-name tracked pool, different sector taxonomy — separate ask if wanted). Display only; no scoring/engine change. -->
 <!-- index.html v5.228 (supersedes v5.227): VERDICT BOARD PROMINENCE (owner: the scoreboard must catch the eye, not be scrolled past). The four-voices scoreboard is restyled as a hero 'Verdict Board' card — deep gradient background, amber border with a gentle pulsing glow (svPulse keyframes), animated badge, high-contrast agree chips and ADD/WATCH verdict pills — and MOVED to the TOP of Tab 5, before the regime banner, so it is the first thing read. Tab 2's condensed strip restyled to a bold gradient bar. Also fixed from the owner's screenshot: the raw ISO timestamp in the sources line now renders as a clean date (2026-07-14), and the deciding-vote sentence grammar corrected ('the analysts’ rating — X of N — casts the deciding vote'). Display styling only; no verdict logic, engine, or scanner change. -->
 <!-- index.html v5.227 (supersedes v5.226): FOUR-VOICES RECONCILIATION, owner-directed 18 Jul 2026. The Sector Implications and US Macro tabs disagreed (Tab 2 favoured Technology/Healthcare via m1 favored_effective; Tab 5's local REGIME_FAVORED + COT gates said REDUCE). Owner ruling: honest contradiction from different data sources is GOOD — display it, label it, source it. Shipped: (1) shared _svData/_svBoard four-voices model — economy engine (favored_effective), analyst ratings (Zacks, always displayed with its numbers and tagged 'deciding vote' when it breaks a tie), trader positioning (CFTC, dedicated contracts only), metals feed; (2) full scoreboard on Tab 5 + condensed agree/disagree line on Tab 2's compass; (3) OPTION A ruling: Financials' bond-futures signal is INFORMATION ONLY, never scored — the bet cuts both ways for banks; (4) SP500-fallback gates (HC/CD/RE) labeled weak proxy, not scored; (5) Tab 5 regime name now prefers the scanner's econ_clock (single source with Tab 2), favoured-chain line shows base + evidence-earned overrides; (6) LEI strip tip dynamic from the effective list (was hardcoded 'cyclicals incl IT' contradicting the table); (7) ISM input updated to the real Jun release 53.3 and labeled manual/no-live-feed (independently verified vs ISM's 1 Jul release); (8) Metals tab cross-link + 250k threshold-margin note on the Materials cell. Display logic only — M1 engine, scanner, TCE, IM3 all untouched. -->
@@ -2568,6 +2569,49 @@ function calcMbUs(){
   })();
 
 
+
+  // v5.230 (owner-directed): the Live Investment tab opens with a PLAIN-LANGUAGE money story --
+  // "where each dollar went" -- no jargon: sent/took back/at work/worth/made/lost, whole dollars.
+  // Data from scanner v1.272.0's money-flow engine (capital ledger + flow-adjusted periods +
+  // per-fund day/week/month dollar attribution). Degrades gracefully until v1.272.0 deploys.
+  function _liMoneyStory(L){
+   try{
+    if(!L) return '';
+    var cap=L.capital||null, t=L.totals||{}, st=L.statements||{}, hs=L.holdings||[];
+    function usd(v){return '$'+Math.round(Math.abs(v)).toLocaleString();}
+    function sgn(v,words){ if(v==null)return '<span style="color:#94a3b8;">\u2014</span>'; var neg=v<0;
+      var w=words?(neg?'lost ':'made '):(neg?'\u2212':'+');
+      return '<b style="color:'+(neg?'#b91c1c':'#047857')+';">'+w+usd(v)+'</b>'; }
+    function dshort(d){ try{var p=String(d).split('-'); return (+p[2])+' '+['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]];}catch(e){return d;} }
+    var mo=(st.monthly&&st.monthly.length)?st.monthly[st.monthly.length-1]:null;
+    var wkUsd=null; hs.forEach(function(x){ if(x.pnl_wow_usd!=null) wkUsd=(wkUsd||0)+x.pnl_wow_usd; });
+    var out='<div class="m2x-card" style="border:2px solid #059669;background:linear-gradient(180deg,#ECFDF5,#ffffff 90px);">';
+    out+='<div class="m2x-sec" style="font-size:15px;">\uD83D\uDCB5 Where each of your dollars went \u2014 in plain words</div>';
+    if(cap&&cap.net_usd){
+      var fl=(cap.flows||[]).map(function(f){var v=f.usd||0;
+        return (v>=0?('you sent <b>'+usd(v)+'</b>'):('you took <b>'+usd(v)+'</b> back out'))+' on '+dshort(f.date||'');}).join(', ');
+      out+='<div style="font-size:13.5px;line-height:1.9;color:#0f172a;">So far '+fl
+        +'. That leaves <b>'+usd(cap.net_usd)+'</b> of your own money at work.</div>';
+      var neg=(cap.true_pnl_usd||0)<0;
+      out+='<div style="font-size:14px;line-height:1.9;color:#0f172a;margin-top:3px;">Today it is all worth <b>'+usd(L.nav_usd)
+        +'</b> \u2014 the market has '+(neg?'cost you':'made you')+' <b style="color:'+(neg?'#b91c1c':'#047857')+';">'+usd(cap.true_pnl_usd)
+        +'</b> so far. That is about <b>'+Math.abs(Math.round(cap.true_pnl_pct||0))+' cents '+(neg?'lost':'gained')+'</b> on every dollar you put in.</div>';
+    }
+    out+='<div style="font-size:12.5px;margin-top:7px;color:#334155;">Scoreboard \u2014 pure market movement (a withdrawal is never counted as a loss): '
+      +'<b>today</b> '+sgn(t.day_pnl_usd)+' \u00b7 <b>this week</b> '+sgn(wkUsd)+' \u00b7 <b>this month so far</b> '+sgn(mo?mo.pnl_usd:null)+'</div>';
+    var rows=hs.slice().sort(function(a,b){return (a.pnl_usd||0)-(b.pnl_usd||0);});
+    out+='<div style="margin-top:8px;font-weight:800;font-size:12.5px;color:#065f46;">Fund by fund \u2014 worst first:</div>';
+    rows.forEach(function(x){
+      out+='<div style="font-size:12.5px;line-height:1.8;border-left:4px solid '+(((x.pnl_usd||0)<0)?'#DC2626':'#059669')+';padding-left:9px;margin:3px 0;color:#1e293b;">'
+        +'<b>'+(x.theme||x.name||x.ticker)+'</b> ('+x.ticker+') \u2014 you put in '+usd(x.cost_usd||0)+', it is now worth '+usd(x.mv_usd||0)+': '+sgn(x.pnl_usd,true)
+        +' \u00b7 today '+sgn(x.day_pnl_usd)+' \u00b7 this week '+sgn(x.pnl_wow_usd)+' \u00b7 this month '+sgn(x.pnl_mom_usd)+'</div>';
+    });
+    out+='<div style="font-size:12.5px;margin-top:6px;color:#334155;">Plus <b>'+usd(L.cash_usd||0)+'</b> sitting in cash (dirhams \u2014 pegged to the dollar, it does not move).</div>';
+    out+='<div style="font-size:10.5px;color:#94a3b8;margin-top:5px;">Updates every scan \u00b7 per-fund \u201Cthis month\u201D unlocks once 30 days of history accrue (\u2248 5 Aug) \u00b7 figures reconciled to your IBKR statements of 17 Jul 2026.</div>';
+    out+='</div>';
+    return out;
+   }catch(e){ return ''; }
+  }
   // -- LIVE INVESTMENT tab (v5.178: + Live Look-through section — holdings-level FactSet ratings/targets/upside/next-Q EPS on the real underlyings across US+Taiwan+Korea+China lines, plus Markets & Themes news, vibrant-green styled; v5.177 cost-basis P&L hero + Forward view + fund-name news): owner's real IBKR UCITS-ETF portfolio --
   (function(){
     var host=document.getElementById('liveinv_body'); if(!host) return;
@@ -2579,7 +2623,7 @@ function calcMbUs(){
     var t=L.totals||{};
     function signed(v){ if(v==null) return '\u2014'; return (v>=0?'+$':'-$')+Math.round(Math.abs(v)).toLocaleString(); }
     var pnlCol=(L.pnl_total==null?'#0f172a':(L.pnl_total>=0?'#047857':'#b91c1c'));
-    var h='<div class="m2x-card"><div style="display:flex;flex-wrap:wrap;gap:22px;align-items:baseline;">'
+    var h=_liMoneyStory(L)+'<div class="m2x-card"><div style="display:flex;flex-wrap:wrap;gap:22px;align-items:baseline;">'
       +'<div><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#64748b;">Your P&amp;L since you invested'+(L.inception_date?(' ('+L.inception_date+')'):'')+'</div>'
       +'<div style="font-size:32px;font-weight:800;color:'+pnlCol+';">'+signed(L.pnl_total)+' <span style="font-size:20px;">'+pc(L.pnl_total_pct)+'</span></div>'
       +'<div style="font-size:12px;color:#64748b;">invested $'+(L.cost_total!=null?Math.round(L.cost_total).toLocaleString():'\u2014')+' \u2192 now '+money(L.holdings_usd)+' (ETF holdings)</div></div>'
