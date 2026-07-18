@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.227 (supersedes v5.226): FOUR-VOICES RECONCILIATION, owner-directed 18 Jul 2026. The Sector Implications and US Macro tabs disagreed (Tab 2 favoured Technology/Healthcare via m1 favored_effective; Tab 5's local REGIME_FAVORED + COT gates said REDUCE). Owner ruling: honest contradiction from different data sources is GOOD — display it, label it, source it. Shipped: (1) shared _svData/_svBoard four-voices model — economy engine (favored_effective), analyst ratings (Zacks, always displayed with its numbers and tagged 'deciding vote' when it breaks a tie), trader positioning (CFTC, dedicated contracts only), metals feed; (2) full scoreboard on Tab 5 + condensed agree/disagree line on Tab 2's compass; (3) OPTION A ruling: Financials' bond-futures signal is INFORMATION ONLY, never scored — the bet cuts both ways for banks; (4) SP500-fallback gates (HC/CD/RE) labeled weak proxy, not scored; (5) Tab 5 regime name now prefers the scanner's econ_clock (single source with Tab 2), favoured-chain line shows base + evidence-earned overrides; (6) LEI strip tip dynamic from the effective list (was hardcoded 'cyclicals incl IT' contradicting the table); (7) ISM input updated to the real Jun release 53.3 and labeled manual/no-live-feed (independently verified vs ISM's 1 Jul release); (8) Metals tab cross-link + 250k threshold-margin note on the Materials cell. Display logic only — M1 engine, scanner, TCE, IM3 all untouched. -->
 <!-- index.html v5.226 (supersedes v5.225): DISPLAY-HONESTY BATCH from the owner's demanded cross-tab audit (jsdom execution of the real page vs the live data.json, every undefined read traced). (1) Allocation Zone quadrant now reads the LIVE SBP rate (input = what-if override, stops seeding once touched) and derives rate DIRECTION from LIVE.rate_path by walking back to the last different rate -- it previously ran on the HTML default 11.50 + hand constant SBP_PREV_RATE=10.50, correct only by maintenance luck and silently wrong after the next MPC move. (2) Tab 13 backtest labeled as the static historical teaching exhibit with a pointer to the LIVE PB backtest on Results. (3) US CPI card carries a series-basis note (SA feed vs NSA headline: 3.73 vs 3.5 for June-26, validated vs TE/BLS). AUDIT CORRECTION, on the record: the audit's TCE 'eight dead columns' item was STALE -- v5.225's _vgm*/_ma* helpers already fall back to IM3 sections, TCE streams and ticker-lookups; the tracer's misses were first-probe noise, so NO TCE edit ships (no redundant churn). No engine/scoring logic touched; scanner untouched. -->
 <!-- index.html v5.225 (supersedes v5.224): WAVE PL EXTENDED to the Pakistan + PKR-Devaluation tabs (owner: "do4"). The US Macro tab passed its jargon sweep at v5.221; these two did not -- half the owner\u2019s money is in Pakistan and the tab was still written for a specialist. ~28 strings reworded to everyday English across both tabs: REER/NEER -> "Rupee value vs trading partners: 105 (100 = fairly priced; before allowing for inflation: N)"; "REER > 100 (PKR overvalued)" -> "The rupee looks too expensive (above fair value)"; "Mildly/Strongly overvalued" -> "A little/Clearly too expensive"; CAD -> "more money leaving the country than comes in"; "FX Reserves"/"SBP FX Reserves" -> "Pakistan\u2019s foreign cash reserves"; "Reserves < 2.5mo import cover" -> "Reserves cover less than 2.5 months of imports"; "Real rate +0.4%" -> "After inflation, savers earn +0.4%"; "Negative real rates drive capital flight & dollarization" -> "When savings earn less than inflation, money leaves the country and people switch into dollars"; the devaluation-accelerant list and the rate-cycle sector note likewise. Meaning and thresholds unchanged -- only the words. Display-only. Pairs with scanner v1.257.0 (PB crowding tilt). Prior v5.224: MISSING-INDICATOR NOTICE on the Economy Compass (pairs with scanner v1.253.0). When a macro source fails, the compass silently scored on fewer indicators and looked exactly as confident as a complete reading -- run-651 had FRED drop 4 series, and the LIVE data shows the composite has been running on 14 of 16 (Industrial production + Recession probability absent) with nothing on the tab saying so. The panel now reads D.missing[] + D.expected_total and prints a plain amber notice: "Heads up: 14 of the usual 16 signals came through today. We could not get how much factories are making and the chance of a recession. The reading below is still useful, but it is built on 2 fewer signals than normal." Indicator names are translated to everyday words (Wave PL vocabulary). No notice renders when nothing is missing. Prior v5.223: WAVE PSXD-A RETIRED -- the "What\u2019s happening at Pakistani companies" panel, its renderer and its container are REMOVED. Reason (evidence, not opinion): the v1.249.0 [mettis diag] proved in ONE run that Mettis\u2019s free pages carry only 5-6 (PSX: TICKER) tags total (/Equity: 197 anchors, 5 tags; /latest: 1) and NONE of the tagged names (GTYR/IMS/SFL/SHDT/STL) are in the 48-name PSX engine pool. The parser found 5 of the 5 that exist -- it was never broken; the coverage simply is not there. A panel that can only ever show companies the owner does not track is worse than no panel. Pakistan filings parity needs a licensed feed (PSXD-B: Sarmaaya / PSX Market Data / Mettis MG-APIs) -- a spend decision. Pairs with scanner v1.251.0 (psx_events emits {}, fetch no longer called, functions dormant for a paid feed to drop into). Prior v5.222: WAVE PSXD-A display half -- "What\u2019s happening at Pakistani companies" panel on the Pakistan tab (renderPsxEvents, reads LIVE.psx_events from scanner v1.247.0). Per-company rows sorted ADVERSE-FIRST then by event count, colour-coded family chips (Trouble / Regulator / Earnings / Growing / Ownership / Cash payout / Insider dealing), the top headline, and the payload\u2019s own honest note printed verbatim: Pakistan has no machine-readable filings feed, the exchange serves announcements only via JS, and the one clean insider list is a licensed redistributor that forbids automated access -- so this reads the Pakistani press and does NOT carry insider share counts. Empty state says so in plain words rather than vanishing (v5.218 lesson). Own local esc (v5.218 scope lesson). Prior v5.221: WAVE PL + WAVE H-LITE. WAVE PL (owner: "The tab should not have a single technical sentence. It should all be explained in plain language for a layman to read") -- the US Macro tab now reads in everyday English END TO END, not just the compass/clock: (a) all 15 macro cards relabelled ("Fed Funds Rate"->"The interest rate the Fed sets", "Core PCE"->"Underlying inflation (the Fed's own measure)", "10Y-2Y Curve"->"Recession warning gauge", "HY Credit Spread"->"Stress in risky company loans", "Fed Balance Sheet (QE/QT)"->"Money the Fed is adding or taking out", "US Dollar Index"->"How strong the dollar is", "CPI YoY"->"Everyday prices in the shops", PPI->"Factory-gate prices (early inflation warning)" etc) and every lens retagged (Monetary->Interest rates, Regime->Market mood); (b) regime banner verdicts rewritten ("Rate-driven correction / rotation - story intact"->"Wobbly because of interest rates, not because anything is broken"; "QT-leaning / higher-for-longer"->"Money kept tight - rates likely stay high for a while"; "Soft, late-cycle"->"Growing slowly - late in the good times") and its tiles renamed to questions ("What kind of market is this?", "What the Fed is doing with money", "How the economy is doing"); (c) "Growth/inflation quadrant: REFLATION" -> "Where we are in the cycle: growing, but prices are climbing" via _quadPlain(), which reuses the Economy Clock's EXACT wording so the banner and the clock can never describe the same state differently; (d) the "Structural-break tripwire ... HY OAS >5% OR 2s10s re-inverts OR GDP <0" box rewritten as a plain three-part early-warning check; (e) diffusion bar: "NET SCORE / 15"->"HEALTHY MINUS WORRYING (OUT OF 15)", "Expansion breadth"->"How widespread the good news is", SUPPORTIVE/NEUTRAL/HARMFUL->LOOK HEALTHY/IN BETWEEN/LOOK WORRYING, and the "Expansion . Decelerating" chip->"GROWING . LOSING PACE". WAVE H-LITE: (G1) dev_fx_stress on Tab 4 rendered NOTHING when 0 markets were stressed -- the healthy "Contained" state was indistinguishable from a broken panel, the same silent-blank failure as the v5.218 compass bug. It now ALWAYS paints, green + plain ("None of the 14 currencies we track has lost more than 5% against the US dollar over six months - no dollar squeeze right now"). (G2) orphan tce_etf_picks div + renderTceEtfPicks() (whose whole body blanked it since ETF picks moved to Tab 16 in v5.115) DELETED. (G3) orphan banks_fin_psx_table div + its blanking line DELETED (US+PSX other-financials have rendered as one combined table for versions). Display-only; no scoring/TCE/IM3/screen touched. Prior v5.220: CROWDEDNESS (second-order layer #1, pairs with scanner v1.245.0 Wave O injection + crowdedness). (1) Whale Watch (Tab 2) gains an "Already crowded" strip above the consensus tables (_crowdedStrip, reads whale_13f.crowded + .crowd_min_holders + .n_whales): amber chips per name with "TICKER . N of 15", hover = which funds hold it, plain-language explanation that a widely-owned idea has fewer new buyers left; when nothing is crowded it renders an honest GREEN "nothing is crowded right now" note rather than vanishing (the v5.218 blank-panel lesson). (2) M1 buy list (Tab 6) rows carry a CROWDED chip in the Confirmations cell (_crowdChip, reads the crowded/crowd_holders/crowd_pct fields the scanner stamps onto m1_buylist.buys) -- live today AMZN is 8 of 15. Context only: never removes a name, never changes a score. Both helpers declare their own local esc (v5.218 scope lesson). Prior v5.219: ECONOMY CLOCK (owner: "I want a clock in graphics not a bar. it should be in both pakistan dashboard and us dashboard"). New econClockSvg/econClockPanel draw the classic investment-cycle clock as an SVG dial -- four quadrants the cycle turns through CLOCKWISE (12-3 GROWING/calm prices, 3-6 GROWING/prices climbing, 6-9 SLOWING/prices high, 9-12 SLOWING/prices cooling), live quadrant highlighted, hand at econ_clock.angle, ECONOMY PICKING UP / SLOWING axis captions. (1) US Macro tab: the compass bar-dial is REPLACED by the clock (LIVE.econ_clock.us). (2) Pakistan tab: NEW pak_econ_clock panel at the top (renderEconClockPak, LIVE.econ_clock.psx) with plain growth/inflation reads, the sectors that quadrant favours, and an HONEST basis line stating Pakistan growth is read from the KSE-100 3-month trend because no live Pakistani growth feed exists. Each render declares its own local esc (the v5.218 scope lesson). Prior v5.218: **THE COMPASS BUG** -- renderEconCompass called esc(), but esc is a LOCAL var declared INSIDE renderWhale13f (~L6656), NOT a global. The compass (defined before it) threw "ReferenceError: esc is not defined" on EVERY render; the try/catch at the call site swallowed it, so the panel rendered EMPTY -- no compass AND no self-diagnostic note, which is why v5.215/216/217 all looked like a cache/deploy problem when the file was correct all along. FIX: renderEconCompass now declares its own local esc (no cross-function scope dependency). Verified by executing the REAL deployed index.html in jsdom against the live data.json: box.innerHTML 0 chars + "esc is not defined" BEFORE, 6783 chars + 0 console errors AFTER. Prior v5.217: compass SELF-DIAGNOSING -- if us_diffusion lacks the new components (browser showing an older cached data file) it shows a visible amber "do a hard refresh" note instead of hiding silently, so "no graphic" can always be diagnosed (missing note = old cached INDEX still served by the CDN -> hard refresh index; amber note = old cached DATA -> hard refresh). Headless-verified the full compass renders from run-411 data. Prior v5.216: ECONOMY COMPASS -> FULLY PLAIN-LANGUAGE (owner: "no graphic showing; the tab must not have a single technical sentence -- explain in plain language for a layman"). renderEconCompass rewritten with ZERO jargon: a red->green arrow dial from SLOWING/SHRINKING to GROWING with a word verdict ("The economy is clearly growing"), a plain one-liner ("N of 15 things look healthy, M look worrying..."), a "what this means for interest rates and your investments" box (Fed/inflation/sectors in everyday words -- no QE/QT/PPI/CPI/basis-points), plain-named helping/holding-back/in-the-middle columns (e.g. "Factory-gate prices (early inflation warning)", "The recession warning gauge"), and a "where this points your money" strip with plain sector names. NOTE: the graphic was absent on the exported tab because index v5.215 was not the deployed index at export time (the scanner ran, data has components/policy/heading, but the live page lacked the compass code) -- deploy this index to show it. Prior v5.215 (supersedes v5.214): ECONOMY COMPASS -- a graphical "where is the economy heading?" summary panel at the TOP of the US Macro Dashboard (renderEconCompass, reads LIVE.us_diffusion.{components,policy,heading} + LIVE.m1_buylist.favored_effective from scanner v1.243.0). Shows: a diverging SVG needle gauge (Contraction<->Expansion, marker at the net score); an inflation->QE/QT trajectory callout (hawkish/easing/neutral, with the PPI>CPI pipeline note + balance-sheet/rate chips); three adds/subtracts columns (PUSHING UP / DRAGGING DOWN / NEUTRAL -- every indicator itemised with its value + plain note); and a "steers capital toward these sectors" strip (favored_effective chips) noting the same engine drives the M1 buy list (Tab 6) + paper portfolio (Results). Prior v5.214 (supersedes v5.213): (1) PER-WHALE TICKERS -- the per-whale table (WHALE|NEW BUYS|EXITS) now prefixes each name with its ticker (reads the new `ticker` field on whale_13f.whales[].new_buys/adds/exits/top_holdings from scanner v1.242.0), closing the owner's "tickers are missing under whale purchase or sell" gap (consensus tables already had them). (2) PPI CARDS -- new PPI YoY (headline, Producer Prices) + Core PPI YoY cards on the US Macro Dashboard, right after CPI, reading macros.us.ppi_yoy / ppi_core_yoy, each with a plain-language "how it affects markets" read (PPI leads CPI: producer/input costs feed consumer prices with a lag; rising = margin pressure + stickier inflation -> fewer Fed cuts, USD firm, tech+gold pressured; falling = disinflation tailwind -> cut odds up, risk-on) + the YoY-rate accelerating/cooling trend line. Prior v5.213 (supersedes v5.212): WHALE WATCH FULL ANALYSIS -- the consensus buys/sells are now a DATA TABLE (Ticker | Company | #Whales | Price | YTD | 1Y | vs 50-DMA | vs 200-DMA | Trend[uptrend/downtrend/mixed + golden/death cross] | Zacks/Valuation), reading the new per-name `info` block on whale_13f.consensus_* from scanner v1.241.0. Matched dashboard names show full analysis; unmatched stay name-only (honest em-dashes). Replaces the name-only chips the owner flagged ("without tickers... YTD/1Y/moving averages"). Prior v5.212 (supersedes v5.211): (1) WHALE WATCH (13F) -- new section on the US Macro Dashboard (renderWhale13f, reads LIVE.whale_13f from scanner v1.239.0): consensus buys/sells chips (>=2 whales same move, green up / red down, hover shows which whales), per-whale new-buys/exits table, honest quarter note (shows the latest available quarter, auto-upgrades when Q2 13Fs land ~Aug 14), and a name-guard skip count. (2) PB BACKTEST readout -- _renderPB's placeholder line now renders the real backtest (LIVE.pb.backtest from scanner v1.240.0): per book model return vs S&P500/KSE-100, alpha, max drawdown when ready, else an honest 'accruing -- N days, needs ~30 (~mid-August)' line that fills automatically. Prior v5.211 (supersedes v5.210): Live Investment tab gains a WEEKLY + MONTHLY STATEMENTS section (reads live_investment.statements from scanner v1.238.2, derived from the daily NAV history) -- period NAV, P&L $/%, since-inception, best/worst holding, in-progress flag. Prior v5.210 (supersedes v5.209): PB rows now also show a bearish INSIDER-SELLING chip (red \u25bc) when Form-4 shows heavy net insider selling on a name in the paper book -- pairs with scanner v1.238.1 sec_insider_sell. Prior v5.209 (supersedes v5.199) : Wave ETF-M Tab-16 blocks. v5.202 FIX: M1/M2 blocks now reuse the shared renderProxyTracker (reads LIVE.m1_etf_tracker / LIVE.m2_etf_tracker from scanner v1.231.0) -> grouped ONE row per ETF with names as chips + live YTD/1Y/today, instead of the broken per-stock rows (PSX Chimera repeated 8x, returns n/a). Themes block adds an explicit comparison vs Engine Recommendations (macro) + Emerging Themes Watch (fixed list). Matches the Explosive/TCE proxy-table + Emerging-Themes card grammar; M1=teal M2=orange themes=violet. -->
 <meta charset="UTF-8">
@@ -341,7 +342,7 @@
     <p style="color:var(--grey-d);margin-bottom:20px;font-size:14px;">Enter current readings or use defaults. Dashboard recalculates instantly.</p>
     <h3 class="subsection-title">United States — Leading Indicators</h3>
     <div class="grid grid-3">
-      <div class="input-group"><label>ISM Manufacturing PMI<span class="desc">Above 50 = expansion</span></label><input type="number" id="ism_mfg" value="52.7" step="0.1" oninput="recalc()"><span class="current-val">Apr 2026: 52.7</span></div>
+      <div class="input-group"><label>ISM Manufacturing PMI<span class="desc">Above 50 = expansion · manual entry (no live feed) — Jun 2026 release: 53.3</span></label><input type="number" id="ism_mfg" value="53.3" step="0.1" oninput="recalc()"><span class="current-val">Apr 2026: 52.7</span></div>
       <div class="input-group"><label>ISM Services PMI<span class="desc">Services = 89% of US GDP</span></label><input type="number" id="ism_svc" value="53.6" step="0.1" oninput="recalc()"><span class="current-val">Apr 2026: 53.6</span></div>
       <div class="input-group"><label>UMCSI Headline<span class="desc">&gt;80 bullish, &lt;55 extreme</span></label><input type="number" id="umcsi" value="44.8" step="0.1" oninput="recalc()"><span class="current-val">May 2026: 44.8 (record low)</span></div>
       <div class="input-group"><label>US 10Y Yield (%)</label><input type="number" id="us_10y" value="4.45" step="0.01" oninput="recalc()"><span class="current-val">May 2026: 4.45%</span></div>
@@ -454,7 +455,7 @@
   </div>
 
   <!-- ============ PANEL 12: GOLD & METALS ============ -->
-  <div id="metals" class="panel"><div id="metals_country_context"></div>
+  <div id="metals" class="panel"><div id="metals_country_context"></div><div style="font-size:11.5px;color:#64748B;background:#F8FAFC;border-left:3px solid #0F766E;border-radius:6px;padding:6px 10px;margin:4px 0 8px;">The gold + copper trader-positioning on this tab also powers the <b>Materials</b> light on Tab 5 (Sector Implications) — one data source, two tabs.</div>
     <div class="metals-header">
       <h2>Gold &amp; Metals — IM3 Week 12 Factor Framework</h2>
       <p>This tab reads the world&rsquo;s gold &amp; silver signals for you and turns them into a plain buy / hold / sell lean &mdash; plus where each metal could trade over the next 3&ndash;6 months, and why. Below you&rsquo;ll find what&rsquo;s pushing prices (Pakistan + global factors), how one-sided the futures bets are (COT), the usual seasonal pattern, the forward outlook, and the full plain-language list of what moves these metals.</p>
@@ -1428,14 +1429,86 @@ function calcHist(){
   }).join('');
 }
 
+
+// ═══ v5.227 FOUR-VOICES RECONCILIATION (owner-directed 18 Jul 2026) ═════════════
+// Voice A = the economy engine (regime + earned evidence = m1 favored_effective; what the machine trades on).
+// Voice B = trader positioning (CFTC futures, dedicated contract only; SP500 fallback = weak proxy, NOT scored;
+//           Financials = INFORMATION ONLY by owner ruling 18 Jul 2026 — the bond bet honestly cuts both ways).
+// Zacks = the DECIDING VOTE when A and B disagree or B is absent — and its evidence is always DISPLAYED.
+// Disagreement between honest voices from different data sources is information, not error.
+function _svPlain(s){var M={'Information Technology':'Technology','Consumer Discretionary':'Shops & consumer brands','Health Care':'Healthcare','Communication Services':'Media & telecom','Consumer Staples':'Everyday essentials','Real Estate':'Property','Financials':'Banks & finance','Materials':'Raw materials & mining','Industrials':'Industry & machinery','Energy':'Energy & oil','Utilities':'Utilities'};return M[s]||s;}
+function _svData(){
+  if(!(typeof LIVE!=='undefined'&&LIVE&&LIVE.m1_buylist))return null;
+  var m1=LIVE.m1_buylist,effArr=m1.favored_effective||m1.favored||[],eff={};effArr.forEach(function(x){eff[x]=1;});
+  var Z=LIVE.zacks_sectors||{},CF=LIVE.cot_futures||{},M=(LIVE.macros||{}).metals||{};
+  var CM={'Energy':['Crude','crude-oil futures'],'Information Technology':['NASDAQ','NASDAQ-100 futures'],'Communication Services':['NASDAQ','NASDAQ-100 futures (tech-adjacent)'],'Industrials':['DJIA','Dow Jones futures'],'Utilities':['NatGas','natural-gas futures'],'Consumer Staples':['Agriculture','agricultural futures']};
+  var date=(CF.SP500||CF.Crude||{}).date||M.cot_date||'';
+  var ov={};(m1.override_sectors||[]).forEach(function(o){ov[o.sector]=o;});
+  var rows=[];
+  ['Energy','Materials','Industrials','Financials','Consumer Discretionary','Health Care','Information Technology','Communication Services','Consumer Staples','Utilities','Real Estate'].forEach(function(sec){
+    var z=Z[sec]||{},pct=z.pct_top||0,zv=pct>=20?1:(pct<=15?-1:0);
+    var A=eff[sec]?1:-1,B=0,cnet=null,cname='broad-market proxy',cnote='proxy';
+    if(sec==='Materials'){cnet=(M.cot_gold_net||0)+(M.cot_copper_net||0);cname='gold + copper futures';B=cnet>0?1:-1;cnote='';}
+    else if(sec==='Financials'){cnet=(CF['10yr']||{}).net;cname='US-bond futures';B=0;cnote='info';}
+    else if(CM[sec]){var c=CF[CM[sec][0]];if(c&&c.net!=null){cnet=c.net;cname=CM[sec][1];B=cnet>0?1:-1;cnote='';}}
+    var vcls;
+    if(B!==0&&A===B){vcls=A>0?'agree':'outagree';}
+    else if(zv>0){vcls=A>0?'lean':(B>0?'split':'out');}
+    else if(zv<0){vcls=A>0?'split':'out';}
+    else {vcls=(B!==0&&A!==B)?'split':(A>0?'lean':'out');}
+    rows.push({s:sec,eff:A>0,z:z,pct:pct,zv:zv,cnet:cnet,cname:cname,B:B,cnote:cnote,vcls:vcls});
+  });
+  return {rows:rows,base:m1.favored||[],eff:effArr,ov:ov,date:date};
+}
+function _svFavChain(SV){
+  if(!SV)return '';
+  var ovTxt=Object.keys(SV.ov).map(function(k){var o=SV.ov[k],e=o.evidence||{};var bits=[];
+    if(e.med_6m!=null&&e.mkt_6m!=null&&e.med_6m>e.mkt_6m)bits.push('price momentum +'+e.med_6m.toFixed(1)+'% vs market +'+e.mkt_6m.toFixed(1)+'%');
+    if(e.med_eps_g!=null&&e.mkt_eps_g!=null&&e.med_eps_g>e.mkt_eps_g)bits.push('earnings growth '+e.med_eps_g+'% vs market '+e.mkt_eps_g+'%');
+    if(e.zacks_pct_top!=null)bits.push('analysts rate '+e.zacks_pct_top+'% of its stocks top-grade');
+    return '<b>'+_svPlain(k)+'</b> ('+bits.join('; ')+')';}).join(' and ');
+  return '<div style="font-size:12px;color:#334155;background:#F8FAFC;border-left:3px solid #4338CA;border-radius:6px;padding:7px 11px;margin:0 0 10px;">'
+    +'<b>How the favoured list is built:</b> the regime backdrop favours '+SV.base.map(_svPlain).join(', ')
+    +(ovTxt?' \u2014 and '+ovTxt+' earned their way in on evidence':'')
+    +'. The result is the <b>effective favoured list the engine trades on</b>: '+SV.eff.map(_svPlain).join(', ')+'.</div>';
+}
+function _svBoard(SV,full){
+  if(!SV)return '';
+  var ag=SV.rows.filter(function(r){return r.vcls==='agree';});
+  var dis=SV.rows.filter(function(r){return r.vcls==='lean'||r.vcls==='split';});
+  var out=SV.rows.filter(function(r){return r.vcls==='outagree'||r.vcls==='out';});
+  function line(r){
+    var nm='<b>'+_svPlain(r.s)+'</b>';
+    var zTxt='analysts rate '+(r.z.top||0)+' of '+(r.z.total||0)+' of its stocks top-grade ('+r.pct+'%'+(r.zv>0?', strong':r.zv<0?', weak':', middling')+')';
+    if(r.s==='Financials')return nm+' \u2014 the engine favours it, but '+zTxt+', and the bond-market bet is shown as information only (owner ruling): <b>WATCH \u2014 split</b>.';
+    var cTxt=r.cnote==='proxy'?'no dedicated futures signal (broad-market proxy, not scored)':('big traders are '+(r.B>0?'betting on':'betting against')+' '+r.cname+' ('+(r.cnet>0?'+':'')+(r.cnet||0).toLocaleString()+')');
+    if(r.vcls==='lean')return nm+' \u2014 the engine favours it, '+cTxt+'; '+zTxt+' casts the <b>deciding vote \u2192 ADD, 2 of 3</b>.';
+    return nm+' \u2014 voices split: engine '+(r.eff?'yes':'no')+', '+cTxt+', '+zTxt+' \u2192 <b>WATCH</b>.';
+  }
+  if(!full){
+    return '<div style="font-size:11.5px;color:#334155;margin-top:8px;padding-top:7px;border-top:1px dashed #CBD5E1;">'
+      +'<b>All voices agree on:</b> '+(ag.length?ag.map(function(r){return _svPlain(r.s);}).join(', '):'\u2014')
+      +'. <b>Voices disagree on:</b> '+(dis.length?dis.map(function(r){return _svPlain(r.s)+(r.vcls==='lean'?' (analysts\u2019 deciding vote \u2192 add)':' (split \u2192 watch)');}).join(', '):'\u2014')
+      +'. Disagreement is honest \u2014 the voices watch different data. Full debate with sources on Tab 5.</div>';
+  }
+  var h='<div style="background:#fff;border:1.5px solid #4338CA;border-radius:10px;padding:11px 14px;margin:0 0 12px;">'
+    +'<div style="font-weight:800;font-size:13.5px;color:#1E1B4B;margin-bottom:4px;">One scoreboard, separate data sources \u2014 agreements and honest disagreements</div>'
+    +'<div style="font-size:11px;color:#64748B;margin-bottom:7px;">Economy engine (interest-rate curve + inflation + earned price/earnings evidence) \u00b7 Analyst ratings (Zacks) \u00b7 Trader positioning (CFTC futures report, '+(SV.date||'latest')+') \u00b7 Metals feed (Tab 12). When they disagree, that is information, not error \u2014 and the analysts cast the deciding vote.</div>'
+    +'<div style="font-size:12px;margin-bottom:5px;"><b style="color:#059669;">Every voice agrees \u2014 add:</b> '+ag.map(function(r){return '<span style="display:inline-block;background:#ECFDF5;border:1px solid #059669;color:#065F46;border-radius:11px;padding:2px 9px;font-weight:700;margin:2px 4px 2px 0;">'+_svPlain(r.s)+'</span>';}).join('')+'</div>'
+    +'<div style="font-size:12px;color:#334155;"><b style="color:#B45309;">The voices disagree:</b><ul style="margin:4px 0 4px 18px;padding:0;">'+dis.map(function(r){return '<li style="margin:2px 0;">'+line(r)+'</li>';}).join('')+'</ul></div>'
+    +'<div style="font-size:11.5px;color:#64748B;">Agreed stay-out: '+out.map(function(r){return _svPlain(r.s)+(r.zv>0?' (though analysts are notably positive \u2014 '+r.pct+'% \u2014 worth watching)':'');}).join(', ')+'.</div>'
+    +'</div>';
+  return h;
+}
 function calcSectors() {
+  const _SV=_svData();  // v5.227 four-voices data, computed once
   const _lei=LIVE&&LIVE.world_lei||{};
   const _leiExp=Object.values(_lei).filter(v=>v&&v.signal==="expansion").length;
   const _leiTot=Object.keys(_lei).length;
   const _seiEl=document.getElementById("sei_lei_context");
   if(_seiEl&&_leiTot>0){const _sc=_leiExp>=6?"#059669":_leiExp>=4?"#D97706":"#DC2626";
     const _sl=_leiExp>=6?"Risk-On globally":_leiExp>=4?"Mixed global growth":"Global slowdown signal";
-    const _stip=_leiExp>=6?"favour cyclicals (Materials, IT, Industrials)":_leiExp>=4?"balanced allocation":"favour defensives (Staples, Health, Utilities)";
+    const _stip=_leiExp>=6?("supports risk-taking — the engine\u2019s favoured areas right now: "+((_SV&&_SV.eff&&_SV.eff.length)?_SV.eff.map(_svPlain).join(", "):"see the sector table below")):_leiExp>=4?"balanced allocation":"favour defensives (Staples, Health, Utilities)";
     _seiEl.innerHTML='<div style="background:'+(_leiExp>=6?"#DCFCE7":_leiExp>=4?"#FEF3C7":"#FEE2E2")+';border:1px solid '+_sc+'33;border-radius:8px;padding:6px 12px;margin-bottom:10px;font-size:12px;">'+
       '<span style="font-weight:700;color:'+_sc+'">'+_sl+'</span> <span style="color:#64748B;">'+_leiExp+'/'+_leiTot+' economies expanding → '+_stip+'</span></div>';}
 
@@ -1453,8 +1526,10 @@ function calcSectors() {
     'DISINFLATION': ['Utilities','Consumer Staples','Health Care','Real Estate'],
     'STAGFLATION':  ['Energy','Consumer Staples','Utilities','Communication Services'],
   };
+  // v5.227: prefer the scanner's own regime call (single source of truth with Tab 2); local compute = fallback
+  if(LIVE&&LIVE.econ_clock&&LIVE.econ_clock.us&&REGIME_FAVORED[LIVE.econ_clock.us.quadrant]!==undefined){usReg.name=LIVE.econ_clock.us.quadrant;}
   const favored = new Set(REGIME_FAVORED[usReg.name] || []);
-  const regBanner = `<div class="reading-box" style="margin-bottom:10px;border-left:4px solid var(--navy);"><strong>Macro regime: ${usReg.name}</strong> — growth axis = yield-curve slope ${(isNaN(ycSlope)?'n/a':((ycSlope>0?'+':'')+(ycSlope*100).toFixed(0)+'bps'))}${isNaN(ism)?'':' + ISM '+ism}, inflation = core PCE ${pce}%. <b>Regime-favored:</b> ${[...favored].join(', ')||'—'}. <span style="color:var(--grey-d);">Layer 1 of 3 (regime → Zacks #1/#2 → COT).</span></div>`;
+  const regBanner = `<div class="reading-box" style="margin-bottom:10px;border-left:4px solid var(--navy);"><strong>Macro regime: ${usReg.name}</strong> — growth axis = yield-curve slope ${(isNaN(ycSlope)?'n/a':((ycSlope>0?'+':'')+(ycSlope*100).toFixed(0)+'bps'))}${isNaN(ism)?'':' + ISM (manual entry) '+ism}, inflation = core PCE ${pce}%. <b>Regime-favored:</b> ${[...favored].join(', ')||'—'}. <span style="color:var(--grey-d);">Layer 1 of 3 (regime → Zacks #1/#2 → COT).</span></div>`;
   const usPlaybook = usRegimePlaybook(usReg.name, pce, ycSlope, [...favored]);
   const holdings = {
     'Information Technology':'TSM, NVDA, ANET, MU, TER, WDC, DELL, STX',
@@ -1518,6 +1593,14 @@ function calcSectors() {
       // Status bands (IQS): high #1/#2 share + bullish COT = STRONG ADD
       const regFav = favored.has(sec);
       let status, cls;
+      const _vR = _SV && _SV.rows ? _SV.rows.filter(function(r){return r.s===sec;})[0] : null;
+      if (_vR) {
+        // v5.227 four-voices verdict (display logic only; the M1 engine is untouched)
+        if (_vR.vcls==='agree') { status = pct>=25 ? '🔥 STRONG ADD — all voices agree' : '✅ ADD — all voices agree'; cls='pos'; }
+        else if (_vR.vcls==='lean') { status='✅ ADD — 2 of 3 (analysts\u2019 deciding vote)'; cls='pos'; }
+        else if (_vR.vcls==='split') { status=_vR.eff?'⚖️ WATCH — voices split':'⚪ OUT — split noted'; cls='warn'; }
+        else { status='⚪ OUT'; cls=(pct>=20?'warn':'neg'); }
+      } else {
       if (pct >= 35 && cotBull) { status='🔥 STRONG ADD'; cls='pos'; }
       else if (pct >= 25 || cotBull) { status='✅ ADD'; cls='pos'; }
       else if (pct >= 12 && cotBull !== false) { status='⬛ HOLD'; cls='warn'; }
@@ -1526,6 +1609,7 @@ function calcSectors() {
       // Regime modulation (Layer 1): favored lifts a borderline sector; out-of-favor tempers a hot one
       if (regFav && cls!=='pos' && (pct>=12 || cotBull)) { status='✅ ADD (regime-favored)'; cls='pos'; }
       else if (!regFav && status==='🔥 STRONG ADD') { status='✅ ADD ⚠ counter-regime'; cls='warn'; }
+      }
       // Wave M-A step 2c: weak 200-DMA breadth (<40% of the sector above its 200-day line) tempers a favored/ADD sector to a caution
       const _bpUS = gicsBreadthPct(sec);
       if (_bpUS != null && _bpUS < 40 && cls === 'pos') { status += ' ⚠ weak trend'; cls = 'warn'; }
@@ -1534,9 +1618,10 @@ function calcSectors() {
         : '<span style="color:var(--grey-d);">➖ Neutral</span>';
       // ZACKS cell — indigo column tint; share text shaded by strength
       const zColor = pct>=35?'#3730A3':pct>=20?'#4F46E5':pct>0?'#6366F1':'#9CA3AF';
-      const zCell = z.total
+      const zCell = (z.total
         ? `<span style="font-weight:700;color:${zColor};">${z.top}/${z.total} (${pct}%)</span><div style="font-size:10px;color:#6366F1;">#1:${z.rank1} · #2:${z.rank2}</div>`
-        : '<span style="color:var(--grey-d);">—</span>';
+        : '<span style="color:var(--grey-d);">—</span>')
+        + ((_vR&&(_vR.vcls==='lean'||_vR.vcls==='split')&&z.total)?`<div style="font-size:10px;font-weight:700;color:#4F46E5;">⚖️ deciding vote — ${z.top} of ${z.total} top-grade</div>`:'');
       // COT cell — GREEN if net>0 (more longs / bullish), RED if net<0 (more shorts / bearish) per COT Reference
       let cotCell;
       if (cot) {
@@ -1547,6 +1632,18 @@ function calcSectors() {
           + `<div style="font-size:10px;color:var(--grey-d);">L <b style="color:#059669;">${(cot.long||0).toLocaleString()}</b> / S <b style="color:#DC2626;">${(cot.short||0).toLocaleString()}</b></div>`;
       } else {
         cotCell = '<span style="color:var(--grey-d);">—</span>';
+      }
+      // v5.227 owner ruling (18 Jul 2026): the bond bet honestly cuts both ways for banks — information, never a verdict
+      if (sec==='Financials' && cot) {
+        cotCell = '<span style="font-weight:700;color:#1D4ED8;background:#EFF6FF;padding:1px 6px;border-radius:4px;">ℹ️ Information only</span>'
+          + '<div style="font-size:10px;color:var(--grey-d);">Big traders are betting against bonds (net '+(cot.net||0).toLocaleString()+'). That points to rising interest rates — which can lift bank lending profits, but can also dent the bonds banks already hold. Not scored either way.</div>';
+      } else if (_vR && _vR.cnote==='proxy') {
+        cotCell += '<div style="font-size:10px;color:#9CA3AF;">broad-market proxy — weak signal, not scored</div>';
+      }
+      if (sec==='Materials' && _vR && _vR.cnet!=null) {
+        var _mg = Math.abs(_vR.cnet) - 250000;
+        cotCell += '<div style="font-size:10px;color:var(--grey-d);">gold + copper combined — full detail on the Metals tab'
+          + ((Math.abs(_mg)<=25000)?('. Only '+Math.abs(_mg).toLocaleString()+' contracts '+(_mg>=0?'above':'below')+' the 250,000 “very bullish” line — this label can flip week to week'):'')+'</div>';
       }
       usHtml += `<tr class="${cls}"><td><b>${sec}</b>${gicsBreadthLine(sec)}${gicsSummaryLine(sec)}</td><td>${regCell}</td><td style="background:${Z_BG};">${zCell}</td><td>${cotCell}</td><td><b>${status}</b></td><td>${holdings[sec]||''}</td></tr>`;
     });
@@ -1572,7 +1669,7 @@ function calcSectors() {
     usSectors.forEach(s=>{let cls=s[2].includes('BUY')?'pos':(s[2].includes('AVOID')?'neg':'warn');let sig=s[2];const _bp=gicsBreadthPct(s[0]);if(_bp!=null&&_bp<40&&cls==='pos'){sig+=' ⚠ weak trend';cls='warn';}usHtml+=`<tr class="${cls}"><td><b>${s[0]}</b>${gicsBreadthLine(s[0])}${gicsSummaryLine(s[0])}</td><td>${s[1]}</td><td>${sig}</td><td>${s[3]}</td></tr>`;});
     usHtml += '</tbody></table><div class="reading-box" style="margin-top:10px;font-size:11px;">Macro-regime fallback (Zacks/COT scan data not loaded). Live qualification appears after the next scan writes zacks_sectors + cot_futures.</div>';
   }
-  document.getElementById('us_sectors').innerHTML = regBanner + usPlaybook + usHtml;
+  document.getElementById('us_sectors').innerHTML = regBanner + _svFavChain(_SV) + _svBoard(_SV,true) + usPlaybook + usHtml;
   renderUsSectorBreadth((typeof LIVE!=='undefined'&&LIVE)?LIVE.sector_breadth:null);
 
   // ===== PSX SECTORS — macro-driven (no Zacks coverage), original 11 =====
@@ -6757,7 +6854,7 @@ function renderEconCompass(){
     secStrip='<div style="margin-top:10px;padding:11px 13px;background:#f0f6ff;border-radius:8px;border-left:5px solid #0A3161;">'
       +'<div style="font-weight:700;font-size:13px;color:#0A3161;margin-bottom:5px;">Where this picture points your money</div>'
       +'<div style="font-size:12.5px;color:#334155;margin-bottom:6px;">Based on everything above, these parts of the market are the ones to favour right now:</div>'
-      + secChips
+      + secChips + ((typeof _svBoard==='function')?_svBoard(_svData(),false):'')
       + '<div style="font-size:11.5px;color:#64748b;margin-top:7px;">You don\'t have to do anything with this &#8212; the dashboard already uses it to build your suggested buy list and your practice portfolio automatically.</div>'
       + '</div>';
   }
