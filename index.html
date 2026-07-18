@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.231 (supersedes v5.230): EVERY DOLLAR EXPLAINED WITH HEADINGS (owner: 'i did not see every dollar spend while buying each etf'). The money story is now a five-part headed accounting: 1\u00b7What you sent (each transfer, dated) \u00b7 2\u00b7How it was spent (each fund purchase: units \u00d7 unit price paid in its own currency \u2192 dollars, then Total spent + Kept as cash + a live CHECK LINE proving spent+cash = sent, with any residual honestly labeled as FX-conversion rounding on the London-listed lines) \u00b7 3\u00b7What you took back (withdrawals, and cash now) \u00b7 4\u00b7What it is worth right now (made/lost + cents per dollar) \u00b7 5\u00b7Where the gains and losses came from (the fund-by-fund day/week/month ledger). Display only; data unchanged from v1.272.x. -->
 <!-- index.html v5.230 (supersedes v5.229): PLAIN-LANGUAGE MONEY STORY on the Live Investment tab (owner: 'track each dollar transferred — where it was lost and where profit was made, daily/weekly/monthly — and the display must be layman plain language'). The tab now opens with 'Where each of your dollars went': you sent / you took back / money at work / worth today / made-or-lost in whole dollars and cents-per-dollar; a pure-market scoreboard (today · this week · this month — withdrawals never counted as losses, per scanner v1.272.0's flow-adjusted statements); a fund-by-fund worst-first ledger (put in / worth now / made-or-lost since purchase / today / week / month) from the per-ISIN price history; the cash line; and honest notes (per-fund month unlocks at 30 days ≈ 5 Aug; reconciled to the 17 Jul 2026 IBKR statements). Degrades gracefully until v1.272.0 deploys (no capital block -> transfer lines simply absent). Display only. -->
 <!-- index.html v5.229 (supersedes v5.228): SECTOR TICKERS IN FULL (owner: 'all stocks of the sector should be displayed in tickers' — previously only a few hardcoded names showed in the holdings column and the Zacks top-rated list was never rendered). Each US sector row now carries (a) chip badges for ALL of today's Zacks #1/#2-rated tickers (zacks_sectors.top_tickers, stored in full — IT shows all 23) and (b) an expandable '▸ All N tracked <sector> tickers' list resolving the sector's complete membership from the ~1,900-name foundation universe via the existing GICS_TV_MAP (e.g. IT ≈ Electronic Technology + Technology Services). Real Estate has no TV-sector mapping so it shows chips only — honest. PSX table unchanged (48-name tracked pool, different sector taxonomy — separate ask if wanted). Display only; no scoring/engine change. -->
 <!-- index.html v5.228 (supersedes v5.227): VERDICT BOARD PROMINENCE (owner: the scoreboard must catch the eye, not be scrolled past). The four-voices scoreboard is restyled as a hero 'Verdict Board' card — deep gradient background, amber border with a gentle pulsing glow (svPulse keyframes), animated badge, high-contrast agree chips and ADD/WATCH verdict pills — and MOVED to the TOP of Tab 5, before the regime banner, so it is the first thing read. Tab 2's condensed strip restyled to a bold gradient bar. Also fixed from the owner's screenshot: the raw ISO timestamp in the sources line now renders as a clean date (2026-07-14), and the deciding-vote sentence grammar corrected ('the analysts’ rating — X of N — casts the deciding vote'). Display styling only; no verdict logic, engine, or scanner change. -->
@@ -2587,20 +2588,39 @@ function calcMbUs(){
     var wkUsd=null; hs.forEach(function(x){ if(x.pnl_wow_usd!=null) wkUsd=(wkUsd||0)+x.pnl_wow_usd; });
     var out='<div class="m2x-card" style="border:2px solid #059669;background:linear-gradient(180deg,#ECFDF5,#ffffff 90px);">';
     out+='<div class="m2x-sec" style="font-size:15px;">\uD83D\uDCB5 Where each of your dollars went \u2014 in plain words</div>';
+    function H(t){return '<div style="font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#065f46;margin:10px 0 3px;border-bottom:1.5px solid #A7F3D0;padding-bottom:2px;">'+t+'</div>';}
+    function unitPx(x){ var p=x.cost_price, c=x.cost_ccy||'USD';
+      if(c==='GBX') return '\u00a3'+(p/100).toFixed(2); if(c==='GBP') return '\u00a3'+p.toFixed(2); return '$'+p.toFixed(2); }
     if(cap&&cap.net_usd){
-      var fl=(cap.flows||[]).map(function(f){var v=f.usd||0;
-        return (v>=0?('you sent <b>'+usd(v)+'</b>'):('you took <b>'+usd(v)+'</b> back out'))+' on '+dshort(f.date||'');}).join(', ');
-      out+='<div style="font-size:13.5px;line-height:1.9;color:#0f172a;">So far '+fl
-        +'. That leaves <b>'+usd(cap.net_usd)+'</b> of your own money at work.</div>';
+      var dep=(cap.flows||[]).filter(function(f){return (f.usd||0)>0;});
+      var wdr=(cap.flows||[]).filter(function(f){return (f.usd||0)<0;});
+      // v5.231: EVERY DOLLAR EXPLAINED, WITH HEADINGS (owner-directed)
+      out+=H('1 \u00b7 What you sent');
+      dep.forEach(function(f){ out+='<div style="font-size:13px;line-height:1.8;">You transferred <b>'+usd(f.usd)+'</b> to your broker on '+dshort(f.date)+'.</div>'; });
+      out+=H('2 \u00b7 How it was spent \u2014 every dollar');
+      var spent=0;
+      hs.forEach(function(x){ var c=x.cost_usd||0; spent+=c;
+        out+='<div style="font-size:12.5px;line-height:1.8;color:#1e293b;">Bought <b>'+(x.theme||x.name)+'</b> ('+x.ticker+'): '
+          +(+x.shares).toLocaleString()+' units at '+unitPx(x)+' each \u2192 <b>'+usd(c)+'</b></div>'; });
+      var kept=(cap.in_usd||0)-spent;
+      out+='<div style="font-size:12.5px;line-height:1.8;margin-top:2px;">Total spent on the seven funds: <b>'+usd(spent)+'</b></div>';
+      out+='<div style="font-size:12.5px;line-height:1.8;">Kept as cash (dirhams + dollars): <b>'+usd(kept)+'</b></div>';
+      out+='<div style="font-size:12px;line-height:1.8;color:#065f46;font-weight:700;">Check: '+usd(spent)+' + '+usd(kept)+' = '+usd(cap.in_usd)+' \u2014 every dollar accounted for \u2713</div>'
+        +'<div style="font-size:10.5px;color:#94a3b8;line-height:1.6;">(The two London-listed funds are converted at today\u2019s exchange rate, so their dollar figures can drift a few dollars against the broker statement \u2014 currency-conversion rounding, nothing missing.)</div>';
+      out+=H('3 \u00b7 What you took back');
+      if(wdr.length){ wdr.forEach(function(f){ out+='<div style="font-size:13px;line-height:1.8;">You withdrew <b>'+usd(f.usd)+'</b> from cash on '+dshort(f.date)+' \u2014 cash is now <b>'+usd(L.cash_usd||0)+'</b>.</div>'; }); }
+      else out+='<div style="font-size:13px;line-height:1.8;">Nothing yet.</div>';
+      out+='<div style="font-size:12.5px;line-height:1.8;">That leaves <b>'+usd(cap.net_usd)+'</b> of your own money at work.</div>';
+      out+=H('4 \u00b7 What it is worth right now');
       var neg=(cap.true_pnl_usd||0)<0;
-      out+='<div style="font-size:14px;line-height:1.9;color:#0f172a;margin-top:3px;">Today it is all worth <b>'+usd(L.nav_usd)
+      out+='<div style="font-size:14px;line-height:1.9;color:#0f172a;">Everything together is worth <b>'+usd(L.nav_usd)
         +'</b> \u2014 the market has '+(neg?'cost you':'made you')+' <b style="color:'+(neg?'#b91c1c':'#047857')+';">'+usd(cap.true_pnl_usd)
         +'</b> so far. That is about <b>'+Math.abs(Math.round(cap.true_pnl_pct||0))+' cents '+(neg?'lost':'gained')+'</b> on every dollar you put in.</div>';
     }
     out+='<div style="font-size:12.5px;margin-top:7px;color:#334155;">Scoreboard \u2014 pure market movement (a withdrawal is never counted as a loss): '
       +'<b>today</b> '+sgn(t.day_pnl_usd)+' \u00b7 <b>this week</b> '+sgn(wkUsd)+' \u00b7 <b>this month so far</b> '+sgn(mo?mo.pnl_usd:null)+'</div>';
     var rows=hs.slice().sort(function(a,b){return (a.pnl_usd||0)-(b.pnl_usd||0);});
-    out+='<div style="margin-top:8px;font-weight:800;font-size:12.5px;color:#065f46;">Fund by fund \u2014 worst first:</div>';
+    out+=H('5 \u00b7 Where the gains and losses came from \u2014 fund by fund, worst first');
     rows.forEach(function(x){
       out+='<div style="font-size:12.5px;line-height:1.8;border-left:4px solid '+(((x.pnl_usd||0)<0)?'#DC2626':'#059669')+';padding-left:9px;margin:3px 0;color:#1e293b;">'
         +'<b>'+(x.theme||x.name||x.ticker)+'</b> ('+x.ticker+') \u2014 you put in '+usd(x.cost_usd||0)+', it is now worth '+usd(x.mv_usd||0)+': '+sgn(x.pnl_usd,true)
