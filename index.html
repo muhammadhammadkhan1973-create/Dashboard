@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.238 (supersedes v5.237): WAVE ETF-X DISPLAY (owner-directed, pairs with scanner v1.274.0). NEW separate section on the World ETF Engine tab (Tab 16) -- 'UCITS ETFs Holding Verified Explosive Top-Scorers' -- with its OWN violet colour/fonts but the SAME format as the other ETF sections (TER, YTD, 1Y return, price, indicators). It is a DIRECT FEED from the Explosive tab: only stocks firing all of Signal A+B+Q with a strong (A/B) quality grade, and only ETFs whose REAL published holdings (justETF-verified, not sector-guessed) actually contain them. Each row shows the fund, how many verified top-scorers it holds, the tickers held (with grade + a check), and honestly lists any name assigned by sector but NOT found in the real top holdings. Reads data['etf_explosive_verified']; renders empty-state cleanly when nothing qualifies. Display only; no engine/scoring change. -->
 <!-- index.html v5.237 (supersedes v5.236): Q CLARITY + COLLISION FIX (owner: nothing unexplained; how many quarters does Q compare?). (1) The unrelated quality-tier chip 'Q N/M' is renamed 'Quality N/M' with a plain report-card tooltip — it collided with the new Signal Q. (2) Signal Q's dot tooltip + legend now state EXPLICITLY that Q compares exactly ONE quarter (latest vs the same quarter a year ago), is a single-quarter snapshot NOT a multi-quarter streak, names the comparison ('latest quarter vs same quarter last year'), shows the live sales/profit numbers with '1 quarter compared', and points to Signal T for a sustained multi-quarter turn. Display only; no engine/scoring change. -->
 <!-- index.html v5.236 (supersedes v5.235): SIGNAL Q/T RENDER FIX. v5.235 shipped the Q dot and T badge but a stray SEMICOLON terminated the sigCell assignment after A+B, orphaning the Q/T terms as dead expression statements that computed and discarded -- valid JS, zero console errors, so it passed node --check and even the isolated-logic test, but NO Q ever rendered (owner: 'I cant see a single q'). Root cause: my edit appended '+ ...' continuation lines AFTER the original line's closing ';'. Fix: remove that semicolon so A+B+Q+T are one expression, semicolon only at the true end. Verified by evaluating the real sigCell against live MU data (signal_q=true) -> Q dot now present. Also renames pending in v5.237: the unrelated 'Q 9/12' quality-tier column collides with this Q. Display only. -->
 <!-- index.html v5.235 (supersedes v5.234): QUARTERLY SIGNALS Q & T DISPLAY (owner-directed, pairs with scanner v1.273.0). Explosive tab: each row now shows a Signal Q dot (quarterly early-warning \u2014 latest quarter vs same quarter last year, seasonality-safe, with the live quarterly sales/profit numbers in the tooltip) and a purple 'T \u21A9' turnaround-hook badge when the rolling-full-year-profit hook fires (rising 2+ quarters after a slump, or loss\u2192profit cross). Both explained in the legend in plain layman language with their names, and Signal T is noted as the M2 Turnaround lane's flagship. Also pending im3 v2.27.0: the NA-reason labels + adaptive-maximum legend ship with the metric-coverage completion. Display only; annual A/B and all scoring untouched. -->
@@ -632,6 +633,8 @@
     <h3 class="subsection-title" style="margin-top:24px;">Explosive Recommended ETFs &mdash; from the Dashboard</h3>
     <div style="font-size:11px;color:#64748B;border-left:3px solid #DC2626;padding-left:9px;margin:2px 0 12px;">The UCITS ETF proxies for the dashboard&rsquo;s <strong>both-signal Explosive</strong> names (US + PSX from Tab 10), tracked separately here so the engine&rsquo;s own country/sector picks above stay distinct from what the stock screen is surfacing. Each ETF is priced live &mdash; YTD, 1-year, and today&rsquo;s move (same TradingView resolver as every fund on this tab) &mdash; and lists the Explosive names it stands in for. These are sector/region proxies (the <strong>Match</strong> column shows how close), chosen so you can take the exposure in a tax-efficient UCITS wrapper rather than buying a single US-listed name.</div>
     <div id="world_explosive_etf_box"></div>
+
+    <div id="world_etfx_verified_box"></div>
 
     <h3 class="subsection-title" style="margin-top:24px;">TCE Recommended ETFs &mdash; from the Dashboard</h3>
     <div style="font-size:11px;color:#64748B;border-left:3px solid #0284C7;padding-left:9px;margin:2px 0 12px;">The UCITS ETF proxies for the dashboard&rsquo;s <strong>TCE HIGH and WATCH</strong> convergence names (US + PSX from Tab 9), tracked separately here so the engine&rsquo;s own country/sector picks stay distinct from what the convergence engine is surfacing. Each ETF is priced live &mdash; YTD, 1-year, and today&rsquo;s move (same TradingView resolver as every fund on this tab) &mdash; and lists the names it stands in for, tier-coloured (<span style="color:#166534;font-weight:700;">HIGH</span> / <span style="color:#92400E;font-weight:700;">WATCH</span>). Sector/region proxies (the <strong>Match</strong> column shows how close), so you can take the exposure in a tax-efficient UCITS wrapper rather than buying a single name.</div>
@@ -8201,6 +8204,66 @@ function renderWorldEtfTab(){
         +'<p style="font-size:10px;color:#94A3B8;margin:8px 0 0;">Technical signal and COT positioning are read live from Tab 12 Metals\u2019 own data \u2014 same numbers, same source. For the full forward-outlook cones, seasonal read, and world driver map, see Tab 12 directly.</p>';
     }
   }
+
+  // v5.238 WAVE ETF-X: VERIFIED explosive-holdings ETF section -- SEPARATE colour/fonts, SAME format.
+  (function renderEtfxVerified(){
+    var box=document.getElementById('world_etfx_verified_box'); if(!box) return;
+    var V=(LIVE&&LIVE.etf_explosive_verified)||{}; var etfs=(V.etfs)||[];
+    var pc=function(v){return (v==null||isNaN(v))?'\u2014':((v>0?'+':'')+Number(v).toFixed(2)+'%');};
+    var terTxt=function(t){return (t==null||isNaN(t))?'\u2014':(Number(t).toFixed(2)+'%');};
+    // section header (violet theme to stand apart from the teal/amber ETF sections)
+    var head='<h3 class="subsection-title" style="margin-top:24px;color:#6D28D9;border-bottom:2px solid #6D28D9;padding-bottom:4px;">'
+      +'\uD83D\uDD2C UCITS ETFs Holding Verified Explosive Top-Scorers</h3>'
+      +'<p style="font-size:12px;color:#5B21B6;background:#F5F3FF;border-left:3px solid #8B5CF6;padding:9px 13px;border-radius:8px;margin:8px 0 14px;line-height:1.6;">'
+      +'A <b>direct feed from the Explosive tab</b>. We take only the <b>strongest</b> stocks &mdash; those firing <b>all three signals '
+      +'(A growing, B accelerating, Q latest-quarter strong)</b> <b>and</b> holding a strong quality grade (A or B) &mdash; then keep only the UCITS ETFs whose '
+      +'<b>real published holdings actually contain those stocks</b> (checked against justETF, <b>not</b> guessed from the fund&rsquo;s sector). '
+      +'Same columns as the other ETF lists (TER, YTD, 1-year return, price). '
+      +(V.top_scorer_tickers&&V.top_scorer_tickers.length?('Today&rsquo;s top-scorers: <b>'+V.top_scorer_tickers.join(', ')+'</b>.'):'')
+      +'</p>';
+    if(!etfs.length){
+      box.innerHTML=head+'<p style="font-size:12px;color:#6B7280;font-style:italic;padding:8px 0;">'
+        +(V.note&&V.note.indexOf('No stock')===0
+           ? 'No stock is currently firing all of Signal A, B and Q with a strong quality grade, so no ETF qualifies right now. This list fills the moment one does.'
+           : 'Verifying ETF holdings on the next scan &mdash; this section fills once the published holdings are fetched.')
+        +'</p>';
+      return;
+    }
+    var rows=etfs.map(function(e){
+      var vchips=(e.verified||[]).map(function(v){
+        return '<span title="Fires Signal A + B + Q, quality grade '+(v.im3_grade||'?')+'. This ETF&rsquo;s real holdings contain it."'
+          +' style="display:inline-block;margin:2px 3px 2px 0;padding:2px 7px;border-radius:9px;font-size:11px;font-weight:800;'
+          +'background:#EDE9FE;color:#5B21B6;border:1px solid #8B5CF6;font-family:var(--font-mono,monospace);">'
+          +v.ticker+' \u2713'+(v.im3_grade?(' '+v.im3_grade):'')+'</span>';
+      }).join('');
+      var unconf=(e.unconfirmed&&e.unconfirmed.length)
+        ? '<div style="font-size:9.5px;color:#9CA3AF;margin-top:4px;">Also a top-scorer by sector but <b>not</b> found in this fund&rsquo;s top holdings (shown honestly): '
+          +e.unconfirmed.map(function(u){return u.ticker;}).join(', ')+'</div>'
+        : '';
+      var chg=(e.daily_chg!=null&&!isNaN(e.daily_chg))?(' \u00b7 <span style="color:'+(e.daily_chg>=0?'#059669':'#DC2626')+';">'+pc(e.daily_chg)+' today</span>'):'';
+      var hold=e.holdings?('<div style="font-size:9.5px;color:#94A3B8;margin-top:5px;line-height:1.5;">Top holdings: '+e.holdings.split(',').slice(0,10).join(', ')+'</div>'):'';
+      return '<tr style="border-bottom:1px solid #EDE9FE;">'
+        +'<td style="padding:9px 10px;vertical-align:top;"><div style="font-weight:700;color:#4C1D95;font-size:13px;">'+e.name+'</div>'
+          +'<div style="font-size:10px;color:#8B5CF6;font-family:var(--font-mono,monospace);margin-top:2px;">'+e.isin+chg+'</div>'
+          +hold+'</td>'
+        +'<td style="padding:9px 10px;vertical-align:top;text-align:center;font-weight:800;color:#6D28D9;font-size:15px;">'+e.n_verified+'</td>'
+        +'<td style="padding:9px 10px;vertical-align:top;">'+vchips+unconf+'</td>'
+        +'<td style="padding:9px 10px;vertical-align:top;text-align:right;font-family:var(--font-mono,monospace);font-size:12px;">'+terTxt(e.ter)+'</td>'
+        +'<td style="padding:9px 10px;vertical-align:top;text-align:right;font-family:var(--font-mono,monospace);font-size:12px;color:'+((e.ytd>=0)?'#059669':'#DC2626')+';">'+pc(e.ytd)+'</td>'
+        +'<td style="padding:9px 10px;vertical-align:top;text-align:right;font-family:var(--font-mono,monospace);font-size:12px;color:'+((e.ret_1y>=0)?'#059669':'#DC2626')+';">'+pc(e.ret_1y)+'</td>'
+        +'</tr>';
+    }).join('');
+    box.innerHTML=head
+      +'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;background:#FDFCFF;border:1px solid #DDD6FE;border-radius:10px;overflow:hidden;">'
+      +'<thead><tr style="background:#F5F3FF;color:#5B21B6;font-family:var(--font-head,sans-serif);font-size:10px;letter-spacing:0.04em;text-transform:uppercase;">'
+      +'<th style="padding:9px 10px;text-align:left;">UCITS ETF</th>'
+      +'<th style="padding:9px 10px;text-align:center;" title="How many verified top-scorers this fund really holds">Verified<br>holdings</th>'
+      +'<th style="padding:9px 10px;text-align:left;">Explosive top-scorers held (A+B+Q, grade)</th>'
+      +'<th style="padding:9px 10px;text-align:right;">TER</th>'
+      +'<th style="padding:9px 10px;text-align:right;">YTD</th>'
+      +'<th style="padding:9px 10px;text-align:right;">1Y</th>'
+      +'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+  })();
 }
 // end renderWorldEtfTab
 
