@@ -153,7 +153,9 @@ jobs:
               for r in records:
                   if r.get('ticker') == tk:
                       v = r.get('im3')
-                      return isinstance(v, dict) and len(v) > 0
+                      # v1.277.2 pair: a stale_ver-marked grade is kept for DISPLAY (keep-last-good)
+                      # but counts as MISSING here so the self-heal re-scores it promptly.
+                      return isinstance(v, dict) and len(v) > 0 and not v.get('stale_ver')
               return False
 
           ex_recs  = data.get('explosive_us', [])
@@ -324,6 +326,14 @@ jobs:
               tk = record['ticker']
               if tk in score_map:
                   record['im3'] = score_map[tk]
+
+          # v1.277.2 pair: PERSIST per-ticker scoring errors into data.json -- the owner's audit
+          # showed the exact exception messages existed only in this step's summary, unreachable
+          # for self-diagnosis. Now every failure's message rides in data['im3_errors'] (and clears
+          # itself once a name scores successfully).
+          from datetime import datetime as _dt2, timezone as _tz2
+          data['im3_errors'] = {'as_of': _dt2.now(_tz2.utc).isoformat(),
+                                'errors': error_map}
 
           # Store ticker list for change detection next run
           data['im3_explosive_tickers'] = explosive_tickers
