@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.240 (supersedes v5.239): KEEP-LAST-GOOD IM3 DISPLAY (pairs with scanner v1.277.2 + workflow error-persist). When the scanner marks a carried IM3 grade stale_ver (scorer upgraded, name queued for re-score), the cell now KEEPS showing the last confirmed grade with a small amber 're-scoring' chip and a plain-language tooltip -- instead of the old behaviour where the grade was deleted and the cell blanked (owner's AVGO/NEM/LLY audit: wipe-before-rescore erased grades that then failed to re-score). Display only. -->
 <!-- index.html v5.239 (supersedes v5.238): TURNAROUND ENRICHMENT DISPLAY + ROW HIGHLIGHTS (owner-directed, pairs with scanner v1.277.0). (1) M2 turnaround table gains an 'Explosive checks' column showing A\u00b7B\u00b7G1\u00b7G2\u00b7C1 dots + the name's IM3 grade + Zacks rank for turnarounds that appear in the Explosive pool (honest 'not screened' when outside it). (2) Explosive tab row highlights: EXPLOSIVE + A + B + Q + strong IM3 (A/B) = gold\u2192green band with a '\u2605 ALL SIGNALS' tag; +Signal T = the richer gold\u2192green\u2192violet band ('\u2605 ALL + T'); any M2 turnaround (Signal T) = a shared violet tint ('\u21A9 TURNAROUND') so all turnarounds group visually. Legend explains the colours in plain language. Display only; no scoring/screen/engine change. -->
 <!-- index.html v5.238 (supersedes v5.237): WAVE ETF-X DISPLAY (owner-directed, pairs with scanner v1.274.0). NEW separate section on the World ETF Engine tab (Tab 16) -- 'UCITS ETFs Holding Verified Explosive Top-Scorers' -- with its OWN violet colour/fonts but the SAME format as the other ETF sections (TER, YTD, 1Y return, price, indicators). It is a DIRECT FEED from the Explosive tab: only stocks firing all of Signal A+B+Q with a strong (A/B) quality grade, and only ETFs whose REAL published holdings (justETF-verified, not sector-guessed) actually contain them. Each row shows the fund, how many verified top-scorers it holds, the tickers held (with grade + a check), and honestly lists any name assigned by sector but NOT found in the real top holdings. Reads data['etf_explosive_verified']; renders empty-state cleanly when nothing qualifies. Display only; no engine/scoring change. -->
 <!-- index.html v5.237 (supersedes v5.236): Q CLARITY + COLLISION FIX (owner: nothing unexplained; how many quarters does Q compare?). (1) The unrelated quality-tier chip 'Q N/M' is renamed 'Quality N/M' with a plain report-card tooltip — it collided with the new Signal Q. (2) Signal Q's dot tooltip + legend now state EXPLICITLY that Q compares exactly ONE quarter (latest vs the same quarter a year ago), is a single-quarter snapshot NOT a multi-quarter streak, names the comparison ('latest quarter vs same quarter last year'), shows the live sales/profit numbers with '1 quarter compared', and points to Signal T for a sustained multi-quarter turn. Display only; no engine/scoring change. -->
@@ -3183,6 +3184,12 @@ function im3CellHTML(ticker, verdict) {
 
   const gc = r.grade==='A'?'a':r.grade==='B'?'b':r.grade==='C'?'c':'f';
   const fc = r.pct>=75?'#059669':r.pct>=60?'#D97706':r.pct>=50?'#F97316':'#E11D48';
+  // v5.240 keep-last-good display: a stale_ver-marked grade is the LAST REAL grade, kept on the
+  // tab while the scorer re-runs (the old behaviour deleted it and blanked the cell -- owner's
+  // AVGO/NEM/LLY audit). Small amber chip so nothing on the tab is unexplained.
+  const staleChip = r.stale_ver
+    ? `<span title="This is the last confirmed grade from the previous scorer version. The scorer was upgraded and this name is queued for re-scoring -- the grade updates automatically on the next successful scan. Shown (not blanked) so a scorer upgrade never erases your view." style="display:inline-block;margin-left:4px;padding:0 5px;border-radius:7px;font-size:9px;font-weight:800;background:#FEF3C7;color:#92400E;border:1px solid #F59E0B;vertical-align:middle;">re-scoring</span>`
+    : '';
 
   // Option C part 2 — surface two top-level reads without expanding:
   //  • Q X/Y — derived quality tier: GOOD count across the 16 Growth+Stability quality factors
@@ -3247,7 +3254,7 @@ function im3CellHTML(ticker, verdict) {
 
   return `<div style="min-width:110px;cursor:pointer;" onclick="im3ToggleDetail('${ticker}')">
     <div style="display:flex;align-items:center;gap:6px;">
-      <span class="im3-grade-badge ${gc}" style="padding:2px 7px;font-size:11px;">Grade ${r.grade}</span>
+      <span class="im3-grade-badge ${gc}" style="padding:2px 7px;font-size:11px;">Grade ${r.grade}</span>${staleChip}
       <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;" title="${r.is_bank?'Bank — scored on the faithful Banking InvestoGenie 2.0 24-ratio/48-pt model (NA ratios excluded from the denominator)':r.is_psx?((r.src&&(r.src.hist==='psx-sa'||r.src.hist==='psx-broker'))?'PSX — full multi-year statement history; scored toward /162':'PSX — TV single-period fallback; reduced denominator (statement history unavailable)'):(r.valuation?'Business-strength score (growth · stability · inventory · cash flow · risk) — valuation is judged separately and shown as an indicator, never folded into the grade':'Scored on all 162 points')}">${r.score}/${r.max||162}</span>
       ${r.is_bank?'<span style="font-size:9px;background:#EEF2FF;color:var(--navy);padding:1px 4px;border-radius:3px;font-weight:700;">BANK</span>':''}
       ${(r.is_bank&&r.max&&r.max<48)?('<span style="font-size:9px;background:var(--orange-l);color:#9A3412;padding:1px 4px;border-radius:3px;font-weight:700;" title="Scored on '+(r.max/2)+' of 24 ratios \u2014 missing inputs (NPL, ROE, CFO, equity\u2026) are excluded from the denominator, so this % is not directly comparable to a full /48 bank.">PARTIAL</span>'):''}
