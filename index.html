@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.239 (supersedes v5.238): TURNAROUND ENRICHMENT DISPLAY + ROW HIGHLIGHTS (owner-directed, pairs with scanner v1.277.0). (1) M2 turnaround table gains an 'Explosive checks' column showing A\u00b7B\u00b7G1\u00b7G2\u00b7C1 dots + the name's IM3 grade + Zacks rank for turnarounds that appear in the Explosive pool (honest 'not screened' when outside it). (2) Explosive tab row highlights: EXPLOSIVE + A + B + Q + strong IM3 (A/B) = gold\u2192green band with a '\u2605 ALL SIGNALS' tag; +Signal T = the richer gold\u2192green\u2192violet band ('\u2605 ALL + T'); any M2 turnaround (Signal T) = a shared violet tint ('\u21A9 TURNAROUND') so all turnarounds group visually. Legend explains the colours in plain language. Display only; no scoring/screen/engine change. -->
 <!-- index.html v5.238 (supersedes v5.237): WAVE ETF-X DISPLAY (owner-directed, pairs with scanner v1.274.0). NEW separate section on the World ETF Engine tab (Tab 16) -- 'UCITS ETFs Holding Verified Explosive Top-Scorers' -- with its OWN violet colour/fonts but the SAME format as the other ETF sections (TER, YTD, 1Y return, price, indicators). It is a DIRECT FEED from the Explosive tab: only stocks firing all of Signal A+B+Q with a strong (A/B) quality grade, and only ETFs whose REAL published holdings (justETF-verified, not sector-guessed) actually contain them. Each row shows the fund, how many verified top-scorers it holds, the tickers held (with grade + a check), and honestly lists any name assigned by sector but NOT found in the real top holdings. Reads data['etf_explosive_verified']; renders empty-state cleanly when nothing qualifies. Display only; no engine/scoring change. -->
 <!-- index.html v5.237 (supersedes v5.236): Q CLARITY + COLLISION FIX (owner: nothing unexplained; how many quarters does Q compare?). (1) The unrelated quality-tier chip 'Q N/M' is renamed 'Quality N/M' with a plain report-card tooltip — it collided with the new Signal Q. (2) Signal Q's dot tooltip + legend now state EXPLICITLY that Q compares exactly ONE quarter (latest vs the same quarter a year ago), is a single-quarter snapshot NOT a multi-quarter streak, names the comparison ('latest quarter vs same quarter last year'), shows the live sales/profit numbers with '1 quarter compared', and points to Signal T for a sustained multi-quarter turn. Display only; no engine/scoring change. -->
 <!-- index.html v5.236 (supersedes v5.235): SIGNAL Q/T RENDER FIX. v5.235 shipped the Q dot and T badge but a stray SEMICOLON terminated the sigCell assignment after A+B, orphaning the Q/T terms as dead expression statements that computed and discarded -- valid JS, zero console errors, so it passed node --check and even the isolated-logic test, but NO Q ever rendered (owner: 'I cant see a single q'). Root cause: my edit appended '+ ...' continuation lines AFTER the original line's closing ';'. Fix: remove that semicolon so A+B+Q+T are one expression, semicolon only at the true end. Verified by evaluating the real sigCell against live MU data (signal_q=true) -> Q dot now present. Also renames pending in v5.237: the unrelated 'Q 9/12' quality-tier column collides with this Q. Display only. -->
@@ -438,6 +439,7 @@
         <p style="margin:0 0 6px;"><b style="color:#065F46;">Signal B — Acceleration.</b> Profit is speeding up, not just growing. It fires when <b>operating-profit growth is over 20%</b> <b>and</b> <b>net profit is growing faster than operating profit</b> — the net-profit ÷ operating-profit growth ratio is above 1.0 (chip <b>A1</b>), meaning gains compound as they flow to the bottom line. <i>Guard:</i> if last year&rsquo;s operating profit was zero or negative, Signal B is held off (you can&rsquo;t measure acceleration off a non-positive base).</p>
         <p style="margin:0 0 6px;"><b style="color:#6D28D9;">Signal Q — Quarterly early warning.</b> The same test as Signal A, but on <b>one quarter</b>: the <b>most recent quarter versus the same quarter one year ago</b> (never versus last quarter — that would just measure the season). It fires when quarterly sales are up more than 20% and quarterly profit up at least 15%. Because it reads a single fresh quarter, it can flag a company turning up to <b>a year before</b> the annual Signal A can. <b>Important — Q compares only ONE quarter.</b> It is a single-quarter snapshot, not proof the company has grown every quarter in a row: a stock can fire Q on one strong quarter. For a <b>sustained, multi-quarter turnaround</b>, look at Signal T below, which watches several rolling quarters bend upward. Honest note: at the screen level the profit figure is earnings-per-share (a close stand-in for operating profit, which isn't published quarterly for every name).</p>
         <p style="margin:0 0 6px;"><b style="color:#6D28D9;">Signal T — The turnaround hook (T \u21A9).</b> This is the early-turnaround detector. It adds up each company's profit over the last four quarters — a <b>rolling full-year total</b> — and watches that total move quarter by quarter. Because every window holds all four seasons, the seasons cancel out. It lights up when that rolling total either <b>rises two or more quarters in a row after a slump</b>, or <b>crosses from a loss into a profit</b> — the classic shape of a business bending upward, typically <b>2 to 4 quarters before</b> the annual numbers show it. It's the flagship signal of the Turnaround watchlist (Tab: M2), and appears here as a purple <b>T \u21A9</b> badge when it fires.</p>
+        <p style="margin:10px 0 6px;padding:9px 13px;border-radius:8px;background:linear-gradient(90deg,#FEF3C7 0%,#D1FAE5 55%,#EDE9FE 100%);border-left:4px solid #6D28D9;"><b style="color:#4C1D95;">\u2605 Highlighted rows &mdash; read the colours.</b> A <b>gold\u2192green</b> row (\u2605 ALL SIGNALS) is the top of the funnel: EXPLOSIVE with all three signals (A, B, Q) firing and a strong quality grade (A/B). If it also shows a live turnaround, it gets the richer <b>gold\u2192green\u2192violet</b> band (\u2605 ALL + T). A plain <b>violet-tinted</b> row (\u21A9 TURNAROUND) is an M2 turnaround name (Signal T fired) &mdash; all turnarounds share that tint so they read as one group. These are the names where the signals agree.</p>
         <div style="margin:8px 0;padding:9px 13px;background:#fff;border-radius:8px;border:1px solid #E5E7EB;">
           <b>How they combine into the verdict:</b>
           <div style="margin-top:4px;">● + ● both &rarr; <b style="color:#059669;">🚀 EXPLOSIVE</b> — growing <i>and</i> accelerating</div>
@@ -2521,12 +2523,23 @@ function calcMbUs(){
     var h='<div class="m2x-card" style="font-size:11.5px;color:#475569;line-height:1.7;"><b>The two halves are judged on different evidence, on purpose.</b> Turnarounds are small and under-covered \u2014 no analyst ranks, no fund trackers \u2014 so they are flagged when <b>independent families of evidence converge</b>: price turning hard, the business inflecting while the scorecard is still weak, the screen verdict, volume surging, analysts raising estimates, outside confirmation as a bonus. Two or more families = flagged. Reference-name self-test (D-127): Credo '+(cal.CRDO?'<b style="color:#059669;">PASS</b>':'<b style="color:#dc2626;">FAIL</b>')+' \u00b7 GE Vernova '+(cal.GEV?'<b style="color:#059669;">PASS</b>':'<b style="color:#dc2626;">FAIL</b>')+'.</div>';
     if(tw.length){
       h+='<div class="m2x-card"><div class="m2x-sec tr">\uD83D\uDD25 Turnaround candidates \u2014 '+w.n_turnaround+' flagged, top '+tw.length+' shown</div>'
-        +'<table><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th title="quick 0-100 quality pre-score \u2014 LOW is expected here">Keystone</th><th>Converging evidence</th><th>6-mo</th><th>YTD</th></tr></thead><tbody>';
+        +'<table><thead><tr><th>Ticker</th><th>Company</th><th>Sector</th><th title="quick 0-100 quality pre-score \u2014 LOW is expected here">Keystone</th><th>Converging evidence</th><th title="The Explosive-tab screen checks for this turnaround, where it appears in the Explosive pool: A (growing), B (accelerating), G1 (revenue gate), G2 (operating-profit gate), C1 (net/op accel). \u2014 = not in the Explosive pool.">Explosive checks<br><span style="font-weight:400;font-size:9px;">A\u00b7B\u00b7G1\u00b7G2\u00b7C1 + IM3 / Zacks</span></th><th>6-mo</th><th>YTD</th></tr></thead><tbody>';
       tw.forEach(function(x){
         var adv=(x.sec_adverse||[]).map(function(e){return '<span title="SEC 8-K material event" style="display:inline-block;background:#FEE2E2;color:#b42318;border:1px solid #fca5a5;border-radius:6px;padding:2px 8px;margin:2px 4px 2px 0;font-size:11px;font-weight:700;">\u26a0 '+e.label+'</span>';}).join('');
         var _tbadge=(x.signal_t&&x.signal_t.fired)?'<span title="Signal T \u2014 the turnaround hook: rolling full-year profit '+(x.signal_t.kind==='crossed'?'crossed from loss into profit':'rising '+(x.signal_t.consec_up||0)+' quarters straight after a slump')+'. The flagship turnaround signal." style="display:inline-block;margin-left:3px;padding:1px 5px;border-radius:8px;font-size:10px;font-weight:800;background:#EDE9FE;color:#6D28D9;border:1px solid #8B5CF6;">T \u21A9</span>':'';
+        // v5.239 Explosive-screen checks for this turnaround (owner: "check signal a,b,g1,g2,c1 for turnarounds")
+        var _dot=function(v){return v===true?'<span style="color:#059669;font-weight:800;" title="passed">\u25CF</span>':v===false?'<span style="color:#DC2626;" title="failed">\u25CB</span>':'<span style="color:#CBD5E1;" title="not in Explosive pool">\u2013</span>';};
+        var _inpool=(x.signal_a!==undefined && (x.signal_a!==null||x.g1!==null||x.im3));
+        var _im3g=(x.im3&&typeof x.im3==='object')?x.im3.grade:null;
+        var _echecks=_inpool
+          ? '<span style="font-family:var(--font-mono,monospace);font-size:11px;letter-spacing:1px;" title="A growing \u00b7 B accelerating \u00b7 G1 revenue gate \u00b7 G2 operating-profit gate \u00b7 C1 net/op acceleration">'
+            +_dot(x.signal_a)+_dot(x.signal_b)+_dot(x.g1)+_dot(x.g2)+_dot(x.c1)+'</span>'
+            +(_im3g?(' <span style="display:inline-block;margin-left:4px;padding:0 5px;border-radius:7px;font-size:10px;font-weight:800;background:#EDE9FE;color:#5B21B6;" title="IM3 quality grade">IM3 '+_im3g+'</span>'):'')
+            +(x.zacks_rank!=null?(' <span style="display:inline-block;margin-left:3px;padding:0 5px;border-radius:7px;font-size:10px;font-weight:800;background:#DBEAFE;color:#1E40AF;" title="Zacks Rank">Z'+x.zacks_rank+'</span>'):'')
+          : '<span style="color:#CBD5E1;font-size:10px;" title="Not in the Explosive pool \u2014 no screen checks available">not screened</span>';
         h+='<tr><td><b style="font-size:13px;">'+x.ticker+'</b></td><td>'+(x.name||'\u2014')+'</td><td>'+(x.sector||'\u2014')+'</td>'
           +'<td>'+(x.keystone!=null?Math.round(x.keystone):'\u2014')+'</td><td>'+(x.signals||[]).map(chip).join('')+_tbadge+adv+'</td>'
+          +'<td>'+_echecks+'</td>'
           +'<td>'+pct(x.perf_6m)+'</td><td>'+pct(x.perf_ytd)+'</td></tr>';
       });
       h+='</tbody></table></div>';
@@ -3795,9 +3808,29 @@ function renderExplosiveTable(elId, rows, market, mode) {
     const upx=r.ucits_proxy;
     const proxyLine=upx?`<div style="font-size:9.5px;color:#0F766E;margin-top:2px;" title="${(upx.tier_label||'').replace(/"/g,'')}">🇮🇪 UCITS proxy: <b>${upx.name}</b> (${upx.isin}${upx.ter!=null?', TER '+upx.ter+'%':''})${ucitsPerf(upx)}</div>`:'';
 
+    // v5.239 ROW HIGHLIGHTS (owner-directed):
+    //  (a) ALL-SIGNALS-FIRE: EXPLOSIVE + A + B + Q all fire + strong IM3 grade (A/B) -> the top of the
+    //      funnel gets an attractive gold->green band; +Signal T -> the richer gold->green->violet band.
+    //  (b) TURNAROUND: any name that also fires Signal T (an M2 turnaround) gets a shared violet tint so
+    //      all turnarounds read as one group at a glance.
+    const _im3g = (r.im3 && typeof r.im3==='object') ? r.im3.grade : null;
+    const _allFire = String(r.verdict||'').startsWith('EXPLOSIVE')
+        && r.signal_a===true && r.signal_b===true && r.signal_q===true && (_im3g==='A'||_im3g==='B');
+    const _isTurn = !!(r.signal_t && r.signal_t.fired);
+    const _allFireT = _allFire && _isTurn;
+    let _hlStyle = '';
+    if (_allFireT)      _hlStyle = 'background:linear-gradient(90deg,#FEF3C7 0%,#D1FAE5 55%,#EDE9FE 100%);box-shadow:inset 4px 0 0 #6D28D9;';
+    else if (_allFire)  _hlStyle = 'background:linear-gradient(90deg,#FEF9C3 0%,#DCFCE7 100%);box-shadow:inset 4px 0 0 #16A34A;';
+    else if (_isTurn)   _hlStyle = 'background:#F5F3FF;box-shadow:inset 4px 0 0 #8B5CF6;';   // shared turnaround tint
+    const _hlAttr = hidden ? ' data-exphidden="1" style="display:none;"' : (_hlStyle ? (' style="'+_hlStyle+'"') : '');
+    const _hlBadge = _allFireT
+        ? '<span title="Top of the funnel: EXPLOSIVE + all three signals (A, B, Q) + strong quality grade + a live turnaround (Signal T). The strongest profile on the board." style="display:inline-block;margin-left:5px;padding:1px 6px;border-radius:9px;font-size:9px;font-weight:800;background:#6D28D9;color:#fff;vertical-align:middle;">\u2605 ALL + T</span>'
+        : (_allFire ? '<span title="Top of the funnel: EXPLOSIVE verdict with all three signals (A growing, B accelerating, Q latest-quarter strong) AND a strong quality grade (A/B)." style="display:inline-block;margin-left:5px;padding:1px 6px;border-radius:9px;font-size:9px;font-weight:800;background:#16A34A;color:#fff;vertical-align:middle;">\u2605 ALL SIGNALS</span>'
+        : (_isTurn ? '<span title="This name is an M2 turnaround (Signal T fired: rolling full-year profit turning up). All turnarounds share the violet tint." style="display:inline-block;margin-left:5px;padding:1px 6px;border-radius:9px;font-size:9px;font-weight:800;background:#8B5CF6;color:#fff;vertical-align:middle;">\u21A9 TURNAROUND</span>' : ''));
+
     // Main data row
-    html+=`<tr class="${cls}"${hidden?' data-exphidden="1" style="display:none;"':''}>
-      <td><b>${em(tk)}</b></td>
+    html+=`<tr class="${cls}"${_hlAttr}>
+      <td><b>${em(tk)}</b>${_hlBadge}</td>
       <td>${em(r.name)}${proxyLine}</td>
       <td>${em(r.sector)}</td>
       <td>${pct(r.rev_growth)}</td>
