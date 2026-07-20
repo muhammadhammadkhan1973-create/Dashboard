@@ -198,18 +198,30 @@ jobs:
               except Exception:
                   stale = True
 
-          changed = names_changed or needs_heal or scorer_changed or stale
+          # INCREMENTAL SCORING (owner: the Actions job ran 9+ min while the scanner took
+          # ~5 -- the delta was THIS pipeline re-scoring ALL ~128 names whenever the ticker
+          # SET changed at all, though membership shifts a little every run. A membership
+          # change with every grade present needs NOTHING scored. Now:
+          #   full re-score  = scorer/bank-input hash changed OR 14-day ceiling OR force
+          #   incremental    = ONLY missing_im3 (no current-ver grade, or stale_ver-marked)
+          #   names_changed alone no longer triggers anything (nothing to compute).
+          full_rescore = scorer_changed or stale
+          score_tickers = new_tickers if full_rescore else missing_im3
+          changed = full_rescore or bool(missing_im3)
           print(f"Stale (>{MAX_AGE_DAYS}d): {stale} (last scored {_last})")
           print(f"Previous:      {prev_tickers}")
           print(f"New:           {new_tickers}")
-          print(f"Names changed: {names_changed}")
+          print(f"Names changed: {names_changed} (informational only -- no longer a trigger)")
           print(f"Missing im3:   {missing_im3}")
+          print(f"Full re-score: {full_rescore} | to score: {len(score_tickers)} of {len(new_tickers)}")
           print(f"Changed:       {changed}")
 
           # Write output for next step
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"changed={'true' if changed else 'false'}\n")
               f.write(f"tickers={' '.join(new_tickers)}\n")
+              f.write(f"score_tickers={' '.join(score_tickers)}\n")
+              f.write(f"full_rescore={'true' if full_rescore else 'false'}\n")
           EOF
 
       - name: Score explosive stocks with IM3
@@ -218,6 +230,9 @@ jobs:
         # re-scores the CURRENT set with the live im3_score.py (e.g. after a scorer change),
         # without any hand-edit of data.json.
         if: steps.check_explosive.outputs.changed == 'true' || github.event.inputs.force_im3 == 'true'
+        env:
+          SCORE_TICKERS: ${{ steps.check_explosive.outputs.score_tickers }}
+          FULL_RESCORE: ${{ steps.check_explosive.outputs.full_rescore }}
         run: |
           python3 << 'EOF'
           import json, subprocess, sys
@@ -255,14 +270,25 @@ jobs:
               print("No explosive stocks to score")
               sys.exit(0)
 
-          print(f"Scoring {len(explosive_tickers)} explosive stocks: {explosive_tickers}")
+          # INCREMENTAL: score only the trigger-selected subset unless this is a full
+          # re-score (scorer change / 14-day ceiling / manual force). explosive_tickers
+          # (the full current set) is still stored for change-detection bookkeeping.
+          import os as _os
+          _force = _os.environ.get('FORCE_IM3', '') == 'true'
+          _full = _force or _os.environ.get('FULL_RESCORE', '') == 'true'
+          _sel = [t for t in _os.environ.get('SCORE_TICKERS', '').split() if t]
+          score_list = explosive_tickers if (_full or not _sel) else [t for t in _sel if t in explosive_tickers]
+          if not score_list:
+              score_list = explosive_tickers
+          print(f"Scoring {len(score_list)} of {len(explosive_tickers)} "
+                f"({'FULL re-score' if _full or score_list == explosive_tickers else 'incremental'}): {score_list}")
 
           # Run im3_score.py with --json flag
           # timeout=1800: the set now includes ~55 financials (bank model) on top of the
           # explosive + TCE-HIGH names; ~60 tickers x ~15s ~= 15 min, well under the job's
           # 55-min budget but over the old 600s subprocess cap.
           result = subprocess.run(
-              [sys.executable, 'im3_score.py', '--json'] + explosive_tickers,
+              [sys.executable, 'im3_score.py', '--json'] + score_list,
               capture_output=True, text=True, timeout=1800
           )
 
@@ -337,9 +363,11 @@ jobs:
 
           # Store ticker list for change detection next run
           data['im3_explosive_tickers'] = explosive_tickers
-          # P4: stamp the score time so the next run can apply a 14-day staleness ceiling
+          # P4: stamp the 14-day staleness clock ONLY on FULL re-scores -- an incremental
+          # top-up must not reset the ceiling, or full-set freshness would never re-fire.
           from datetime import datetime, timezone
-          data['im3_last_scored_utc'] = datetime.now(timezone.utc).isoformat()
+          if _full or score_list == explosive_tickers:
+              data['im3_last_scored_utc'] = datetime.now(timezone.utc).isoformat()
 
           # Write updated data.json
           with open('data.json', 'w') as f:
