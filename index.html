@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.244 (supersedes v5.243): PINK-TIER IM3 (pairs with scanner v1.280.0 + daily.yml -- owner: 'all zacks 1 and 2 should be im scored as well'). Radar-row grades load into im3Scores so the pink rows' IM3 Quality column renders real grades; the ZACKS DISCOVERY verdict is now IN-SCOPE for scoring so an unscored pink row shows 'Pending' (fills on the next workflow pass) instead of a dead dash. Display only. -->
 <!-- index.html v5.243 (supersedes v5.242): ZACKS DISCOVERIES AS PINK FULL-DATA ROWS (owner: 'after yellow in pink background filling all columns as green and yellow are doing'; pairs with scanner v1.279.0). The chip strip is replaced by FULL TABLE ROWS: every Zacks #1/#2 name off the main board renders as a pink row (#FCE7F3, deep-pink left bar, Z-DISCOVERY badge) positioned after the yellow tier and before the hidden NOT-EXPLOSIVE section -- outside-screen names carry real foundation-universe data (name/sector/price/Rev-YoY/YTD/1Y/trend; statement columns honest dashes), screened NOT-EXPLOSIVE radar names are LIFTED out of the hidden tier with their full real records. The symbol key now explains all three base row colours (green = full pass, amber = partial, pink = Zacks discovery) -- also answering the owner's colour question permanently. Near-miss chips + all v5.242 features retained. -->
 <!-- index.html v5.242 (supersedes v5.241): ZACKS STRONG-BUY RADAR + NEAR-MISS CHIPS (owner-directed, pairs with scanner v1.278.0). (1) Blue ⚡ radar strip above the Explosive table: every Zacks #1/#2 name from the existing weekly scrape that the growth gates did NOT surface (60 on first run incl. GOOGL/JPM/GS/C at #1) — the 40%-weighted revision signal finally used for DISCOVERY; Z#1 then Z#2 groups, IM3 chip when scored, hover = why off the main board, on-board Strong-Buys counted. (2) Amber ◐ near-miss chip in the verdict cell: fails exactly ONE of G1/G2 by <3pts with everything else passing. (3) Symbol key updated. Display only. -->
 <!-- index.html v5.241 (supersedes v5.240): NOTHING-UNEXPLAINED PASS (owner: 'why do I see turnaround logos on the same stock? nothing on tabs should be unexplained'). (1) The duplicate '\u21A9 TURNAROUND' ticker badge is REMOVED from Explosive rows -- it repeated the T \u21A9 chip already shown in the Signals column for the same signal; the violet row tint stays as the group marker. (2) An always-visible 'Row marks & signal dots' key now sits directly above the Explosive table (next to the existing Conditions-chips line) explaining the four signal dots, T \u21A9, \u2605 ALL SIGNALS, \u2605 ALL + T, the violet tint, and the UCITS-proxy line. (3) The M2 turnaround table gains a matching 'How to read this table' key explaining the five check dots (\u25CF/\u25CB/\u2013 in A\u00b7B\u00b7G1\u00b7G2\u00b7C1 order), the IM3 and Zacks chips, T \u21A9, and why 'not screened' is an honest blank. Display only. -->
@@ -3124,6 +3125,13 @@ function calcExplosive(){
       if (r.im3 && !r.im3.error) im3Scores[r.ticker] = r.im3;
     });
   }
+  // v5.244: ZACKS DISCOVERY pink-tier rows now carry IM3 too (scored by the workflow,
+  // carried by scanner v1.280.0) -- load them so im3CellHTML renders their grades.
+  if (LIVE && LIVE.zacks_radar && Array.isArray(LIVE.zacks_radar.rows)) {
+    LIVE.zacks_radar.rows.forEach(r => {
+      if (r.im3 && !r.im3.error) im3Scores[r.ticker] = r.im3;
+    });
+  }
   // PSX IM3 scores (written by the daily.yml PSX step into the PSX record arrays)
   ['explosive_psx','tce_psx','psx_candidates'].forEach(function(key){
     if (LIVE && Array.isArray(LIVE[key])) {
@@ -3185,7 +3193,7 @@ function im3CellHTML(ticker, verdict) {
   // so they will never be scored — show "—", not a "pending" that never resolves.
   if (!r || r.error) {
     const u=(verdict||'').toUpperCase();
-    const outOfScope = u && !(u.startsWith('EXPLOSIVE')||u.startsWith('FINANCIAL')||u.startsWith('QUALITY-GROWTH')||u.startsWith('INFLECTION')||u.startsWith('PARTIAL'));
+    const outOfScope = u && !(u.startsWith('ZACKS')||u.startsWith('EXPLOSIVE')||u.startsWith('FINANCIAL')||u.startsWith('QUALITY-GROWTH')||u.startsWith('INFLECTION')||u.startsWith('PARTIAL'));
     return outOfScope
       ? `<span style="color:#cbd5e1;font-size:11px;" title="Not graded — NOT-EXPLOSIVE / insufficient names are outside the IM3 scoring set">—</span>`
       : `<span style="color:#9ca3af;font-size:11px;" title="Queued — IM3 scores are written by the scheduled GitHub Actions scan">Pending next scan</span>`;
