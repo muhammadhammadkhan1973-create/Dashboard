@@ -139,8 +139,18 @@ jobs:
               if r.get('verdict', '').startswith('QUALITY-GROWTH')
               or r.get('verdict', '').startswith('INFLECTION')
           ])
-          # Combined — score explosives, banks (System B), TCE-HIGH, and the watchlist
-          new_tickers = sorted(set(explosive + financial + tce_high + watchlist))
+          # ZACKS DISCOVERY names (owner 2026-07-21: 'all zacks 1 and 2 should be im scored
+          # as well'): the pink tier -- outside-screen radar rows + screened NOT-EXPLOSIVE
+          # names stamped zacks_discovery -- joins the scoring set. ~60 names one-time,
+          # then incremental (only new/missing thereafter).
+          zdisc = sorted(set(
+              [r['ticker'] for r in (data.get('zacks_radar') or {}).get('rows', [])
+               if r.get('ticker')]
+              + [r['ticker'] for r in data.get('explosive_us', [])
+                 if r.get('zacks_discovery') and r.get('ticker')]
+          ))
+          # Combined — score explosives, banks (System B), TCE-HIGH, watchlist, and discoveries
+          new_tickers = sorted(set(explosive + financial + tce_high + watchlist + zdisc))
 
           # Read previous list (stored in data.json from last run)
           prev_tickers = sorted(data.get('im3_explosive_tickers', []))
@@ -159,10 +169,11 @@ jobs:
               return False
 
           ex_recs  = data.get('explosive_us', [])
+          zr_recs  = (data.get('zacks_radar') or {}).get('rows', [])
           tce_recs = data.get('tce_us', [])
           missing_im3 = [
               t for t in new_tickers
-              if not (_has_im3(ex_recs, t) or _has_im3(tce_recs, t))
+              if not (_has_im3(ex_recs, t) or _has_im3(tce_recs, t) or _has_im3(zr_recs, t))
           ]
           needs_heal = bool(missing_im3)
 
@@ -264,7 +275,17 @@ jobs:
               if r.get('verdict', '').startswith('QUALITY-GROWTH')
               or r.get('verdict', '').startswith('INFLECTION')
           ])
-          explosive_tickers = sorted(set(explosive + financial + tce_high + watchlist))
+          # ZACKS DISCOVERY names (owner 2026-07-21: 'all zacks 1 and 2 should be im scored
+          # as well'): the pink tier -- outside-screen radar rows + screened NOT-EXPLOSIVE
+          # names stamped zacks_discovery -- joins the scoring set. ~60 names one-time,
+          # then incremental (only new/missing thereafter).
+          zdisc = sorted(set(
+              [r['ticker'] for r in (data.get('zacks_radar') or {}).get('rows', [])
+               if r.get('ticker')]
+              + [r['ticker'] for r in data.get('explosive_us', [])
+                 if r.get('zacks_discovery') and r.get('ticker')]
+          ))
+          explosive_tickers = sorted(set(explosive + financial + tce_high + watchlist + zdisc))
 
           if not explosive_tickers:
               print("No explosive stocks to score")
@@ -350,6 +371,11 @@ jobs:
                   record['im3'] = score_map[tk]
           for record in data.get('tce_us', []):
               tk = record['ticker']
+              if tk in score_map:
+                  record['im3'] = score_map[tk]
+          # ZACKS DISCOVERY pink-tier rows receive their scores as well
+          for record in (data.get('zacks_radar') or {}).get('rows', []):
+              tk = record.get('ticker')
               if tk in score_map:
                   record['im3'] = score_map[tk]
 
