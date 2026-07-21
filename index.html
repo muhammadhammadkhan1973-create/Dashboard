@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.243 (supersedes v5.242): ZACKS DISCOVERIES AS PINK FULL-DATA ROWS (owner: 'after yellow in pink background filling all columns as green and yellow are doing'; pairs with scanner v1.279.0). The chip strip is replaced by FULL TABLE ROWS: every Zacks #1/#2 name off the main board renders as a pink row (#FCE7F3, deep-pink left bar, Z-DISCOVERY badge) positioned after the yellow tier and before the hidden NOT-EXPLOSIVE section -- outside-screen names carry real foundation-universe data (name/sector/price/Rev-YoY/YTD/1Y/trend; statement columns honest dashes), screened NOT-EXPLOSIVE radar names are LIFTED out of the hidden tier with their full real records. The symbol key now explains all three base row colours (green = full pass, amber = partial, pink = Zacks discovery) -- also answering the owner's colour question permanently. Near-miss chips + all v5.242 features retained. -->
 <!-- index.html v5.242 (supersedes v5.241): ZACKS STRONG-BUY RADAR + NEAR-MISS CHIPS (owner-directed, pairs with scanner v1.278.0). (1) Blue ⚡ radar strip above the Explosive table: every Zacks #1/#2 name from the existing weekly scrape that the growth gates did NOT surface (60 on first run incl. GOOGL/JPM/GS/C at #1) — the 40%-weighted revision signal finally used for DISCOVERY; Z#1 then Z#2 groups, IM3 chip when scored, hover = why off the main board, on-board Strong-Buys counted. (2) Amber ◐ near-miss chip in the verdict cell: fails exactly ONE of G1/G2 by <3pts with everything else passing. (3) Symbol key updated. Display only. -->
 <!-- index.html v5.241 (supersedes v5.240): NOTHING-UNEXPLAINED PASS (owner: 'why do I see turnaround logos on the same stock? nothing on tabs should be unexplained'). (1) The duplicate '\u21A9 TURNAROUND' ticker badge is REMOVED from Explosive rows -- it repeated the T \u21A9 chip already shown in the Signals column for the same signal; the violet row tint stays as the group marker. (2) An always-visible 'Row marks & signal dots' key now sits directly above the Explosive table (next to the existing Conditions-chips line) explaining the four signal dots, T \u21A9, \u2605 ALL SIGNALS, \u2605 ALL + T, the violet tint, and the UCITS-proxy line. (3) The M2 turnaround table gains a matching 'How to read this table' key explaining the five check dots (\u25CF/\u25CB/\u2013 in A\u00b7B\u00b7G1\u00b7G2\u00b7C1 order), the IM3 and Zacks chips, T \u21A9, and why 'not screened' is an honest blank. Display only. -->
 <!-- index.html v5.240 (supersedes v5.239): KEEP-LAST-GOOD IM3 DISPLAY (pairs with scanner v1.277.2 + workflow error-persist). When the scanner marks a carried IM3 grade stale_ver (scorer upgraded, name queued for re-score), the cell now KEEPS showing the last confirmed grade with a small amber 're-scoring' chip and a plain-language tooltip -- instead of the old behaviour where the grade was deleted and the cell blanked (owner's AVGO/NEM/LLY audit: wipe-before-rescore erased grades that then failed to re-score). Display only. -->
@@ -3752,20 +3753,10 @@ function renderExplosiveTable(elId, rows, market, mode) {
     <strong style="color:var(--red);">✗ NOT EXPLOSIVE</strong>: gates not met, or operating profit declining. ·
     <strong style="color:var(--navy);">🏦 FINANCIAL</strong>: a bank. The EXPLOSIVE test is built entirely on <em>industrial</em> income-statement mechanics — revenue growth (G1), operating-profit growth (G2), net profit accelerating faster than operating profit (A1/A2), and operating cash flow backing earnings (C1/C3). A bank&rsquo;s accounts don&rsquo;t have those in the same sense: there is no operating-profit cascade, and operating cash flow is dominated by loan &amp; deposit flows (so CFO≥NP fails even for a healthy, growing lender). So a bank can never pass the EXPLOSIVE gates <em>on merit</em> — every bank is carved out and judged on the <strong>Banking InvestoGenie 2.0 model</strong> — the faithful 24-ratio / 48-point Sarmaaya bank scorecard (Growth 5 · Stability 13 · Business 6), PSX-calibrated (SBP benchmarks) for PSX banks and US-calibrated for US banks — and the banks shown here are ranked by that score.
     ${(function(){
-      var zr=(LIVE&&LIVE.zacks_radar)||null; if(!zr||!(zr.filtered_out||[]).length) return '';
-      var ones=zr.filtered_out.filter(function(e){return e.rank===1;});
-      var twos=zr.filtered_out.filter(function(e){return e.rank===2;});
-      var chip=function(e){
-        var im=e.im3_grade?(' <span style=\"background:#EDE9FE;color:#5B21B6;border-radius:6px;padding:0 4px;font-size:9px;font-weight:800;\">IM3 '+e.im3_grade+'</span>'):'';
-        var nm=(e.near_miss&&e.near_miss.gate)?(' <span style=\"color:#92400E;font-size:9px;font-weight:800;\">\u25D0'+e.near_miss.gate+'</span>'):'';
-        return '<span title=\"'+(e.status||'').replace(/\"/g,'')+'\" style=\"display:inline-block;margin:2px 3px;padding:2px 8px;border-radius:9px;background:#fff;border:1px solid '+(e.rank===1?'#1D4ED8':'#93C5FD')+';font-size:11px;font-weight:700;color:#1E3A8A;\">'+e.ticker+' <span style=\"font-size:9px;color:'+(e.rank===1?'#1D4ED8':'#60A5FA')+';\">Z#'+e.rank+'</span>'+im+nm+'</span>';
-      };
-      return '<div style=\"margin:10px 0 6px;padding:9px 12px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;\">'
-        +'<b style=\"color:#1E3A8A;\">\u26A1 Zacks Strong-Buy Radar (discovery)</b> '
-        +'<span style=\"font-size:10.5px;color:#3730A3;\">\u2014 the '+zr.filtered_out.length+' Zacks #1/#2 names (of '+zr.n_rank12+' ranked Strong Buy/Buy in the weekly ~306-name scrape) that the growth gates did NOT surface \u2014 the 40%-weighted estimate-revision signal used for DISCOVERY for the first time. Hover any name for why it is off the main board; '+(zr.on_board||[]).length+' more Strong-Buys are ALREADY on the board below with their \u26A1Z chips ('+(zr.on_board||[]).slice(0,8).join(', ')+'). These are candidates for the value/compounder lens, not Explosive verdicts. PSX has no Zacks coverage.</span>'
-        +'<div style=\"margin-top:6px;\"><span style=\"font-size:10px;font-weight:800;color:#1D4ED8;\">Z#1 Strong Buy:</span> '+ones.map(chip).join('')+'</div>'
-        +(twos.length?('<div style=\"margin-top:4px;\"><span style=\"font-size:10px;font-weight:800;color:#60A5FA;\">Z#2 Buy:</span> '+twos.map(chip).join('')+'</div>'):'')
-        +'</div>';
+      var zr=(LIVE&&LIVE.zacks_radar)||null; if(!zr) return '';
+      var n=(zr.rows||[]).length+(zr.n_lifted||0); if(!n) return '';
+      return '<div style=\"margin:10px 0 6px;padding:8px 12px;background:#FDF2F8;border:1px solid #FBCFE8;border-radius:10px;font-size:11px;color:#9D174D;\">'
+        +'<b>\u26A1 Zacks Strong-Buy discoveries \u2014 '+n+' name(s)</b> shown as <b style=\"background:#FCE7F3;border:1px solid #DB2777;padding:0 5px;border-radius:6px;\">pink rows</b> after the yellow tier in the table below: every Zacks #1/#2 name (weekly ~306-name scrape) your growth gates did NOT surface \u2014 the 40%-weighted estimate-revision signal used for discovery. Real market data from the foundation universe fills their columns; statement-computed columns (OP\u00b7NP YoY, signals) show honest dashes. '+(zr.on_board||[]).length+' more Strong-Buys are already on the board with \u26A1Z chips.</div>';
     })()}
     <div style="margin-top:6px;padding:7px 10px;background:#FAF5FF;border:1px solid #DDD6FE;border-radius:8px;">
     <b style="color:#4C1D95;">Row marks &amp; signal dots</b> —
@@ -3773,6 +3764,9 @@ function renderExplosiveTable(elId, rows, market, mode) {
     <b style="background:#16A34A;color:#fff;padding:0 5px;border-radius:7px;font-size:10px;">\u2605 ALL SIGNALS</b> (gold\u2192green row) = EXPLOSIVE verdict + A, B and Q all fired + quality grade A/B — the top of the funnel. ·
     <b style="background:#6D28D9;color:#fff;padding:0 5px;border-radius:7px;font-size:10px;">\u2605 ALL + T</b> (gold\u2192green\u2192violet row) = all of that <i>plus</i> a live turnaround — the strongest profile on the board. ·
     <b style="background:#F5F3FF;border:1px solid #8B5CF6;color:#5B21B6;padding:0 5px;border-radius:7px;font-size:10px;">violet-tinted row</b> = a turnaround name (its T \u21A9 is lit in the Signals column); every turnaround shares this tint so the group reads at a glance. ·
+    <b style="background:var(--green-l);border:1px solid #16A34A;color:#065F46;padding:0 5px;border-radius:7px;font-size:10px;">green row</b> = full EXPLOSIVE pass (revenue &gt;20% + operating profit ≥ 15% + profit accelerating). ·
+    <b style="background:var(--orange-l);border:1px solid #D97706;color:#92400E;padding:0 5px;border-radius:7px;font-size:10px;">amber row</b> = partial pass (QUALITY-GROWTH / INFLECTION / bank on its own scorecard) — interesting but incomplete. ·
+    <b style="background:#FCE7F3;border:1px solid #DB2777;color:#9D174D;padding:0 5px;border-radius:7px;font-size:10px;">pink row</b> = Zacks Discovery — ranked Strong Buy/Buy by the estimate-revision model but outside the growth gates; a value/compounder candidate, not an Explosive verdict. ·
     <b style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;padding:0 5px;border-radius:7px;font-size:10px;">◐ near-miss</b> = fails exactly ONE gate by under 3 points with everything else passing — one good quarter from the full verdict. ·
     <b>\U0001F1EE\U0001F1EA UCITS proxy</b> line under a name = the Irish-domiciled ETF that holds the stock (your estate-tax-safe route to the exposure).
     </div>
@@ -3784,7 +3778,7 @@ function renderExplosiveTable(elId, rows, market, mode) {
   if(mode!=='financials') html+=maExplainerHTML();
 
   const showIM3 = (market==='us' || market==='psx');
-  const hiddenCount = rows.filter(r=>{const u=(r.verdict||'').toUpperCase();return u.startsWith('NOT EXPLOSIVE')||u==='INSUFFICIENT DATA';}).length;
+  const hiddenCount = rows.filter(r=>{if(r&&r.zacks_discovery)return false;const u=(r.verdict||'').toUpperCase();return u.startsWith('NOT EXPLOSIVE')||u==='INSUFFICIENT DATA';}).length;
   if(hiddenCount>0){
     html+=`<div style="margin:6px 0;"><button data-exptoggle data-expn="${hiddenCount}" onclick="toggleNotExplosive('${elId}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--line,#e5e7eb);background:#fff;border-radius:6px;cursor:pointer;color:var(--grey-d);">Show ${hiddenCount} not-explosive / insufficient</button></div>`;
   }
@@ -3811,12 +3805,20 @@ function renderExplosiveTable(elId, rows, market, mode) {
     <th title="Trend (moving averages): ▲ Uptrend = price above its 200-day average (healthy) · ▼ Downtrend = below it (falling-knife risk) · golden/death = 50-day crossing above/below the 200-day. Describes the price trend only; never changes the verdict. See the Trend explainer above.">Trend<div style="font-size:9px;font-weight:400;opacity:.85;">vs 200-DMA</div></th>
   </tr></thead><tbody>`;
 
-  const _rank=v=>{const u=(v||'').toUpperCase();return u.startsWith('EXPLOSIVE')?0:u.startsWith('INFLECTION')?1:u.startsWith('QUALITY')?2:u.startsWith('FINANCIAL')?3:u.startsWith('PARTIAL')?4:u.startsWith('NOT EXPLOSIVE')?5:6;};
+  const _rank=v=>{const u=(v||'').toUpperCase();return u.startsWith('EXPLOSIVE')?0:u.startsWith('INFLECTION')?1:u.startsWith('QUALITY')?2:u.startsWith('FINANCIAL')?3:u.startsWith('PARTIAL')?4:u.startsWith('ZACKS')?4.6:u.startsWith('NOT EXPLOSIVE')?5:6;}
+  // v5.243: a zacks_discovery-stamped record (screened NOT-EXPLOSIVE at Zacks #1/#2) is LIFTED
+  // out of the hidden tier into the pink discovery tier (4.6) -- after yellow, before hidden.
+  const _rankZ=r=>(r&&r.zacks_discovery&&_rank(r.verdict)>=5)?4.6:_rank(r.verdict);;
   const _im3pct=r=>{const m=r&&r.im3;return (m&&typeof m.pct==='number')?m.pct:-1;};
   const _im3full=r=>{const m=r&&r.im3;return (m&&m.max&&m.max>=48)?1:0;};
   const _ss=r=>(r&&typeof r.strength_score==='number')?r.strength_score:-1;
-  const _ordered=[...rows].sort((a,b)=>{
-    const dr=_rank(a.verdict)-_rank(b.verdict); if(dr) return dr;
+  // v5.243 ZACKS DISCOVERY pink tier: append the scanner-built foundation-data rows (US only;
+  // PSX has no Zacks coverage). Dedup on ticker so a name that enters the screen later never doubles.
+  const _zrows=(market==='us'&&LIVE&&LIVE.zacks_radar&&Array.isArray(LIVE.zacks_radar.rows))?LIVE.zacks_radar.rows:[];
+  const _zseen=new Set(rows.map(r=>r&&r.ticker));
+  const _zmerged=[...rows,..._zrows.filter(z=>z&&!_zseen.has(z.ticker))];
+  const _ordered=[..._zmerged].sort((a,b)=>{
+    const dr=_rankZ(a)-_rankZ(b); if(dr) return dr;
     // banks (FINANCIAL) are ranked by their System-B score — merit, highest first
     if((a.verdict||'').toUpperCase().startsWith('FINANCIAL')&&(b.verdict||'').toUpperCase().startsWith('FINANCIAL')){
       const _fd=_im3full(b)-_im3full(a); if(_fd) return _fd;   // full 24-ratio banks rank above reduced-set
@@ -3844,7 +3846,7 @@ function renderExplosiveTable(elId, rows, market, mode) {
     + _sigDot(r.signal_q,'Q','Signal Q \u2014 quarterly early warning. Compares ONE quarter: the latest quarter vs the SAME quarter one year ago (not last quarter \u2014 that would just be the season). It is a single-quarter snapshot, NOT a multi-quarter streak \u2014 a company can fire Q on one strong quarter. For a sustained multi-quarter turn, see the T badge (Signal T). Fires when quarterly sales up >20% AND quarterly profit up >=15%.' + (r.q_rev_g!=null?' [latest quarter vs same quarter last year: sales '+(r.q_rev_g>0?'+':'')+r.q_rev_g.toFixed(0)+'%, profit '+(r.q_eps_g!=null?(r.q_eps_g>0?'+':'')+r.q_eps_g.toFixed(0)+'%':'n/a')+' \u2014 1 quarter compared]':''))
     + ((r.signal_t&&r.signal_t.fired)?`<span title="Signal T \u2014 the turnaround hook: this company's rolling full-year profit ${r.signal_t.kind==='crossed'?'just crossed from loss into profit':'has risen '+(r.signal_t.consec_up||0)+' quarters straight after a slump'}. An early turnaround sign, 2-4 quarters before the annual numbers show it." style="display:inline-block;margin-left:3px;padding:1px 5px;border-radius:8px;font-size:10px;font-weight:800;background:#EDE9FE;color:#6D28D9;border:1px solid #8B5CF6;">T \u21A9</span>`:'');
     const why=explosiveWhy(r.verdict);
-    const hidden=_rank(r.verdict)>=5;
+    const hidden=_rankZ(r)>=5;
     const upx=r.ucits_proxy;
     const proxyLine=upx?`<div style="font-size:9.5px;color:#0F766E;margin-top:2px;" title="${(upx.tier_label||'').replace(/"/g,'')}">🇮🇪 UCITS proxy: <b>${upx.name}</b> (${upx.isin}${upx.ter!=null?', TER '+upx.ter+'%':''})${ucitsPerf(upx)}</div>`:'';
 
@@ -3862,11 +3864,15 @@ function renderExplosiveTable(elId, rows, market, mode) {
     if (_allFireT)      _hlStyle = 'background:linear-gradient(90deg,#FEF3C7 0%,#D1FAE5 55%,#EDE9FE 100%);box-shadow:inset 4px 0 0 #6D28D9;';
     else if (_allFire)  _hlStyle = 'background:linear-gradient(90deg,#FEF9C3 0%,#DCFCE7 100%);box-shadow:inset 4px 0 0 #16A34A;';
     else if (_isTurn)   _hlStyle = 'background:#F5F3FF;box-shadow:inset 4px 0 0 #8B5CF6;';   // shared turnaround tint
+    // v5.243: PINK discovery tier -- every Zacks #1/#2 name the growth gates didn't surface,
+    // shown as a full row after the yellow tier (owner-directed).
+    if (r.zacks_discovery) _hlStyle = 'background:#FCE7F3;box-shadow:inset 4px 0 0 #DB2777;';
     const _hlAttr = hidden ? ' data-exphidden="1" style="display:none;"' : (_hlStyle ? (' style="'+_hlStyle+'"') : '');
     const _hlBadge = _allFireT
         ? '<span title="Top of the funnel: EXPLOSIVE + all three signals (A, B, Q) + strong quality grade + a live turnaround (Signal T). The strongest profile on the board." style="display:inline-block;margin-left:5px;padding:1px 6px;border-radius:9px;font-size:9px;font-weight:800;background:#6D28D9;color:#fff;vertical-align:middle;">\u2605 ALL + T</span>'
         : (_allFire ? '<span title="Top of the funnel: EXPLOSIVE verdict with all three signals (A growing, B accelerating, Q latest-quarter strong) AND a strong quality grade (A/B)." style="display:inline-block;margin-left:5px;padding:1px 6px;border-radius:9px;font-size:9px;font-weight:800;background:#16A34A;color:#fff;vertical-align:middle;">\u2605 ALL SIGNALS</span>'
-        : '');   // v5.241: the separate '\u21A9 TURNAROUND' ticker badge is REMOVED (owner: 'why do I see
+        : (r.zacks_discovery ? '<span title="Zacks Discovery: this name is ranked #'+(r.zacks_rank||'')+' ('+(Number(r.zacks_rank)===1?'Strong Buy':'Buy')+') by Zacks\u2019 earnings-estimate-revision model but was NOT surfaced by the growth gates \u2014 a value/compounder candidate from your 40%-weighted Zacks lens, not an Explosive verdict. Columns the growth screen computes from financial statements (OP YoY, NP YoY, signals) show honest dashes." style="display:inline-block;margin-left:5px;padding:1px 6px;border-radius:9px;font-size:9px;font-weight:800;background:#DB2777;color:#fff;vertical-align:middle;">Z-DISCOVERY</span>'
+        : ''));   // v5.241: the separate '\u21A9 TURNAROUND' ticker badge is REMOVED (owner: 'why do I see
                   // turnaround logos on the same stock?'). It duplicated the T \u21A9 chip already shown in the
                   // Signals column for the very same signal. The violet row tint stays as the group marker and
                   // is now explained in the always-visible symbol key above the table.
