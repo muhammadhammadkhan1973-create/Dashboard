@@ -402,6 +402,11 @@ jobs:
           print(f"[stamp check] force={_force} FULL_RESCORE='{_os.environ.get('FULL_RESCORE','')}' "
                 f"sel={len(_sel)} scored={len(score_list)} full_set={len(explosive_tickers)} "
                 f"-> {'STAMPING (' + _stamp_reason + ')' if _stamp_reason else 'incremental, clock untouched'}")
+          # v1.283.0 pair (owner-approved): the stamp reason rides data.json -- the print above
+          # lands in the 403-walled Actions log where Claude cannot read it.
+          data['im3_stamp_reason'] = {'as_of': datetime.now(timezone.utc).isoformat(),
+                                      'reason': _stamp_reason or 'incremental -- clock untouched',
+                                      'scored': len(score_list), 'full_set': len(explosive_tickers)}
           if _stamp_reason:
               data['im3_last_scored_utc'] = datetime.now(timezone.utc).isoformat()
 
