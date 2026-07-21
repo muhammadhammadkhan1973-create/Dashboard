@@ -392,7 +392,17 @@ jobs:
           # P4: stamp the 14-day staleness clock ONLY on FULL re-scores -- an incremental
           # top-up must not reset the ceiling, or full-set freshness would never re-fire.
           from datetime import datetime, timezone
-          if _full or score_list == explosive_tickers:
+          # v2 instrumentation (owner-approved): the 14-day clock stamped on runs that looked
+          # incremental -- name the exact reason every run so the next occurrence self-explains.
+          _stamp_reason = ('force' if _force else
+                           'full_rescore flag' if _os.environ.get('FULL_RESCORE','') == 'true' else
+                           'empty-selection fallback' if not _sel else
+                           'selection==full set' if score_list == explosive_tickers else
+                           None)
+          print(f"[stamp check] force={_force} FULL_RESCORE='{_os.environ.get('FULL_RESCORE','')}' "
+                f"sel={len(_sel)} scored={len(score_list)} full_set={len(explosive_tickers)} "
+                f"-> {'STAMPING (' + _stamp_reason + ')' if _stamp_reason else 'incremental, clock untouched'}")
+          if _stamp_reason:
               data['im3_last_scored_utc'] = datetime.now(timezone.utc).isoformat()
 
           # Write updated data.json
