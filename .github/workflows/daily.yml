@@ -191,8 +191,18 @@ jobs:
                   except Exception: pass
               cur_hash = _h.hexdigest()
           except Exception: cur_hash = ''
-          try:    prev_hash = open('.im3_scorer_hash').read().strip()
-          except Exception: prev_hash = ''
+          # v1.283.1 ROOT-CAUSE FIX (proven by artifact comparison): the committed
+          # .im3_scorer_hash (76a22639...) matched NO computable current state -- it was
+          # written when bank_ig2_overrides.json still existed, and the per-run rewrites
+          # never landed in the repo. Result: scorer_changed fired EVERY run -> perpetual
+          # full 190-name re-scores (the stamp mystery AND a chunk of the original 9-minute
+          # jobs; the incremental logic never operated). The hash state now lives INSIDE
+          # data.json -- written by the same json.dump that demonstrably persists every
+          # run -- with the file kept only as a first-boot fallback.
+          prev_hash = str(data.get('im3_scorer_hash') or '')
+          if not prev_hash:
+              try:    prev_hash = open('.im3_scorer_hash').read().strip()
+              except Exception: prev_hash = ''
           scorer_changed = bool(cur_hash) and cur_hash != prev_hash
           print(f"Scorer changed: {scorer_changed} (cur {cur_hash[:8]} vs prev {prev_hash[:8]})")
 
@@ -417,6 +427,7 @@ jobs:
           print(f"data.json updated with IM3 scores for {len(score_map)} stocks")
 
           # Stamp the scorer version so the next run only re-scores on a real change.
+          # v1.283.1: the hash rides data.json (durable); the loose file is legacy fallback.
           import hashlib
           try:
               _wh = hashlib.sha256()
@@ -424,8 +435,11 @@ jobs:
               for _bf in ('bank_ig2_inputs.json','bank_ig2_overrides.json'):
                   try: _wh.update(open(_bf,'rb').read())
                   except Exception: pass
+              data['im3_scorer_hash'] = _wh.hexdigest()
+              with open('data.json', 'w') as _f2:
+                  json.dump(data, _f2, indent=2, default=str)
               open('.im3_scorer_hash','w').write(_wh.hexdigest())
-              print('Updated .im3_scorer_hash')
+              print('Updated im3_scorer_hash (data.json + legacy file)')
           except Exception as _e:
               print('scorer hash write failed:', _e)
           EOF
