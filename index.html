@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.246 (supersedes v5.245): PINK-TIER COMPLETION DISPLAY (pairs with scanner v1.281.0/1.282.0). (1) The pink intro line shows the Zacks scrape age ('ranks scraped Nd ago \u00b7 weekly refresh') so rank freshness is visible. (2) A discovery below the foundation floor renders its explanatory note under the name instead of unexplained blanks. UCITS proxy lines on pink rows render automatically via the existing proxyLine (scanner now attaches ucits_proxy). Display only. -->
+<!-- index.html v5.245 (supersedes v5.244): PINK TIER SORTED BY QUALITY (owner-approved improvement). Within the Zacks-discovery tier, rows now rank by IM3 percentage descending (A-grade names first), then Zacks rank, then ticker -- so the best-judged discoveries lead the block instead of alphabetical order. One sort branch; display only. -->
 <!-- index.html v5.244 (supersedes v5.243): PINK-TIER IM3 (pairs with scanner v1.280.0 + daily.yml -- owner: 'all zacks 1 and 2 should be im scored as well'). Radar-row grades load into im3Scores so the pink rows' IM3 Quality column renders real grades; the ZACKS DISCOVERY verdict is now IN-SCOPE for scoring so an unscored pink row shows 'Pending' (fills on the next workflow pass) instead of a dead dash. Display only. -->
 <!-- index.html v5.243 (supersedes v5.242): ZACKS DISCOVERIES AS PINK FULL-DATA ROWS (owner: 'after yellow in pink background filling all columns as green and yellow are doing'; pairs with scanner v1.279.0). The chip strip is replaced by FULL TABLE ROWS: every Zacks #1/#2 name off the main board renders as a pink row (#FCE7F3, deep-pink left bar, Z-DISCOVERY badge) positioned after the yellow tier and before the hidden NOT-EXPLOSIVE section -- outside-screen names carry real foundation-universe data (name/sector/price/Rev-YoY/YTD/1Y/trend; statement columns honest dashes), screened NOT-EXPLOSIVE radar names are LIFTED out of the hidden tier with their full real records. The symbol key now explains all three base row colours (green = full pass, amber = partial, pink = Zacks discovery) -- also answering the owner's colour question permanently. Near-miss chips + all v5.242 features retained. -->
 <!-- index.html v5.242 (supersedes v5.241): ZACKS STRONG-BUY RADAR + NEAR-MISS CHIPS (owner-directed, pairs with scanner v1.278.0). (1) Blue ⚡ radar strip above the Explosive table: every Zacks #1/#2 name from the existing weekly scrape that the growth gates did NOT surface (60 on first run incl. GOOGL/JPM/GS/C at #1) — the 40%-weighted revision signal finally used for DISCOVERY; Z#1 then Z#2 groups, IM3 chip when scored, hover = why off the main board, on-board Strong-Buys counted. (2) Amber ◐ near-miss chip in the verdict cell: fails exactly ONE of G1/G2 by <3pts with everything else passing. (3) Symbol key updated. Display only. -->
@@ -3764,7 +3766,7 @@ function renderExplosiveTable(elId, rows, market, mode) {
       var zr=(LIVE&&LIVE.zacks_radar)||null; if(!zr) return '';
       var n=(zr.rows||[]).length+(zr.n_lifted||0); if(!n) return '';
       return '<div style=\"margin:10px 0 6px;padding:8px 12px;background:#FDF2F8;border:1px solid #FBCFE8;border-radius:10px;font-size:11px;color:#9D174D;\">'
-        +'<b>\u26A1 Zacks Strong-Buy discoveries \u2014 '+n+' name(s)</b> shown as <b style=\"background:#FCE7F3;border:1px solid #DB2777;padding:0 5px;border-radius:6px;\">pink rows</b> after the yellow tier in the table below: every Zacks #1/#2 name (weekly ~306-name scrape) your growth gates did NOT surface \u2014 the 40%-weighted estimate-revision signal used for discovery. Real market data from the foundation universe fills their columns; statement-computed columns (OP\u00b7NP YoY, signals) show honest dashes. '+(zr.on_board||[]).length+' more Strong-Buys are already on the board with \u26A1Z chips.</div>';
+        +'<b>\u26A1 Zacks Strong-Buy discoveries \u2014 '+n+' name(s)</b>'+(function(){var su=zr.zacks_scraped_utc;if(!su)return '';var dd=Math.floor((Date.now()-new Date(su).getTime())/86400000);return ' <span style=\"font-size:9.5px;color:#BE185D;\">(ranks scraped '+(dd<=0?'today':dd+'d ago')+' \u00b7 weekly refresh)</span>';})()+' shown as <b style=\"background:#FCE7F3;border:1px solid #DB2777;padding:0 5px;border-radius:6px;\">pink rows</b> after the yellow tier in the table below: every Zacks #1/#2 name (weekly ~306-name scrape) your growth gates did NOT surface \u2014 the 40%-weighted estimate-revision signal used for discovery. Real market data from the foundation universe fills their columns; statement-computed columns (OP\u00b7NP YoY, signals) show honest dashes. '+(zr.on_board||[]).length+' more Strong-Buys are already on the board with \u26A1Z chips.</div>';
     })()}
     <div style="margin-top:6px;padding:7px 10px;background:#FAF5FF;border:1px solid #DDD6FE;border-radius:8px;">
     <b style="color:#4C1D95;">Row marks &amp; signal dots</b> —
@@ -3832,6 +3834,14 @@ function renderExplosiveTable(elId, rows, market, mode) {
       const _fd=_im3full(b)-_im3full(a); if(_fd) return _fd;   // full 24-ratio banks rank above reduced-set
       return _im3pct(b)-_im3pct(a);
     }
+    // v5.245 (owner-approved): within the PINK discovery tier, rank by IM3 quality (best
+    // grades first -- Citigroup/Schwab/AMAT-class A-names float to the top of the block),
+    // then Zacks rank (#1 before #2), then ticker.
+    if(_rankZ(a)===4.6&&_rankZ(b)===4.6){
+      const dp=_im3pct(b)-_im3pct(a); if(dp) return dp;
+      const dz=(Number(a.zacks_rank)||9)-(Number(b.zacks_rank)||9); if(dz) return dz;
+      return (a.ticker||'').localeCompare(b.ticker||'');
+    }
     const ds=_ss(b)-_ss(a); if(ds) return ds;   // A4 part 2: strongest early movers first within a verdict tier
     return (a.ticker||'').localeCompare(b.ticker||'');
   });
@@ -3888,7 +3898,7 @@ function renderExplosiveTable(elId, rows, market, mode) {
     // Main data row
     html+=`<tr class="${cls}"${_hlAttr}>
       <td><b>${em(tk)}</b>${_hlBadge}</td>
-      <td>${em(r.name)}${proxyLine}</td>
+      <td>${em(r.name)}${r.note?`<div style="font-size:9px;color:#9CA3AF;margin-top:1px;">${r.note}</div>`:''}${proxyLine}</td>
       <td>${em(r.sector)}</td>
       <td>${pct(r.rev_growth)}</td>
       <td>${pct(r.op_growth)}</td>
