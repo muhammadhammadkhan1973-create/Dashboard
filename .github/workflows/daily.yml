@@ -227,6 +227,7 @@ jobs:
           #   incremental    = ONLY missing_im3 (no current-ver grade, or stale_ver-marked)
           #   names_changed alone no longer triggers anything (nothing to compute).
           full_rescore = scorer_changed or stale
+          full_reason = ('scorer-changed' if scorer_changed else 'stale-clock' if stale else '')
           score_tickers = new_tickers if full_rescore else missing_im3
           changed = full_rescore or bool(missing_im3)
           print(f"Stale (>{MAX_AGE_DAYS}d): {stale} (last scored {_last})")
@@ -243,6 +244,7 @@ jobs:
               f.write(f"tickers={' '.join(new_tickers)}\n")
               f.write(f"score_tickers={' '.join(score_tickers)}\n")
               f.write(f"full_rescore={'true' if full_rescore else 'false'}\n")
+              f.write(f"full_reason={full_reason}\n")
           EOF
 
       - name: Score explosive stocks with IM3
@@ -254,6 +256,7 @@ jobs:
         env:
           SCORE_TICKERS: ${{ steps.check_explosive.outputs.score_tickers }}
           FULL_RESCORE: ${{ steps.check_explosive.outputs.full_rescore }}
+          FULL_REASON: ${{ steps.check_explosive.outputs.full_reason }}
         run: |
           python3 << 'EOF'
           import json, subprocess, sys
@@ -405,7 +408,7 @@ jobs:
           # v2 instrumentation (owner-approved): the 14-day clock stamped on runs that looked
           # incremental -- name the exact reason every run so the next occurrence self-explains.
           _stamp_reason = ('force' if _force else
-                           'full_rescore flag' if _os.environ.get('FULL_RESCORE','') == 'true' else
+                           ('full: ' + (_os.environ.get('FULL_REASON') or 'flag')) if _os.environ.get('FULL_RESCORE','') == 'true' else
                            'empty-selection fallback' if not _sel else
                            'selection==full set' if score_list == explosive_tickers else
                            None)
