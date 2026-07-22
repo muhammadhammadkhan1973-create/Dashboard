@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.248 (supersedes v5.247): WAVE-Z v2 RENDERER (pairs with scanner v1.289.0). The Tab-9 consensus box's ETF column is retired (its feed was FMP-dead 0/30 since ~v1.252 -- root cause of the forever-empty box); chips now show '{whales} whales \u00b7 {funds} funds' with whale names on hover, headings read '13F Whales \u2229 Institutional Funds', and the empty state states the real \u22652+\u22652 condition instead of promising a next-scan load that never came. Display only. -->
 <!-- index.html v5.247 (supersedes v5.246): SIGNALS HEADER RENAME (owner-approved cosmetic): the column header read 'Signals A · B' while the cells have shown four marks (A, B, Q, T \u21A9) since v5.236 -- subtitle now 'A · B · Q · T' with the tooltip describing all four. Display only. -->
 <!-- index.html v5.246 (supersedes v5.245): PINK-TIER COMPLETION DISPLAY (pairs with scanner v1.281.0/1.282.0). (1) The pink intro line shows the Zacks scrape age ('ranks scraped Nd ago \u00b7 weekly refresh') so rank freshness is visible. (2) A discovery below the foundation floor renders its explanatory note under the name instead of unexplained blanks. UCITS proxy lines on pink rows render automatically via the existing proxyLine (scanner now attaches ucits_proxy). Display only. -->
 <!-- index.html v5.245 (supersedes v5.244): PINK TIER SORTED BY QUALITY (owner-approved improvement). Within the Zacks-discovery tier, rows now rank by IM3 percentage descending (A-grade names first), then Zacks rank, then ticker -- so the best-judged discoveries lead the block instead of alphabetical order. One sort branch; display only. -->
@@ -8407,15 +8408,14 @@ function renderInstConsensus(){
   const stocks = IC && IC.stocks;
   if(!stocks || !stocks.length){
     el.innerHTML = '<div class="reading-box" style="border-left:4px solid #7C3AED;font-size:13px;">' +
-      '<b>⚡ Wave Z Smart Money</b> — ETF ∩ Institutional Fund consensus loading on next scan ' +
-      '(7-day cache; first build takes one full run).</div>';
+      '<b>⚡ Wave Z Smart Money</b> — no double-confirmed names this scan (needs ≥2 institutional funds AND ≥2 13F whales holding the same stock; refreshes ≤7d).</div>';
     return;
   }
   const nFunds = IC.funds_fetched || '?';
   const top10 = stocks.slice(0, 10);
   const chips = top10.map(function(r){
     const sc = typeof r.combined_score === 'number' ? r.combined_score.toFixed(0) : '—';
-    const etfSc = typeof r.etf_score === 'number' ? r.etf_score.toFixed(0) : '—';
+    const wc = r.whale_count || 0;   // v5.248: whales replace the retired (FMP-dead) ETF column
     const fc = r.fund_count || 0;
     const funds = (r.funds || []).join(', ');
     const col = sc >= 80 ? '#7C3AED' : sc >= 60 ? '#2563EB' : '#475569';
@@ -8424,17 +8424,17 @@ function renderInstConsensus(){
       'border-radius:10px;padding:6px 10px;min-width:90px;">' +
       '<span style="font-size:13px;font-weight:800;color:'+col+';">' + r.ticker + '</span>' +
       '<span style="font-size:10px;font-weight:700;color:'+col+';">Score ' + sc + '</span>' +
-      '<span style="font-size:9px;color:#64748B;">ETF ' + etfSc + ' · ' + fc + ' funds</span>' +
+      '<span style="font-size:9px;color:#64748B;" title="'+ (r.whales||[]).join(', ') +'">' + wc + ' whales · ' + fc + ' funds</span>' +
       '<span style="font-size:8px;color:#94A3B8;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="'+funds+'">'+funds+'</span>' +
       '</div>';
   }).join('');
   el.innerHTML =
     '<div style="background:#FAFAFE;border:1px solid #DDD6FE;border-radius:12px;padding:10px 14px;">' +
     '<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:#7C3AED;margin-bottom:8px;">' +
-    '⚡ WAVE Z — DOUBLE-CONFIRMED SMART MONEY (ETF consensus ∩ ≥2 institutional funds · ' + nFunds + ' funds screened)' +
+    '⚡ WAVE Z — DOUBLE-CONFIRMED SMART MONEY (≥2 of '+(IC.whales_used||15)+' 13F whales ∩ ≥2 of ' + nFunds + ' institutional funds)' +
     '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + chips + '</div>' +
-    '<div style="font-size:10px;color:#94A3B8;margin-top:6px;">Stock appears in top ETF consensus AND in ≥2 of the 11 largest active US equity funds by AUM. Combined score = ETF conviction × 0.6 + fund breadth × 0.4. Updated weekly.</div>' +
+    '<div style="font-size:10px;color:#94A3B8;margin-top:6px;">Stock held by ≥2 tracked 13F whales (Buffett, Ackman, Bridgewater…) AND ≥2 of the 11 largest active US equity funds. Score = fund breadth × 20 + whale breadth × 12 (capped 100). The old ETF-holdings leg is retired — its source died quietly months ago; whale filings refresh daily.</div>' +
     '</div>';
 }
 // ─── end Wave Z ─────────────────────────────────────────────────────────────
