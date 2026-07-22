@@ -425,7 +425,7 @@ jobs:
 
           # Write updated data.json
           with open('data.json', 'w') as f:
-              json.dump(data, f, indent=2, default=str)
+              json.dump(data, f, separators=(',',':'), default=str)
 
           print(f"data.json updated with IM3 scores for {len(score_map)} stocks")
 
@@ -440,7 +440,7 @@ jobs:
                   except Exception: pass
               data['im3_scorer_hash'] = _wh.hexdigest()
               with open('data.json', 'w') as _f2:
-                  json.dump(data, _f2, indent=2, default=str)
+                  json.dump(data, _f2, separators=(',',':'), default=str)
               open('.im3_scorer_hash','w').write(_wh.hexdigest())
               print('Updated im3_scorer_hash (data.json + legacy file)')
           except Exception as _e:
@@ -582,7 +582,7 @@ jobs:
 
           data['im3_psx_tickers'] = psx_syms
           with open('data.json', 'w') as f:
-              json.dump(data, f, indent=2, default=str)
+              json.dump(data, f, separators=(',',':'), default=str)
           try: open('.im3_psx_hash', 'w').write(cur_hash)
           except Exception: pass
           print(f"data.json updated with PSX IM3 for {len(smap)} names")
