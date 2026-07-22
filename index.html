@@ -820,7 +820,7 @@ function renderNarratives(){
   });
   var evRow=function(ev){return '<div style="font-size:11px;padding:2px 0;color:#374151;"><b>'+esc2(ev.ticker||'?')+'</b> \u00b7 '+esc2(String(ev.date||''))+' \u00b7 '+esc2(ev.title||'')+'</div>';};
   if((N.mat_recent||[]).length) html+='<div class="card" style="margin-top:12px;"><h3 style="margin:0 0 5px;font-size:13px;">\u2696\uFE0F SEC 8-K Material Events \u2014 the highest-reliability news that exists</h3>'+N.mat_recent.map(evRow).join('')+'</div>';
-  if((N.insider_recent||[]).length) html+='<div class="card" style="margin-top:12px;"><h3 style="margin:0 0 5px;font-size:13px;">\U0001F454 Insider Activity</h3>'+N.insider_recent.map(evRow).join('')+'</div>';
+  if((N.insider_recent||[]).length) html+='<div class="card" style="margin-top:12px;"><h3 style="margin:0 0 5px;font-size:13px;">👔 Insider Activity</h3>'+N.insider_recent.map(evRow).join('')+'</div>';
   el.innerHTML=html;
 }
 function showPanel(id,btn){
