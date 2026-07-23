@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.258 (supersedes v5.257): SMART-MONEY GRADES SURFACE (pairs with the daily.yml merge-target fix). The whale + consensus names were being SCORED but their grades were discarded -- the workflow wrote score_map only into explosive_us/tce_us/zacks_radar, and AMZN/AAPL/MSFT/GOOG live in none of those. The workflow now also merges into inst_consensus.stocks and every whale sub-list (top_holdings/new_buys/adds/exits); this index renders the grade as a coloured IM3 chip on each Wave-Z consensus card (with an honest 'IM3 pending' state) and beside every whale move on the Whale Watch table. Display only. -->
 <!-- index.html v5.257 (supersedes v5.256): NARRATIVE BADGE PROPAGATION (cross-tab rule; pairs with scanner v1.299.0). Every Explosive / pink / PSX row whose ticker appears in a live Tab-18 news theme now carries a coloured \uD83D\uDCF0 N badge -- green when the coverage tone is positive, red when negative, indigo when neutral -- with a hover naming the exact themes and the count of Tier-1 sources behind them. The symbol key explains it. Display only. -->
 <!-- index.html v5.256 (supersedes v5.255): HOVER NOW WORKS WHERE THE READER POINTS (owner: 'the hovering tool is not working'). v5.255 attached the worded tooltip only to the small summary line and the badge; the BOLD VERDICT TEXT -- the obvious hover target -- carried none. A single per-stock tooltip string is now built once per row and applied to the verdict <td>, the bold verdict text, the summary line and the badge. Discoverability: dotted amber underline + help cursor on the verdict text and the summary line, help cursor on the badge. -->
 <!-- index.html v5.255 (supersedes v5.254): the ORIGINAL worded explanation returns as the HOVER TOOLTIP (owner: 'the previous explanation written in words was good so when i hover on the column, the explanation should be displayed in words'). Both the compact summary line and the TURNAROUND badge now carry the full per-stock sentence built from that name's own figures -- quarterly revenue versus the same quarter a year ago, the count of consecutive rising-profit quarters, the annual figure and its gap to the 20% gate, and the honest watch-don't-buy caveat. Row height unchanged: the words live in the tooltip, not the row. -->
@@ -7405,7 +7406,10 @@ function renderWhale13f(){
   // per-whale highlights
   h+='<table style="width:100%;border-collapse:collapse;font-size:12px;"><tr style="color:#64748b;font-size:11px;text-align:left;"><th style="padding:3px 6px;">WHALE</th><th>NEW BUYS</th><th>EXITS</th></tr>';
   W.whales.forEach(function(w){
-    var _mv=function(m){return (m.ticker?('<b>'+esc(m.ticker)+'</b> '):'')+esc(m.issuer);};
+    // v5.258:each whale move now carries its IM3 grade when the name has been scored
+    var _mv=function(m){
+      var g=(m.im3&&m.im3.grade)?('<span title="IM3 quality grade '+m.im3.grade+(m.im3.pct!=null?' ('+Number(m.im3.pct).toFixed(1)+'%)':'')+' \u2014 the same fundamental scorecard used on the Explosive tab, now applied to the names the whales hold." style="font-size:8.5px;font-weight:800;padding:0 4px;border-radius:5px;margin-left:3px;background:'+(m.im3.grade==='A'?'#D1FAE5':m.im3.grade==='B'?'#FEF3C7':m.im3.grade==='C'?'#FFE4E6':'#F3F4F6')+';color:'+(m.im3.grade==='A'?'#065F46':m.im3.grade==='B'?'#92400E':m.im3.grade==='C'?'#9F1239':'#6B7280')+';cursor:help;">'+m.im3.grade+'</span>'):'';
+      return (m.ticker?('<b>'+esc(m.ticker)+'</b>'+g+' '):'')+esc(m.issuer);};
     var nb=(w.new_buys||[]).slice(0,4).map(_mv).join(', ')||'\u2014';
     var ex=(w.exits||[]).slice(0,4).map(_mv).join(', ')||'\u2014';
     h+='<tr style="border-top:1px solid #F1F5F9;"><td style="padding:4px 6px;font-weight:700;">'+esc(w.name)+'<div style="font-size:10px;color:#94a3b8;font-weight:400;">'+(w.n_positions||0)+' positions'+(w.has_prior?'':' \u00b7 no prior quarter yet')+'</div></td>'
@@ -8542,6 +8546,11 @@ function renderInstConsensus(){
       '<span style="font-size:13px;font-weight:800;color:'+col+';">' + r.ticker + '</span>' +
       '<span style="font-size:10px;font-weight:700;color:'+col+';">Score ' + sc + '</span>' +
       '<span style="font-size:9px;color:#64748B;" title="'+ (r.whales||[]).join(', ') +'">' + wc + ' whales · ' + fc + ' funds</span>' +
+      // v5.258: the quality grade finally lands here (workflow now merges score_map into
+      // inst_consensus.stocks) -- the most-held stocks on earth no longer show blank quality.
+      ((r.im3 && r.im3.grade)
+        ? '<span title="IM3 quality grade ' + r.im3.grade + ' (' + (r.im3.pct!=null?Number(r.im3.pct).toFixed(1)+'%':'') + ') — the same fundamental scorecard used on the Explosive tab, now run on the names smart money actually holds." style="margin-top:3px;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:7px;background:' + (r.im3.grade==='A'?'#D1FAE5':r.im3.grade==='B'?'#FEF3C7':r.im3.grade==='C'?'#FFE4E6':'#F3F4F6') + ';color:' + (r.im3.grade==='A'?'#065F46':r.im3.grade==='B'?'#92400E':r.im3.grade==='C'?'#9F1239':'#6B7280') + ';">IM3 ' + r.im3.grade + (r.im3.pct!=null?' · '+Number(r.im3.pct).toFixed(0)+'%':'') + '</span>'
+        : '<span title="Not yet scored — this name joins the IM3 universe and fills on the next scoring pass." style="margin-top:3px;font-size:9px;color:#94A3B8;">IM3 pending</span>') +
       '<span style="font-size:8px;color:#94A3B8;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="'+funds+'">'+funds+'</span>' +
       '</div>';
   }).join('');
