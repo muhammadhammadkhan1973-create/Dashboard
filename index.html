@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.257 (supersedes v5.256): NARRATIVE BADGE PROPAGATION (cross-tab rule; pairs with scanner v1.299.0). Every Explosive / pink / PSX row whose ticker appears in a live Tab-18 news theme now carries a coloured \uD83D\uDCF0 N badge -- green when the coverage tone is positive, red when negative, indigo when neutral -- with a hover naming the exact themes and the count of Tier-1 sources behind them. The symbol key explains it. Display only. -->
 <!-- index.html v5.256 (supersedes v5.255): HOVER NOW WORKS WHERE THE READER POINTS (owner: 'the hovering tool is not working'). v5.255 attached the worded tooltip only to the small summary line and the badge; the BOLD VERDICT TEXT -- the obvious hover target -- carried none. A single per-stock tooltip string is now built once per row and applied to the verdict <td>, the bold verdict text, the summary line and the badge. Discoverability: dotted amber underline + help cursor on the verdict text and the summary line, help cursor on the badge. -->
 <!-- index.html v5.255 (supersedes v5.254): the ORIGINAL worded explanation returns as the HOVER TOOLTIP (owner: 'the previous explanation written in words was good so when i hover on the column, the explanation should be displayed in words'). Both the compact summary line and the TURNAROUND badge now carry the full per-stock sentence built from that name's own figures -- quarterly revenue versus the same quarter a year ago, the count of consecutive rising-profit quarters, the annual figure and its gap to the 20% gate, and the honest watch-don't-buy caveat. Row height unchanged: the words live in the tooltip, not the row. -->
 <!-- index.html v5.254 (supersedes v5.253): ROW HEIGHT (owner: 'the length of the rows is too much'). The per-row 'Pay attention' paragraph repeated the same sentence on all 22 amber rows and roughly tripled their height; it collapses to ONE nowrap line of hard numbers -- 'Q +87% \u00b7 \u25B28Q profit \u00b7 yr 19%' -- with the full explanation moved into that line's tooltip (it also already sits in the amber strip above the table and in the badge tooltip). Turnaround cells also get tighter vertical padding so the block reads as a compact band. Pairs with the daily.yml change that adds the TURNAROUND verdict to the IM3 scoring set (22 names were rendering blank grades). -->
@@ -3866,6 +3867,7 @@ function renderExplosiveTable(elId, rows, market, mode) {
     <b style="background:#F5F3FF;border:1px solid #8B5CF6;color:#5B21B6;padding:0 5px;border-radius:7px;font-size:10px;">violet-tinted row</b> = a turnaround name (its T \u21A9 is lit in the Signals column); every turnaround shares this tint so the group reads at a glance. ·
     <b style="background:var(--green-l);border:1px solid #16A34A;color:#065F46;padding:0 5px;border-radius:7px;font-size:10px;">green row</b> = full EXPLOSIVE pass (revenue &gt;20% + operating profit ≥ 15% + profit accelerating). ·
     <b style="background:var(--orange-l);border:1px solid #D97706;color:#92400E;padding:0 5px;border-radius:7px;font-size:10px;">amber row</b> = partial pass (QUALITY-GROWTH / INFLECTION / bank on its own scorecard) — interesting but incomplete. ·
+    <b style="background:#E0E7FF;border:1px solid #A5B4FC;color:#3730A3;padding:0 5px;border-radius:7px;font-size:10px;">\uD83D\uDCF0 N</b> beside a ticker = the stock sits inside N live news themes on Tab 18 (green = the coverage is positive, red = negative); hover it for the theme names and how many Tier-1 sources are driving them. \u00b7
     <b style="background:linear-gradient(90deg,#FFFBEB,#FDE68A);border:1px solid #EA580C;color:#9A3412;padding:0 5px;border-radius:7px;font-size:10px;font-weight:900;">\u26A1 amber TURNAROUND row</b> = the attention tier: the latest quarter is strong AND full-year profit is climbing, but annual growth hasn\u2019t crossed 20% yet \u2014 an inflection caught <i>before</i> the annual numbers confirm it. Watch and verify; it is not a confirmed EXPLOSIVE pass. \u00b7
     <b style="background:#FCE7F3;border:1px solid #DB2777;color:#9D174D;padding:0 5px;border-radius:7px;font-size:10px;">pink row</b> = Zacks Discovery — ranked Strong Buy/Buy by the estimate-revision model but outside the growth gates; a value/compounder candidate, not an Explosive verdict. ·
     <b style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;padding:0 5px;border-radius:7px;font-size:10px;">◐ near-miss</b> = fails exactly ONE gate by under 3 points with everything else passing — one good quarter from the full verdict. ·
@@ -4008,7 +4010,13 @@ function renderExplosiveTable(elId, rows, market, mode) {
 
     // Main data row
     html+=`<tr class="${cls}${_isTurnVerdict?' turnrow':''}"${_hlAttr}>
-      <td><b>${em(tk)}</b>${_hlBadge}</td>
+      <td><b>${em(tk)}</b>${_hlBadge}${(function(){var nb=r.narr;if(!nb||!nb.themes||!nb.themes.length)return '';
+        var pos=(nb.sent||0)>0, neg=(nb.sent||0)<0;
+        var col=pos?['#065F46','#D1FAE5','#6EE7B7']:(neg?['#991B1B','#FEE2E2','#FCA5A5']:['#3730A3','#E0E7FF','#A5B4FC']);
+        return '<span title="IN THE NEWS \u2014 this stock sits inside '+nb.themes.length+' live news theme(s): '+nb.themes.join('; ')
+          +'. Overall tone across those themes is '+(pos?'positive':(neg?'negative':'neutral'))+', carried by '+(nb.t1||0)
+          +' Tier-1 (Reuters/Bloomberg/WSJ-class) headline(s). Open Tab 18 Narratives to read the stories and see every other stock they touch."'
+          +' style="display:inline-block;margin-left:4px;padding:1px 5px;border-radius:8px;font-size:8.5px;font-weight:800;background:'+col[1]+';color:'+col[0]+';border:1px solid '+col[2]+';vertical-align:middle;cursor:help;">\uD83D\uDCF0 '+nb.themes.length+'</span>';})()}</td>
       <td>${em(r.name)}${r.note?`<div style="font-size:9px;color:#9CA3AF;margin-top:1px;">${r.note}</div>`:''}${proxyLine}</td>
       <td>${em(r.sector)}</td>
       <td>${pct(r.rev_growth)}</td>
