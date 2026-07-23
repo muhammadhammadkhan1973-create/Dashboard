@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.252 (supersedes v5.251): TURNAROUND TIER MADE ACTUALLY VISIBLE (owner: 'I don't see a separate background colour, any outline to the row'). ROOT CAUSE: the stylesheet paints CELLS (tr:nth-child(even) td / tr.pos td / tr.warn td) and a td background covers a tr background -- the v5.251 row-level gradient was hidden on alternating rows. Fixed by painting the cells via a new tr.turnrow class with !important + amber top/bottom rules + an ember inset bar on the first cell, mirroring how every other tier works. ALSO: the tier renders ~98 rows down a 175-row table, so a TURNAROUND WATCH callout strip now sits at the TOP of the tab -- boxed amber, naming every turnaround ticker with its quarterly revenue jump and consecutive rising quarters, plus a plain-language explanation and an honest watch-don't-buy caveat. -->
 <!-- index.html v5.251 (supersedes v5.250): TURNAROUND ATTENTION TIER (owner-directed, pairs with scanner v1.298.0 -- 'is it not marked turnaround?'). A name whose Signal Q and Signal T both fire while annual growth lags used to read NOT EXPLOSIVE and sat in the HIDDEN section (DELL: +87.5% quarterly revenue, TTM profit up 8 straight quarters). It now has its own VISIBLE tier at rank 4.4 (after the yellow tiers, before the pink discoveries): warm amber gradient row with an ember left bar, full outline box and amber top/bottom rules; a gradient '\u26A1 TURNAROUND \u00b7 WATCH' badge on the ticker; the verdict cell carries a plain-language 'Pay attention' callout naming the quarterly revenue jump, the consecutive rising quarters and the annual gap; the symbol key explains the new row colour. Display only -- no scoring change. -->
 <!-- index.html v5.250 (supersedes v5.249): NAV ORDER FIX -- the Narratives button rendered BEFORE '17. Live Investment' (inserted on the wrong side); it now sits after 17 in true numeric order. Display only. -->
 <!-- index.html v5.249 (supersedes v5.248): NARRATIVES TAB (Tab 18, pairs with scanner v1.291.0 -- owner: 'make a narratives tab and score it with explosive metrics all of them, let tce be independent'). Story-first: 11 themed clusters (headlines with T1/T2/T3 source badges, sentiment dot, event bucket, age), each theme's AFFECTED STOCKS rendered with the FULL explosive metric set -- Rev/OP/NP YoY, A\u00b7B\u00b7Q\u00b7T signal dots, G1/G2/A1/C1 condition chips, verdict, IM3 grade cell, 200-DMA trend chip -- joined from live explosive/pink/PSX records (zero rescoring). SEC 8-K + insider stores surfaced as premium news rows; names outside every scored pool listed honestly; render errors surface visibly. TCE untouched. -->
@@ -160,6 +161,14 @@
   tr.pos td { background: var(--green-l) !important; }
   tr.neg td { background: var(--red-l) !important; }
   tr.warn td { background: var(--orange-l) !important; }
+  /* v5.252 TURNAROUND attention tier -- painted on the CELLS like every other tier
+     (a td background covers a tr background, which is why the v5.251 row-level
+     gradient was invisible on alternating rows). */
+  table tbody tr.turnrow td { background: linear-gradient(180deg,#FFFBEB 0%,#FEF3C7 100%) !important;
+    border-top: 1.5px solid #F59E0B !important; border-bottom: 1.5px solid #F59E0B !important; }
+  table tbody tr.turnrow td:first-child { box-shadow: inset 7px 0 0 #EA580C; }
+  table tbody tr.turnrow td:last-child  { box-shadow: inset -3px 0 0 #F59E0B; }
+  table tbody tr.turnrow:hover td { background: linear-gradient(180deg,#FEF3C7 0%,#FDE68A 100%) !important; }
   .reading-box { background: var(--light-blue); padding: 16px 20px; border-radius: 8px; border-left: 4px solid var(--blue); margin: 12px 0; font-size: 13px; line-height: 1.6; }
   .reading-box strong { color: var(--navy); }
   .score-bar { background: #eee; height: 28px; border-radius: 14px; overflow: hidden; position: relative; margin: 8px 0; }
@@ -3781,6 +3790,22 @@ function renderExplosiveTable(elId, rows, market, mode) {
   };
 
   let html=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:600;align-items:center;">`;
+  // v5.252 TURNAROUND STRIP: the tier renders ~98 rows down a 175-row table -- invisible
+  // in practice. Name the stocks at the TOP of the tab so the signal actually lands.
+  const _tesc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const _turnRows=(rows||[]).filter(r=>String(r&&r.verdict||'').toUpperCase().startsWith('TURNAROUND'));
+  if(_turnRows.length){
+    const _chips=_turnRows.slice(0,24).map(r=>{
+      const cu=(r.signal_t&&r.signal_t.consec_up)?r.signal_t.consec_up+'Q':'';
+      const qr=(typeof r.q_rev_g==='number')?(r.q_rev_g>0?'+':'')+r.q_rev_g.toFixed(0)+'%':'';
+      return '<span title="'+_tesc(r.name||r.ticker)+' \u2014 latest quarter revenue '+qr+', full-year profit rising '+cu+'" style="display:inline-block;margin:3px 5px 0 0;padding:3px 9px;border-radius:14px;background:#fff;border:1.5px solid #EA580C;color:#9A3412;font-size:11px;font-weight:800;box-shadow:0 1px 2px rgba(234,88,12,.25);">'+_tesc(r.ticker)+(qr?' <span style="font-weight:600;color:#C2410C;">'+qr+'</span>':'')+(cu?' <span style="font-size:9px;color:#B45309;">\u25B2'+cu+'</span>':'')+'</span>';
+    }).join('');
+    html+='<div style="margin:12px 0 6px;padding:12px 15px;border:2px solid #F59E0B;border-left:7px solid #EA580C;border-radius:12px;background:linear-gradient(135deg,#FFFBEB 0%,#FEF3C7 60%,#FDE68A 100%);box-shadow:0 2px 8px rgba(234,88,12,.18);">'
+      +'<div style="font-size:13.5px;font-weight:900;color:#9A3412;letter-spacing:.4px;margin-bottom:3px;">\u26A1 TURNAROUND WATCH \u2014 '+_turnRows.length+' name(s) need your attention</div>'
+      +'<div style="font-size:11.5px;color:#7C2D12;line-height:1.55;margin-bottom:6px;">These stocks are <b>inflecting right now</b>: the latest quarter came in strong <b>and</b> full-year profit has been climbing for several quarters \u2014 but annual revenue growth hasn\u2019t crossed the 20% gate yet, so the standard screen calls them failures. This is what tomorrow\u2019s winner looks like <i>before</i> the annual numbers admit it. <b>Watch and verify \u2014 it is not a confirmed buy signal.</b></div>'
+      +_chips+'</div>';
+  }
+
   if(counts.explosive) html+=`<span style="background:var(--green-l);color:var(--green);padding:4px 10px;border-radius:6px;">🚀 ${counts.explosive} EXPLOSIVE</span>`;
   if(counts.quality)   html+=`<span style="background:var(--orange-l);color:var(--orange);padding:4px 10px;border-radius:6px;">📈 ${counts.quality} QUALITY-GROWTH</span>`;
   if(counts.inflection)html+=`<span style="background:#FEF9C3;color:#854D0E;padding:4px 10px;border-radius:6px;">⤴ ${counts.inflection} INFLECTION</span>`;
@@ -3973,7 +3998,7 @@ function renderExplosiveTable(elId, rows, market, mode) {
                   // is now explained in the always-visible symbol key above the table.
 
     // Main data row
-    html+=`<tr class="${cls}"${_hlAttr}>
+    html+=`<tr class="${cls}${_isTurnVerdict?' turnrow':''}"${_hlAttr}>
       <td><b>${em(tk)}</b>${_hlBadge}</td>
       <td>${em(r.name)}${r.note?`<div style="font-size:9px;color:#9CA3AF;margin-top:1px;">${r.note}</div>`:''}${proxyLine}</td>
       <td>${em(r.sector)}</td>
