@@ -428,6 +428,24 @@ jobs:
               if tk in score_map:
                   record['im3'] = score_map[tk]
 
+          # v1.300 SMART-MONEY GRADES LAND (owner-audited gap): the whale + consensus names
+          # WERE being scored (universe 205 -> 259) but the merge wrote only into
+          # explosive_us / tce_us / zacks_radar. AMZN, AAPL, MSFT and GOOG live in none of
+          # those arrays, so their grades were computed and silently discarded -- a search of
+          # the whole data.json found no im3 block for them. Give the grades somewhere to land.
+          _sm_hit = 0
+          for record in ((data.get('inst_consensus') or {}).get('stocks') or []):
+              tk = record.get('ticker')
+              if tk in score_map:
+                  record['im3'] = score_map[tk]; _sm_hit += 1
+          for _wh in ((data.get('whale_13f') or {}).get('whales') or []):
+              for _lst in ('top_holdings', 'new_buys', 'adds', 'exits'):
+                  for record in (_wh.get(_lst) or []):
+                      tk = record.get('ticker')
+                      if tk in score_map:
+                          record['im3'] = score_map[tk]; _sm_hit += 1
+          print(f'smart-money grades attached to {_sm_hit} consensus/whale holding record(s)')
+
           # v1.277.2 pair: PERSIST per-ticker scoring errors into data.json -- the owner's audit
           # showed the exact exception messages existed only in this step's summary, unreachable
           # for self-diagnosis. Now every failure's message rides in data['im3_errors'] (and clears
