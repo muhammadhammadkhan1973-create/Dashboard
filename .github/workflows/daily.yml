@@ -148,6 +148,19 @@ jobs:
           # as well'): the pink tier -- outside-screen radar rows + screened NOT-EXPLOSIVE
           # names stamped zacks_discovery -- joins the scoring set. ~60 names one-time,
           # then incremental (only new/missing thereafter).
+          # v1.299 CROSS-TAB SCORING (owner-approved 'scored-everywhere' pass): the 13F whale
+          # top-holdings and the Wave-Z double-confirmed consensus names were displayed on
+          # Tabs 2/9 with BLANK quality -- the dashboard scored 190 names the owner does not
+          # own and none of the ones smart money actually holds. Both sets now join the IM3
+          # universe (~54 net new names, one heavier pass, then incremental).
+          smart = []
+          for _w13 in ((data.get('whale_13f') or {}).get('whales') or []):
+              for _h13 in (_w13.get('top_holdings') or []):
+                  if _h13.get('ticker'):
+                      smart.append(_h13['ticker'])
+          smart += [s.get('ticker') for s in ((data.get('inst_consensus') or {}).get('stocks') or [])
+                    if s.get('ticker')]
+          smart = sorted({str(t).upper().split(':')[-1] for t in smart if t})
           zdisc = sorted(set(
               [r['ticker'] for r in (data.get('zacks_radar') or {}).get('rows', [])
                if r.get('ticker')]
@@ -155,7 +168,7 @@ jobs:
                  if r.get('zacks_discovery') and r.get('ticker')]
           ))
           # Combined — score explosives, banks (System B), TCE-HIGH, watchlist, and discoveries
-          new_tickers = sorted(set(explosive + financial + tce_high + watchlist + zdisc))
+          new_tickers = sorted(set(explosive + financial + tce_high + watchlist + zdisc + smart))
 
           # Read previous list (stored in data.json from last run)
           prev_tickers = sorted(data.get('im3_explosive_tickers', []))
@@ -302,13 +315,26 @@ jobs:
           # as well'): the pink tier -- outside-screen radar rows + screened NOT-EXPLOSIVE
           # names stamped zacks_discovery -- joins the scoring set. ~60 names one-time,
           # then incremental (only new/missing thereafter).
+          # v1.299 CROSS-TAB SCORING (owner-approved 'scored-everywhere' pass): the 13F whale
+          # top-holdings and the Wave-Z double-confirmed consensus names were displayed on
+          # Tabs 2/9 with BLANK quality -- the dashboard scored 190 names the owner does not
+          # own and none of the ones smart money actually holds. Both sets now join the IM3
+          # universe (~54 net new names, one heavier pass, then incremental).
+          smart = []
+          for _w13 in ((data.get('whale_13f') or {}).get('whales') or []):
+              for _h13 in (_w13.get('top_holdings') or []):
+                  if _h13.get('ticker'):
+                      smart.append(_h13['ticker'])
+          smart += [s.get('ticker') for s in ((data.get('inst_consensus') or {}).get('stocks') or [])
+                    if s.get('ticker')]
+          smart = sorted({str(t).upper().split(':')[-1] for t in smart if t})
           zdisc = sorted(set(
               [r['ticker'] for r in (data.get('zacks_radar') or {}).get('rows', [])
                if r.get('ticker')]
               + [r['ticker'] for r in data.get('explosive_us', [])
                  if r.get('zacks_discovery') and r.get('ticker')]
           ))
-          explosive_tickers = sorted(set(explosive + financial + tce_high + watchlist + zdisc))
+          explosive_tickers = sorted(set(explosive + financial + tce_high + watchlist + zdisc + smart))
 
           if not explosive_tickers:
               print("No explosive stocks to score")
