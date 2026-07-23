@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.253 (supersedes v5.252): TURNAROUND BLOCK IN THE STANDARD TABLE FORMAT (owner: 'these 21 stocks should be displayed in the format as the rest of the tab, same scoring, same metrics, same colour background, same fonts same highlights'). The tier moves from rank 4.4 to 0.5 -- it now sits IMMEDIATELY AFTER the 25 confirmed EXPLOSIVE rows (row ~26 instead of ~124), inside the SAME table: identical columns, identical cell renderers (Rev/OP/NP YoY, A\u00b7B\u00b7Q\u00b7T dots, condition chips, verdict, IM3 grade cell, trend chip), identical fonts and badges. The top strip drops its duplicate ticker chips and becomes a compact explainer pointing at the amber rows below. -->
 <!-- index.html v5.252 (supersedes v5.251): TURNAROUND TIER MADE ACTUALLY VISIBLE (owner: 'I don't see a separate background colour, any outline to the row'). ROOT CAUSE: the stylesheet paints CELLS (tr:nth-child(even) td / tr.pos td / tr.warn td) and a td background covers a tr background -- the v5.251 row-level gradient was hidden on alternating rows. Fixed by painting the cells via a new tr.turnrow class with !important + amber top/bottom rules + an ember inset bar on the first cell, mirroring how every other tier works. ALSO: the tier renders ~98 rows down a 175-row table, so a TURNAROUND WATCH callout strip now sits at the TOP of the tab -- boxed amber, naming every turnaround ticker with its quarterly revenue jump and consecutive rising quarters, plus a plain-language explanation and an honest watch-don't-buy caveat. -->
 <!-- index.html v5.251 (supersedes v5.250): TURNAROUND ATTENTION TIER (owner-directed, pairs with scanner v1.298.0 -- 'is it not marked turnaround?'). A name whose Signal Q and Signal T both fire while annual growth lags used to read NOT EXPLOSIVE and sat in the HIDDEN section (DELL: +87.5% quarterly revenue, TTM profit up 8 straight quarters). It now has its own VISIBLE tier at rank 4.4 (after the yellow tiers, before the pink discoveries): warm amber gradient row with an ember left bar, full outline box and amber top/bottom rules; a gradient '\u26A1 TURNAROUND \u00b7 WATCH' badge on the ticker; the verdict cell carries a plain-language 'Pay attention' callout naming the quarterly revenue jump, the consecutive rising quarters and the annual gap; the symbol key explains the new row colour. Display only -- no scoring change. -->
 <!-- index.html v5.250 (supersedes v5.249): NAV ORDER FIX -- the Narratives button rendered BEFORE '17. Live Investment' (inserted on the wrong side); it now sits after 17 in true numeric order. Display only. -->
@@ -3792,18 +3793,11 @@ function renderExplosiveTable(elId, rows, market, mode) {
   let html=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;font-weight:600;align-items:center;">`;
   // v5.252 TURNAROUND STRIP: the tier renders ~98 rows down a 175-row table -- invisible
   // in practice. Name the stocks at the TOP of the tab so the signal actually lands.
-  const _tesc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const _turnRows=(rows||[]).filter(r=>String(r&&r.verdict||'').toUpperCase().startsWith('TURNAROUND'));
   if(_turnRows.length){
-    const _chips=_turnRows.slice(0,24).map(r=>{
-      const cu=(r.signal_t&&r.signal_t.consec_up)?r.signal_t.consec_up+'Q':'';
-      const qr=(typeof r.q_rev_g==='number')?(r.q_rev_g>0?'+':'')+r.q_rev_g.toFixed(0)+'%':'';
-      return '<span title="'+_tesc(r.name||r.ticker)+' \u2014 latest quarter revenue '+qr+', full-year profit rising '+cu+'" style="display:inline-block;margin:3px 5px 0 0;padding:3px 9px;border-radius:14px;background:#fff;border:1.5px solid #EA580C;color:#9A3412;font-size:11px;font-weight:800;box-shadow:0 1px 2px rgba(234,88,12,.25);">'+_tesc(r.ticker)+(qr?' <span style="font-weight:600;color:#C2410C;">'+qr+'</span>':'')+(cu?' <span style="font-size:9px;color:#B45309;">\u25B2'+cu+'</span>':'')+'</span>';
-    }).join('');
-    html+='<div style="margin:12px 0 6px;padding:12px 15px;border:2px solid #F59E0B;border-left:7px solid #EA580C;border-radius:12px;background:linear-gradient(135deg,#FFFBEB 0%,#FEF3C7 60%,#FDE68A 100%);box-shadow:0 2px 8px rgba(234,88,12,.18);">'
-      +'<div style="font-size:13.5px;font-weight:900;color:#9A3412;letter-spacing:.4px;margin-bottom:3px;">\u26A1 TURNAROUND WATCH \u2014 '+_turnRows.length+' name(s) need your attention</div>'
-      +'<div style="font-size:11.5px;color:#7C2D12;line-height:1.55;margin-bottom:6px;">These stocks are <b>inflecting right now</b>: the latest quarter came in strong <b>and</b> full-year profit has been climbing for several quarters \u2014 but annual revenue growth hasn\u2019t crossed the 20% gate yet, so the standard screen calls them failures. This is what tomorrow\u2019s winner looks like <i>before</i> the annual numbers admit it. <b>Watch and verify \u2014 it is not a confirmed buy signal.</b></div>'
-      +_chips+'</div>';
+    html+='<div style="margin:12px 0 6px;padding:10px 14px;border:2px solid #F59E0B;border-left:7px solid #EA580C;border-radius:11px;background:linear-gradient(135deg,#FFFBEB 0%,#FEF3C7 100%);box-shadow:0 2px 7px rgba(234,88,12,.16);">'
+      +'<div style="font-size:13px;font-weight:900;color:#9A3412;letter-spacing:.3px;margin-bottom:3px;">\u26A1 TURNAROUND WATCH \u2014 '+_turnRows.length+' name(s), listed directly below the EXPLOSIVE block</div>'
+      +'<div style="font-size:11.5px;color:#7C2D12;line-height:1.55;">These stocks are <b>inflecting right now</b>: the latest quarter came in strong <b>and</b> full-year profit has been climbing for several quarters \u2014 but annual revenue growth hasn\u2019t crossed the 20% gate yet, so the standard screen would call them failures. This is what tomorrow\u2019s winner looks like <i>before</i> the annual numbers admit it. They appear in the table below on the amber rows, scored on exactly the same metrics as every other name. <b>Watch and verify \u2014 not a confirmed buy signal.</b></div></div>';
   }
 
   if(counts.explosive) html+=`<span style="background:var(--green-l);color:var(--green);padding:4px 10px;border-radius:6px;">🚀 ${counts.explosive} EXPLOSIVE</span>`;
@@ -3908,7 +3902,7 @@ function renderExplosiveTable(elId, rows, market, mode) {
     <th title="Trend (moving averages): ▲ Uptrend = price above its 200-day average (healthy) · ▼ Downtrend = below it (falling-knife risk) · golden/death = 50-day crossing above/below the 200-day. Describes the price trend only; never changes the verdict. See the Trend explainer above.">Trend<div style="font-size:9px;font-weight:400;opacity:.85;">vs 200-DMA</div></th>
   </tr></thead><tbody>`;
 
-  const _rank=v=>{const u=(v||'').toUpperCase();return u.startsWith('EXPLOSIVE')?0:u.startsWith('INFLECTION')?1:u.startsWith('QUALITY')?2:u.startsWith('FINANCIAL')?3:u.startsWith('PARTIAL')?4:u.startsWith('TURNAROUND')?4.4:u.startsWith('ZACKS')?4.6:u.startsWith('NOT EXPLOSIVE')?5:6;}
+  const _rank=v=>{const u=(v||'').toUpperCase();return u.startsWith('EXPLOSIVE')?0:u.startsWith('INFLECTION')?1:u.startsWith('QUALITY')?2:u.startsWith('FINANCIAL')?3:u.startsWith('PARTIAL')?4:u.startsWith('TURNAROUND')?0.5:u.startsWith('ZACKS')?4.6:u.startsWith('NOT EXPLOSIVE')?5:6;}
   // v5.243: a zacks_discovery-stamped record (screened NOT-EXPLOSIVE at Zacks #1/#2) is LIFTED
   // out of the hidden tier into the pink discovery tier (4.6) -- after yellow, before hidden.
   const _rankZ=r=>(r&&r.zacks_discovery&&_rank(r.verdict)>=5)?4.6:_rank(r.verdict);;
