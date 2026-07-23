@@ -138,6 +138,11 @@ jobs:
               r['ticker'] for r in data.get('explosive_us', [])
               if r.get('verdict', '').startswith('QUALITY-GROWTH')
               or r.get('verdict', '').startswith('INFLECTION')
+              # v1.298 pair (owner: 'except dell no other stock is im scored'): the new
+              # TURNAROUND tier is a first-class verdict -- 22 names carrying Signal Q +
+              # Signal T were rendering with a blank IM3 cell because this collection is
+              # verdict-based and the tier did not exist when it was written.
+              or r.get('verdict', '').startswith('TURNAROUND')
           ])
           # ZACKS DISCOVERY names (owner 2026-07-21: 'all zacks 1 and 2 should be im scored
           # as well'): the pink tier -- outside-screen radar rows + screened NOT-EXPLOSIVE
@@ -287,6 +292,11 @@ jobs:
               r['ticker'] for r in data.get('explosive_us', [])
               if r.get('verdict', '').startswith('QUALITY-GROWTH')
               or r.get('verdict', '').startswith('INFLECTION')
+              # v1.298 pair (owner: 'except dell no other stock is im scored'): the new
+              # TURNAROUND tier is a first-class verdict -- 22 names carrying Signal Q +
+              # Signal T were rendering with a blank IM3 cell because this collection is
+              # verdict-based and the tier did not exist when it was written.
+              or r.get('verdict', '').startswith('TURNAROUND')
           ])
           # ZACKS DISCOVERY names (owner 2026-07-21: 'all zacks 1 and 2 should be im scored
           # as well'): the pink tier -- outside-screen radar rows + screened NOT-EXPLOSIVE
