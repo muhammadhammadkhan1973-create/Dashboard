@@ -433,18 +433,42 @@ jobs:
           # explosive_us / tce_us / zacks_radar. AMZN, AAPL, MSFT and GOOG live in none of
           # those arrays, so their grades were computed and silently discarded -- a search of
           # the whole data.json found no im3 block for them. Give the grades somewhere to land.
+          # v1.300.1 FIX (post-deploy audit): the first version stamped from score_map ONLY,
+          # which holds just the names re-scored THIS run. Runs are incremental (48 of 261),
+          # so carried grades were invisible here -- NVDA/META/AVGO/MU read 'PENDING' on the
+          # consensus box while showing A/A/A/B on the Explosive tab. Build a COMPLETE lookup:
+          # this run's score_map PLUS every grade already living in the scored record arrays.
+          # v1.300.2: a PERSISTENT grade book. Consensus/whale blocks are REBUILT by the
+          # scanner every run, so a grade stamped into them yesterday is gone today -- MSFT and
+          # GOOG proved it (graded once, then blank because no record array holds them). The
+          # book accumulates every grade ever computed and rides data.json, so any rebuilt
+          # block can be re-stamped on any later run without re-scoring.
+          _grade_all = dict(data.get('im3_grade_book') or {})
+          _grade_all.update(score_map)
+          for _src in (data.get('explosive_us') or [], data.get('tce_us') or [],
+                       ((data.get('zacks_radar') or {}).get('rows') or []),
+                       data.get('explosive_psx') or [], data.get('tce_psx') or []):
+              for _r in _src:
+                  if not isinstance(_r, dict):
+                      continue
+                  _t = _r.get('ticker')
+                  _im = _r.get('im3')
+                  if _t and isinstance(_im, dict) and _im.get('grade'):
+                      _grade_all[_t] = _im          # freshest record wins over the book
           _sm_hit = 0
           for record in ((data.get('inst_consensus') or {}).get('stocks') or []):
               tk = record.get('ticker')
-              if tk in score_map:
-                  record['im3'] = score_map[tk]; _sm_hit += 1
+              if tk in _grade_all:
+                  record['im3'] = _grade_all[tk]; _sm_hit += 1
           for _wh in ((data.get('whale_13f') or {}).get('whales') or []):
               for _lst in ('top_holdings', 'new_buys', 'adds', 'exits'):
                   for record in (_wh.get(_lst) or []):
                       tk = record.get('ticker')
-                      if tk in score_map:
-                          record['im3'] = score_map[tk]; _sm_hit += 1
-          print(f'smart-money grades attached to {_sm_hit} consensus/whale holding record(s)')
+                      if tk in _grade_all:
+                          record['im3'] = _grade_all[tk]; _sm_hit += 1
+          data['im3_grade_book'] = _grade_all      # persist for every future rebuild
+          print(f'smart-money grades attached to {_sm_hit} consensus/whale record(s) '
+                f'from {len(_grade_all)} known grades ({len(score_map)} scored this run)')
 
           # v1.277.2 pair: PERSIST per-ticker scoring errors into data.json -- the owner's audit
           # showed the exact exception messages existed only in this step's summary, unreachable
