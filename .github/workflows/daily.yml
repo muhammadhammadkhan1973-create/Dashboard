@@ -490,6 +490,16 @@ jobs:
               if isinstance(_v2, dict):        # keep the Val chip summary, drop its metric list
                   _o['valuation'] = {_k2: _v3 for _k2, _v3 in _v2.items() if _k2 != 'metrics'}
               return _o
+          # v1.302.1 (post-deploy audit): build_ep_signal runs INSIDE the scanner, i.e. BEFORE
+          # this scoring step, so its E&P chips carried None even though XOM/CVX/COP/EOG are
+          # graded. Same run-order class as the Wave-Z bug. Re-stamp here, where every grade
+          # is known, so the Tab-7 action banner always shows the quality of what it tells the
+          # owner to overweight.
+          _ep = data.get('ep_signal')
+          if isinstance(_ep, dict) and _ep.get('names'):
+              _ep['grades'] = {_t: (_grade_all.get(_t) or {}).get('grade') for _t in _ep['names']}
+              print('ep_signal grades re-stamped: ' + str(_ep['grades']))
+
           data['im3_grade_book'] = {
               _t: _slim_grade(_g)
               for _t, _g in _grade_all.items() if isinstance(_g, dict) and _g.get('grade')
