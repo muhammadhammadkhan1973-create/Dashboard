@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.262 (supersedes v5.261): METALS FORECAST LAYER (owner: 'analyst predictions and engine predictions with trends are missing ... will price increase or decline in 1 or 2 months'). Every driver row gains a TREND cell showing its 1-month (or 1-week) change with an explicit BUILDING/EASING read, sign-corrected for drivers where up is bad (real yield, dollar). Every metal card gains a forecast strip: ENGINE PROJECTION at 1 and 2 months (low-centre-high band from the metal's own realised volatility, tilted by the driver composite, with a marker showing where today's price sits inside the band) and ANALYST CONSENSUS (dated published bank targets with the live gap to spot and per-house figures on hover). Both are labelled for what they are -- a statistical range and published forecasts, not targets. Pairs with scanner v1.305.0. -->
 <!-- index.html v5.261 (supersedes v5.260): PER-METAL GRAPHICAL DRIVER BOARDS (owner: 'show graphically what is pressuring each of the metals and what is favouring; what about silver, is ISM/LSM not a big factor for silver?'). Tab 12 now renders ONE CARD PER METAL (gold, silver, platinum, palladium, copper), each with a diverging bar chart -- bars grow LEFT in red for factors pressuring the price and RIGHT in green for factors favouring it, bar length = weighted impact -- plus a -100..+100 composite gauge, a confidence read, a plain-English note on what KIND of metal it is, and a 1-2 month directional outlook stated explicitly as a bias, not a target. Silver's board is led by industrial production (x3) and the gold-silver ratio (x2), which gold's board does not carry at all. Pairs with scanner v1.304.0. -->
 <!-- index.html v5.260 (supersedes v5.259): TAB 12 METALS DRIVER BOARD (owner: 'research what all factors affect Gold Silver and metals prices except seasonality and build it in the metals tab to predict prices'). A macro driver board now opens Tab 12: real yield (the dominant variable -- gold's opportunity cost, computed as 10Y minus breakeven), the dollar, Fed policy, inflation, COT positioning per metal and price trend, each with a signed pressure bar, weight, and a hover explaining WHY it matters, summed into a -100..+100 composite with a plain-language bias. A collapsible section names the drivers NOT covered (central-bank buying, ETF flows, geopolitical risk) and where they would come from. Pairs with scanner v1.303.0. -->
 <!-- index.html v5.259 (supersedes v5.258): E&P CRUDE TRIGGER ACTS (audit gap #2; pairs with scanner v1.302.0). Brent/WTI were displayed but nothing acted on them while the owner's standing rule is 'Arab Light > $60 = overweight E&P' and he holds XOM/CVX/COP/EOG. Tab 7 Allocation Zone now opens with a green ACTION banner when the rule fires -- naming the Arab Light proxy versus the $60 threshold, the Brent/WTI prints and month move, and each E&P holding as a chip carrying its IM3 grade (or an honest dash when unscored). Neutral state renders grey; an unevaluable state says so. The proxy basis (Brent minus a stated $2 OSP differential, no free live Arab Light feed) is printed, never hidden. -->
@@ -885,6 +886,16 @@ function renderMetalsDrivers(){
     return '<div title="'+e2(d.why)+'" style="display:flex;align-items:center;gap:6px;margin:3px 0;cursor:help;font-size:11px;">'
       +'<div style="width:170px;text-align:right;color:#374151;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+e2(d.label)+'</div>'
       +'<div style="width:64px;text-align:right;font-family:var(--font-mono);color:#6B7280;font-size:10px;white-space:nowrap;">'+e2(d.value)+e2(d.unit?(' '+d.unit):'')+arrow+'</div>'
+      // v5.262 TREND: is this pressure BUILDING or EASING? mom/qoq change, sign-corrected
+      // for drivers where "up" is bad for the metal (real yield, dollar).
+      +(function(){var t=d.trend; if(!t) return '<div style="width:112px;font-size:9px;color:#D1D5DB;">no trend series</div>';
+         var pick=(t.mom!=null?t.mom:(t.wow!=null?t.wow:t.qoq)), lbl=(t.mom!=null?'1m':(t.wow!=null?'1w':'3m'));
+         if(pick==null) return '<div style="width:112px;font-size:9px;color:#D1D5DB;">no trend series</div>';
+         var helping=t.invert?(pick<0):(pick>0);
+         var col=Math.abs(pick)<0.01?'#9CA3AF':(helping?'#059669':'#DC2626');
+         var word=Math.abs(pick)<0.01?'flat':(helping?'easing \u2193':'building \u2191');
+         return '<div style="width:112px;font-size:9px;color:'+col+';font-weight:700;white-space:nowrap;" title="Change over the last '+(lbl==='1m'?'month':(lbl==='1w'?'week':'quarter'))+': '+(pick>0?'+':'')+pick+'. '+(helping?'The pressure from this driver is EASING':'The pressure from this driver is BUILDING')+'.">'
+           +(pick>0?'+':'')+e2(pick)+' '+lbl+' \u00b7 '+word+'</div>';})()
       // diverging track: 110px pressuring | centre | 110px favouring
       +'<div style="flex:1;display:flex;align-items:center;min-width:230px;">'
         +'<div style="width:110px;display:flex;justify-content:flex-end;">'+(!pos&&!neu?('<div style="height:13px;width:'+w+'%;background:'+RED+';border-radius:3px 0 0 3px;"></div>'):'')+'</div>'
@@ -919,10 +930,34 @@ function renderMetalsDrivers(){
         +'<div style="display:flex;font-size:9px;color:#9CA3AF;font-weight:800;letter-spacing:.5px;margin-bottom:2px;">'
           +'<div style="width:240px;"></div><div style="flex:1;display:flex;min-width:230px;">'
           +'<div style="width:110px;text-align:right;color:'+RED+';">\u25C0 PRESSURING</div><div style="width:2px;"></div>'
-          +'<div style="width:110px;color:'+GRN+';">FAVOURING \u25B6</div></div><div style="width:104px;"></div></div>'
+          +'<div style="width:110px;color:'+GRN+';">FAVOURING \u25B6</div></div><div style="width:104px;"></div><div style="width:112px;">TREND</div></div>'
         +(v.drivers||[]).map(function(d){return row(d,mx);}).join('')
       +'</div>'
-      +'<div style="padding:7px 13px 10px;font-size:11px;color:'+p[0]+';background:'+p[2]+';line-height:1.55;"><b>Next 1\u20132 months:</b> '+e2(v.outlook)+'</div>'
+      +(function(){
+         var p1=v.projection_1m, p2=v.projection_2m, a=v.analyst;
+         if(!p1&&!p2&&!a) return '';
+         var band=function(pr,ttl){ if(!pr) return '';
+           var spanp=(pr.high-pr.low)||1, mark=Math.max(0,Math.min(100,(v.price-pr.low)/spanp*100));
+           return '<div style="flex:1;min-width:210px;padding:7px 10px;background:#fff;border:1px solid #E5E7EB;border-radius:9px;">'
+             +'<div style="font-size:9.5px;font-weight:800;color:#6B7280;letter-spacing:.4px;">'+ttl+'</div>'
+             +'<div style="font-family:var(--font-mono);font-size:12px;font-weight:800;color:#111827;margin:2px 0 4px;">$'+e2(pr.low)+' \u2013 <span style="color:'+p[1]+';">$'+e2(pr.centre)+'</span> \u2013 $'+e2(pr.high)+'</div>'
+             +'<div style="height:7px;background:linear-gradient(90deg,#FEE2E2,#F3F4F6,#DCFCE7);border-radius:4px;position:relative;">'
+               +'<span title="Where the price sits today inside the projected band" style="position:absolute;left:'+mark+'%;top:-3px;width:2px;height:13px;background:#111827;"></span></div>'
+             +'<div style="font-size:9px;color:#9CA3AF;margin-top:3px;">volatility \u00b1'+e2(pr.vol_pct)+'% \u00b7 driver tilt '+(pr.drift_pct>0?'+':'')+e2(pr.drift_pct)+'% \u00b7 marker = today</div></div>';};
+         var an='';
+         if(a){ var up=a.gap_pct;
+           an='<div style="flex:1;min-width:210px;padding:7px 10px;background:#fff;border:1px solid #E5E7EB;border-radius:9px;">'
+             +'<div style="font-size:9.5px;font-weight:800;color:#6B7280;letter-spacing:.4px;">ANALYST CONSENSUS \u00b7 '+e2(a.horizon)+'</div>'
+             +'<div style="font-family:var(--font-mono);font-size:12px;font-weight:800;color:#111827;margin:2px 0 4px;">$'+e2(a.low)+' \u2013 <span style="color:#2563EB;">$'+e2(a.consensus)+'</span> \u2013 $'+e2(a.high)
+             +(up!=null?(' <span style="font-size:10px;font-weight:800;color:'+(up>=0?'#059669':'#DC2626')+';">'+(up>0?'+':'')+e2(up)+'% vs spot</span>'):'')+'</div>'
+             +'<div style="font-size:9.5px;color:#4B5563;line-height:1.45;">'+(a.notes||[]).slice(0,4).map(function(n){
+                 return '<span title="'+e2(n[2]||'')+'" style="cursor:help;"><b>'+e2(n[0])+'</b>'+(n[1]!=null?(' $'+e2(n[1])):'')+'</span>';}).join(' \u00b7 ')+'</div>'
+             +(a.context?('<div style="font-size:9px;color:#6B7280;margin-top:3px;">'+e2(a.context)+'</div>'):'')
+             +'<div style="font-size:8.5px;color:#9CA3AF;margin-top:3px;">published targets, as of '+e2(a.as_of)+'</div></div>';}
+         return '<div style="padding:8px 13px;display:flex;gap:9px;flex-wrap:wrap;background:#FAFAFA;border-top:1px solid #F3F4F6;">'
+           +band(p1,'ENGINE PROJECTION \u00b7 1 MONTH')+band(p2,'ENGINE PROJECTION \u00b7 2 MONTHS')+an+'</div>';})()
+      +'<div style="padding:7px 13px 10px;font-size:11px;color:'+p[0]+';background:'+p[2]+';line-height:1.55;"><b>Next 1\u20132 months:</b> '+e2(v.outlook)
+      +' <span style="opacity:.85;">The engine band above is a statistical range built from this metal\u2019s own recent volatility and tilted by the drivers \u2014 not a target. The analyst figures are published bank forecasts on a longer horizon, shown so you can see where the engine and the street disagree.</span></div>'
       +'</div>';};
 
   var order=['gold','silver','platinum','palladium','copper'];
