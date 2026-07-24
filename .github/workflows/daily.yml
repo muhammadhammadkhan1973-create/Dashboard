@@ -466,7 +466,22 @@ jobs:
                       tk = record.get('ticker')
                       if tk in _grade_all:
                           record['im3'] = _grade_all[tk]; _sm_hit += 1
-          data['im3_grade_book'] = _grade_all      # persist for every future rebuild
+          # v1.300.3 SLIM BOOK (owner-approved): the book was the single biggest key in
+          # data.json (1.81 MB) and HALF of it was the per-metric breakdown, duplicated from
+          # records that already carry it. Re-stamping a rebuilt block only needs the summary,
+          # so the book stores grade/pct/score/max/ver (+valuation flag) -- ~0.9 MB saved.
+          _BOOK_KEEP = ('grade', 'pct', 'score', 'max', 'ver', 'scan_rev', 'stale_ver',
+                        'bank_model', 'valuation', 'iv', 'as_of')
+          def _slim_grade(_g):
+              _o = {_k: _v for _k, _v in _g.items() if _k in _BOOK_KEEP}
+              _v2 = _o.get('valuation')
+              if isinstance(_v2, dict):        # keep the Val chip summary, drop its metric list
+                  _o['valuation'] = {_k2: _v3 for _k2, _v3 in _v2.items() if _k2 != 'metrics'}
+              return _o
+          data['im3_grade_book'] = {
+              _t: _slim_grade(_g)
+              for _t, _g in _grade_all.items() if isinstance(_g, dict) and _g.get('grade')
+          }
           print(f'smart-money grades attached to {_sm_hit} consensus/whale record(s) '
                 f'from {len(_grade_all)} known grades ({len(score_map)} scored this run)')
 
