@@ -153,7 +153,13 @@ jobs:
           # Tabs 2/9 with BLANK quality -- the dashboard scored 190 names the owner does not
           # own and none of the ones smart money actually holds. Both sets now join the IM3
           # universe (~54 net new names, one heavier pass, then incremental).
-          smart = []
+          # v1.302 OWNER PORTFOLIO (audit gap #1): the engine scored 350 names the owner does
+          # NOT own while XOM, COP, EOG, UNH and GIS carried no grade anywhere -- a dashboard
+          # that cannot answer 'is what I own any good?'. The live portfolio is now a
+          # first-class member of the IM3 universe. PSX names ride the PSX scoring step.
+          owner_us  = ['XOM', 'CVX', 'COP', 'EOG', 'GOOGL', 'MSFT', 'META', 'UNH', 'GIS', 'KO']
+          owner_psx = ['OGDC', 'PPL', 'MCB', 'FFC', 'HUBC']
+          smart = list(owner_us)
           for _w13 in ((data.get('whale_13f') or {}).get('whales') or []):
               for _h13 in (_w13.get('top_holdings') or []):
                   if _h13.get('ticker'):
@@ -168,7 +174,7 @@ jobs:
                  if r.get('zacks_discovery') and r.get('ticker')]
           ))
           # Combined — score explosives, banks (System B), TCE-HIGH, watchlist, and discoveries
-          new_tickers = sorted(set(explosive + financial + tce_high + watchlist + zdisc + smart))
+          new_tickers = sorted(set(explosive + financial + tce_high + watchlist + zdisc + smart + owner_us))
 
           # Read previous list (stored in data.json from last run)
           prev_tickers = sorted(data.get('im3_explosive_tickers', []))
@@ -320,7 +326,13 @@ jobs:
           # Tabs 2/9 with BLANK quality -- the dashboard scored 190 names the owner does not
           # own and none of the ones smart money actually holds. Both sets now join the IM3
           # universe (~54 net new names, one heavier pass, then incremental).
-          smart = []
+          # v1.302 OWNER PORTFOLIO (audit gap #1): the engine scored 350 names the owner does
+          # NOT own while XOM, COP, EOG, UNH and GIS carried no grade anywhere -- a dashboard
+          # that cannot answer 'is what I own any good?'. The live portfolio is now a
+          # first-class member of the IM3 universe. PSX names ride the PSX scoring step.
+          owner_us  = ['XOM', 'CVX', 'COP', 'EOG', 'GOOGL', 'MSFT', 'META', 'UNH', 'GIS', 'KO']
+          owner_psx = ['OGDC', 'PPL', 'MCB', 'FFC', 'HUBC']
+          smart = list(owner_us)
           for _w13 in ((data.get('whale_13f') or {}).get('whales') or []):
               for _h13 in (_w13.get('top_holdings') or []):
                   if _h13.get('ticker'):
@@ -334,7 +346,7 @@ jobs:
               + [r['ticker'] for r in data.get('explosive_us', [])
                  if r.get('zacks_discovery') and r.get('ticker')]
           ))
-          explosive_tickers = sorted(set(explosive + financial + tce_high + watchlist + zdisc + smart))
+          explosive_tickers = sorted(set(explosive + financial + tce_high + watchlist + zdisc + smart + owner_us))
 
           if not explosive_tickers:
               print("No explosive stocks to score")
