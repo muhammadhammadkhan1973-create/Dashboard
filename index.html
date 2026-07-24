@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.261 (supersedes v5.260): PER-METAL GRAPHICAL DRIVER BOARDS (owner: 'show graphically what is pressuring each of the metals and what is favouring; what about silver, is ISM/LSM not a big factor for silver?'). Tab 12 now renders ONE CARD PER METAL (gold, silver, platinum, palladium, copper), each with a diverging bar chart -- bars grow LEFT in red for factors pressuring the price and RIGHT in green for factors favouring it, bar length = weighted impact -- plus a -100..+100 composite gauge, a confidence read, a plain-English note on what KIND of metal it is, and a 1-2 month directional outlook stated explicitly as a bias, not a target. Silver's board is led by industrial production (x3) and the gold-silver ratio (x2), which gold's board does not carry at all. Pairs with scanner v1.304.0. -->
+<!-- index.html v5.260 (supersedes v5.259): TAB 12 METALS DRIVER BOARD (owner: 'research what all factors affect Gold Silver and metals prices except seasonality and build it in the metals tab to predict prices'). A macro driver board now opens Tab 12: real yield (the dominant variable -- gold's opportunity cost, computed as 10Y minus breakeven), the dollar, Fed policy, inflation, COT positioning per metal and price trend, each with a signed pressure bar, weight, and a hover explaining WHY it matters, summed into a -100..+100 composite with a plain-language bias. A collapsible section names the drivers NOT covered (central-bank buying, ETF flows, geopolitical risk) and where they would come from. Pairs with scanner v1.303.0. -->
 <!-- index.html v5.259 (supersedes v5.258): E&P CRUDE TRIGGER ACTS (audit gap #2; pairs with scanner v1.302.0). Brent/WTI were displayed but nothing acted on them while the owner's standing rule is 'Arab Light > $60 = overweight E&P' and he holds XOM/CVX/COP/EOG. Tab 7 Allocation Zone now opens with a green ACTION banner when the rule fires -- naming the Arab Light proxy versus the $60 threshold, the Brent/WTI prints and month move, and each E&P holding as a chip carrying its IM3 grade (or an honest dash when unscored). Neutral state renders grey; an unevaluable state says so. The proxy basis (Brent minus a stated $2 OSP differential, no free live Arab Light feed) is printed, never hidden. -->
 <!-- index.html v5.258 (supersedes v5.257): SMART-MONEY GRADES SURFACE (pairs with the daily.yml merge-target fix). The whale + consensus names were being SCORED but their grades were discarded -- the workflow wrote score_map only into explosive_us/tce_us/zacks_radar, and AMZN/AAPL/MSFT/GOOG live in none of those. The workflow now also merges into inst_consensus.stocks and every whale sub-list (top_holdings/new_buys/adds/exits); this index renders the grade as a coloured IM3 chip on each Wave-Z consensus card (with an honest 'IM3 pending' state) and beside every whale move on the Whale Watch table. Display only. -->
 <!-- index.html v5.257 (supersedes v5.256): NARRATIVE BADGE PROPAGATION (cross-tab rule; pairs with scanner v1.299.0). Every Explosive / pink / PSX row whose ticker appears in a live Tab-18 news theme now carries a coloured \uD83D\uDCF0 N badge -- green when the coverage tone is positive, red when negative, indigo when neutral -- with a hover naming the exact themes and the count of Tier-1 sources behind them. The symbol key explains it. Display only. -->
@@ -503,7 +505,7 @@
   </div>
 
   <!-- ============ PANEL 12: GOLD & METALS ============ -->
-  <div id="metals" class="panel"><div id="metals_country_context"></div><div style="font-size:11.5px;color:#64748B;background:#F8FAFC;border-left:3px solid #0F766E;border-radius:6px;padding:6px 10px;margin:4px 0 8px;">The gold + copper trader-positioning on this tab also powers the <b>Materials</b> light on Tab 5 (Sector Implications) — one data source, two tabs.</div>
+  <div id="metals" class="panel"><div id="metals_drivers_box" style="margin:0 0 12px 0;"></div><div id="metals_country_context"></div><div style="font-size:11.5px;color:#64748B;background:#F8FAFC;border-left:3px solid #0F766E;border-radius:6px;padding:6px 10px;margin:4px 0 8px;">The gold + copper trader-positioning on this tab also powers the <b>Materials</b> light on Tab 5 (Sector Implications) — one data source, two tabs.</div>
     <div class="metals-header">
       <h2>Gold &amp; Metals — IM3 Week 12 Factor Framework</h2>
       <p>This tab reads the world&rsquo;s gold &amp; silver signals for you and turns them into a plain buy / hold / sell lean &mdash; plus where each metal could trade over the next 3&ndash;6 months, and why. Below you&rsquo;ll find what&rsquo;s pushing prices (Pakistan + global factors), how one-sided the futures bets are (COT), the usual seasonal pattern, the forward outlook, and the full plain-language list of what moves these metals.</p>
@@ -867,6 +869,77 @@ function renderEpTrigger(){
     +'<div style="margin-top:5px;">'+chips+'</div>'
     +'<div style="font-size:9.5px;color:#6B7280;margin-top:6px;" title="'+esc2(S.basis)+'">'+esc2(S.basis)+'</div></div>';
 }
+function renderMetalsDrivers(){
+  var el=document.getElementById('metals_drivers_box'); if(!el) return;
+  var B=(LIVE&&LIVE.metals_drivers)||null;
+  if(!B||!B.metals){ el.innerHTML=''; return; }
+  var e2=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
+  var GRN='#059669', RED='#DC2626', GRY='#9CA3AF';
+  var palette=function(c){return c>=10?[ '#065F46',GRN,'#ECFDF5','#A7F3D0']:(c<=-10?['#991B1B',RED,'#FEF2F2','#FCA5A5']:['#3730A3','#6366F1','#EEF2FF','#C7D2FE']);};
+
+  // one diverging row: label on the left, bar growing left (pressuring) or right (favouring)
+  var row=function(d,maxImpact){
+    var w=maxImpact?Math.round(Math.abs(d.impact)/maxImpact*100):0;
+    var pos=d.score>0, neu=d.score===0, col=neu?GRY:(pos?GRN:RED);
+    var arrow=d.direction==='up'?' \u25B2':(d.direction==='down'?' \u25BC':'');
+    return '<div title="'+e2(d.why)+'" style="display:flex;align-items:center;gap:6px;margin:3px 0;cursor:help;font-size:11px;">'
+      +'<div style="width:170px;text-align:right;color:#374151;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+e2(d.label)+'</div>'
+      +'<div style="width:64px;text-align:right;font-family:var(--font-mono);color:#6B7280;font-size:10px;white-space:nowrap;">'+e2(d.value)+e2(d.unit?(' '+d.unit):'')+arrow+'</div>'
+      // diverging track: 110px pressuring | centre | 110px favouring
+      +'<div style="flex:1;display:flex;align-items:center;min-width:230px;">'
+        +'<div style="width:110px;display:flex;justify-content:flex-end;">'+(!pos&&!neu?('<div style="height:13px;width:'+w+'%;background:'+RED+';border-radius:3px 0 0 3px;"></div>'):'')+'</div>'
+        +'<div style="width:2px;height:17px;background:#D1D5DB;"></div>'
+        +'<div style="width:110px;">'+(pos?('<div style="height:13px;width:'+w+'%;background:'+GRN+';border-radius:0 3px 3px 0;"></div>'):'')+'</div>'
+      +'</div>'
+      +'<div style="width:104px;font-size:9.5px;font-weight:800;color:'+col+';white-space:nowrap;">'+(neu?'neutral':(pos?'FAVOURING':'PRESSURING'))+' \u00d7'+e2(d.weight)+'</div>'
+      +'</div>';};
+
+  var card=function(k,v){
+    var p=palette(v.composite||0);
+    var mx=Math.max.apply(null,(v.drivers||[]).map(function(d){return Math.abs(d.impact)||0;}).concat([1]));
+    var gauge=Math.max(-100,Math.min(100,v.composite||0));
+    return '<div style="border:2px solid '+p[1]+';border-radius:12px;background:#fff;margin-bottom:12px;overflow:hidden;">'
+      +'<div style="background:'+p[2]+';padding:9px 13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">'
+        +'<div style="font-size:15px;font-weight:900;color:'+p[0]+';">'+e2(v.label)+'</div>'
+        +'<div style="font-family:var(--font-mono);font-size:12px;color:#374151;">$'+e2(v.price)+'</div>'
+        +'<div style="font-size:11px;font-weight:900;padding:2px 9px;border-radius:11px;background:'+p[1]+';color:#fff;">'+e2(v.bias)+'</div>'
+        +'<div style="flex:1;min-width:150px;display:flex;align-items:center;gap:6px;">'
+          +'<span style="font-size:9px;color:#9CA3AF;">\u2212100</span>'
+          +'<span style="flex:1;height:9px;background:#F3F4F6;border-radius:5px;position:relative;">'
+            +'<span style="position:absolute;left:50%;top:-2px;height:13px;width:1px;background:#D1D5DB;"></span>'
+            +'<span style="position:absolute;top:0;height:9px;border-radius:5px;background:'+p[1]+';'
+              +(gauge>=0?('left:50%;width:'+(gauge/2)+'%;'):('right:50%;width:'+(Math.abs(gauge)/2)+'%;'))+'"></span></span>'
+          +'<span style="font-size:9px;color:#9CA3AF;">+100</span>'
+          +'<span style="font-size:11px;font-weight:800;color:'+p[0]+';white-space:nowrap;">'+(v.composite>0?'+':'')+e2(v.composite)+'</span>'
+        +'</div>'
+        +'<div style="font-size:9.5px;color:#6B7280;">confidence '+e2(v.confidence)+'</div>'
+      +'</div>'
+      +'<div style="padding:4px 13px 2px;font-size:10.5px;color:#4B5563;line-height:1.5;"><b>What kind of metal this is:</b> '+e2(v.nature)+'</div>'
+      +'<div style="padding:6px 13px 4px;">'
+        +'<div style="display:flex;font-size:9px;color:#9CA3AF;font-weight:800;letter-spacing:.5px;margin-bottom:2px;">'
+          +'<div style="width:240px;"></div><div style="flex:1;display:flex;min-width:230px;">'
+          +'<div style="width:110px;text-align:right;color:'+RED+';">\u25C0 PRESSURING</div><div style="width:2px;"></div>'
+          +'<div style="width:110px;color:'+GRN+';">FAVOURING \u25B6</div></div><div style="width:104px;"></div></div>'
+        +(v.drivers||[]).map(function(d){return row(d,mx);}).join('')
+      +'</div>'
+      +'<div style="padding:7px 13px 10px;font-size:11px;color:'+p[0]+';background:'+p[2]+';line-height:1.55;"><b>Next 1\u20132 months:</b> '+e2(v.outlook)+'</div>'
+      +'</div>';};
+
+  var order=['gold','silver','platinum','palladium','copper'];
+  var cards=order.filter(function(k){return B.metals[k];}).map(function(k){return card(k,B.metals[k]);}).join('');
+  var gaps=(B.not_covered||[]).map(function(n){return '<li style="margin-bottom:3px;"><b>'+e2(n.driver)+'</b> \u2014 '+e2(n.why)+'</li>';}).join('');
+  el.innerHTML='<div style="border:1px solid #E5E7EB;border-radius:12px;padding:11px 14px;margin-bottom:10px;background:#FAFAFA;">'
+      +'<div style="font-size:14px;font-weight:900;color:#111827;">\u2696\uFE0F WHAT IS MOVING EACH METAL \u2014 driver board</div>'
+      +'<div style="font-size:11.5px;color:#4B5563;margin-top:4px;line-height:1.55;">Each metal gets its OWN model, because they are not the same asset. '
+      +'<b>Gold</b> is monetary \u2014 industrial use is only about 5% of demand \u2014 so the <b>real interest rate</b> (what cash earns after inflation) dominates: gold pays nothing, so the real yield IS the cost of holding it. '
+      +'<b>Silver</b> is roughly half an industrial metal (solar panels alone are about 29% of its demand), so <b>factory activity</b> carries the heaviest weight for silver AND it still inherits gold\u2019s macro pull. '
+      +'<b>Copper, platinum and palladium</b> are industrial first. Bars run LEFT when a factor is pushing the price down and RIGHT when it is pushing up; bar length is that factor\u2019s weighted impact. Hover any row for the reasoning. '
+      +'Real yield now <b>'+e2(B.real_yield)+'%</b> \u00b7 gold-to-silver ratio <b>'+e2(B.gs_ratio)+':1</b>.</div></div>'
+    +cards
+    +'<details style="margin:2px 0 6px;"><summary style="cursor:pointer;font-size:11px;font-weight:700;color:#4B5563;">Drivers this board does NOT yet include (tap)</summary>'
+    +'<ul style="font-size:10.5px;color:#4B5563;margin:6px 0 0 16px;padding:0;">'+gaps+'</ul></details>';
+}
+
 function showPanel(id,btn){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -3222,6 +3295,7 @@ function calcExplosive(){
   var __tg=document.getElementById('tce_regime_gate');
   if(__tg){var __V=usMacroVerdict(),__P=psxRollup();__tg.innerHTML='<strong>Regime gate:</strong> US \u2014 '+__V.regime+(__V.trip?' \u26A0 tripwire TRIPPED':'')+' \u00b7 PSX \u2014 '+__P.regime+'. Read TCE convergence within this regime.';}
   renderExplosiveTable('explosive_us_table',(LIVE&&Array.isArray(LIVE.explosive_us))?LIVE.explosive_us:[],'us');
+  try{renderMetalsDrivers();}catch(_me){if(window.console)console.warn('metals drivers:',_me);}
   try{renderEpTrigger();}catch(_ee){if(window.console)console.warn('ep trigger:',_ee);}
   try{renderNarratives();}catch(_ne){console.error('narratives render:',_ne);var _nb=document.getElementById('narrativesBody');if(_nb)_nb.innerHTML='<div class="card" style="color:#B91C1C;font-size:12px;">Narratives failed to render: '+String(_ne).slice(0,120)+'</div>';}
   renderExplosiveTable('explosive_psx_table',(LIVE&&Array.isArray(LIVE.explosive_psx))?LIVE.explosive_psx:[],'psx');
