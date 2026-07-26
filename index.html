@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.266 (supersedes v5.262): TAB 10 -- the owner's three items (pairs with scanner v1.311.0). (1) NEWS HOVER NOW SHOWS THE ACTUAL STORIES: the badge tooltip listed theme NAMES only because the scanner never propagated headline text; it now prints the top headlines with source and age, and says so honestly when a name carries none this run. (2) CATALYST CHIP: a stopwatch chip appears on any row reporting within 10 days -- AMBER when the name also carries a live engine signal (the hover names which ones), grey when it is timing context only. Forward-dated catalysts existed nowhere on the dashboard before this. (3) OP/NP BLANKS EXPLAINED: a bare dash became an italic 'not fetched' with a hover stating WHY -- a Zacks discovery row whose statements are deliberately never downloaded, or a filer publishing no operating-profit line. Nothing on the tab is unexplained. Display only; no column added, no header touched, no scoring path read. -->\n<!-- index.html v5.262 (supersedes v5.261): METALS FORECAST LAYER (owner: 'analyst predictions and engine predictions with trends are missing ... will price increase or decline in 1 or 2 months'). Every driver row gains a TREND cell showing its 1-month (or 1-week) change with an explicit BUILDING/EASING read, sign-corrected for drivers where up is bad (real yield, dollar). Every metal card gains a forecast strip: ENGINE PROJECTION at 1 and 2 months (low-centre-high band from the metal's own realised volatility, tilted by the driver composite, with a marker showing where today's price sits inside the band) and ANALYST CONSENSUS (dated published bank targets with the live gap to spot and per-house figures on hover). Both are labelled for what they are -- a statistical range and published forecasts, not targets. Pairs with scanner v1.305.0. -->
+<!-- index.html v5.267 (supersedes v5.262): TAB 10 -- the owner's three items (pairs with scanner v1.311.0). (1) NEWS HOVER NOW SHOWS THE ACTUAL STORIES: the badge tooltip listed theme NAMES only because the scanner never propagated headline text; it now prints the top headlines with source and age, and says so honestly when a name carries none this run. (2) CATALYST CHIP: a stopwatch chip appears on any row reporting within 10 days -- AMBER when the name also carries a live engine signal (the hover names which ones), grey when it is timing context only. Forward-dated catalysts existed nowhere on the dashboard before this. (3) OP/NP BLANKS EXPLAINED: a bare dash became an italic 'not fetched' with a hover stating WHY -- a Zacks discovery row whose statements are deliberately never downloaded, or a filer publishing no operating-profit line. Nothing on the tab is unexplained. Display only; no column added, no header touched, no scoring path read. -->\n<!-- index.html v5.262 (supersedes v5.261): METALS FORECAST LAYER (owner: 'analyst predictions and engine predictions with trends are missing ... will price increase or decline in 1 or 2 months'). Every driver row gains a TREND cell showing its 1-month (or 1-week) change with an explicit BUILDING/EASING read, sign-corrected for drivers where up is bad (real yield, dollar). Every metal card gains a forecast strip: ENGINE PROJECTION at 1 and 2 months (low-centre-high band from the metal's own realised volatility, tilted by the driver composite, with a marker showing where today's price sits inside the band) and ANALYST CONSENSUS (dated published bank targets with the live gap to spot and per-house figures on hover). Both are labelled for what they are -- a statistical range and published forecasts, not targets. Pairs with scanner v1.305.0. -->
 <!-- index.html v5.261 (supersedes v5.260): PER-METAL GRAPHICAL DRIVER BOARDS (owner: 'show graphically what is pressuring each of the metals and what is favouring; what about silver, is ISM/LSM not a big factor for silver?'). Tab 12 now renders ONE CARD PER METAL (gold, silver, platinum, palladium, copper), each with a diverging bar chart -- bars grow LEFT in red for factors pressuring the price and RIGHT in green for factors favouring it, bar length = weighted impact -- plus a -100..+100 composite gauge, a confidence read, a plain-English note on what KIND of metal it is, and a 1-2 month directional outlook stated explicitly as a bias, not a target. Silver's board is led by industrial production (x3) and the gold-silver ratio (x2), which gold's board does not carry at all. Pairs with scanner v1.304.0. -->
 <!-- index.html v5.260 (supersedes v5.259): TAB 12 METALS DRIVER BOARD (owner: 'research what all factors affect Gold Silver and metals prices except seasonality and build it in the metals tab to predict prices'). A macro driver board now opens Tab 12: real yield (the dominant variable -- gold's opportunity cost, computed as 10Y minus breakeven), the dollar, Fed policy, inflation, COT positioning per metal and price trend, each with a signed pressure bar, weight, and a hover explaining WHY it matters, summed into a -100..+100 composite with a plain-language bias. A collapsible section names the drivers NOT covered (central-bank buying, ETF flows, geopolitical risk) and where they would come from. Pairs with scanner v1.303.0. -->
 <!-- index.html v5.259 (supersedes v5.258): E&P CRUDE TRIGGER ACTS (audit gap #2; pairs with scanner v1.302.0). Brent/WTI were displayed but nothing acted on them while the owner's standing rule is 'Arab Light > $60 = overweight E&P' and he holds XOM/CVX/COP/EOG. Tab 7 Allocation Zone now opens with a green ACTION banner when the rule fires -- naming the Arab Light proxy versus the $60 threshold, the Brent/WTI prints and month move, and each E&P holding as a chip carrying its IM3 grade (or an honest dash when unscored). Neutral state renders grey; an unevaluable state says so. The proxy basis (Brent minus a stated $2 OSP differential, no free live Arab Light feed) is printed, never hidden. -->
@@ -8373,32 +8373,26 @@ function renderPolicyCatalyst(){
 function renderQuarterlyAccel(){
   var host=document.getElementById('quarterlyAccelBox'); if(!host) return;
   var Q=(typeof LIVE!=='undefined'&&LIVE&&LIVE.quarterly_acceleration)?LIVE.quarterly_acceleration:null;
-  // expose the deceleration map dashboard-wide so any tab can badge a decelerating name
   try{ window.qaccelDecel=(LIVE&&LIVE.qaccel_decel_map)||{}; }catch(e){}
   if(!Q){host.innerHTML='';return;}
   var h='<div style="margin:16px 0 6px;padding:9px 13px;border-left:4px solid #7c3aed;background:#f5f3ff;border-radius:0 8px 8px 0">'+
     '<h3 style="margin:0;font-size:16px;color:#5b21b6">Quarterly Earnings Acceleration</h3>'+
     '<p style="margin:2px 0 0;font-size:12px;color:#6d28d9">'+(Q.note||'')+'</p></div>';
-  // deceleration alarm banner (dashboard-wide signal)
   var al=Q.decel_alarms||[];
   if(al.length){
     h+='<div style="margin:8px 0;padding:9px 13px;border:2px solid #dc2626;border-radius:9px;background:#fef2f2;color:#991b1b;font-size:13px">'+
        '<b>&#9888; Deceleration alarm ('+al.length+'):</b> '+
        al.slice(0,20).map(function(a){return '<b>'+a.ticker+'</b>'+(a.region?' <span style="color:#b91c1c;font-size:11px">('+a.region+')</span>':'');}).join(' &middot; ')+
-       ' <span style="font-size:11px;color:#b91c1c">— 2 straight quarters of slowing growth in BOTH EPS and sales.</span></div>';
-  }
-  if(Q.status==='populating'){
-    h+='<div style="margin:6px 0;padding:9px 13px;border:1px dashed #a78bfa;border-radius:9px;background:#f5f3ff;color:#5b21b6;font-size:12.5px">Quarterly series confirms on the next scan — the table fills automatically.</div>';
+       ' <span style="font-size:11px;color:#b91c1c">&mdash; 2 straight quarters slowing in BOTH EPS and sales.</span></div>';
   }
   var picks=Q.picks||[];
-  h+='<p style="font-size:12px;color:#6b7280;margin:6px 0">'+(Q.n_candidates||0)+' candidates from the latest quarter &middot; '+
-     (Q.n_picks||0)+' clear the streak &middot; tiers: <b style="color:#5b21b6">elite</b> &#8805;5 quarters, <b>strong</b> &#8805;4, <span style="color:#6d28d9">watch</span> &#8805;3.</p>';
+  h+='<p style="font-size:12px;color:#6b7280;margin:6px 0"><b>'+(Q.n_qualifying||picks.length)+'</b> world names growing EPS &#8805;30% AND sales &#8805;25% this quarter &middot; <b>'+(Q.n_roe_ok||0)+'</b> also with ROE 25&ndash;50%. Tiers by consecutive-quarter streak: <span style="color:#6d28d9">new</span> &middot; <b>watch</b> &#8805;3 &middot; <b>strong</b> &#8805;4 &middot; <b style="color:#5b21b6">elite</b> &#8805;5.</p>';
   if(!picks.length){
-    h+='<p style="color:#6b7280;font-size:13px">No names currently string together 3+ consecutive quarters of &#8805;30% EPS and &#8805;25% sales growth. (Even ASML and TSMC top out at 2&ndash;3 &mdash; these criteria are deliberately strict.)</p>';
+    h+='<p style="color:#6b7280;font-size:13px">No world names currently clear &#8805;30% EPS and &#8805;25% sales growth this quarter.</p>';
     host.innerHTML=h; return;
   }
   function tierChip(t){
-    var m={elite:['#ede9fe','#5b21b6','elite &#8805;5'],strong:['#e0e7ff','#3730a3','strong &#8805;4'],watch:['#f3e8ff','#6d28d9','watch &#8805;3']};
+    var m={elite:['#ede9fe','#5b21b6','elite &#8805;5'],strong:['#e0e7ff','#3730a3','strong &#8805;4'],watch:['#f3e8ff','#6d28d9','watch &#8805;3'],'new':['#f1f5f9','#475569','new']};
     var c=m[t]||['#f1f5f9','#475569',t];
     return '<span style="display:inline-block;padding:1px 7px;border-radius:9px;font-size:10.5px;background:'+c[0]+';color:'+c[1]+'">'+c[2]+'</span>';
   }
@@ -8407,8 +8401,8 @@ function renderQuarterlyAccel(){
      '<thead><tr style="background:#f8fafc;border-bottom:2px solid #e5e7eb">'+
      '<th style="text-align:left;padding:6px">Ticker</th><th style="text-align:left;padding:6px">Company</th>'+
      '<th style="text-align:left;padding:6px">Region</th><th style="text-align:left;padding:6px">Tier</th>'+
-     '<th style="text-align:right;padding:6px">EPS streak</th><th style="text-align:right;padding:6px">Sales streak</th>'+
-     '<th style="text-align:right;padding:6px">Latest EPS YoY</th><th style="text-align:right;padding:6px">ROE</th></tr></thead><tbody>';
+     '<th style="text-align:right;padding:6px">EPS YoY (Q)</th><th style="text-align:right;padding:6px">Sales YoY (Q)</th>'+
+     '<th style="text-align:right;padding:6px">Streak</th><th style="text-align:right;padding:6px">ROE</th></tr></thead><tbody>';
   picks.forEach(function(p){
     var roe=(typeof p.roe==='number')?(Math.round(p.roe)+'%'):'&mdash;';
     var roeStyle=p.roe_ok?'color:#059669;font-weight:600':'color:#6b7280';
@@ -8417,14 +8411,15 @@ function renderQuarterlyAccel(){
        '<td style="font-size:12px;padding:6px">'+(p.name||'')+'</td>'+
        '<td style="font-size:11px;color:#6b7280;padding:6px">'+(p.region||'')+'</td>'+
        '<td style="padding:6px">'+tierChip(p.tier)+'</td>'+
-       '<td style="text-align:right;padding:6px;font-weight:600">'+p.eps_streak+'Q</td>'+
-       '<td style="text-align:right;padding:6px">'+p.rev_streak+'Q</td>'+
-       '<td style="text-align:right;padding:6px">'+pct(p.eps_yoy_latest)+'</td>'+
+       '<td style="text-align:right;padding:6px;font-weight:600">'+pct(p.eps_fq)+'</td>'+
+       '<td style="text-align:right;padding:6px">'+pct(p.rev_fq)+'</td>'+
+       '<td style="text-align:right;padding:6px">'+(p.streak||0)+'Q</td>'+
        '<td style="text-align:right;padding:6px;'+roeStyle+'">'+roe+'</td></tr>';
   });
   host.innerHTML=h+'</tbody></table>'+
-    '<p style="font-size:11px;color:#9ca3af;margin:6px 0 0">Streak = consecutive quarters of &#8805;30% EPS / &#8805;25% sales growth vs the same quarter a year ago (seasonality-safe). One-off-gain names omitted. ROE shown green when inside your 25&ndash;50% band. &#9660; = deceleration alarm.</p></div>';
+    '<p style="font-size:11px;color:#9ca3af;margin:6px 0 0">Growth = latest quarter vs the same quarter a year ago (from TradingView, the same feed the Explosive tab uses). Streak = consecutive quarters clearing both bars, building each scan. ROE green when inside your 25&ndash;50% band. &#9660; = deceleration alarm.</p></div>';
 }
+
 function renderGlobalDiscovery(){
   var host=document.getElementById('globalDiscoveryBody'); if(!host) return;
   var G=(typeof LIVE!=='undefined'&&LIVE&&LIVE.global_discovery)?LIVE.global_discovery:null;
