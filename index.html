@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.273 (supersedes v5.272; pairs with scanner v1.314.8): TAB 20 QUARTERLY ACCELERATION REWORKED, owner-directed. (1) WINNERS SEPARATED: the confirmed winners (all five tests passed) get their OWN green table above everything, sorted still-accelerating first, then streak, then annual growth -- no longer mixed into one 150-row list with the amber near-misses, which now sit in their own clearly-amber section below. (2) BUY CANDIDATES: a green callout at the top names the engine's strongest picks (all five tests + healthy ROE + NOT slowing down), each chip carrying its streak + 1Y return, with the selection reasoning printed and an honest note that these are research candidates the owner approves, never auto-orders. (3) PLAIN LANGUAGE: a "What this tab does" explainer opens the tab -- what the engine hunts (companies whose profits AND sales are speeding up quarter after quarter, the pattern behind most historic mega-winners), what each of the five tests means in everyday words, what streaks/near-miss/moat/SC/MC/the red triangle mean, and how the buy-candidate list is chosen. Display-only; no scoring/engine change. -->
 <!-- index.html v5.272 (supersedes v5.271; pairs with scanner v1.314.7): ARAB LIGHT LIVE ESTIMATE on the Pakistan macro card -- the World Bank CMO monthly print lags 1-2 months, so when the scanner emits arab_light_live (live Brent minus the CMO Dubai-Brent monthly spread, an honestly-labelled estimate) the card shows it alongside the official monthly value, and the devaluation calculator input auto-fills live-first with the monthly as fallback. Display-only; no scoring/engine change. -->
 <!-- index.html v5.271 (supersedes v5.262): TAB 10 -- the owner's three items (pairs with scanner v1.311.0). (1) NEWS HOVER NOW SHOWS THE ACTUAL STORIES: the badge tooltip listed theme NAMES only because the scanner never propagated headline text; it now prints the top headlines with source and age, and says so honestly when a name carries none this run. (2) CATALYST CHIP: a stopwatch chip appears on any row reporting within 10 days -- AMBER when the name also carries a live engine signal (the hover names which ones), grey when it is timing context only. Forward-dated catalysts existed nowhere on the dashboard before this. (3) OP/NP BLANKS EXPLAINED: a bare dash became an italic 'not fetched' with a hover stating WHY -- a Zacks discovery row whose statements are deliberately never downloaded, or a filer publishing no operating-profit line. Nothing on the tab is unexplained. Display only; no column added, no header touched, no scoring path read. -->\n<!-- index.html v5.262 (supersedes v5.261): METALS FORECAST LAYER (owner: 'analyst predictions and engine predictions with trends are missing ... will price increase or decline in 1 or 2 months'). Every driver row gains a TREND cell showing its 1-month (or 1-week) change with an explicit BUILDING/EASING read, sign-corrected for drivers where up is bad (real yield, dollar). Every metal card gains a forecast strip: ENGINE PROJECTION at 1 and 2 months (low-centre-high band from the metal's own realised volatility, tilted by the driver composite, with a marker showing where today's price sits inside the band) and ANALYST CONSENSUS (dated published bank targets with the live gap to spot and per-house figures on hover). Both are labelled for what they are -- a statistical range and published forecasts, not targets. Pairs with scanner v1.305.0. -->
 <!-- index.html v5.261 (supersedes v5.260): PER-METAL GRAPHICAL DRIVER BOARDS (owner: 'show graphically what is pressuring each of the metals and what is favouring; what about silver, is ISM/LSM not a big factor for silver?'). Tab 12 now renders ONE CARD PER METAL (gold, silver, platinum, palladium, copper), each with a diverging bar chart -- bars grow LEFT in red for factors pressuring the price and RIGHT in green for factors favouring it, bar length = weighted impact -- plus a -100..+100 composite gauge, a confidence read, a plain-English note on what KIND of metal it is, and a 1-2 month directional outlook stated explicitly as a bias, not a target. Silver's board is led by industrial production (x3) and the gold-silver ratio (x2), which gold's board does not carry at all. Pairs with scanner v1.304.0. -->
@@ -8381,6 +8382,25 @@ function renderQuarterlyAccel(){
   var h='<div style="margin:16px 0 6px;padding:9px 13px;border-left:4px solid #7c3aed;background:#f5f3ff;border-radius:0 8px 8px 0">'+
     '<h3 style="margin:0;font-size:16px;color:#5b21b6">Quarterly Earnings Acceleration</h3>'+
     '<p style="margin:2px 0 0;font-size:12px;color:#6d28d9">'+(Q.note||'')+'</p></div>';
+  // v5.273 PLAIN-LANGUAGE EXPLAINER — what the tab does, what each test means, how picks are chosen
+  h+='<div style="margin:8px 0;padding:11px 15px;border:1px solid #ddd6fe;border-radius:10px;background:#faf5ff;font-size:12.5px;color:#4c1d95;line-height:1.55">'+
+     '<b style="font-size:13.5px">What this tab does:</b> it scans stock markets around the whole world for companies whose '+
+     '<b>profits AND sales are both speeding up</b> — growing much faster this quarter than they did a year ago. '+
+     'History\u2019s biggest stock-market winners almost all showed this exact pattern early on, so the engine hunts for it before the crowd notices.'+
+     '<div style="margin-top:7px"><b>The five tests every company must pass to be a winner:</b></div>'+
+     '<table style="font-size:12px;border-collapse:collapse;margin:4px 0 2px">'+
+     '<tr><td style="padding:2px 8px 2px 0;white-space:nowrap"><b>EPS \u2265 30</b></td><td>profit per share grew at least 30% versus the same quarter last year — the business is earning meaningfully more.</td></tr>'+
+     '<tr><td style="padding:2px 8px 2px 0"><b>Sales \u2265 25</b></td><td>revenue grew at least 25% too — the profit jump comes from real customer demand, not just cost cuts.</td></tr>'+
+     '<tr><td style="padding:2px 8px 2px 0"><b>ROE 25\u201350</b></td><td>the company earns a 25\u201350% return on its owners\u2019 money — high enough to prove a quality business, not so high it\u2019s a one-off fluke.</td></tr>'+
+     '<tr><td style="padding:2px 8px 2px 0"><b>Annual \u2265 50</b></td><td>the FULL YEAR is also growing 50%+ — the quarter isn\u2019t a lucky blip inside a flat year.</td></tr>'+
+     '<tr><td style="padding:2px 8px 2px 0"><b>No one-off</b></td><td>growth above 300% is excluded — numbers that extreme usually come from a rock-bottom base or an accounting event, not a real trend.</td></tr>'+
+     '</table>'+
+     '<b>Streak</b> = how many scans in a row the company has kept qualifying (watch \u22653, strong \u22654, elite \u22655 — the longer it lasts, the more real it is). '+
+     '<span style="color:#b45309"><b>Near-miss</b></span> (amber, lower section) = came close (\u226525% EPS / \u226520% sales) but did NOT pass — early radar, not winners. '+
+     '<b style="color:#166534">\u{1F6E1} Wide</b> = Morningstar says the company has a durable competitive advantage. '+
+     '<span style="color:#0e7490">SC</span>/<span style="color:#15803d">MC</span> = small/mid-sized company (more room to multiply). '+
+     '<span style="color:#dc2626">\u25BC</span> = warning: growth has been SLOWING for two straight quarters.'+
+     '<div style="margin-top:7px"><b>How the buy candidates are chosen:</b> from the winners only — passed all five tests, ROE in the healthy band, and NOT slowing down — ranked by how long they\u2019ve kept it up, then by annual growth. They are research candidates for your approval, never automatic orders.</div></div>';
   var al=Q.decel_alarms||[];
   if(al.length){
     h+='<div style="margin:8px 0;padding:9px 13px;border:2px solid #dc2626;border-radius:9px;background:#fef2f2;color:#991b1b;font-size:13px">'+
@@ -8405,20 +8425,43 @@ function renderQuarterlyAccel(){
   var picks=Q.picks||[];
   h+='<p style="font-size:12px;color:#6b7280;margin:6px 0"><b>'+(Q.n_qualifying||0)+'</b> clear &#8805;30% EPS &amp; &#8805;25% sales this quarter, <b>'+(Q.n_nearmiss||0)+'</b> near-miss (&#8805;25%/&#8805;20%) &middot; <b>'+(Q.n_moat||0)+'</b> wide-moat &middot; <b>'+(Q.n_smallcap||0)+'</b> small-cap &middot; <b>'+(Q.n_midcap||0)+'</b> mid-cap &middot; <b>'+(Q.n_roe_ok||0)+'</b> with ROE 25&ndash;50%. Streak tiers: <span style="color:#6d28d9">new</span> &middot; watch &#8805;3 &middot; strong &#8805;4 &middot; <b style="color:#5b21b6">elite</b> &#8805;5 &middot; <span style="color:#b45309">near-miss</span>.</p>';
   if(!picks.length){ h+='<p style="color:#6b7280;font-size:13px">No world names clear the bars this quarter.</p>'; host.innerHTML=h; return; }
+  // v5.273 WINNERS SEPARATED: full-tier (all five tests passed) vs amber near-miss
+  var winners=picks.filter(function(p){return p.tier!=='nearmiss';});
+  var nearm=picks.filter(function(p){return p.tier==='nearmiss';});
+  winners.sort(function(a,b){
+    var da=a.decelerating?1:0, db=b.decelerating?1:0;
+    if(da!==db) return da-db;
+    if((b.streak||0)!==(a.streak||0)) return (b.streak||0)-(a.streak||0);
+    return (b.ann_eps||0)-(a.ann_eps||0);
+  });
+  var buyC=winners.filter(function(p){return !p.decelerating&&p.roe_ok;}).slice(0,8);
+  if(buyC.length){
+    h+='<div style="margin:8px 0;padding:11px 15px;border:2px solid #16a34a;border-radius:10px;background:#f0fdf4">'+
+       '<b style="font-size:13.5px;color:#166534">\u2B50 Engine\u2019s buy candidates ('+buyC.length+')</b> '+
+       '<span style="font-size:11.5px;color:#15803d">— passed all five tests, healthy ROE, still accelerating; ranked by streak, then annual growth. For your approval — research candidates, not orders.</span><div style="margin-top:5px">';
+    buyC.forEach(function(p){
+      h+='<span style="display:inline-block;margin:2px 4px 2px 0;padding:3px 9px;border-radius:9px;background:#dcfce7;color:#14532d;font-size:12px"><b>'+p.ticker+'</b> '+(p.name?('\u00b7 '+String(p.name).slice(0,22)):'')+' \u00b7 '+(p.streak||0)+'Q'+(p.moat==='wide'?' \u{1F6E1}':'')+' \u00b7 1Y '+((typeof p.perf_1y==='number')?((p.perf_1y>=0?'+':'')+Math.round(p.perf_1y)+'%'):'\u2014')+'</span>';
+    });
+    h+='</div></div>';
+  }
   function tierChip(t){
     var m={elite:['#ede9fe','#5b21b6','elite &#8805;5'],strong:['#e0e7ff','#3730a3','strong &#8805;4'],watch:['#f3e8ff','#6d28d9','watch &#8805;3'],'new':['#f1f5f9','#475569','new'],nearmiss:['#fef3c7','#b45309','near-miss']};
     var c=m[t]||['#f1f5f9','#475569',t];
     return '<span style="display:inline-block;padding:1px 7px;border-radius:9px;font-size:10.5px;background:'+c[0]+';color:'+c[1]+'">'+c[2]+'</span>';
   }
   function pct(v){return (typeof v==='number')?((v>=0?'+':'')+Math.round(v)+'%'):'&mdash;';}
-  h+='<div style="overflow-x:auto"><table class="tbl" style="width:100%;border-collapse:collapse;font-size:13px">'+
+  function qaTableHead(){
+    return '<div style="overflow-x:auto"><table class="tbl" style="width:100%;border-collapse:collapse;font-size:13px">'+
      '<thead><tr style="background:#f8fafc;border-bottom:2px solid #e5e7eb">'+
      '<th style="text-align:left;padding:6px">Ticker</th><th style="text-align:left;padding:6px">Company</th>'+
      '<th style="text-align:left;padding:6px">Region</th><th style="text-align:left;padding:6px">Tier</th>'+
      '<th style="text-align:left;padding:6px">Moat</th>'+
      '<th style="text-align:right;padding:6px">EPS YoY (Q)</th><th style="text-align:right;padding:6px">Sales YoY (Q)</th>'+
      '<th style="text-align:right;padding:6px">Streak</th><th style="text-align:right;padding:6px">YTD</th><th style="text-align:right;padding:6px">1Y</th><th style="text-align:right;padding:6px">3Y</th><th style="text-align:right;padding:6px">ROE</th></tr></thead><tbody>';
-  picks.forEach(function(p){
+  }
+  h+='<div style="margin:12px 0 4px;padding:7px 12px;border-left:4px solid #16a34a;background:#f0fdf4;border-radius:0 8px 8px 0"><b style="font-size:14px;color:#166534">\u{1F3C6} Winners \u2014 passed all five tests ('+winners.length+')</b> <span style="font-size:11.5px;color:#15803d">sorted: still-accelerating first, then longest streak, then annual growth</span></div>';
+  h+=qaTableHead();
+  function qaRow(p){
     var roe=(typeof p.roe==='number')?(Math.round(p.roe)+'%'):'&mdash;';
     var roeStyle=p.roe_ok?'color:#059669;font-weight:600':'color:#6b7280';
     var dec=p.decelerating?' <span title="decelerating" style="color:#dc2626">&#9660;</span>':'';
@@ -8438,9 +8481,17 @@ function renderQuarterlyAccel(){
        '<td style="text-align:right;padding:6px;color:'+((p.perf_1y||0)>=0?'#059669':'#dc2626')+'">'+pct(p.perf_1y)+'</td>'+
        '<td style="text-align:right;padding:6px;color:'+((p.perf_3y||0)>=0?'#059669':'#dc2626')+'">'+pct(p.perf_3y)+'</td>'+
        '<td style="text-align:right;padding:6px;'+roeStyle+'">'+roe+'</td></tr>';
-  });
-  host.innerHTML=h+'</tbody></table>'+
-    '<p style="font-size:11px;color:#9ca3af;margin:6px 0 0">Growth = latest quarter vs the same quarter a year ago (TradingView, the Explosive-tab feed). Full tier needs &#8805;30% EPS &amp; &#8805;25% sales; <span style="color:#b45309">near-miss</span> is &#8805;25%/&#8805;20% (amber). <b style="color:#166534">&#128737; Wide</b> = Morningstar wide-moat (GOAT holdings). <span style="color:#0e7490">SC</span> = small-cap. ROE green inside your 25&ndash;50% band. &#9660; = deceleration alarm. Streak builds each scan.</p></div>';
+  }
+  winners.forEach(qaRow);
+  h+='</tbody></table></div>';
+  if(nearm.length){
+    h+='<div style="margin:14px 0 4px;padding:7px 12px;border-left:4px solid #f59e0b;background:#fffbeb;border-radius:0 8px 8px 0"><b style="font-size:14px;color:#92400e">\u{1F50E} Near-miss radar \u2014 close but NOT winners ('+nearm.length+' shown of '+(Q.n_nearmiss||nearm.length)+')</b> <span style="font-size:11.5px;color:#b45309">growing \u226525% EPS / \u226520% sales \u2014 worth watching for promotion, not buy candidates</span></div>';
+    h+=qaTableHead();
+    nearm.forEach(qaRow);
+    h+='</tbody></table></div>';
+  }
+  host.innerHTML=h+
+    '<p style="font-size:11px;color:#9ca3af;margin:6px 0 0">Growth = latest quarter vs the same quarter a year ago (TradingView, the Explosive-tab feed). Full tier needs &#8805;30% EPS &amp; &#8805;25% sales; <span style="color:#b45309">near-miss</span> is &#8805;25%/&#8805;20% (amber). <b style="color:#166534">&#128737; Wide</b> = Morningstar wide-moat (GOAT holdings). <span style="color:#0e7490">SC</span> = small-cap. ROE green inside your 25&ndash;50% band. &#9660; = deceleration alarm. Streak builds each scan.</p>';
 }
 
 function renderGlobalDiscovery(){
