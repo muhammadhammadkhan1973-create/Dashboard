@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.275 (supersedes v5.274; pairs with scanner v1.314.11): TAB 20 FULL VISUAL REDESIGN, owner-directed ('make the tab more beautiful... graphical representation... plain language'). Light theme throughout, no dark backgrounds. NEW: (1) HOW-IT-HUNTS FUNNEL -- a graphic strip showing the pipeline World markets -> five tests -> Winners(n) -> Accelerating(n) -> Buy candidates(n), each stage a soft pastel card with live counts, so the tab explains itself at a glance before a single table. (2) VERIFIED CHAMPIONS HERO CARDS -- the tab now TELLS THE STORY the data earned: each multi-quarter verified winner and each accelerating name gets a card with a plain-English sentence written from its own numbers ('6 straight quarters beating the same quarter a year ago -- latest: profits +64%, sales +105%') plus a REAL per-quarter mini bar chart drawn from qaccel_qhist (violet bars = profit growth, teal = sales growth, dashed lines = the 30%/25% pass bars) -- the graphical representation of exactly what the engine verified. (3) AESTHETICS -- tabular-nums numeric alignment on every table, consistent paddings, softer borders, pastel section bands (violet header / green winners / amber near-miss), white cards. All prior audited machinery (buy candidates, why-chips, Accel column, explainer, tables) retained. Display-only. -->
 <!-- index.html v5.274 (supersedes v5.273; pairs with scanner v1.314.9): (1) TAB 20 TRUE CONSECUTIVE-QUARTER VIEW -- winners + pinned now carry a VERIFIED streak from published quarterly reports (backfilled, up to 8 quarters) and a new ACCEL column: green 'Accel \u26a1' when the growth RATE itself rose vs the prior quarter on BOTH profits and sales (growth on growth -- the owner's question answered with data), grey 'steady' when not, honest em-dash when the history isn't published (streak stays forward-only, marked). Buy candidates rank accelerating names FIRST and carry a \u26a1 badge. Explainer updated to define streak + Accel exactly. (2) NEAR-MISS WHY-CHIPS: every amber row shows exactly WHICH of the five tests it failed (small red chips: ROE 13 \u2717, Annual 36 \u2717 ...) -- the gap the ARGAN/TINGS/BESI question exposed. (3) US Macro WTI card gains a roll-free official-spot trend line (immune to futures contract rolls). Display-only. -->
 <!-- index.html v5.273 (supersedes v5.272; pairs with scanner v1.314.8): TAB 20 QUARTERLY ACCELERATION REWORKED, owner-directed. (1) WINNERS SEPARATED: the confirmed winners (all five tests passed) get their OWN green table above everything, sorted still-accelerating first, then streak, then annual growth -- no longer mixed into one 150-row list with the amber near-misses, which now sit in their own clearly-amber section below. (2) BUY CANDIDATES: a green callout at the top names the engine's strongest picks (all five tests + healthy ROE + NOT slowing down), each chip carrying its streak + 1Y return, with the selection reasoning printed and an honest note that these are research candidates the owner approves, never auto-orders. (3) PLAIN LANGUAGE: a "What this tab does" explainer opens the tab -- what the engine hunts (companies whose profits AND sales are speeding up quarter after quarter, the pattern behind most historic mega-winners), what each of the five tests means in everyday words, what streaks/near-miss/moat/SC/MC/the red triangle mean, and how the buy-candidate list is chosen. Display-only; no scoring/engine change. -->
 <!-- index.html v5.272 (supersedes v5.271; pairs with scanner v1.314.7): ARAB LIGHT LIVE ESTIMATE on the Pakistan macro card -- the World Bank CMO monthly print lags 1-2 months, so when the scanner emits arab_light_live (live Brent minus the CMO Dubai-Brent monthly spread, an honestly-labelled estimate) the card shows it alongside the official monthly value, and the devaluation calculator input auto-fills live-first with the monthly as fallback. Display-only; no scoring/engine change. -->
@@ -8437,6 +8438,71 @@ function renderQuarterlyAccel(){
     if((b.streak||0)!==(a.streak||0)) return (b.streak||0)-(a.streak||0);
     return (b.ann_eps||0)-(a.ann_eps||0);
   });
+  // v5.275 helpers ------------------------------------------------------------
+  var QH=(LIVE&&LIVE.qaccel_qhist)||{};
+  function qaSpark(tk,w,hgt){
+    var rows=((QH[tk]||{}).rows||[]).slice(0,8).reverse(); // oldest -> newest
+    if(rows.length<2) return '';
+    w=w||236; hgt=hgt||74;
+    var vals=[]; rows.forEach(function(r){ if(typeof r.eps==='number')vals.push(r.eps); if(typeof r.rev==='number')vals.push(r.rev); });
+    if(!vals.length) return '';
+    var mx=Math.max(60,Math.max.apply(null,vals)), mn=Math.min(0,Math.min.apply(null,vals));
+    var span=mx-mn||1, n=rows.length, gw=(w-8)/n, bw=Math.max(4,Math.min(11,gw/2-3));
+    function y(v){ return 4+(hgt-22)*(1-(v-mn)/span); }
+    var svg='<svg width="'+w+'" height="'+hgt+'" viewBox="0 0 '+w+' '+hgt+'" style="display:block">';
+    // gate lines 30 (eps, violet) & 25 (rev, teal)
+    svg+='<line x1="4" x2="'+(w-4)+'" y1="'+y(30)+'" y2="'+y(30)+'" stroke="#a78bfa" stroke-width="1" stroke-dasharray="3,3"/>';
+    svg+='<line x1="4" x2="'+(w-4)+'" y1="'+y(25)+'" y2="'+y(25)+'" stroke="#5eead4" stroke-width="1" stroke-dasharray="3,3"/>';
+    if(mn<0) svg+='<line x1="4" x2="'+(w-4)+'" y1="'+y(0)+'" y2="'+y(0)+'" stroke="#e5e7eb" stroke-width="1"/>';
+    rows.forEach(function(r,i){
+      var x0=4+i*gw+ (gw-2*bw-2)/2;
+      if(typeof r.eps==='number'){var he=Math.max(2,Math.abs(y(r.eps)-y(0)));
+        svg+='<rect x="'+x0+'" y="'+Math.min(y(r.eps),y(0))+'" width="'+bw+'" height="'+he+'" rx="1.5" fill="'+(r.eps>=30?'#7c3aed':'#c4b5fd')+'"><title>'+r.q+' profit growth '+r.eps+'%</title></rect>';}
+      if(typeof r.rev==='number'){var hr=Math.max(2,Math.abs(y(r.rev)-y(0)));
+        svg+='<rect x="'+(x0+bw+2)+'" y="'+Math.min(y(r.rev),y(0))+'" width="'+bw+'" height="'+hr+'" rx="1.5" fill="'+(r.rev>=25?'#0d9488':'#99f6e4')+'"><title>'+r.q+' sales growth '+r.rev+'%</title></rect>';}
+      svg+='<text x="'+(x0+bw)+'" y="'+(hgt-3)+'" font-size="7.5" fill="#9ca3af" text-anchor="middle">'+String(r.q).slice(2).replace('-','/')+'</text>';
+    });
+    return svg+'</svg>';
+  }
+  function champSentence(p){
+    var bits=[];
+    if(p.hist_src==='published-quarterly'&&(p.streak||0)>=2)
+      bits.push('<b>'+p.streak+' straight quarters</b> beating the same quarter a year ago on both profits and sales \u2014 verified from its published reports');
+    else if(p.hist_src==='published-quarterly')
+      bits.push('its qualifying run started this quarter \u2014 verified against '+(p.hist_q||0)+' quarters of published reports');
+    if(p.accel===true) bits.push('and it\u2019s <b style="color:#166534">speeding up</b>: the growth rate itself has risen for '+(p.accel_run||1)+' quarter'+((p.accel_run||1)>1?'s':'')+' running \u26a1');
+    var latest='latest quarter: profits '+(typeof p.eps_fq==='number'?('+'+Math.round(p.eps_fq)+'%'):'\u2014')+', sales '+(typeof p.rev_fq==='number'?('+'+Math.round(p.rev_fq)+'%'):'\u2014');
+    return bits.join(', ')+'. Its '+latest+'.';
+  }
+  // v5.275 FUNNEL -- how this tab hunts, at a glance
+  var nAcc=winners.filter(function(p){return p.accel===true;}).length;
+  var nVer=winners.filter(function(p){return p.hist_src==='published-quarterly';}).length;
+  function fStage(emoji,title,sub,bg,bd){return '<div style="flex:1;min-width:118px;background:'+bg+';border:1.5px solid '+bd+';border-radius:12px;padding:9px 10px;text-align:center"><div style="font-size:19px">'+emoji+'</div><div style="font-size:12.5px;font-weight:700;color:#374151;margin-top:1px">'+title+'</div><div style="font-size:10.5px;color:#6b7280;line-height:1.35;margin-top:2px">'+sub+'</div></div>';}
+  var arrow='<div style="align-self:center;font-size:16px;color:#c4b5fd;padding:0 2px">\u27A4</div>';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;align-items:stretch">'+
+     fStage('\u{1F30D}','World markets','thousands of stocks scanned across US, Europe, Asia & beyond','#f8fafc','#e2e8f0')+arrow+
+     fStage('\u{1F9EA}','Five tests','profits +30% \u00b7 sales +25% \u00b7 quality ROE \u00b7 full year +50% \u00b7 no one-offs','#faf5ff','#ddd6fe')+arrow+
+     fStage('\u{1F3C6}','Winners: '+winners.length,'passed ALL five \u00b7 '+nVer+' verified against published quarterly reports','#f0fdf4','#bbf7d0')+arrow+
+     fStage('\u26A1','Accelerating: '+nAcc,'growth rate itself RISING quarter after quarter','#ecfdf5','#a7f3d0')+arrow+
+     fStage('\u2B50','Buy candidates','the strongest, ranked \u2014 for your approval, never auto-orders','#fefce8','#fde68a')+
+     '</div>';
+  // v5.275 VERIFIED CHAMPIONS -- the story the data earned, with real per-quarter charts
+  var champs=winners.filter(function(p){return (p.hist_src==='published-quarterly'&&(p.streak||0)>=2)||p.accel===true;});
+  champs.sort(function(a,b){ if((b.streak||0)!==(a.streak||0)) return (b.streak||0)-(a.streak||0); return (b.accel_run||0)-(a.accel_run||0); });
+  if(champs.length){
+    h+='<div style="margin:12px 0 4px;padding:7px 12px;border-left:4px solid #7c3aed;background:#faf5ff;border-radius:0 8px 8px 0"><b style="font-size:14px;color:#5b21b6">\u{1F396} Verified champions \u2014 the proof, quarter by quarter</b> <span style="font-size:11.5px;color:#7c3aed">violet bars = profit growth vs a year ago \u00b7 teal = sales growth \u00b7 dashed lines = the 30%/25% pass bars</span></div>';
+    h+='<div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 4px">';
+    champs.slice(0,6).forEach(function(p){
+      var spark=qaSpark(p.ticker);
+      h+='<div style="flex:1;min-width:250px;max-width:340px;background:#ffffff;border:1.5px solid '+(p.accel===true?'#6ee7b7':'#ddd6fe')+';border-radius:14px;padding:11px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.04)">'+
+         '<div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:15px;color:#1f2937">'+p.ticker+'</b>'+tierChip(p.tier)+'</div>'+
+         '<div style="font-size:11.5px;color:#6b7280;margin:1px 0 5px">'+esc2(String(p.name||'').slice(0,34))+' \u00b7 '+esc2(String(p.region||''))+(p.moat==='wide'?' \u00b7 \u{1F6E1} wide moat':'')+'</div>'+
+         (spark||'<div style="font-size:11px;color:#9ca3af">chart forms as quarters post</div>')+
+         '<div style="font-size:11.8px;color:#374151;line-height:1.5;margin-top:6px">'+champSentence(p)+'</div>'+
+         '</div>';
+    });
+    h+='</div>';
+  }
   var buyC=winners.filter(function(p){return !p.decelerating&&p.roe_ok;});
   buyC.sort(function(a,b){
     var aa=a.accel===true?1:0, bb=b.accel===true?1:0;
@@ -8462,7 +8528,7 @@ function renderQuarterlyAccel(){
   }
   function pct(v){return (typeof v==='number')?((v>=0?'+':'')+Math.round(v)+'%'):'&mdash;';}
   function qaTableHead(){
-    return '<div style="overflow-x:auto"><table class="tbl" style="width:100%;border-collapse:collapse;font-size:13px">'+
+    return '<div style="overflow-x:auto"><table class="tbl" style="width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums">'+
      '<thead><tr style="background:#f8fafc;border-bottom:2px solid #e5e7eb">'+
      '<th style="text-align:left;padding:6px">Ticker</th><th style="text-align:left;padding:6px">Company</th>'+
      '<th style="text-align:left;padding:6px">Region</th><th style="text-align:left;padding:6px">Tier</th>'+
