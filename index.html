@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.274 (supersedes v5.273; pairs with scanner v1.314.9): (1) TAB 20 TRUE CONSECUTIVE-QUARTER VIEW -- winners + pinned now carry a VERIFIED streak from published quarterly reports (backfilled, up to 8 quarters) and a new ACCEL column: green 'Accel \u26a1' when the growth RATE itself rose vs the prior quarter on BOTH profits and sales (growth on growth -- the owner's question answered with data), grey 'steady' when not, honest em-dash when the history isn't published (streak stays forward-only, marked). Buy candidates rank accelerating names FIRST and carry a \u26a1 badge. Explainer updated to define streak + Accel exactly. (2) NEAR-MISS WHY-CHIPS: every amber row shows exactly WHICH of the five tests it failed (small red chips: ROE 13 \u2717, Annual 36 \u2717 ...) -- the gap the ARGAN/TINGS/BESI question exposed. (3) US Macro WTI card gains a roll-free official-spot trend line (immune to futures contract rolls). Display-only. -->
 <!-- index.html v5.273 (supersedes v5.272; pairs with scanner v1.314.8): TAB 20 QUARTERLY ACCELERATION REWORKED, owner-directed. (1) WINNERS SEPARATED: the confirmed winners (all five tests passed) get their OWN green table above everything, sorted still-accelerating first, then streak, then annual growth -- no longer mixed into one 150-row list with the amber near-misses, which now sit in their own clearly-amber section below. (2) BUY CANDIDATES: a green callout at the top names the engine's strongest picks (all five tests + healthy ROE + NOT slowing down), each chip carrying its streak + 1Y return, with the selection reasoning printed and an honest note that these are research candidates the owner approves, never auto-orders. (3) PLAIN LANGUAGE: a "What this tab does" explainer opens the tab -- what the engine hunts (companies whose profits AND sales are speeding up quarter after quarter, the pattern behind most historic mega-winners), what each of the five tests means in everyday words, what streaks/near-miss/moat/SC/MC/the red triangle mean, and how the buy-candidate list is chosen. Display-only; no scoring/engine change. -->
 <!-- index.html v5.272 (supersedes v5.271; pairs with scanner v1.314.7): ARAB LIGHT LIVE ESTIMATE on the Pakistan macro card -- the World Bank CMO monthly print lags 1-2 months, so when the scanner emits arab_light_live (live Brent minus the CMO Dubai-Brent monthly spread, an honestly-labelled estimate) the card shows it alongside the official monthly value, and the devaluation calculator input auto-fills live-first with the monthly as fallback. Display-only; no scoring/engine change. -->
 <!-- index.html v5.271 (supersedes v5.262): TAB 10 -- the owner's three items (pairs with scanner v1.311.0). (1) NEWS HOVER NOW SHOWS THE ACTUAL STORIES: the badge tooltip listed theme NAMES only because the scanner never propagated headline text; it now prints the top headlines with source and age, and says so honestly when a name carries none this run. (2) CATALYST CHIP: a stopwatch chip appears on any row reporting within 10 days -- AMBER when the name also carries a live engine signal (the hover names which ones), grey when it is timing context only. Forward-dated catalysts existed nowhere on the dashboard before this. (3) OP/NP BLANKS EXPLAINED: a bare dash became an italic 'not fetched' with a hover stating WHY -- a Zacks discovery row whose statements are deliberately never downloaded, or a filer publishing no operating-profit line. Nothing on the tab is unexplained. Display only; no column added, no header touched, no scoring path read. -->\n<!-- index.html v5.262 (supersedes v5.261): METALS FORECAST LAYER (owner: 'analyst predictions and engine predictions with trends are missing ... will price increase or decline in 1 or 2 months'). Every driver row gains a TREND cell showing its 1-month (or 1-week) change with an explicit BUILDING/EASING read, sign-corrected for drivers where up is bad (real yield, dollar). Every metal card gains a forecast strip: ENGINE PROJECTION at 1 and 2 months (low-centre-high band from the metal's own realised volatility, tilted by the driver composite, with a marker showing where today's price sits inside the band) and ANALYST CONSENSUS (dated published bank targets with the live gap to spot and per-house figures on hover). Both are labelled for what they are -- a statistical range and published forecasts, not targets. Pairs with scanner v1.305.0. -->
@@ -1307,7 +1308,8 @@ function calcUS(){
   const spread=(!isNaN(c.curve))?c.curve:((y10-y2)*100);   // bps, for yield_curve_box + generateUSRec
   const fomc=usLive.fomc||null;
   let eHtml='';
-  eHtml+=indicatorCard('WTI Crude','$'+wti+'/bbl',wti>=90?'HIGH — net positive':wti>=65?'MID — balanced':'LOW — drilling stress',wti>=90?'pos':wti>=65?'neutral':'warn',wti>=90?'Elevated WTI lifts shale margins. Bullish Energy (XLE).':'Mid-band manageable.','wti');
+  var _rollNote=(typeof usLive.wti_spot==='number')?(' Roll-free official spot (EIA): $'+usLive.wti_spot+(typeof usLive.wti_spot_wow==='number'?(' \u00b7 week '+(usLive.wti_spot_wow>=0?'+':'')+usLive.wti_spot_wow+'%'):'')+(typeof usLive.wti_spot_mom==='number'?(' \u00b7 month '+(usLive.wti_spot_mom>=0?'+':'')+usLive.wti_spot_mom+'%'):'')+' \u2014 immune to futures contract rolls.'):'';
+  eHtml+=indicatorCard('WTI Crude','$'+wti+'/bbl',wti>=90?'HIGH — net positive':wti>=65?'MID — balanced':'LOW — drilling stress',wti>=90?'pos':wti>=65?'neutral':'warn',(wti>=90?'Elevated WTI lifts shale margins. Bullish Energy (XLE).':'Mid-band manageable.')+_rollNote,'wti');
   eHtml+=indicatorCard('US Crude Production',crudeProd+'M b/d',crudeProd>=13.5?'NEAR RECORD':crudeProd>=12.5?'Strong':'Declining',crudeProd>=12.5?'pos':'warn',crudeProd>=13.5?'Near all-time highs. Structural export surplus.':'Watch production trend.');
   eHtml+=indicatorCard('US Rotary Rigs (total)',oilRigs+' rigs',oilRigs>=700?'High activity':oilRigs>=560?'Steady':'Subdued',oilRigs>=560?'pos':'warn','Total US oil+gas rotary rigs (EIA, monthly). <b>Why it is here:</b> a leading supply gauge — rigs drilling now become production in 6–12 months, so falling rigs tighten future crude supply (bullish oil, supports the &ldquo;Arab&nbsp;Light&nbsp;&gt;$60 = overweight E&amp;P&rdquo; tilt and your XOM·CVX·COP·EOG), while rising rigs add supply. Shale efficiency means high output on fewer rigs, so read the <i>trend</i>, not just the level.','us_oil_rigs');
   document.getElementById('us_energy_indicators').innerHTML=eHtml;
@@ -8395,7 +8397,8 @@ function renderQuarterlyAccel(){
      '<tr><td style="padding:2px 8px 2px 0"><b>Annual \u2265 50</b></td><td>the FULL YEAR is also growing 50%+ — the quarter isn\u2019t a lucky blip inside a flat year.</td></tr>'+
      '<tr><td style="padding:2px 8px 2px 0"><b>No one-off</b></td><td>growth above 300% is excluded — numbers that extreme usually come from a rock-bottom base or an accounting event, not a real trend.</td></tr>'+
      '</table>'+
-     '<b>Streak</b> = how many scans in a row the company has kept qualifying (watch \u22653, strong \u22654, elite \u22655 — the longer it lasts, the more real it is). '+
+     '<b>Streak</b> = how many CONSECUTIVE QUARTERS the company beat its own year-ago quarter on both bars — for winners this is now VERIFIED against published quarterly reports (up to 8 quarters back; the green \u2713 next to a streak marks it verified, a plain streak means the history isn\u2019t published for that listing and it builds forward as new quarters post). Tiers: watch \u22653, strong \u22654, elite \u22655. '+
+     '<b style="color:#166534">Accel \u26a1</b> = growth on growth: the profit AND sales growth RATES were both HIGHER this quarter than last quarter — not just growing, but speeding up; \u201csteady\u201d means growing at a flat or easing pace. '+
      '<span style="color:#b45309"><b>Near-miss</b></span> (amber, lower section) = came close (\u226525% EPS / \u226520% sales) but did NOT pass — early radar, not winners. '+
      '<b style="color:#166534">\u{1F6E1} Wide</b> = Morningstar says the company has a durable competitive advantage. '+
      '<span style="color:#0e7490">SC</span>/<span style="color:#15803d">MC</span> = small/mid-sized company (more room to multiply). '+
@@ -8434,13 +8437,21 @@ function renderQuarterlyAccel(){
     if((b.streak||0)!==(a.streak||0)) return (b.streak||0)-(a.streak||0);
     return (b.ann_eps||0)-(a.ann_eps||0);
   });
-  var buyC=winners.filter(function(p){return !p.decelerating&&p.roe_ok;}).slice(0,8);
+  var buyC=winners.filter(function(p){return !p.decelerating&&p.roe_ok;});
+  buyC.sort(function(a,b){
+    var aa=a.accel===true?1:0, bb=b.accel===true?1:0;
+    if(aa!==bb) return bb-aa;
+    if((b.accel_run||0)!==(a.accel_run||0)) return (b.accel_run||0)-(a.accel_run||0);
+    if((b.streak||0)!==(a.streak||0)) return (b.streak||0)-(a.streak||0);
+    return (b.ann_eps||0)-(a.ann_eps||0);
+  });
+  buyC=buyC.slice(0,8);
   if(buyC.length){
     h+='<div style="margin:8px 0;padding:11px 15px;border:2px solid #16a34a;border-radius:10px;background:#f0fdf4">'+
        '<b style="font-size:13.5px;color:#166534">\u2B50 Engine\u2019s buy candidates ('+buyC.length+')</b> '+
-       '<span style="font-size:11.5px;color:#15803d">— passed all five tests, healthy ROE, still accelerating; ranked by streak, then annual growth. For your approval — research candidates, not orders.</span><div style="margin-top:5px">';
+       '<span style="font-size:11.5px;color:#15803d">— passed all five tests, healthy ROE, not slowing; ranked ACCELERATING (\u26a1 = the growth rate itself is rising) first, then longest verified streak, then annual growth. For your approval — research candidates, not orders.</span><div style="margin-top:5px">';
     buyC.forEach(function(p){
-      h+='<span style="display:inline-block;margin:2px 4px 2px 0;padding:3px 9px;border-radius:9px;background:#dcfce7;color:#14532d;font-size:12px"><b>'+p.ticker+'</b> '+(p.name?('\u00b7 '+String(p.name).slice(0,22)):'')+' \u00b7 '+(p.streak||0)+'Q'+(p.moat==='wide'?' \u{1F6E1}':'')+' \u00b7 1Y '+((typeof p.perf_1y==='number')?((p.perf_1y>=0?'+':'')+Math.round(p.perf_1y)+'%'):'\u2014')+'</span>';
+      h+='<span style="display:inline-block;margin:2px 4px 2px 0;padding:3px 9px;border-radius:9px;background:#dcfce7;color:#14532d;font-size:12px"><b>'+p.ticker+'</b> '+(p.name?('\u00b7 '+String(p.name).slice(0,22)):'')+' \u00b7 '+(p.streak||0)+'Q'+(p.accel===true?' \u26a1':'')+(p.moat==='wide'?' \u{1F6E1}':'')+' \u00b7 1Y '+((typeof p.perf_1y==='number')?((p.perf_1y>=0?'+':'')+Math.round(p.perf_1y)+'%'):'\u2014')+'</span>';
     });
     h+='</div></div>';
   }
@@ -8457,7 +8468,7 @@ function renderQuarterlyAccel(){
      '<th style="text-align:left;padding:6px">Region</th><th style="text-align:left;padding:6px">Tier</th>'+
      '<th style="text-align:left;padding:6px">Moat</th>'+
      '<th style="text-align:right;padding:6px">EPS YoY (Q)</th><th style="text-align:right;padding:6px">Sales YoY (Q)</th>'+
-     '<th style="text-align:right;padding:6px">Streak</th><th style="text-align:right;padding:6px">YTD</th><th style="text-align:right;padding:6px">1Y</th><th style="text-align:right;padding:6px">3Y</th><th style="text-align:right;padding:6px">ROE</th></tr></thead><tbody>';
+     '<th style="text-align:right;padding:6px">Streak</th><th style="text-align:center;padding:6px">Accel</th><th style="text-align:right;padding:6px">YTD</th><th style="text-align:right;padding:6px">1Y</th><th style="text-align:right;padding:6px">3Y</th><th style="text-align:right;padding:6px">ROE</th></tr></thead><tbody>';
   }
   h+='<div style="margin:12px 0 4px;padding:7px 12px;border-left:4px solid #16a34a;background:#f0fdf4;border-radius:0 8px 8px 0"><b style="font-size:14px;color:#166534">\u{1F3C6} Winners \u2014 passed all five tests ('+winners.length+')</b> <span style="font-size:11.5px;color:#15803d">sorted: still-accelerating first, then longest streak, then annual growth</span></div>';
   h+=qaTableHead();
@@ -8472,11 +8483,21 @@ function renderQuarterlyAccel(){
     h+='<tr style="'+rowbg+'"><td style="font-weight:700;padding:6px">'+p.ticker+dec+sc+mc+'</td>'+
        '<td style="font-size:12px;padding:6px">'+(p.name||'')+'</td>'+
        '<td style="font-size:11px;color:#6b7280;padding:6px">'+(p.region||'')+'</td>'+
-       '<td style="padding:6px">'+tierChip(p.tier)+'</td>'+
+       '<td style="padding:6px">'+tierChip(p.tier)+(p.tier==='nearmiss'?(function(){
+          var f=[];
+          if(!(typeof p.eps_fq==='number'&&p.eps_fq>=30))f.push('EPS '+(typeof p.eps_fq==='number'?Math.round(p.eps_fq):'\u2014'));
+          if(!(typeof p.rev_fq==='number'&&p.rev_fq>=25))f.push('Sales '+(typeof p.rev_fq==='number'?Math.round(p.rev_fq):'\u2014'));
+          if((p.eps_fq||0)>300||(p.rev_fq||0)>300)f.push('one-off >300');
+          if(!(typeof p.roe==='number'&&p.roe>=25&&p.roe<=50))f.push('ROE '+(typeof p.roe==='number'?Math.round(p.roe):'\u2014'));
+          var annOk=(typeof p.ann_eps==='number'&&p.ann_eps>=50)||(typeof p.ann_rev==='number'&&p.ann_rev>=50);
+          if(!annOk)f.push('Annual '+(typeof p.ann_eps==='number'?Math.round(p.ann_eps):(typeof p.ann_rev==='number'?Math.round(p.ann_rev):'\u2014')));
+          return f.length?('<br>'+f.map(function(x){return '<span style="display:inline-block;margin:2px 2px 0 0;padding:0 5px;border-radius:7px;font-size:9.5px;background:#fee2e2;color:#991b1b" title="the test this name failed">'+x+' \u2717</span>';}).join('')):'';
+       })():'')+'</td>'+
        '<td style="padding:6px">'+moat+'</td>'+
        '<td style="text-align:right;padding:6px;font-weight:600">'+pct(p.eps_fq)+'</td>'+
        '<td style="text-align:right;padding:6px">'+pct(p.rev_fq)+'</td>'+
-       '<td style="text-align:right;padding:6px">'+(p.streak||0)+'Q</td>'+
+       '<td style="text-align:right;padding:6px" title="'+(p.hist_src==='published-quarterly'?'verified from published quarterly reports ('+(p.hist_q||0)+' quarters of history)':'forward-only: history not published for this listing; streak builds as new quarters post')+'">'+(p.streak||0)+'Q'+(p.hist_src==='published-quarterly'?' <span style="color:#059669;font-size:10px">\u2713</span>':'')+'</td>'+
+       '<td style="text-align:center;padding:6px">'+(p.accel===true?'<span style="display:inline-block;padding:1px 7px;border-radius:9px;font-size:10.5px;background:#dcfce7;color:#166534" title="growth on growth: BOTH the profit and sales growth RATES rose versus the prior quarter'+(p.accel_run?(' — '+p.accel_run+' rising quarter(s) in a row'):'')+'">\u26a1 '+(p.accel_run||1)+'Q</span>':(p.accel===false?'<span style="color:#94a3b8;font-size:11px" title="growing, but the growth rate did not rise versus the prior quarter">steady</span>':'<span style="color:#cbd5e1" title="published quarterly history unavailable for this listing">\u2014</span>'))+'</td>'+
        '<td style="text-align:right;padding:6px;color:'+((p.ytd||0)>=0?'#059669':'#dc2626')+'">'+pct(p.ytd)+'</td>'+
        '<td style="text-align:right;padding:6px;color:'+((p.perf_1y||0)>=0?'#059669':'#dc2626')+'">'+pct(p.perf_1y)+'</td>'+
        '<td style="text-align:right;padding:6px;color:'+((p.perf_3y||0)>=0?'#059669':'#dc2626')+'">'+pct(p.perf_3y)+'</td>'+
