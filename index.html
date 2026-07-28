@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.276 (supersedes v5.275; same scanner v1.314.11): TAB 20 RADAR CARDS, owner-directed ('include ASML and SIVE in selected winners with best 3 near misses in the same graphical format'). A new card band -- '\U0001F4CC On the radar' -- sits directly under the Verified Champions, in the IDENTICAL graphical format: white card, real per-quarter bar chart from published history (violet = profit growth, teal = sales, dashed pass bars), and a plain-English sentence written from the name's own numbers. It carries the two PINNED names (ASML, SIVE -- always tracked regardless of gates, slate border, \U0001F4CC badge) and the THREE CLOSEST NEAR-MISSES (amber border, ranked by fewest failed tests then strongest growth). Every radar sentence states EXACTLY what the name still misses, in plain words with the bar it has to clear -- e.g. ASML: 'speeding up 3 quarters running, misses only the sales bar: +24.4% vs the 25% line'. Honest treatment retained: quarters where a loss makes growth undefined simply show no bar. Display-only; champions, funnel, buy box, tables untouched. -->
 <!-- index.html v5.275 (supersedes v5.274; pairs with scanner v1.314.11): TAB 20 FULL VISUAL REDESIGN, owner-directed ('make the tab more beautiful... graphical representation... plain language'). Light theme throughout, no dark backgrounds. NEW: (1) HOW-IT-HUNTS FUNNEL -- a graphic strip showing the pipeline World markets -> five tests -> Winners(n) -> Accelerating(n) -> Buy candidates(n), each stage a soft pastel card with live counts, so the tab explains itself at a glance before a single table. (2) VERIFIED CHAMPIONS HERO CARDS -- the tab now TELLS THE STORY the data earned: each multi-quarter verified winner and each accelerating name gets a card with a plain-English sentence written from its own numbers ('6 straight quarters beating the same quarter a year ago -- latest: profits +64%, sales +105%') plus a REAL per-quarter mini bar chart drawn from qaccel_qhist (violet bars = profit growth, teal = sales growth, dashed lines = the 30%/25% pass bars) -- the graphical representation of exactly what the engine verified. (3) AESTHETICS -- tabular-nums numeric alignment on every table, consistent paddings, softer borders, pastel section bands (violet header / green winners / amber near-miss), white cards. All prior audited machinery (buy candidates, why-chips, Accel column, explainer, tables) retained. Display-only. -->
 <!-- index.html v5.274 (supersedes v5.273; pairs with scanner v1.314.9): (1) TAB 20 TRUE CONSECUTIVE-QUARTER VIEW -- winners + pinned now carry a VERIFIED streak from published quarterly reports (backfilled, up to 8 quarters) and a new ACCEL column: green 'Accel \u26a1' when the growth RATE itself rose vs the prior quarter on BOTH profits and sales (growth on growth -- the owner's question answered with data), grey 'steady' when not, honest em-dash when the history isn't published (streak stays forward-only, marked). Buy candidates rank accelerating names FIRST and carry a \u26a1 badge. Explainer updated to define streak + Accel exactly. (2) NEAR-MISS WHY-CHIPS: every amber row shows exactly WHICH of the five tests it failed (small red chips: ROE 13 \u2717, Annual 36 \u2717 ...) -- the gap the ARGAN/TINGS/BESI question exposed. (3) US Macro WTI card gains a roll-free official-spot trend line (immune to futures contract rolls). Display-only. -->
 <!-- index.html v5.273 (supersedes v5.272; pairs with scanner v1.314.8): TAB 20 QUARTERLY ACCELERATION REWORKED, owner-directed. (1) WINNERS SEPARATED: the confirmed winners (all five tests passed) get their OWN green table above everything, sorted still-accelerating first, then streak, then annual growth -- no longer mixed into one 150-row list with the amber near-misses, which now sit in their own clearly-amber section below. (2) BUY CANDIDATES: a green callout at the top names the engine's strongest picks (all five tests + healthy ROE + NOT slowing down), each chip carrying its streak + 1Y return, with the selection reasoning printed and an honest note that these are research candidates the owner approves, never auto-orders. (3) PLAIN LANGUAGE: a "What this tab does" explainer opens the tab -- what the engine hunts (companies whose profits AND sales are speeding up quarter after quarter, the pattern behind most historic mega-winners), what each of the five tests means in everyday words, what streaks/near-miss/moat/SC/MC/the red triangle mean, and how the buy-candidate list is chosen. Display-only; no scoring/engine change. -->
@@ -8499,6 +8500,48 @@ function renderQuarterlyAccel(){
          '<div style="font-size:11.5px;color:#6b7280;margin:1px 0 5px">'+esc2(String(p.name||'').slice(0,34))+' \u00b7 '+esc2(String(p.region||''))+(p.moat==='wide'?' \u00b7 \u{1F6E1} wide moat':'')+'</div>'+
          (spark||'<div style="font-size:11px;color:#9ca3af">chart forms as quarters post</div>')+
          '<div style="font-size:11.8px;color:#374151;line-height:1.5;margin-top:6px">'+champSentence(p)+'</div>'+
+         '</div>';
+    });
+    h+='</div>';
+  }
+  // v5.276 ON THE RADAR -- pinned (ASML/SIVE) + 3 closest near-misses, same card format
+  function failList(p){
+    var f=[];
+    if(!(typeof p.eps_fq==='number'&&p.eps_fq>=30))f.push('quarterly profit growth '+(typeof p.eps_fq==='number'?(Math.round(p.eps_fq)+'%'):'n/a')+' (bar: 30%)');
+    if(!(typeof p.rev_fq==='number'&&p.rev_fq>=25))f.push('quarterly sales growth '+(typeof p.rev_fq==='number'?(Math.round(p.rev_fq*10)/10+'%'):'n/a')+' (bar: 25%)');
+    if((p.eps_fq||0)>300||(p.rev_fq||0)>300)f.push('one-off spike >300% (excluded as non-repeatable)');
+    if(!(typeof p.roe==='number'&&p.roe>=25&&p.roe<=50))f.push('quality band (ROE '+(typeof p.roe==='number'?(Math.round(p.roe)+'%'):'n/a')+', band 25\u201350%)');
+    if(!((typeof p.ann_eps==='number'&&p.ann_eps>=50)||(typeof p.ann_rev==='number'&&p.ann_rev>=50)))f.push('full-year pace (best '+(Math.round(Math.max(p.ann_eps||-999,p.ann_rev||-999))||0)+'%, bar: 50%)');
+    return f;
+  }
+  function radarSentence(p,isPin){
+    var f=failList(p), bits=[];
+    if(isPin) bits.push('<b>Pinned</b> \u2014 tracked every scan regardless of the tests');
+    if(p.hist_src==='published-quarterly') bits.push((isPin?'':'<b>')+(p.hist_q||0)+' quarters of published history verified'+(isPin?'':'</b>'));
+    if(p.accel===true) bits.push('<b style="color:#166534">speeding up</b>: growth rate rising '+(p.accel_run||1)+' quarter'+((p.accel_run||1)>1?'s':'')+' running \u26a1');
+    var head=bits.join(' \u00b7 ')+'. ';
+    var latest='Latest quarter: profits '+(typeof p.eps_fq==='number'?((p.eps_fq>=0?'+':'')+Math.round(p.eps_fq)+'%'):'\u2014 (loss year-ago: growth undefined)')+', sales '+(typeof p.rev_fq==='number'?((p.rev_fq>=0?'+':'')+Math.round(p.rev_fq*10)/10+'%'):'\u2014')+'. ';
+    var miss=f.length?('<span style="color:#92400e">Still misses'+(f.length===1?' only':'')+':</span> '+f.join('; ')+'.'):'<span style="color:#166534">Clears every bar right now.</span>';
+    return head+latest+miss;
+  }
+  var pinnedArr=(Q.pinned||[]).slice();
+  var nmRank=nearm.slice().sort(function(a,b){
+    var fa=failList(a).length, fb=failList(b).length;
+    if(fa!==fb) return fa-fb;
+    return ((b.eps_fq||0)+(b.rev_fq||0))-((a.eps_fq||0)+(a.rev_fq||0));
+  }).slice(0,3);
+  if(pinnedArr.length||nmRank.length){
+    h+='<div style="margin:12px 0 4px;padding:7px 12px;border-left:4px solid #64748b;background:#f8fafc;border-radius:0 8px 8px 0"><b style="font-size:14px;color:#334155">\U0001F4CC On the radar \u2014 pinned names + the 3 closest to promotion</b> <span style="font-size:11.5px;color:#64748b">same charts, same bars \u2014 each card says exactly what is still missing</span></div>';
+    h+='<div style="display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 4px">';
+    pinnedArr.concat(nmRank).forEach(function(p,ix){
+      var isPin=ix<pinnedArr.length;
+      var spark=qaSpark(p.ticker);
+      var badge=isPin?'<span style="display:inline-block;padding:1px 8px;border-radius:9px;font-size:10.5px;background:#e2e8f0;color:#334155">\U0001F4CC pinned</span>':'<span style="display:inline-block;padding:1px 8px;border-radius:9px;font-size:10.5px;background:#fef3c7;color:#92400e">\U0001F50E closest #'+(ix-pinnedArr.length+1)+'</span>';
+      h+='<div style="flex:1;min-width:250px;max-width:340px;background:#ffffff;border:1.5px solid '+(isPin?'#cbd5e1':'#fcd34d')+';border-radius:14px;padding:11px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.04)">'+
+         '<div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:15px;color:#1f2937">'+esc2(p.ticker)+'</b>'+badge+'</div>'+
+         '<div style="font-size:11.5px;color:#6b7280;margin:1px 0 5px">'+esc2(String(p.name||'').slice(0,34))+' \u00b7 '+esc2(String(p.region||''))+(p.moat==='wide'?' \u00b7 \U0001F6E1 wide moat':'')+'</div>'+
+         (spark||'<div style="font-size:11px;color:#9ca3af">chart forms as quarters post</div>')+
+         '<div style="font-size:11.8px;color:#374151;line-height:1.5;margin-top:6px">'+radarSentence(p,isPin)+'</div>'+
          '</div>';
     });
     h+='</div>';
