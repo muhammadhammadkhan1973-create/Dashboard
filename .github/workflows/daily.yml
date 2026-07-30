@@ -205,12 +205,16 @@ jobs:
           # successful score, re-score even when the ticker set is unchanged (so a
           # scorer upgrade like System B propagates automatically — no manual checkbox).
           import hashlib
-          # Hash the scorer AND the bank-input files, so editing bank_ig2_inputs.json /
-          # bank_ig2_overrides.json alone also forces a re-score (US banks are scored here).
+          # Hash the scorer + the CURATED bank input only, so editing im3_score.py or
+          # bank_ig2_inputs.json forces a re-score. bank_ig2_overrides.json is DELIBERATELY
+          # EXCLUDED: the scanner regenerates it fresh every run (FDIC fill-missing), so its
+          # bytes shift run-to-run and including it flipped this hash on nearly every run ->
+          # a full 255-name re-score every run (the ~5min workflow overhead). The 14-day
+          # MAX_AGE clock still forces a periodic full re-score to catch any bank-override drift.
           try:
               _h = hashlib.sha256()
               _h.update(open('im3_score.py','rb').read())
-              for _bf in ('bank_ig2_inputs.json','bank_ig2_overrides.json'):
+              for _bf in ('bank_ig2_inputs.json',):
                   try: _h.update(open(_bf,'rb').read())
                   except Exception: pass
               cur_hash = _h.hexdigest()
@@ -550,7 +554,7 @@ jobs:
           try:
               _wh = hashlib.sha256()
               _wh.update(open('im3_score.py','rb').read())
-              for _bf in ('bank_ig2_inputs.json','bank_ig2_overrides.json'):
+              for _bf in ('bank_ig2_inputs.json',):
                   try: _wh.update(open(_bf,'rb').read())
                   except Exception: pass
               data['im3_scorer_hash'] = _wh.hexdigest()
