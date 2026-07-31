@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.281 (supersedes v5.280; pairs with scanner v1.324.0): DISPLAY HALF OF THE TAB-INTEGRATION ARC. (1) Tab 19 renamed "Recommended Stocks & ETFs" and now renders the v1.323/v1.324 ENGINE-AGREEMENT verdict (LIVE.recommended: conviction, agreeing engines, modifiers, rank_score) above the existing curated list - that payload was live in data.json and invisible on screen. (2) Canonical ETF row wired into the SHARED renderProxyTracker, so Tabs 9/14/16 explosive/tce/m1/m2 ETF boxes all gain: one YTD source (ytd_pct preferred over legacy ytd), a Holdings column (n_holdings), an estate-tax/domicile pill (estate_status), and a GREY - never coloured - render for perf_suspect rows. (3) Tab 17 held positions carry the same estate pill. Display-only; no payload is written, every field read is optional and falls back to the previous behaviour when absent. PRIOR: v5.280 (supersedes v5.279; pairs with scanner v1.317.0): P3 GAP FIXES (display-only, non-destructive). (G6) Tab 3 “PSX Margin Leverage — MTS” subsection header re-credited from the retired “Standard Capital Securities” to “Business Recorder, live” — the psx_mts feed has been the live brmarkets ajax/market_leverage source (manual=False) for many versions; the caption was stale. (G7) Tab 13 Strategy Backtest (static IG+ vs KSE-100 2010–2021) now carries a clear “historical reference — static” caption pointing to the live daily paper-portfolio backtest on Tab 14, so it is never confused with the live one. No renderer logic, data path, scoring or engine touched. -->
+<!-- index.html v5.282 (supersedes v5.281; pairs with scanner v1.324.0): TAB 21 BOOMING ETFs. Built ENTIRELY from payloads already live in data.json - etf_emerging_themes_watch (36 funds / 9 themes, live_ret_1y + live_ytd + ter + isin) for the REALIZED lens, and sector_booming (11 GICS bands) for the FORWARD lens, cross-referenced per theme exactly as D-104 requires so the tab and the sector engine can never silently contradict. No scanner change: themes are ranked by the average trailing-1Y of their capturing funds, and the estate pill is derived deterministically from the ISIN prefix (D-99) where estate_status is not stamped on the row. PRIOR: v5.281 (supersedes v5.280; pairs with scanner v1.324.0): DISPLAY HALF OF THE TAB-INTEGRATION ARC. (1) Tab 19 renamed "Recommended Stocks & ETFs" and now renders the v1.323/v1.324 ENGINE-AGREEMENT verdict (LIVE.recommended: conviction, agreeing engines, modifiers, rank_score) above the existing curated list - that payload was live in data.json and invisible on screen. (2) Canonical ETF row wired into the SHARED renderProxyTracker, so Tabs 9/14/16 explosive/tce/m1/m2 ETF boxes all gain: one YTD source (ytd_pct preferred over legacy ytd), a Holdings column (n_holdings), an estate-tax/domicile pill (estate_status), and a GREY - never coloured - render for perf_suspect rows. (3) Tab 17 held positions carry the same estate pill. Display-only; no payload is written, every field read is optional and falls back to the previous behaviour when absent. PRIOR: v5.280 (supersedes v5.279; pairs with scanner v1.317.0): P3 GAP FIXES (display-only, non-destructive). (G6) Tab 3 “PSX Margin Leverage — MTS” subsection header re-credited from the retired “Standard Capital Securities” to “Business Recorder, live” — the psx_mts feed has been the live brmarkets ajax/market_leverage source (manual=False) for many versions; the caption was stale. (G7) Tab 13 Strategy Backtest (static IG+ vs KSE-100 2010–2021) now carries a clear “historical reference — static” caption pointing to the live daily paper-portfolio backtest on Tab 14, so it is never confused with the live one. No renderer logic, data path, scoring or engine touched. -->
 <!-- index.html v5.279 (supersedes v5.278; pairs with scanner v1.314.32): WAVE PK-D DEEPENING -- the Tab 4 PKR Devaluation Early-Warning basket now shows and scores TWO more signal rows, "Street-dollar premium (kerb market)" and "Gold premium vs world (devaluation expectation)", reading the kerb_premium + gold_premium signals the scanner now folds into psx_devaluation. Both are classic pre-devaluation street reads that widen BEFORE an official devaluation; both calm today so they score 0 and the headline level is unchanged, but the basket now reflects them (max 9->13; the banner + score bar read the dynamic max_score automatically). Basket closing note reworded to name the two street signals. Display-only. Prior v5.278 (supersedes v5.277; pairs with scanner v1.314.26): BR PHASE 3 DISPLAYS -- Tab 2 LIVE KIBOR card (renderKibor: tenor chips, 6M headline, the owner\u2019s >=11% DEFENSIVE MODE trigger rendered live for the first time), Tab 4 official-FX cross-check line (renderOfficialFx: NBP/interbank USD beside the kerb premium) + GOLD PREMIUM card (renderBullionPremium: Karachi gold vs world gold implied in PKR -- local outrunning world = devaluation expectation priced by the street), Tab 12 compact bullion strip (renderBullionStrip). Each with local esc, error-into-container catches, honest pending states. Prior v5.277 (supersedes v5.276; pairs with scanner v1.314.19+): BR /ajax/ PHASES 1+2 -- Tab 4 KERB PREMIUM card (renderKerbPremium: street-dollar premium vs interbank, threshold colours, honest pending/stale states), Tab 9 PSX MONEY FLOWS panel (renderPsxFlows: FIPI/LIPI sector flows, the Pakistani Whale Watch) + Tab 5 foreign-flows chip strip (renderPsxFlowsStrip). Full details in the v5.277 note in the header block below. Prior v5.276 (supersedes v5.275; same scanner v1.314.11): TAB 20 RADAR CARDS, owner-directed ('include ASML and SIVE in selected winners with best 3 near misses in the same graphical format'). A new card band -- '\U0001F4CC On the radar' -- sits directly under the Verified Champions, in the IDENTICAL graphical format: white card, real per-quarter bar chart from published history (violet = profit growth, teal = sales, dashed pass bars), and a plain-English sentence written from the name's own numbers. It carries the two PINNED names (ASML, SIVE -- always tracked regardless of gates, slate border, \U0001F4CC badge) and the THREE CLOSEST NEAR-MISSES (amber border, ranked by fewest failed tests then strongest growth). Every radar sentence states EXACTLY what the name still misses, in plain words with the bar it has to clear -- e.g. ASML: 'speeding up 3 quarters running, misses only the sales bar: +24.4% vs the 25% line'. Honest treatment retained: quarters where a loss makes growth undefined simply show no bar. Display-only; champions, funnel, buy box, tables untouched. -->
 <!-- index.html v5.275 (supersedes v5.274; pairs with scanner v1.314.11): TAB 20 FULL VISUAL REDESIGN, owner-directed ('make the tab more beautiful... graphical representation... plain language'). Light theme throughout, no dark backgrounds. NEW: (1) HOW-IT-HUNTS FUNNEL -- a graphic strip showing the pipeline World markets -> five tests -> Winners(n) -> Accelerating(n) -> Buy candidates(n), each stage a soft pastel card with live counts, so the tab explains itself at a glance before a single table. (2) VERIFIED CHAMPIONS HERO CARDS -- the tab now TELLS THE STORY the data earned: each multi-quarter verified winner and each accelerating name gets a card with a plain-English sentence written from its own numbers ('6 straight quarters beating the same quarter a year ago -- latest: profits +64%, sales +105%') plus a REAL per-quarter mini bar chart drawn from qaccel_qhist (violet bars = profit growth, teal = sales growth, dashed lines = the 30%/25% pass bars) -- the graphical representation of exactly what the engine verified. (3) AESTHETICS -- tabular-nums numeric alignment on every table, consistent paddings, softer borders, pastel section bands (violet header / green winners / amber near-miss), white cards. All prior audited machinery (buy candidates, why-chips, Accel column, explainer, tables) retained. Display-only. -->
 <!-- index.html v5.274 (supersedes v5.273; pairs with scanner v1.314.9): (1) TAB 20 TRUE CONSECUTIVE-QUARTER VIEW -- winners + pinned now carry a VERIFIED streak from published quarterly reports (backfilled, up to 8 quarters) and a new ACCEL column: green 'Accel \u26a1' when the growth RATE itself rose vs the prior quarter on BOTH profits and sales (growth on growth -- the owner's question answered with data), grey 'steady' when not, honest em-dash when the history isn't published (streak stays forward-only, marked). Buy candidates rank accelerating names FIRST and carry a \u26a1 badge. Explainer updated to define streak + Accel exactly. (2) NEAR-MISS WHY-CHIPS: every amber row shows exactly WHICH of the five tests it failed (small red chips: ROE 13 \u2717, Annual 36 \u2717 ...) -- the gap the ARGAN/TINGS/BESI question exposed. (3) US Macro WTI card gains a roll-free official-spot trend line (immune to futures contract rolls). Display-only. -->
@@ -358,6 +358,7 @@
     <button class="tab" onclick="showPanel('narratives', this)">18. Narratives 📰</button>
     <button class="tab" onclick="showPanel('recommended', this)">19. Recommended Stocks &amp; ETFs &#9733;</button>
     <button class="tab" onclick="showPanel('globaldisc', this)">20. Global Discovery &#127758;</button>
+    <button class="tab" onclick="showPanel('boomingetf', this)">21. Booming ETFs &#128293;</button>
   </div>
 
   <details style="margin:10px 0 6px;border:1px solid var(--line,#e5e7eb);border-radius:8px;background:#fff;">
@@ -469,6 +470,7 @@
 <div id="m2bu" class="panel"><div class="m2x-hero"><h2>&#9889; Bottoms Up M2 &mdash; the 30% engine</h2><p><b>Sector-blind by design.</b> While M1 (Tab 6) picks sectors top-down for the disciplined 70%, this engine scans <b>every</b> company in the universe &mdash; favoured sector or not &mdash; for early, converging evidence that something big is starting: the price turning, the business inflecting, analysts raising their profit estimates, trading volume surging. <b>It flags, it never filters</b> &mdash; every name is an invitation to investigate, not a recommendation.</p><p style="margin-top:8px;font-size:12px;line-height:1.6;opacity:.95;"><b>New &mdash; what company insiders are doing with their own money (SEC filings):</b> a <span style="background:#d1fae5;color:#047857;border-radius:4px;padding:1px 6px;font-weight:700;">\u25b2 insider buying</span> chip means officers or directors bought shares on the open market (SEC Form&nbsp;4) &mdash; the strongest outside confirmation a turnaround is real, and it counts toward a name being flagged. A red <span style="background:#FEE2E2;color:#b42318;border:1px solid #fca5a5;border-radius:4px;padding:1px 6px;font-weight:700;">\u26a0</span> chip means the company just filed a <b>material 8-K</b> (bankruptcy, a CFO/CEO leaving, an auditor change, a big write-down) &mdash; a warning shown beside the name, never counted as a positive. US-listed names only; Pakistani names show nothing here because they don\u2019t file with the SEC.</p></div><div id="m2bu_clock"></div><div id="m2bu_nine"></div><div id="us_m2_watch"></div><div id="psx_m2_watch"></div></div>
 <div id="narratives" class="panel"><h2 class="section-title">Narratives — Story-First Market Intelligence</h2><div id="narrativesBody"></div></div>
   <div id="recommended" class="panel"><h2 class="section-title">&#9733; Recommended Stocks &amp; ETFs &mdash; the dashboard's own verdict</h2><p style="font-size:13px;color:#374151;margin:0 0 8px">A single, self-updating list of the names that tick the most engines (IM3 strength, Zacks, Explosive, Multibagger, smart-money, M1), with live YTD/1Y/3Y/5Y returns. A separate thematic section holds macro/policy names that do not clear the engine bar. Plus a UCITS ETF sleeve.</p><div id="recommendedBody"></div></div>
+  <div id="boomingetf" class="panel"><h2 class="section-title">&#128293; Booming ETFs &mdash; what is heating up, and how to own it safely</h2><p style="font-size:13px;color:#374151;margin:0 0 8px">Themes ranked by <b>what they have actually done</b> over the last year (the average trailing-1Y of the funds that capture them), then cross-checked against <b>what the sector engine expects next</b>. Both lenses are shown side by side, so a theme that has already run but is losing sector support cannot hide behind its own past return. Every fund carries a plain estate-tax read: green is a UCITS wrapper with no US or Korean tax tail, red is US situs, amber is Korea. This is a merit ranking of live data, not personal tax or investment advice.</p><div id="boomingEtfBody"></div></div>
   <div id="globaldisc" class="panel"><h2 class="section-title">&#127758; Global Discovery &mdash; the world through the engine's lenses</h2><p style="font-size:13px;color:#374151;margin:0 0 8px">Non-US large caps run through the SAME lens family as the US engine (moat, quality-growth, multibagger, momentum, turnaround, income). Overlap-tagged against your engine tabs, with a concentration guardrail. World-stock fundamentals confirm on the first scan after deploy.</p><div id="globalDiscoveryBody"></div><div id="quarterlyAccelBox"></div></div>
   <div id="liveinv" class="panel"><div class="m2x-hero"><h2>&#9733; Live Investment &mdash; your actual IBKR portfolio</h2><p>Your real UCITS-ETF book, priced live off the same World-ETF resolver, tracked daily against <b>your actual entry price</b> &mdash; real profit/loss since you invested (daily / weekly / monthly), with per-holding cost-vs-now, a <b>Forward view</b> (analyst &amp; Zacks on the underlyings), fund-relevant news, and a rebalancing check wired straight to the <b>World ETF</b> theme scores and the <b>World Economy</b> regime. Holdings, cost basis and cash are configurable in <code>live_portfolio.json</code>.</p></div><div id="liveinv_body"></div></div>
   <div id="mbpsx" class="panel"><h2 class="section-title">PSX Multibagger Hunter</h2><div class="mb-note"><b>What this tab is for:</b> finding Pakistani companies that could multiply your money many times over several years &mdash; the smaller, fast-growing names before they become household stocks. Read it top to bottom: the funnel narrows the whole market, then you grade a company, see the verdict, project the upside, and review the live and SCS-flagged candidates.</div><div class="mb-note"><b>The funnel.</b> How the entire Pakistani market gets narrowed step by step down to a handful of names worth a serious look. Each row strips out what doesn&rsquo;t fit.</div><div id="psx_mb_funnel"></div><div class="mb-note"><b>Where they cluster.</b> Which sectors today&rsquo;s candidates come from. Multibaggers tend to bunch up in a few areas at a time, so this shows where to focus.</div><div id="psx_mb_sector_table"></div><div class="mb-note"><b>Grade one company.</b> Type a company&rsquo;s numbers here and the tool grades how &lsquo;multibagger-like&rsquo; it is. Strong growth, high returns on capital, low debt, profit backed by real cash, committed owners, room to keep reinvesting, and a cheap entry price all score well.</div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="psx_mb_rev" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="psx_mb_eps" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="psx_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROCE 5-yr avg (%)</label><input type="number" id="psx_mb_roce" value="24" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="psx_mb_de" value="0.3" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="psx_mb_ocf" value="1.1" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Sponsor %</label><input type="number" id="psx_mb_sponsor" value="45" step="1" oninput="recalc()"></div><div class="input-group"><label>Market Cap (PKR bn)</label><input type="number" id="psx_mb_mcap" value="8" step="0.5" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="psx_mb_ig" value="72" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="psx_mb_pe" value="6" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="psx_mb_wacc" value="20" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="psx_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3" selected>5-10x</option><option value="4">10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="psx_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3" selected>Cost/Switching</option><option value="4">Brand/Network</option><option value="5">Regulatory</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="psx_mb_reinv" onchange="recalc()"><option value="1">Returning all cash</option><option value="2">Limited</option><option value="3" selected>Moderate</option><option value="4">Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner-Operator</label><select id="psx_mb_owner" onchange="recalc()"><option value="1">Diluted</option><option value="2">Holding</option><option value="3" selected>Stable &gt;5yr</option><option value="4">Founder 10yr+</option><option value="5">Founder + rising</option></select></div></div><div class="mb-note"><b>The grade.</b> The score your inputs produced, and what it means.</div><div id="psx_mb_score_box"></div><div class="mb-note"><b>Buy, watch, or pass.</b> Combines the multibagger score with the quality (IG) score into one suggested action.</div><div id="psx_mb_decision_matrix"></div><div class="mb-note"><b>How the money could grow.</b> A rough projection of what an investment could compound to at the growth rate you entered. An illustration, not a promise.</div><div id="psx_mb_compound_box"></div><div class="mb-note"><b>Size tiers.</b> Which market-cap band a name sits in. The sweet spot for multibaggers is small-but-not-tiny; the biggest names belong on the other tracks.</div><div id="psx_mb_tiers_table"></div><h3 class="subsection-title">Standard Capital Securities (SCS) Suggested Names &mdash; review to add</h3><div class="mb-note">The dashboard reads Standard Capital Securities&rsquo; (SCS) weekly Valuation Matrix and finds names that show up in at least two of its four quality screens (highest return on equity, highest return on assets, highest EBITDA margin, highest dividend yield). After filtering out the ones that are too big, too illiquid, or banks, it shows the rest as suggestions &mdash; &ldquo;SCS flags these, you decide.&rdquo; It will never add them to your watchlist on its own. You stay in control of what actually enters the screen. Nothing about these names &mdash; their P/E, dividend yield, ROE, and so on &mdash; ever changes a score or filters anything.</div><div id="psx_mb_scs_suggest"></div><div class="mb-note"><b>Names on the radar now.</b> Broker-curated PSX candidates with a short thesis. Verify each one yourself before acting &mdash; this is a starting list, not advice.</div><div id="psx_mb_live_candidates"></div><div class="mb-note"><b>Past winners.</b> Real PSX stocks that already multiplied, and why &mdash; pattern templates to help you recognise the next one.</div><div id="psx_mb_history_table"></div><div class="mb-note"><b>Multibagger vs compounder.</b> How this hunt differs from buying steady quality names: different goals, different rules.</div><div id="psx_mb_comparison_table"></div></div>
@@ -6581,6 +6583,7 @@ function applyLive(){
   renderWorldEconomy();
   renderUsDiffusionBar();
   try{renderRecommendedTab();}catch(e){if(window.console)console.warn("recommended tab render",e);}
+  try{renderBoomingEtfs();}catch(e){var _bb=document.getElementById("boomingEtfBody");if(_bb)_bb.innerHTML='<p style="color:#B91C1C;font-size:12px;">Booming ETFs failed to render: '+(e&&e.message||e)+'</p>';if(window.console)console.warn("booming etfs render",e);}
   try{renderFactorFundLines();}catch(e){if(window.console)console.warn("factor fund-lines render",e);}
   try{renderPolicyCatalyst();}catch(e){if(window.console)console.warn("policy catalyst render",e);}
   try{renderGlobalDiscovery();}catch(e){if(window.console)console.warn("global discovery render",e);}
@@ -8411,8 +8414,28 @@ function _recEtfTable(title, sub, rows){
 // === v5.281 CANONICAL ETF-ROW HELPERS (scanner v1.320.0-v1.321.0 fields) =====================
 // One place decides estate pill / YTD colour / holdings count, so every tab that renders an ETF
 // row renders it IDENTICALLY. All three are tolerant: a missing field renders the old way.
+function _estateFromIsin(isin){
+  // D-99: domicile -> estate status is deterministic from the ISIN prefix. The scanner stamps
+  // estate_status on most rows; where it does not, the index derives the SAME answer rather than
+  // showing nothing. Identical mapping, one source of truth.
+  var p=String(isin||'').slice(0,2).toUpperCase();
+  if(!p) return null;
+  if(p==='IE'||p==='LU'||p==='JE'||p==='GG'||p==='IM'||p==='NL'||p==='DE'||p==='FR') return 'SAFE-UCITS';
+  if(p==='US') return 'US-SITUS';
+  if(p==='KR') return 'KRX-KOREAN-TAX';
+  return null;
+}
 function _etfEstatePill(r){
-  if(!r||!r.estate_status) return '';
+  if(!r) return '';
+  if(!r.estate_status){
+    var derived=_estateFromIsin(r.isin);
+    if(!derived) return '';
+    r={estate_status:derived, tax_note:(derived==='SAFE-UCITS'
+        ? 'Non-US, non-Korean situs: outside US estate tax and Korean inheritance tax. Derived from the ISIN prefix. Verify with a qualified adviser.'
+        : derived==='US-SITUS'
+        ? 'US-domiciled fund: US situs asset, exposed to US estate tax above the $60k non-resident threshold. Derived from the ISIN prefix. Verify with a qualified adviser.'
+        : 'Korean-listed fund: Korean inheritance tax applies. Derived from the ISIN prefix. Verify with a qualified adviser.')};
+  }
   var st=String(r.estate_status), bg, col, txt;
   if(st.indexOf('SAFE')===0){ bg='#DCFCE7'; col='#166534'; txt='UCITS \u00b7 estate-safe'; }
   else if(st.indexOf('US-SITUS')===0){ bg='#FEE2E2'; col='#991B1B'; txt='US situs \u00b7 $60k'; }
@@ -8518,6 +8541,111 @@ function _recVerdictHtml(){
   }
   h+='<div style="margin:18px 0 10px;border-top:2px solid #E5E7EB;"></div>';
   return h;
+}
+// === v5.282 TAB 21 BOOMING ETFs =============================================================
+// Realized lens : etf_emerging_themes_watch, grouped by theme, ranked by average live_ret_1y.
+// Forward lens  : sector_booming band for the GICS sector the theme sits in (D-104 dual lens).
+// No scanner change - both payloads are already live. Errors are surfaced, never swallowed.
+var _BOOM_THEME_GICS={
+  'Artificial Intelligence':'Information Technology',
+  'Cybersecurity':'Information Technology',
+  'Quantum Computing':'Information Technology',
+  'Memory & Storage':'Information Technology',
+  'Datacenter & Grid Build-out':'Industrials',
+  'Space':'Industrials',
+  'Lithium, Rare Earth & Battery':'Materials',
+  'Metals Miners':'Materials',
+  'Uranium & Nuclear':'Energy'
+};
+function _boomBandChip(band){
+  var m={'Booming':['#DCFCE7','#166534'],'Favoured':['#E0F2FE','#075985'],
+         'Neutral':['#F1F5F9','#475569'],'Lagging':['#FEE2E2','#991B1B']};
+  var c=m[band]||m['Neutral'];
+  return '<span style="display:inline-block;font-size:10px;font-weight:700;font-family:var(--font-mono);'
+    +'background:'+c[0]+';color:'+c[1]+';padding:1px 7px;border-radius:999px;">'+(band||'n/a')+'</span>';
+}
+function renderBoomingEtfs(){
+  var host=document.getElementById('boomingEtfBody'); if(!host) return;
+  var em=(typeof LIVE!=='undefined'&&LIVE&&Array.isArray(LIVE.etf_emerging_themes_watch))?LIVE.etf_emerging_themes_watch:[];
+  var sb=(typeof LIVE!=='undefined'&&LIVE&&Array.isArray(LIVE.sector_booming))?LIVE.sector_booming:[];
+  if(!em.length){
+    host.innerHTML='<p style="color:#94A3B8;font-size:12.5px;">No thematic fund rows in this scan yet '
+      +'(etf_emerging_themes_watch is empty) &mdash; the ladder fills in on the next run.</p>';
+    return;
+  }
+  var bandBySector={}; sb.forEach(function(x){ bandBySector[x.sector]={band:x.band,rank:x.rank,score:x.score}; });
+  var pc=function(v,dp){ if(typeof v!=='number') return '<span style="color:#94A3B8;">n/a</span>';
+    return '<span style="color:'+(v>=0?'#15803D':'#B91C1C')+';font-weight:700;">'
+      +(v>=0?'+':'')+v.toFixed(dp==null?1:dp)+'%</span>'; };
+  var oneY=function(f){ return (typeof f.live_ret_1y==='number')?f.live_ret_1y:null; };
+  var byTheme={};
+  em.forEach(function(f){ (byTheme[f.theme]=byTheme[f.theme]||[]).push(f); });
+  var rows=Object.keys(byTheme).map(function(t){
+    var fs=byTheme[t];
+    var vals=fs.map(oneY).filter(function(v){return typeof v==='number';});
+    var avg=vals.length?vals.reduce(function(a,b){return a+b;},0)/vals.length:null;
+    var best=null; fs.forEach(function(f){ var v=oneY(f); if(v!=null&&(best===null||v>oneY(best))) best=f; });
+    var gics=_BOOM_THEME_GICS[t]||null;
+    var fwd=gics?bandBySector[gics]:null;
+    var safe=fs.filter(function(f){ return (f.estate_status||_estateFromIsin(f.isin))==='SAFE-UCITS'; }).length;
+    return {theme:t, funds:fs, avg:avg, n:fs.length, best:best, gics:gics, fwd:fwd, safe:safe};
+  }).sort(function(a,b){ return (b.avg==null?-1e9:b.avg)-(a.avg==null?-1e9:a.avg); });
+
+  var top=rows[0];
+  var h='<div style="background:linear-gradient(180deg,#FFF7F5 0%,#ffffff 100%);border:1px solid #FBCFE8;'
+    +'border-radius:14px;padding:16px 18px;margin:0 0 16px;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;">'
+    +'<div style="font-family:var(--font-head);font-weight:800;font-size:34px;color:'
+      +((top&&top.avg!=null&&top.avg>=0)?'#BE123C':'#475569')+';">'
+      +((top&&top.avg!=null)?((top.avg>=0?'+':'')+Math.round(top.avg)+'%'):'\u2014')+'</div>'
+    +'<div style="font-size:13px;color:#475569;line-height:1.5;max-width:520px;">'
+      +'<b style="color:#0F172A;">'+((top&&top.theme)||'')+'</b> leads every theme on the board on trailing-year return'
+      +((top&&top.best)?(' \u2014 strongest single fund '+top.best.name):'')+'. '
+      +'<b style="color:#0F172A;">'+rows.length+'</b> themes \u00b7 <b style="color:#0F172A;">'+em.length
+      +'</b> funds ranked. The forward column is the sector engine\u2019s own band, not a repeat of the return.</div></div>';
+
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;font-size:11px;color:#64748B;">'
+    +'<span>Estate read:</span>'+_etfEstatePill({estate_status:'SAFE-UCITS',tax_note:'Irish/Luxembourg UCITS \u2014 no US or Korean tax tail.'})
+    +_etfEstatePill({estate_status:'US-SITUS',tax_note:'US-domiciled \u2014 US estate tax above the $60k non-resident threshold.'})
+    +_etfEstatePill({estate_status:'KRX-KOREAN-TAX',tax_note:'Korean-listed \u2014 Korean inheritance tax applies.'})+'</div>';
+
+  rows.forEach(function(r,i){
+    var contradiction = (i<3 && r.fwd && (r.fwd.band==='Lagging'||r.fwd.band==='Neutral'));
+    var confirmation  = (i<5 && r.fwd && (r.fwd.band==='Booming'||r.fwd.band==='Favoured'));
+    h+='<div style="border:1px solid #E2E8F0;border-radius:14px;padding:14px 16px;margin:0 0 12px;background:#fff;">'
+      +'<div style="display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;">'
+      +'<span style="font-family:var(--font-mono);font-size:12px;color:#94A3B8;">'+(i<9?'0':'')+(i+1)+'</span>'
+      +'<span style="font-family:var(--font-head);font-weight:700;font-size:16px;color:#0F172A;">'+r.theme+'</span>'
+      +'<span style="font-size:15px;">'+pc(r.avg,0)+'<span style="font-size:10px;color:#94A3B8;font-weight:600;"> avg 1Y</span></span>'
+      +'<span style="margin-left:auto;font-size:11px;color:#64748B;">forward: '
+        +(r.fwd?(_boomBandChip(r.fwd.band)+' <span style="color:#94A3B8;">'+r.gics+' #'+r.fwd.rank+'</span>')
+               :'<span style="color:#94A3B8;">no sector mapping</span>')+'</span>'
+      +'</div>'
+      +'<div style="font-size:11.5px;color:#64748B;margin:6px 0 0;">'+r.n+' capturing fund'+(r.n===1?'':'s')
+        +' \u00b7 '+r.safe+' estate-safe UCITS'
+        +(contradiction?' \u00b7 <b style="color:#B45309;">already run, sector support fading \u2014 the two lenses disagree</b>':'')
+        +(confirmation?' \u00b7 <b style="color:#15803D;">return and sector engine agree</b>':'')+'</div>'
+      +'<div style="overflow-x:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'
+      +'<tbody>';
+    r.funds.slice().sort(function(a,b){ return (oneY(b)==null?-1e9:oneY(b))-(oneY(a)==null?-1e9:oneY(a)); })
+      .forEach(function(f){
+        h+='<tr style="border-top:1px solid #F1F5F9;">'
+          +'<td style="padding:6px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'
+            +(f.name||f.isin||'')+_etfEstatePill(f)+'</div>'
+          +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono);">'+(f.isin||'')
+            +((f.ter!=null)?(' \u00b7 TER '+f.ter+'%'):'')
+            +((typeof f.size_m_eur==='number')?(' \u00b7 \u20ac'+f.size_m_eur+'m'):'')+'</div></td>'
+          +'<td style="padding:6px 8px;text-align:right;">'+_etfYtdCell({ytd_pct:(typeof f.live_ytd==='number'?f.live_ytd:f.ytd)})
+            +'<div style="font-size:9px;color:#94A3B8;">YTD</div></td>'
+          +'<td style="padding:6px 8px;text-align:right;">'+pc(oneY(f))
+            +'<div style="font-size:9px;color:#94A3B8;">1Y</div></td></tr>';
+      });
+    h+='</tbody></table></div></div>';
+  });
+  h+='<p style="font-size:11px;color:#94A3B8;margin:10px 0 0;">Realized lens: average trailing-1-year return of the '
+    +'funds capturing each theme (live prices). Forward lens: the sector engine\u2019s band for the GICS sector the theme '
+    +'sits in. Estate status is derived from fund domicile via the ISIN prefix and is a fact about the fund, not tax advice '
+    +'\u2014 verify with a qualified adviser.</p>';
+  host.innerHTML=h;
 }
 function renderRecommendedTab(){
   var host=document.getElementById('recommendedBody');
