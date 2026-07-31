@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.280 (supersedes v5.279; pairs with scanner v1.317.0): P3 GAP FIXES (display-only, non-destructive). (G6) Tab 3 “PSX Margin Leverage — MTS” subsection header re-credited from the retired “Standard Capital Securities” to “Business Recorder, live” — the psx_mts feed has been the live brmarkets ajax/market_leverage source (manual=False) for many versions; the caption was stale. (G7) Tab 13 Strategy Backtest (static IG+ vs KSE-100 2010–2021) now carries a clear “historical reference — static” caption pointing to the live daily paper-portfolio backtest on Tab 14, so it is never confused with the live one. No renderer logic, data path, scoring or engine touched. -->
+<!-- index.html v5.281 (supersedes v5.280; pairs with scanner v1.324.0): DISPLAY HALF OF THE TAB-INTEGRATION ARC. (1) Tab 19 renamed "Recommended Stocks & ETFs" and now renders the v1.323/v1.324 ENGINE-AGREEMENT verdict (LIVE.recommended: conviction, agreeing engines, modifiers, rank_score) above the existing curated list - that payload was live in data.json and invisible on screen. (2) Canonical ETF row wired into the SHARED renderProxyTracker, so Tabs 9/14/16 explosive/tce/m1/m2 ETF boxes all gain: one YTD source (ytd_pct preferred over legacy ytd), a Holdings column (n_holdings), an estate-tax/domicile pill (estate_status), and a GREY - never coloured - render for perf_suspect rows. (3) Tab 17 held positions carry the same estate pill. Display-only; no payload is written, every field read is optional and falls back to the previous behaviour when absent. PRIOR: v5.280 (supersedes v5.279; pairs with scanner v1.317.0): P3 GAP FIXES (display-only, non-destructive). (G6) Tab 3 “PSX Margin Leverage — MTS” subsection header re-credited from the retired “Standard Capital Securities” to “Business Recorder, live” — the psx_mts feed has been the live brmarkets ajax/market_leverage source (manual=False) for many versions; the caption was stale. (G7) Tab 13 Strategy Backtest (static IG+ vs KSE-100 2010–2021) now carries a clear “historical reference — static” caption pointing to the live daily paper-portfolio backtest on Tab 14, so it is never confused with the live one. No renderer logic, data path, scoring or engine touched. -->
 <!-- index.html v5.279 (supersedes v5.278; pairs with scanner v1.314.32): WAVE PK-D DEEPENING -- the Tab 4 PKR Devaluation Early-Warning basket now shows and scores TWO more signal rows, "Street-dollar premium (kerb market)" and "Gold premium vs world (devaluation expectation)", reading the kerb_premium + gold_premium signals the scanner now folds into psx_devaluation. Both are classic pre-devaluation street reads that widen BEFORE an official devaluation; both calm today so they score 0 and the headline level is unchanged, but the basket now reflects them (max 9->13; the banner + score bar read the dynamic max_score automatically). Basket closing note reworded to name the two street signals. Display-only. Prior v5.278 (supersedes v5.277; pairs with scanner v1.314.26): BR PHASE 3 DISPLAYS -- Tab 2 LIVE KIBOR card (renderKibor: tenor chips, 6M headline, the owner\u2019s >=11% DEFENSIVE MODE trigger rendered live for the first time), Tab 4 official-FX cross-check line (renderOfficialFx: NBP/interbank USD beside the kerb premium) + GOLD PREMIUM card (renderBullionPremium: Karachi gold vs world gold implied in PKR -- local outrunning world = devaluation expectation priced by the street), Tab 12 compact bullion strip (renderBullionStrip). Each with local esc, error-into-container catches, honest pending states. Prior v5.277 (supersedes v5.276; pairs with scanner v1.314.19+): BR /ajax/ PHASES 1+2 -- Tab 4 KERB PREMIUM card (renderKerbPremium: street-dollar premium vs interbank, threshold colours, honest pending/stale states), Tab 9 PSX MONEY FLOWS panel (renderPsxFlows: FIPI/LIPI sector flows, the Pakistani Whale Watch) + Tab 5 foreign-flows chip strip (renderPsxFlowsStrip). Full details in the v5.277 note in the header block below. Prior v5.276 (supersedes v5.275; same scanner v1.314.11): TAB 20 RADAR CARDS, owner-directed ('include ASML and SIVE in selected winners with best 3 near misses in the same graphical format'). A new card band -- '\U0001F4CC On the radar' -- sits directly under the Verified Champions, in the IDENTICAL graphical format: white card, real per-quarter bar chart from published history (violet = profit growth, teal = sales, dashed pass bars), and a plain-English sentence written from the name's own numbers. It carries the two PINNED names (ASML, SIVE -- always tracked regardless of gates, slate border, \U0001F4CC badge) and the THREE CLOSEST NEAR-MISSES (amber border, ranked by fewest failed tests then strongest growth). Every radar sentence states EXACTLY what the name still misses, in plain words with the bar it has to clear -- e.g. ASML: 'speeding up 3 quarters running, misses only the sales bar: +24.4% vs the 25% line'. Honest treatment retained: quarters where a loss makes growth undefined simply show no bar. Display-only; champions, funnel, buy box, tables untouched. -->
 <!-- index.html v5.275 (supersedes v5.274; pairs with scanner v1.314.11): TAB 20 FULL VISUAL REDESIGN, owner-directed ('make the tab more beautiful... graphical representation... plain language'). Light theme throughout, no dark backgrounds. NEW: (1) HOW-IT-HUNTS FUNNEL -- a graphic strip showing the pipeline World markets -> five tests -> Winners(n) -> Accelerating(n) -> Buy candidates(n), each stage a soft pastel card with live counts, so the tab explains itself at a glance before a single table. (2) VERIFIED CHAMPIONS HERO CARDS -- the tab now TELLS THE STORY the data earned: each multi-quarter verified winner and each accelerating name gets a card with a plain-English sentence written from its own numbers ('6 straight quarters beating the same quarter a year ago -- latest: profits +64%, sales +105%') plus a REAL per-quarter mini bar chart drawn from qaccel_qhist (violet bars = profit growth, teal = sales growth, dashed lines = the 30%/25% pass bars) -- the graphical representation of exactly what the engine verified. (3) AESTHETICS -- tabular-nums numeric alignment on every table, consistent paddings, softer borders, pastel section bands (violet header / green winners / amber near-miss), white cards. All prior audited machinery (buy candidates, why-chips, Accel column, explainer, tables) retained. Display-only. -->
 <!-- index.html v5.274 (supersedes v5.273; pairs with scanner v1.314.9): (1) TAB 20 TRUE CONSECUTIVE-QUARTER VIEW -- winners + pinned now carry a VERIFIED streak from published quarterly reports (backfilled, up to 8 quarters) and a new ACCEL column: green 'Accel \u26a1' when the growth RATE itself rose vs the prior quarter on BOTH profits and sales (growth on growth -- the owner's question answered with data), grey 'steady' when not, honest em-dash when the history isn't published (streak stays forward-only, marked). Buy candidates rank accelerating names FIRST and carry a \u26a1 badge. Explainer updated to define streak + Accel exactly. (2) NEAR-MISS WHY-CHIPS: every amber row shows exactly WHICH of the five tests it failed (small red chips: ROE 13 \u2717, Annual 36 \u2717 ...) -- the gap the ARGAN/TINGS/BESI question exposed. (3) US Macro WTI card gains a roll-free official-spot trend line (immune to futures contract rolls). Display-only. -->
@@ -356,7 +356,7 @@
     <button class="tab" onclick="showPanel('worldetf', this)">16. World ETF Engine</button>
     <button class="tab liveinv-tab" onclick="showPanel('liveinv', this)">17. Live Investment &#9733;</button>
     <button class="tab" onclick="showPanel('narratives', this)">18. Narratives 📰</button>
-    <button class="tab" onclick="showPanel('recommended', this)">19. Recommended &#9733;</button>
+    <button class="tab" onclick="showPanel('recommended', this)">19. Recommended Stocks &amp; ETFs &#9733;</button>
     <button class="tab" onclick="showPanel('globaldisc', this)">20. Global Discovery &#127758;</button>
   </div>
 
@@ -468,7 +468,7 @@
   <div id="mbus" class="panel"><h2 class="section-title">US Multibagger Hunter</h2><div id="us_mb_funnel"></div><div id="us_mb_sector_table"></div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="us_mb_rev" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="us_mb_eps" value="30" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="us_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROIC 5-yr avg (%)</label><input type="number" id="us_mb_roic" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="us_mb_de" value="0.2" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="us_mb_ocf" value="1.15" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Insider %</label><input type="number" id="us_mb_insider" value="15" step="0.5" oninput="recalc()"></div><div class="input-group"><label>Market Cap (USD M)</label><input type="number" id="us_mb_mcap" value="500" step="50" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="us_mb_ig" value="75" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="us_mb_pe" value="35" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="us_mb_wacc" value="10" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="us_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3">5-10x</option><option value="4" selected>10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="us_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3">Cost/Switching</option><option value="4" selected>Brand/Network</option><option value="5">Regulatory/Platform</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="us_mb_reinv" onchange="recalc()"><option value="1">Returning cash</option><option value="2">Limited</option><option value="3">Moderate</option><option value="4" selected>Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner Alignment</label><select id="us_mb_owner" onchange="recalc()"><option value="1">Founder gone</option><option value="2">Stable CEO</option><option value="3">Founder active</option><option value="4" selected>Founder 10yr+</option><option value="5">Founder + rising</option></select></div><div class="input-group"><label>Zacks Rank</label><select id="us_mb_zacks" onchange="recalc()"><option value="1">1 — Strong Buy</option><option value="2" selected>2 — Buy</option><option value="3">3 — Hold</option><option value="4">4 — Sell</option><option value="5">5 — Strong Sell</option></select></div></div><div id="us_mb_score_box"></div><div id="us_mb_decision_matrix"></div><div id="us_mb_compound_box"></div><div id="us_mb_tiers_table"></div><div id="us_mb_live_candidates"></div><div class="mb-note" style="margin-top:14px;"><b>M2 Turnaround Watch has its own tab now</b> &mdash; see <b>8b. Bottoms Up M2</b> for the turnaround + quality watch lists, the estimate-revision clock and the 9-stock self-test.</div><div id="us_mb_history_table"></div></div>
 <div id="m2bu" class="panel"><div class="m2x-hero"><h2>&#9889; Bottoms Up M2 &mdash; the 30% engine</h2><p><b>Sector-blind by design.</b> While M1 (Tab 6) picks sectors top-down for the disciplined 70%, this engine scans <b>every</b> company in the universe &mdash; favoured sector or not &mdash; for early, converging evidence that something big is starting: the price turning, the business inflecting, analysts raising their profit estimates, trading volume surging. <b>It flags, it never filters</b> &mdash; every name is an invitation to investigate, not a recommendation.</p><p style="margin-top:8px;font-size:12px;line-height:1.6;opacity:.95;"><b>New &mdash; what company insiders are doing with their own money (SEC filings):</b> a <span style="background:#d1fae5;color:#047857;border-radius:4px;padding:1px 6px;font-weight:700;">\u25b2 insider buying</span> chip means officers or directors bought shares on the open market (SEC Form&nbsp;4) &mdash; the strongest outside confirmation a turnaround is real, and it counts toward a name being flagged. A red <span style="background:#FEE2E2;color:#b42318;border:1px solid #fca5a5;border-radius:4px;padding:1px 6px;font-weight:700;">\u26a0</span> chip means the company just filed a <b>material 8-K</b> (bankruptcy, a CFO/CEO leaving, an auditor change, a big write-down) &mdash; a warning shown beside the name, never counted as a positive. US-listed names only; Pakistani names show nothing here because they don\u2019t file with the SEC.</p></div><div id="m2bu_clock"></div><div id="m2bu_nine"></div><div id="us_m2_watch"></div><div id="psx_m2_watch"></div></div>
 <div id="narratives" class="panel"><h2 class="section-title">Narratives — Story-First Market Intelligence</h2><div id="narrativesBody"></div></div>
-  <div id="recommended" class="panel"><h2 class="section-title">&#9733; Recommended ETFs &amp; Stocks &mdash; the dashboard's own curated buy list</h2><p style="font-size:13px;color:#374151;margin:0 0 8px">A single, self-updating list of the names that tick the most engines (IM3 strength, Zacks, Explosive, Multibagger, smart-money, M1), with live YTD/1Y/3Y/5Y returns. A separate thematic section holds macro/policy names that do not clear the engine bar. Plus a UCITS ETF sleeve.</p><div id="recommendedBody"></div></div>
+  <div id="recommended" class="panel"><h2 class="section-title">&#9733; Recommended Stocks &amp; ETFs &mdash; the dashboard's own verdict</h2><p style="font-size:13px;color:#374151;margin:0 0 8px">A single, self-updating list of the names that tick the most engines (IM3 strength, Zacks, Explosive, Multibagger, smart-money, M1), with live YTD/1Y/3Y/5Y returns. A separate thematic section holds macro/policy names that do not clear the engine bar. Plus a UCITS ETF sleeve.</p><div id="recommendedBody"></div></div>
   <div id="globaldisc" class="panel"><h2 class="section-title">&#127758; Global Discovery &mdash; the world through the engine's lenses</h2><p style="font-size:13px;color:#374151;margin:0 0 8px">Non-US large caps run through the SAME lens family as the US engine (moat, quality-growth, multibagger, momentum, turnaround, income). Overlap-tagged against your engine tabs, with a concentration guardrail. World-stock fundamentals confirm on the first scan after deploy.</p><div id="globalDiscoveryBody"></div><div id="quarterlyAccelBox"></div></div>
   <div id="liveinv" class="panel"><div class="m2x-hero"><h2>&#9733; Live Investment &mdash; your actual IBKR portfolio</h2><p>Your real UCITS-ETF book, priced live off the same World-ETF resolver, tracked daily against <b>your actual entry price</b> &mdash; real profit/loss since you invested (daily / weekly / monthly), with per-holding cost-vs-now, a <b>Forward view</b> (analyst &amp; Zacks on the underlyings), fund-relevant news, and a rebalancing check wired straight to the <b>World ETF</b> theme scores and the <b>World Economy</b> regime. Holdings, cost basis and cash are configurable in <code>live_portfolio.json</code>.</p></div><div id="liveinv_body"></div></div>
   <div id="mbpsx" class="panel"><h2 class="section-title">PSX Multibagger Hunter</h2><div class="mb-note"><b>What this tab is for:</b> finding Pakistani companies that could multiply your money many times over several years &mdash; the smaller, fast-growing names before they become household stocks. Read it top to bottom: the funnel narrows the whole market, then you grade a company, see the verdict, project the upside, and review the live and SCS-flagged candidates.</div><div class="mb-note"><b>The funnel.</b> How the entire Pakistani market gets narrowed step by step down to a handful of names worth a serious look. Each row strips out what doesn&rsquo;t fit.</div><div id="psx_mb_funnel"></div><div class="mb-note"><b>Where they cluster.</b> Which sectors today&rsquo;s candidates come from. Multibaggers tend to bunch up in a few areas at a time, so this shows where to focus.</div><div id="psx_mb_sector_table"></div><div class="mb-note"><b>Grade one company.</b> Type a company&rsquo;s numbers here and the tool grades how &lsquo;multibagger-like&rsquo; it is. Strong growth, high returns on capital, low debt, profit backed by real cash, committed owners, room to keep reinvesting, and a cheap entry price all score well.</div><h3 class="subsection-title">Multibagger Scorecard</h3><div class="grid grid-3"><div class="input-group"><label>Revenue 5-yr CAGR (%)</label><input type="number" id="psx_mb_rev" value="20" step="0.5" oninput="recalc()"></div><div class="input-group"><label>EPS 5-yr CAGR (%)</label><input type="number" id="psx_mb_eps" value="25" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROE 5-yr avg (%)</label><input type="number" id="psx_mb_roe" value="22" step="0.5" oninput="recalc()"></div><div class="input-group"><label>ROCE 5-yr avg (%)</label><input type="number" id="psx_mb_roce" value="24" step="0.5" oninput="recalc()"></div><div class="input-group"><label>D/E</label><input type="number" id="psx_mb_de" value="0.3" step="0.05" oninput="recalc()"></div><div class="input-group"><label>OCF/NI</label><input type="number" id="psx_mb_ocf" value="1.1" step="0.05" oninput="recalc()"></div><div class="input-group"><label>Sponsor %</label><input type="number" id="psx_mb_sponsor" value="45" step="1" oninput="recalc()"></div><div class="input-group"><label>Market Cap (PKR bn)</label><input type="number" id="psx_mb_mcap" value="8" step="0.5" oninput="recalc()"></div><div class="input-group"><label>IG Score</label><input type="number" id="psx_mb_ig" value="72" step="1" min="0" max="100" oninput="recalc()"></div><div class="input-group"><label>P/E (entry valuation)</label><input type="number" id="psx_mb_pe" value="6" step="0.5" oninput="recalc()"></div><div class="input-group"><label>WACC % (hurdle)</label><input type="number" id="psx_mb_wacc" value="20" step="0.5" oninput="recalc()"></div></div><div class="grid grid-2"><div class="input-group"><label>TAM Runway</label><select id="psx_mb_tam" onchange="recalc()"><option value="1">Under 3x</option><option value="2">3-5x</option><option value="3" selected>5-10x</option><option value="4">10-30x</option><option value="5">Over 30x</option></select></div><div class="input-group"><label>Moat Type</label><select id="psx_mb_moat" onchange="recalc()"><option value="1">None</option><option value="2">Weak</option><option value="3" selected>Cost/Switching</option><option value="4">Brand/Network</option><option value="5">Regulatory</option></select></div><div class="input-group"><label>Reinvestment Runway</label><select id="psx_mb_reinv" onchange="recalc()"><option value="1">Returning all cash</option><option value="2">Limited</option><option value="3" selected>Moderate</option><option value="4">Strong</option><option value="5">Exceptional</option></select></div><div class="input-group"><label>Owner-Operator</label><select id="psx_mb_owner" onchange="recalc()"><option value="1">Diluted</option><option value="2">Holding</option><option value="3" selected>Stable &gt;5yr</option><option value="4">Founder 10yr+</option><option value="5">Founder + rising</option></select></div></div><div class="mb-note"><b>The grade.</b> The score your inputs produced, and what it means.</div><div id="psx_mb_score_box"></div><div class="mb-note"><b>Buy, watch, or pass.</b> Combines the multibagger score with the quality (IG) score into one suggested action.</div><div id="psx_mb_decision_matrix"></div><div class="mb-note"><b>How the money could grow.</b> A rough projection of what an investment could compound to at the growth rate you entered. An illustration, not a promise.</div><div id="psx_mb_compound_box"></div><div class="mb-note"><b>Size tiers.</b> Which market-cap band a name sits in. The sweet spot for multibaggers is small-but-not-tiny; the biggest names belong on the other tracks.</div><div id="psx_mb_tiers_table"></div><h3 class="subsection-title">Standard Capital Securities (SCS) Suggested Names &mdash; review to add</h3><div class="mb-note">The dashboard reads Standard Capital Securities&rsquo; (SCS) weekly Valuation Matrix and finds names that show up in at least two of its four quality screens (highest return on equity, highest return on assets, highest EBITDA margin, highest dividend yield). After filtering out the ones that are too big, too illiquid, or banks, it shows the rest as suggestions &mdash; &ldquo;SCS flags these, you decide.&rdquo; It will never add them to your watchlist on its own. You stay in control of what actually enters the screen. Nothing about these names &mdash; their P/E, dividend yield, ROE, and so on &mdash; ever changes a score or filters anything.</div><div id="psx_mb_scs_suggest"></div><div class="mb-note"><b>Names on the radar now.</b> Broker-curated PSX candidates with a short thesis. Verify each one yourself before acting &mdash; this is a starting list, not advice.</div><div id="psx_mb_live_candidates"></div><div class="mb-note"><b>Past winners.</b> Real PSX stocks that already multiplied, and why &mdash; pattern templates to help you recognise the next one.</div><div id="psx_mb_history_table"></div><div class="mb-note"><b>Multibagger vs compounder.</b> How this hunt differs from buying steady quality names: different goals, different rules.</div><div id="psx_mb_comparison_table"></div></div>
@@ -3057,7 +3057,7 @@ function calcMbUs(){
       +'<th>Ticker</th><th>Fund</th><th>Shares</th><th>Cost</th><th>Price now</th><th>Value (USD)</th><th>Weight</th>'
       +'<th>P&amp;L $</th><th>P&amp;L %</th><th title="Last session move; the $ underneath is that move in dollars on your position (IBKR\u2019s Daily P&amp;L convention)">Today</th><th title="Price change over the last ~7 days (from the daily price store)">WoW</th><th title="Price change over the last ~30 days; shows \u2014 until the store accrues 30 days (seeded 6 Jul)">MoM</th><th>YTD</th><th title="50-day moving average">50-DMA</th><th title="200-day moving average">200-DMA</th><th title="Price vs its 50/200-day averages and the golden/death cross — hover for the plain-English read">MA Trend</th><th>Trend</th></tr></thead><tbody>';
     (L.holdings||[]).forEach(function(r){
-      h+='<tr><td><b>'+r.ticker+'</b></td><td style="font-size:12px;">'+(r.name||'')+'<div style="color:#94a3b8;font-size:11px;">'+(r.theme||'')+'</div></td>'
+      h+='<tr><td><b>'+r.ticker+'</b></td><td style="font-size:12px;">'+(r.name||'')+_etfEstatePill(r)+'<div style="color:#94a3b8;font-size:11px;">'+(r.theme||'')+'</div></td>'
         +'<td>'+(r.shares!=null?Number(r.shares).toLocaleString(undefined,{maximumFractionDigits:2}):'\u2014')+'</td>'
         +'<td style="font-size:12px;color:#475569;">'+(r.cost_price!=null?(Number(r.cost_price).toLocaleString(undefined,{maximumFractionDigits:2})+' '+(r.cost_ccy||'')):'\u2014')+'</td>'
         +'<td>'+(r.price!=null?(r.price.toFixed(2)+' '+(r.ccy||'')):'<span style="color:#b45309;">pending</span>')+'</td>'
@@ -5896,11 +5896,12 @@ function renderProxyTracker(elId, showIntro, cfg){
         : '<span style="display:inline-block;font-size:9px;font-weight:700;font-family:var(--font-mono);background:#FEF3C7;color:#92400E;padding:0 5px;margin-left:6px;border-radius:3px;vertical-align:middle;" title="Returns are in '+r.live_ccy+' (this fund has no USD listing) \\u2014 not comparable to USD figures; verify on the issuer factsheet">'+r.live_ccy+'</span>')
         : '';
     return '<tr style="border-bottom:1px solid #F1F5F9;">'
-      +'<td style="padding:7px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'+(r.name||r.isin)+ccyTag+'</div>'
+      +'<td style="padding:7px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'+(r.name||r.isin)+ccyTag+_etfEstatePill(r)+'</div>'
         +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono);">'+r.isin+(r.ter!=null?' \u00b7 TER '+r.ter+'%':'')+(px?' \u00b7 '+px:'')+'</div></td>'
       +'<td style="padding:7px 8px;font-size:10.5px;color:#475569;">'+(r.tier_label||'\u2014')+'</td>'
       +'<td style="padding:7px 8px;">'+chips+'</td>'
-      +'<td style="padding:7px 8px;font-size:12px;text-align:right;">'+pc(r.ytd)+'</td>'
+      +'<td style="padding:7px 8px;font-size:12px;text-align:right;">'+_etfHoldCell(r)+'</td>'
+      +'<td style="padding:7px 8px;font-size:12px;text-align:right;">'+_etfYtdCell(r)+'</td>'
       +'<td style="padding:7px 8px;font-size:12px;text-align:right;">'+pc(r.ret_1y)+'</td>'
       +'<td style="padding:7px 8px;font-size:12px;text-align:right;">'+daily(r.daily_chg)+'</td>'
       +'</tr>';
@@ -5908,7 +5909,7 @@ function renderProxyTracker(elId, showIntro, cfg){
   var th=function(t,align){return '<th style="background:#EEF7F5;padding:7px 8px;text-align:'+(align||'left')+';font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#334155;">'+t+'</th>';};
   el.innerHTML=intro+'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'
     +'<thead><tr style="background:#EEF7F5;border-bottom:2px solid #99C2BA;">'
-    +th('UCITS ETF (proxy)')+th('Match')+th(cfg.namesCol)+th('YTD','right')+th('1Y','right')+th('Today','right')
+    +th('UCITS ETF (proxy)')+th('Match')+th(cfg.namesCol)+th('Holdings','right')+th('YTD','right')+th('1Y','right')+th('Today','right')
     +'</tr></thead><tbody>'+body+'</tbody></table></div>'
     +(showIntro?'<div style="margin:24px 0 4px;border-top:2px solid #E5E7EB;"></div>':'');
 }
@@ -8407,15 +8408,126 @@ function _recEtfTable(title, sub, rows){
       '<th style="text-align:right;padding:6px">3Y</th><th style="text-align:right;padding:6px">5Y</th></tr></thead>'+
     '<tbody>'+_recEtfRows(rows)+'</tbody></table></div>';
 }
+// === v5.281 CANONICAL ETF-ROW HELPERS (scanner v1.320.0-v1.321.0 fields) =====================
+// One place decides estate pill / YTD colour / holdings count, so every tab that renders an ETF
+// row renders it IDENTICALLY. All three are tolerant: a missing field renders the old way.
+function _etfEstatePill(r){
+  if(!r||!r.estate_status) return '';
+  var st=String(r.estate_status), bg, col, txt;
+  if(st.indexOf('SAFE')===0){ bg='#DCFCE7'; col='#166534'; txt='UCITS \u00b7 estate-safe'; }
+  else if(st.indexOf('US-SITUS')===0){ bg='#FEE2E2'; col='#991B1B'; txt='US situs \u00b7 $60k'; }
+  else { bg='#FEF3C7'; col='#92400E'; txt=st; }
+  var note=String(r.tax_note||'').replace(/"/g,'&quot;');
+  return '<span title="'+note+'" style="display:inline-block;font-size:9px;font-weight:700;'
+    +'font-family:var(--font-mono);background:'+bg+';color:'+col+';padding:0 5px;margin-left:6px;'
+    +'border-radius:3px;vertical-align:middle;">'+txt+'</span>';
+}
+function _etfYtdCell(r){
+  var v=(r&&typeof r.ytd_pct==='number')?r.ytd_pct:((r&&typeof r.ytd==='number')?r.ytd:null);
+  if(typeof v!=='number') return '<span style="color:#94A3B8;">n/a</span>';
+  var txt=(v>=0?'+':'')+v.toFixed(1)+'%';
+  if(r&&r.perf_suspect) return '<span title="The scanner flagged this return as suspect '
+    +'(source disagreement or an implausible move), so it is shown grey rather than coloured." '
+    +'style="color:#94A3B8;font-weight:700;">'+txt+'</span>';
+  return '<span style="color:'+(v>=0?'#15803D':'#B91C1C')+';font-weight:700;">'+txt+'</span>';
+}
+function _etfHoldCell(r){
+  var n=(r&&typeof r.n_holdings==='number')?r.n_holdings:null;
+  if(!(n>0)) return '<span style="color:#94A3B8;" title="Holdings count not published for this fund.">\u2014</span>';
+  return '<span style="font-family:var(--font-mono);font-size:11px;color:#475569;">'+n+'</span>';
+}
+// === v5.281 TAB 19 ENGINE-AGREEMENT VERDICT (scanner v1.323.0 payload + v1.324.0 modifiers) ===
+function _recVerdictHtml(){
+  var V=(typeof LIVE!=='undefined'&&LIVE&&LIVE.recommended)?LIVE.recommended:null;
+  if(!V||((!V.stocks||!V.stocks.length)&&(!V.etfs||!V.etfs.length))) return '';
+  var pc=function(v){ if(typeof v!=='number') return '<span style="color:#94A3B8;">n/a</span>';
+    return '<span style="color:'+(v>=0?'#15803D':'#B91C1C')+';font-weight:700;">'
+      +(v>=0?'+':'')+v.toFixed(1)+'%</span>'; };
+  var eng=function(a){ return (a||[]).map(function(e){
+      return '<span style="display:inline-block;font-size:9.5px;font-weight:700;'
+        +'font-family:var(--font-mono);background:#EFF6FF;color:#1D4ED8;padding:1px 5px;margin:1px;'
+        +'border-radius:3px;">'+e+'</span>'; }).join(''); };
+  var mods=function(a){ return (a||[]).map(function(m){
+      return '<span style="display:inline-block;font-size:9.5px;font-weight:700;'
+        +'background:#FEF3C7;color:#92400E;padding:1px 5px;margin:1px;border-radius:3px;">'
+        +m+'</span>'; }).join('') || '<span style="color:#94A3B8;">\u2014</span>'; };
+  var star=function(n){ var k=Math.max(0,Math.min(6,n||0)); return '<span style="color:#6366F1;'
+      +'font-weight:700;font-size:12px;">'+k+'\u2605</span>'; };
+  var th=function(t,al,ti){ return '<th title="'+(ti||'')+'" style="background:#EEF2FF;padding:7px 8px;'
+      +'text-align:'+(al||'left')+';font-size:10px;font-weight:700;letter-spacing:0.05em;'
+      +'text-transform:uppercase;color:#3730A3;">'+t+'</th>'; };
+  var h='<div style="background:linear-gradient(180deg,#F5F7FF 0%,#ffffff 100%);border:1px solid '
+    +'#C7D2FE;border-radius:14px;padding:16px 18px;margin:0 0 18px;">'
+    +'<div style="font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:0.12em;'
+    +'text-transform:uppercase;color:#4338CA;margin-bottom:6px;">The dashboard\u2019s own verdict '
+    +'\u2014 engine agreement</div>'
+    +'<div style="font-family:var(--font-body);font-size:13px;line-height:1.6;color:#475569;">'
+    +'Only names that <b style="color:#0F172A;">two or more independent engines</b> put forward at '
+    +'the same time. Conviction is simply how many engines agree. The rank adds <b>+0.5</b> when the '
+    +'name\u2019s sector is Booming or Favoured on the Sectors tab and <b>+0.25</b> when it carries a '
+    +'live news narrative. Nothing here is a personal recommendation \u2014 it is what the engines '
+    +'already say, counted honestly. '
+    +'<b style="color:#0F172A;">'+((V.stocks||[]).length)+'</b> stocks \u00b7 '
+    +'<b style="color:#0F172A;">'+((V.etfs||[]).length)+'</b> ETF'+(((V.etfs||[]).length===1)?'':'s')
+    +' \u00b7 as of '+(V.as_of||'')+'</div></div>';
+  if(V.stocks&&V.stocks.length){
+    h+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'
+      +'<thead><tr style="background:#EEF2FF;border-bottom:2px solid #A5B4FC;">'
+      +th('#','left','Rank = conviction plus modifiers, then 1-year return.')
+      +th('Ticker')+th('Sector')
+      +th('Engines agreeing','left','Every engine that independently surfaced this name.')
+      +th('Conv.','right','Number of agreeing engines.')
+      +th('Modifiers','left','Sector band (Sectors tab) and live narrative (Narratives tab).')
+      +th('Rank','right')+th('YTD','right')+th('1Y','right')
+      +'</tr></thead><tbody>';
+    V.stocks.forEach(function(r,i){
+      h+='<tr style="border-bottom:1px solid #F1F5F9;">'
+        +'<td style="padding:7px 8px;color:#94A3B8;font-family:var(--font-mono);">'+(i+1)+'</td>'
+        +'<td style="padding:7px 8px;font-weight:700;color:#0F172A;">'+(r.ticker||'')+'</td>'
+        +'<td style="padding:7px 8px;font-size:11px;color:#64748B;">'+(r.sector||'\u2014')+'</td>'
+        +'<td style="padding:7px 8px;">'+eng(r.agree)+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;">'+star(r.conviction)+'</td>'
+        +'<td style="padding:7px 8px;">'+mods(r.modifiers)+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;font-weight:700;color:#4338CA;">'
+          +((typeof r.rank_score==='number')?r.rank_score.toFixed(2):'\u2014')+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;">'+pc(r.ytd_pct)+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;">'+pc(r.ret_1y)+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+  }
+  if(V.etfs&&V.etfs.length){
+    h+='<div style="margin:18px 0 6px;"><h3 style="margin:0;font-size:15px;color:#3730A3;">'
+      +'Funds the engines agree on</h3></div>'
+      +'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'
+      +'<thead><tr style="background:#EEF2FF;border-bottom:2px solid #A5B4FC;">'
+      +th('Fund')+th('Engines agreeing')+th('Conv.','right')+th('Holdings','right')
+      +th('YTD','right')+th('1Y','right')+'</tr></thead><tbody>';
+    V.etfs.forEach(function(r){
+      h+='<tr style="border-bottom:1px solid #F1F5F9;">'
+        +'<td style="padding:7px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'
+          +(r.name||r.isin||'')+_etfEstatePill(r)+'</div>'
+        +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono);">'+(r.isin||'')
+          +((r.ter!=null)?(' \u00b7 TER '+r.ter+'%'):'')+'</div></td>'
+        +'<td style="padding:7px 8px;">'+eng(r.agree)+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;">'+star(r.conviction)+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;">'+_etfHoldCell(r)+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;">'+_etfYtdCell(r)+'</td>'
+        +'<td style="padding:7px 8px;text-align:right;">'+pc(r.ret_1y)+'</td></tr>';
+    });
+    h+='</tbody></table></div>';
+  }
+  h+='<div style="margin:18px 0 10px;border-top:2px solid #E5E7EB;"></div>';
+  return h;
+}
 function renderRecommendedTab(){
   var host=document.getElementById('recommendedBody');
   if(!host) return;
   var R=(typeof LIVE!=='undefined'&&LIVE&&LIVE.recommended_tab)?LIVE.recommended_tab:null;
   if(!R){
-    host.innerHTML='<p style="color:#6b7280;font-size:13px">This tab populates on the next scan — the scanner will emit the curated recommended list with live returns.</p>';
+    host.innerHTML=_recVerdictHtml()+'<p style="color:#6b7280;font-size:13px">This tab populates on the next scan — the scanner will emit the curated recommended list with live returns.</p>';
     return;
   }
-  var h='';
+  var h=_recVerdictHtml();
   // top-conviction roll-up
   if(R.top_conviction&&R.top_conviction.length){
     h+='<div style="margin:6px 0 14px;padding:10px 14px;border:1px solid #c7d2fe;border-radius:10px;background:#eef2ff">'+
