@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.282 (supersedes v5.281; pairs with scanner v1.324.0): TAB 21 BOOMING ETFs. Built ENTIRELY from payloads already live in data.json - etf_emerging_themes_watch (36 funds / 9 themes, live_ret_1y + live_ytd + ter + isin) for the REALIZED lens, and sector_booming (11 GICS bands) for the FORWARD lens, cross-referenced per theme exactly as D-104 requires so the tab and the sector engine can never silently contradict. No scanner change: themes are ranked by the average trailing-1Y of their capturing funds, and the estate pill is derived deterministically from the ISIN prefix (D-99) where estate_status is not stamped on the row. PRIOR: v5.281 (supersedes v5.280; pairs with scanner v1.324.0): DISPLAY HALF OF THE TAB-INTEGRATION ARC. (1) Tab 19 renamed "Recommended Stocks & ETFs" and now renders the v1.323/v1.324 ENGINE-AGREEMENT verdict (LIVE.recommended: conviction, agreeing engines, modifiers, rank_score) above the existing curated list - that payload was live in data.json and invisible on screen. (2) Canonical ETF row wired into the SHARED renderProxyTracker, so Tabs 9/14/16 explosive/tce/m1/m2 ETF boxes all gain: one YTD source (ytd_pct preferred over legacy ytd), a Holdings column (n_holdings), an estate-tax/domicile pill (estate_status), and a GREY - never coloured - render for perf_suspect rows. (3) Tab 17 held positions carry the same estate pill. Display-only; no payload is written, every field read is optional and falls back to the previous behaviour when absent. PRIOR: v5.280 (supersedes v5.279; pairs with scanner v1.317.0): P3 GAP FIXES (display-only, non-destructive). (G6) Tab 3 “PSX Margin Leverage — MTS” subsection header re-credited from the retired “Standard Capital Securities” to “Business Recorder, live” — the psx_mts feed has been the live brmarkets ajax/market_leverage source (manual=False) for many versions; the caption was stale. (G7) Tab 13 Strategy Backtest (static IG+ vs KSE-100 2010–2021) now carries a clear “historical reference — static” caption pointing to the live daily paper-portfolio backtest on Tab 14, so it is never confused with the live one. No renderer logic, data path, scoring or engine touched. -->
+<!-- index.html v5.283 (supersedes v5.282; pairs with scanner v1.326.0): OWNED-HOLDING TAGS. Any fund the owner actually holds (live_investment.holdings, Tab 17) is now marked wherever that fund appears as a recommendation, matched on ISIN first and normalised ticker second. Wired through ONE helper into THREE surfaces so no tab is left showing an untagged duplicate: Tab 21 Booming ETFs (per-fund pill + a per-theme "you hold n of these" count + a board-level roll-up), Tab 19 Recommended Stocks & ETFs (fund sleeve), and the shared renderProxyTracker that paints the Explosive/TCE/M1/M2 fund boxes on Tabs 9/14/16. Display-only, reads only fields already in data.json, and degrades to exactly v5.282 when live_investment is absent. PRIOR: v5.282 (supersedes v5.281; pairs with scanner v1.324.0): TAB 21 BOOMING ETFs. Built ENTIRELY from payloads already live in data.json - etf_emerging_themes_watch (36 funds / 9 themes, live_ret_1y + live_ytd + ter + isin) for the REALIZED lens, and sector_booming (11 GICS bands) for the FORWARD lens, cross-referenced per theme exactly as D-104 requires so the tab and the sector engine can never silently contradict. No scanner change: themes are ranked by the average trailing-1Y of their capturing funds, and the estate pill is derived deterministically from the ISIN prefix (D-99) where estate_status is not stamped on the row. PRIOR: v5.281 (supersedes v5.280; pairs with scanner v1.324.0): DISPLAY HALF OF THE TAB-INTEGRATION ARC. (1) Tab 19 renamed "Recommended Stocks & ETFs" and now renders the v1.323/v1.324 ENGINE-AGREEMENT verdict (LIVE.recommended: conviction, agreeing engines, modifiers, rank_score) above the existing curated list - that payload was live in data.json and invisible on screen. (2) Canonical ETF row wired into the SHARED renderProxyTracker, so Tabs 9/14/16 explosive/tce/m1/m2 ETF boxes all gain: one YTD source (ytd_pct preferred over legacy ytd), a Holdings column (n_holdings), an estate-tax/domicile pill (estate_status), and a GREY - never coloured - render for perf_suspect rows. (3) Tab 17 held positions carry the same estate pill. Display-only; no payload is written, every field read is optional and falls back to the previous behaviour when absent. PRIOR: v5.280 (supersedes v5.279; pairs with scanner v1.317.0): P3 GAP FIXES (display-only, non-destructive). (G6) Tab 3 “PSX Margin Leverage — MTS” subsection header re-credited from the retired “Standard Capital Securities” to “Business Recorder, live” — the psx_mts feed has been the live brmarkets ajax/market_leverage source (manual=False) for many versions; the caption was stale. (G7) Tab 13 Strategy Backtest (static IG+ vs KSE-100 2010–2021) now carries a clear “historical reference — static” caption pointing to the live daily paper-portfolio backtest on Tab 14, so it is never confused with the live one. No renderer logic, data path, scoring or engine touched. -->
 <!-- index.html v5.279 (supersedes v5.278; pairs with scanner v1.314.32): WAVE PK-D DEEPENING -- the Tab 4 PKR Devaluation Early-Warning basket now shows and scores TWO more signal rows, "Street-dollar premium (kerb market)" and "Gold premium vs world (devaluation expectation)", reading the kerb_premium + gold_premium signals the scanner now folds into psx_devaluation. Both are classic pre-devaluation street reads that widen BEFORE an official devaluation; both calm today so they score 0 and the headline level is unchanged, but the basket now reflects them (max 9->13; the banner + score bar read the dynamic max_score automatically). Basket closing note reworded to name the two street signals. Display-only. Prior v5.278 (supersedes v5.277; pairs with scanner v1.314.26): BR PHASE 3 DISPLAYS -- Tab 2 LIVE KIBOR card (renderKibor: tenor chips, 6M headline, the owner\u2019s >=11% DEFENSIVE MODE trigger rendered live for the first time), Tab 4 official-FX cross-check line (renderOfficialFx: NBP/interbank USD beside the kerb premium) + GOLD PREMIUM card (renderBullionPremium: Karachi gold vs world gold implied in PKR -- local outrunning world = devaluation expectation priced by the street), Tab 12 compact bullion strip (renderBullionStrip). Each with local esc, error-into-container catches, honest pending states. Prior v5.277 (supersedes v5.276; pairs with scanner v1.314.19+): BR /ajax/ PHASES 1+2 -- Tab 4 KERB PREMIUM card (renderKerbPremium: street-dollar premium vs interbank, threshold colours, honest pending/stale states), Tab 9 PSX MONEY FLOWS panel (renderPsxFlows: FIPI/LIPI sector flows, the Pakistani Whale Watch) + Tab 5 foreign-flows chip strip (renderPsxFlowsStrip). Full details in the v5.277 note in the header block below. Prior v5.276 (supersedes v5.275; same scanner v1.314.11): TAB 20 RADAR CARDS, owner-directed ('include ASML and SIVE in selected winners with best 3 near misses in the same graphical format'). A new card band -- '\U0001F4CC On the radar' -- sits directly under the Verified Champions, in the IDENTICAL graphical format: white card, real per-quarter bar chart from published history (violet = profit growth, teal = sales, dashed pass bars), and a plain-English sentence written from the name's own numbers. It carries the two PINNED names (ASML, SIVE -- always tracked regardless of gates, slate border, \U0001F4CC badge) and the THREE CLOSEST NEAR-MISSES (amber border, ranked by fewest failed tests then strongest growth). Every radar sentence states EXACTLY what the name still misses, in plain words with the bar it has to clear -- e.g. ASML: 'speeding up 3 quarters running, misses only the sales bar: +24.4% vs the 25% line'. Honest treatment retained: quarters where a loss makes growth undefined simply show no bar. Display-only; champions, funnel, buy box, tables untouched. -->
 <!-- index.html v5.275 (supersedes v5.274; pairs with scanner v1.314.11): TAB 20 FULL VISUAL REDESIGN, owner-directed ('make the tab more beautiful... graphical representation... plain language'). Light theme throughout, no dark backgrounds. NEW: (1) HOW-IT-HUNTS FUNNEL -- a graphic strip showing the pipeline World markets -> five tests -> Winners(n) -> Accelerating(n) -> Buy candidates(n), each stage a soft pastel card with live counts, so the tab explains itself at a glance before a single table. (2) VERIFIED CHAMPIONS HERO CARDS -- the tab now TELLS THE STORY the data earned: each multi-quarter verified winner and each accelerating name gets a card with a plain-English sentence written from its own numbers ('6 straight quarters beating the same quarter a year ago -- latest: profits +64%, sales +105%') plus a REAL per-quarter mini bar chart drawn from qaccel_qhist (violet bars = profit growth, teal = sales growth, dashed lines = the 30%/25% pass bars) -- the graphical representation of exactly what the engine verified. (3) AESTHETICS -- tabular-nums numeric alignment on every table, consistent paddings, softer borders, pastel section bands (violet header / green winners / amber near-miss), white cards. All prior audited machinery (buy candidates, why-chips, Accel column, explainer, tables) retained. Display-only. -->
 <!-- index.html v5.274 (supersedes v5.273; pairs with scanner v1.314.9): (1) TAB 20 TRUE CONSECUTIVE-QUARTER VIEW -- winners + pinned now carry a VERIFIED streak from published quarterly reports (backfilled, up to 8 quarters) and a new ACCEL column: green 'Accel \u26a1' when the growth RATE itself rose vs the prior quarter on BOTH profits and sales (growth on growth -- the owner's question answered with data), grey 'steady' when not, honest em-dash when the history isn't published (streak stays forward-only, marked). Buy candidates rank accelerating names FIRST and carry a \u26a1 badge. Explainer updated to define streak + Accel exactly. (2) NEAR-MISS WHY-CHIPS: every amber row shows exactly WHICH of the five tests it failed (small red chips: ROE 13 \u2717, Annual 36 \u2717 ...) -- the gap the ARGAN/TINGS/BESI question exposed. (3) US Macro WTI card gains a roll-free official-spot trend line (immune to futures contract rolls). Display-only. -->
@@ -5898,7 +5898,7 @@ function renderProxyTracker(elId, showIntro, cfg){
         : '<span style="display:inline-block;font-size:9px;font-weight:700;font-family:var(--font-mono);background:#FEF3C7;color:#92400E;padding:0 5px;margin-left:6px;border-radius:3px;vertical-align:middle;" title="Returns are in '+r.live_ccy+' (this fund has no USD listing) \\u2014 not comparable to USD figures; verify on the issuer factsheet">'+r.live_ccy+'</span>')
         : '';
     return '<tr style="border-bottom:1px solid #F1F5F9;">'
-      +'<td style="padding:7px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'+(r.name||r.isin)+ccyTag+_etfEstatePill(r)+'</div>'
+      +'<td style="padding:7px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'+(r.name||r.isin)+ccyTag+_ownedPill(r)+_etfEstatePill(r)+'</div>'
         +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono);">'+r.isin+(r.ter!=null?' \u00b7 TER '+r.ter+'%':'')+(px?' \u00b7 '+px:'')+'</div></td>'
       +'<td style="padding:7px 8px;font-size:10.5px;color:#475569;">'+(r.tier_label||'\u2014')+'</td>'
       +'<td style="padding:7px 8px;">'+chips+'</td>'
@@ -8425,6 +8425,38 @@ function _estateFromIsin(isin){
   if(p==='KR') return 'KRX-KOREAN-TAX';
   return null;
 }
+function _ownedKeys(){
+  // Set of ISINs and normalised tickers the owner actually holds, read from Tab 17's own payload.
+  // Cached on first call: the holdings list does not change within a page load.
+  if(_ownedKeys._c) return _ownedKeys._c;
+  var out={isin:{},tick:{}};
+  try{
+    var L=(typeof LIVE!=='undefined'&&LIVE&&LIVE.live_investment)||null;
+    ((L&&L.holdings)||[]).forEach(function(h){
+      if(h&&h.isin) out.isin[String(h.isin).toUpperCase()]=h.ticker||h.name||'holding';
+      if(h&&h.ticker) out.tick[String(h.ticker).toUpperCase()]=h.ticker;
+    });
+  }catch(e){ /* no holdings payload -> nothing is tagged, everything else renders unchanged */ }
+  _ownedKeys._c=out; return out;
+}
+function _isOwned(r){
+  if(!r) return null;
+  var K=_ownedKeys();
+  var i=r.isin?String(r.isin).toUpperCase():'';
+  if(i&&K.isin[i]) return K.isin[i];
+  var t=(r.ticker||r.sym||'');
+  t=String(t).split(':').pop().toUpperCase();
+  if(t&&K.tick[t]) return K.tick[t];
+  return null;
+}
+function _ownedPill(r){
+  var who=_isOwned(r);
+  if(!who) return '';
+  return '<span title="You already hold this fund - see Tab 17 Live Investment for size, cost and P&amp;L."'
+    +' style="display:inline-block;font-size:9px;font-weight:700;font-family:var(--font-mono);'
+    +'background:#312E81;color:#FFFFFF;padding:0 5px;margin-left:6px;border-radius:3px;'
+    +'vertical-align:middle;">HELD \u00b7 '+who+'</span>';
+}
 function _etfEstatePill(r){
   if(!r) return '';
   if(!r.estate_status){
@@ -8528,7 +8560,7 @@ function _recVerdictHtml(){
     V.etfs.forEach(function(r){
       h+='<tr style="border-bottom:1px solid #F1F5F9;">'
         +'<td style="padding:7px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'
-          +(r.name||r.isin||'')+_etfEstatePill(r)+'</div>'
+          +(r.name||r.isin||'')+_ownedPill(r)+_etfEstatePill(r)+'</div>'
         +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono);">'+(r.isin||'')
           +((r.ter!=null)?(' \u00b7 TER '+r.ter+'%'):'')+'</div></td>'
         +'<td style="padding:7px 8px;">'+eng(r.agree)+'</td>'
@@ -8588,7 +8620,8 @@ function renderBoomingEtfs(){
     var gics=_BOOM_THEME_GICS[t]||null;
     var fwd=gics?bandBySector[gics]:null;
     var safe=fs.filter(function(f){ return (f.estate_status||_estateFromIsin(f.isin))==='SAFE-UCITS'; }).length;
-    return {theme:t, funds:fs, avg:avg, n:fs.length, best:best, gics:gics, fwd:fwd, safe:safe};
+    var held=fs.filter(function(f){ return !!_isOwned(f); }).length;
+    return {theme:t, funds:fs, avg:avg, n:fs.length, best:best, gics:gics, fwd:fwd, safe:safe, held:held};
   }).sort(function(a,b){ return (b.avg==null?-1e9:b.avg)-(a.avg==null?-1e9:a.avg); });
 
   var top=rows[0];
@@ -8601,7 +8634,16 @@ function renderBoomingEtfs(){
       +'<b style="color:#0F172A;">'+((top&&top.theme)||'')+'</b> leads every theme on the board on trailing-year return'
       +((top&&top.best)?(' \u2014 strongest single fund '+top.best.name):'')+'. '
       +'<b style="color:#0F172A;">'+rows.length+'</b> themes \u00b7 <b style="color:#0F172A;">'+em.length
-      +'</b> funds ranked. The forward column is the sector engine\u2019s own band, not a repeat of the return.</div></div>';
+      +'</b> funds ranked. The forward column is the sector engine\u2019s own band, not a repeat of the return.'
+    +(function(){ var n=0, th={};
+        rows.forEach(function(x){ if(x.held){ n+=x.held; th[x.theme]=x.held; } });
+        if(!n) return ' <b style="color:#312E81;">You hold none of the funds on this board</b> \u2014 '
+          +'every row here is a fund you do not currently own.';
+        return ' <b style="color:#312E81;">You already hold '+n+' of these funds</b> ('
+          +Object.keys(th).join(', ')+') \u2014 marked HELD below, so the ladder shows you what you '
+          +'have as well as what you do not.';
+      })()
+    +'</div></div>';
 
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;font-size:11px;color:#64748B;">'
     +'<span>Estate read:</span>'+_etfEstatePill({estate_status:'SAFE-UCITS',tax_note:'Irish/Luxembourg UCITS \u2014 no US or Korean tax tail.'})
@@ -8622,6 +8664,7 @@ function renderBoomingEtfs(){
       +'</div>'
       +'<div style="font-size:11.5px;color:#64748B;margin:6px 0 0;">'+r.n+' capturing fund'+(r.n===1?'':'s')
         +' \u00b7 '+r.safe+' estate-safe UCITS'
+        +(r.held?(' \u00b7 <b style="color:#312E81;">you hold '+r.held+' of these</b>'):'')
         +(contradiction?' \u00b7 <b style="color:#B45309;">already run, sector support fading \u2014 the two lenses disagree</b>':'')
         +(confirmation?' \u00b7 <b style="color:#15803D;">return and sector engine agree</b>':'')+'</div>'
       +'<div style="overflow-x:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'
@@ -8630,7 +8673,7 @@ function renderBoomingEtfs(){
       .forEach(function(f){
         h+='<tr style="border-top:1px solid #F1F5F9;">'
           +'<td style="padding:6px 8px;"><div style="font-weight:600;color:#0F172A;font-size:12px;">'
-            +(f.name||f.isin||'')+_etfEstatePill(f)+'</div>'
+            +(f.name||f.isin||'')+_ownedPill(f)+_etfEstatePill(f)+'</div>'
           +'<div style="font-size:10px;color:#64748B;font-family:var(--font-mono);">'+(f.isin||'')
             +((f.ter!=null)?(' \u00b7 TER '+f.ter+'%'):'')
             +((typeof f.size_m_eur==='number')?(' \u00b7 \u20ac'+f.size_m_eur+'m'):'')+'</div></td>'
