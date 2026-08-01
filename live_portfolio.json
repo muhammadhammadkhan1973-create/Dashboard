@@ -87,34 +87,48 @@
       "cost_price": 260.88461712,
       "cost_ccy": "USD",
       "news_query": "gold silver precious metals price outlook"
+    },
+    {
+      "ticker": "AMD3",
+      "isin": "XS2337090422",
+      "name": "Leverage Shares 3x AMD",
+      "theme": "Semiconductors / AI (3x)",
+      "world_theme": "US-Tech",
+      "shares": 634,
+      "cost_price": 7.883809148,
+      "cost_ccy": "USD",
+      "news_query": "AMD"
+    },
+    {
+      "ticker": "TSM3",
+      "isin": "XS2399365043",
+      "name": "Leverage Shares 3x Long TSM",
+      "theme": "Semiconductors / AI (3x)",
+      "world_theme": "Asia-Tech",
+      "shares": 580,
+      "cost_price": 17.245689655,
+      "cost_ccy": "USD",
+      "news_query": "TSMC"
     }
   ],
   "cash": [
     {
       "ccy": "AED",
-      "amount": 181386.02
+      "amount": 126203.65568
     },
     {
       "ccy": "USD",
-      "amount": 1.45
+      "amount": 0.652645364
     }
   ],
-  "reconciled": "IBKR statement 2026-07-17 (U21094978): shares+cost bases exact; cash after AED 18,364 (~$5,000) disbursement of 2026-07-20; interest accruals $163.23 not modelled (immaterial)",
+  "reconciled": "2026-07-31 IBKR U21094978 statement (period 2026-07-06..07-31)",
   "capital_flows": [
     {
-      "date": "2026-07-01",
-      "usd": 272.28,
-      "note": "Balance already at the broker when the period opened (AED 1,000) \u2014 IBKR statement starting value."
-    },
-    {
-      "date": "2026-07-02",
-      "usd": 272260.0,
-      "note": "Your deposit: AED 1,000,000 electronic transfer \u2014 IBKR statement Deposits line."
-    },
-    {
-      "date": "2026-07-17",
+      "date": "2026-07-20",
+      "ccy": "AED",
+      "amount": -18364,
       "usd": -4999.97,
-      "note": "Your withdrawal: AED 18,364 disbursement (settles 20 Jul) \u2014 IBKR statement."
+      "note": "Disbursement initiated by owner"
     }
   ],
   "broker_costs": {
