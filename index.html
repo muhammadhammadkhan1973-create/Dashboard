@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.284 (supersedes v5.283; pairs with scanner v1.329.0): Tab 17 Holdings table gains an "Acquired" column showing WHEN each position was entered (reads holding.acquired, the IBKR opening trade date the re-seeded live_portfolio.json now carries). Display-only; a holding without the field shows an em dash. PRIOR: v5.283 (supersedes v5.282; pairs with scanner v1.326.0): OWNED-HOLDING TAGS. Any fund the owner actually holds (live_investment.holdings, Tab 17) is now marked wherever that fund appears as a recommendation, matched on ISIN first and normalised ticker second. Wired through ONE helper into THREE surfaces so no tab is left showing an untagged duplicate: Tab 21 Booming ETFs (per-fund pill + a per-theme "you hold n of these" count + a board-level roll-up), Tab 19 Recommended Stocks & ETFs (fund sleeve), and the shared renderProxyTracker that paints the Explosive/TCE/M1/M2 fund boxes on Tabs 9/14/16. Display-only, reads only fields already in data.json, and degrades to exactly v5.282 when live_investment is absent. PRIOR: v5.282 (supersedes v5.281; pairs with scanner v1.324.0): TAB 21 BOOMING ETFs. Built ENTIRELY from payloads already live in data.json - etf_emerging_themes_watch (36 funds / 9 themes, live_ret_1y + live_ytd + ter + isin) for the REALIZED lens, and sector_booming (11 GICS bands) for the FORWARD lens, cross-referenced per theme exactly as D-104 requires so the tab and the sector engine can never silently contradict. No scanner change: themes are ranked by the average trailing-1Y of their capturing funds, and the estate pill is derived deterministically from the ISIN prefix (D-99) where estate_status is not stamped on the row. PRIOR: v5.281 (supersedes v5.280; pairs with scanner v1.324.0): DISPLAY HALF OF THE TAB-INTEGRATION ARC. (1) Tab 19 renamed "Recommended Stocks & ETFs" and now renders the v1.323/v1.324 ENGINE-AGREEMENT verdict (LIVE.recommended: conviction, agreeing engines, modifiers, rank_score) above the existing curated list - that payload was live in data.json and invisible on screen. (2) Canonical ETF row wired into the SHARED renderProxyTracker, so Tabs 9/14/16 explosive/tce/m1/m2 ETF boxes all gain: one YTD source (ytd_pct preferred over legacy ytd), a Holdings column (n_holdings), an estate-tax/domicile pill (estate_status), and a GREY - never coloured - render for perf_suspect rows. (3) Tab 17 held positions carry the same estate pill. Display-only; no payload is written, every field read is optional and falls back to the previous behaviour when absent. PRIOR: v5.280 (supersedes v5.279; pairs with scanner v1.317.0): P3 GAP FIXES (display-only, non-destructive). (G6) Tab 3 “PSX Margin Leverage — MTS” subsection header re-credited from the retired “Standard Capital Securities” to “Business Recorder, live” — the psx_mts feed has been the live brmarkets ajax/market_leverage source (manual=False) for many versions; the caption was stale. (G7) Tab 13 Strategy Backtest (static IG+ vs KSE-100 2010–2021) now carries a clear “historical reference — static” caption pointing to the live daily paper-portfolio backtest on Tab 14, so it is never confused with the live one. No renderer logic, data path, scoring or engine touched. -->
+<!-- index.html v5.285 (supersedes v5.284; pairs with scanner v1.330.0): TAB 17 HOLDINGS REBUILT as an aligned graphical panel. The old wide table mis-aligned because numeric cells were left-aligned and the Today/WoW cells injected a sub-<div> that staggered row heights. Replaced with renderLiHoldingCards(): one fixed CSS grid per holding, every number right-aligned on its own column, plus (a) a diverging P&L bar, (b) a cost-to-value track, (c) a trend chip from price vs 50/200-DMA, (d) YTD/1Y performance bars, and (e) the new TradingView technical-rating pill (holding.tv_reco_label from scanner v1.330.0). Also adds a plain-language note explaining why the first statement week (W28) shows a dash for best/worst. Display-only; reads only fields already in data.json and degrades cleanly when any are absent. PRIOR: v5.284 (supersedes v5.283; pairs with scanner v1.329.0): Tab 17 Holdings table gains an "Acquired" column showing WHEN each position was entered (reads holding.acquired, the IBKR opening trade date the re-seeded live_portfolio.json now carries). Display-only; a holding without the field shows an em dash. PRIOR: v5.283 (supersedes v5.282; pairs with scanner v1.326.0): OWNED-HOLDING TAGS. Any fund the owner actually holds (live_investment.holdings, Tab 17) is now marked wherever that fund appears as a recommendation, matched on ISIN first and normalised ticker second. Wired through ONE helper into THREE surfaces so no tab is left showing an untagged duplicate: Tab 21 Booming ETFs (per-fund pill + a per-theme "you hold n of these" count + a board-level roll-up), Tab 19 Recommended Stocks & ETFs (fund sleeve), and the shared renderProxyTracker that paints the Explosive/TCE/M1/M2 fund boxes on Tabs 9/14/16. Display-only, reads only fields already in data.json, and degrades to exactly v5.282 when live_investment is absent. PRIOR: v5.282 (supersedes v5.281; pairs with scanner v1.324.0): TAB 21 BOOMING ETFs. Built ENTIRELY from payloads already live in data.json - etf_emerging_themes_watch (36 funds / 9 themes, live_ret_1y + live_ytd + ter + isin) for the REALIZED lens, and sector_booming (11 GICS bands) for the FORWARD lens, cross-referenced per theme exactly as D-104 requires so the tab and the sector engine can never silently contradict. No scanner change: themes are ranked by the average trailing-1Y of their capturing funds, and the estate pill is derived deterministically from the ISIN prefix (D-99) where estate_status is not stamped on the row. PRIOR: v5.281 (supersedes v5.280; pairs with scanner v1.324.0): DISPLAY HALF OF THE TAB-INTEGRATION ARC. (1) Tab 19 renamed "Recommended Stocks & ETFs" and now renders the v1.323/v1.324 ENGINE-AGREEMENT verdict (LIVE.recommended: conviction, agreeing engines, modifiers, rank_score) above the existing curated list - that payload was live in data.json and invisible on screen. (2) Canonical ETF row wired into the SHARED renderProxyTracker, so Tabs 9/14/16 explosive/tce/m1/m2 ETF boxes all gain: one YTD source (ytd_pct preferred over legacy ytd), a Holdings column (n_holdings), an estate-tax/domicile pill (estate_status), and a GREY - never coloured - render for perf_suspect rows. (3) Tab 17 held positions carry the same estate pill. Display-only; no payload is written, every field read is optional and falls back to the previous behaviour when absent. PRIOR: v5.280 (supersedes v5.279; pairs with scanner v1.317.0): P3 GAP FIXES (display-only, non-destructive). (G6) Tab 3 “PSX Margin Leverage — MTS” subsection header re-credited from the retired “Standard Capital Securities” to “Business Recorder, live” — the psx_mts feed has been the live brmarkets ajax/market_leverage source (manual=False) for many versions; the caption was stale. (G7) Tab 13 Strategy Backtest (static IG+ vs KSE-100 2010–2021) now carries a clear “historical reference — static” caption pointing to the live daily paper-portfolio backtest on Tab 14, so it is never confused with the live one. No renderer logic, data path, scoring or engine touched. -->
 <!-- index.html v5.279 (supersedes v5.278; pairs with scanner v1.314.32): WAVE PK-D DEEPENING -- the Tab 4 PKR Devaluation Early-Warning basket now shows and scores TWO more signal rows, "Street-dollar premium (kerb market)" and "Gold premium vs world (devaluation expectation)", reading the kerb_premium + gold_premium signals the scanner now folds into psx_devaluation. Both are classic pre-devaluation street reads that widen BEFORE an official devaluation; both calm today so they score 0 and the headline level is unchanged, but the basket now reflects them (max 9->13; the banner + score bar read the dynamic max_score automatically). Basket closing note reworded to name the two street signals. Display-only. Prior v5.278 (supersedes v5.277; pairs with scanner v1.314.26): BR PHASE 3 DISPLAYS -- Tab 2 LIVE KIBOR card (renderKibor: tenor chips, 6M headline, the owner\u2019s >=11% DEFENSIVE MODE trigger rendered live for the first time), Tab 4 official-FX cross-check line (renderOfficialFx: NBP/interbank USD beside the kerb premium) + GOLD PREMIUM card (renderBullionPremium: Karachi gold vs world gold implied in PKR -- local outrunning world = devaluation expectation priced by the street), Tab 12 compact bullion strip (renderBullionStrip). Each with local esc, error-into-container catches, honest pending states. Prior v5.277 (supersedes v5.276; pairs with scanner v1.314.19+): BR /ajax/ PHASES 1+2 -- Tab 4 KERB PREMIUM card (renderKerbPremium: street-dollar premium vs interbank, threshold colours, honest pending/stale states), Tab 9 PSX MONEY FLOWS panel (renderPsxFlows: FIPI/LIPI sector flows, the Pakistani Whale Watch) + Tab 5 foreign-flows chip strip (renderPsxFlowsStrip). Full details in the v5.277 note in the header block below. Prior v5.276 (supersedes v5.275; same scanner v1.314.11): TAB 20 RADAR CARDS, owner-directed ('include ASML and SIVE in selected winners with best 3 near misses in the same graphical format'). A new card band -- '\U0001F4CC On the radar' -- sits directly under the Verified Champions, in the IDENTICAL graphical format: white card, real per-quarter bar chart from published history (violet = profit growth, teal = sales, dashed pass bars), and a plain-English sentence written from the name's own numbers. It carries the two PINNED names (ASML, SIVE -- always tracked regardless of gates, slate border, \U0001F4CC badge) and the THREE CLOSEST NEAR-MISSES (amber border, ranked by fewest failed tests then strongest growth). Every radar sentence states EXACTLY what the name still misses, in plain words with the bar it has to clear -- e.g. ASML: 'speeding up 3 quarters running, misses only the sales bar: +24.4% vs the 25% line'. Honest treatment retained: quarters where a loss makes growth undefined simply show no bar. Display-only; champions, funnel, buy box, tables untouched. -->
 <!-- index.html v5.275 (supersedes v5.274; pairs with scanner v1.314.11): TAB 20 FULL VISUAL REDESIGN, owner-directed ('make the tab more beautiful... graphical representation... plain language'). Light theme throughout, no dark backgrounds. NEW: (1) HOW-IT-HUNTS FUNNEL -- a graphic strip showing the pipeline World markets -> five tests -> Winners(n) -> Accelerating(n) -> Buy candidates(n), each stage a soft pastel card with live counts, so the tab explains itself at a glance before a single table. (2) VERIFIED CHAMPIONS HERO CARDS -- the tab now TELLS THE STORY the data earned: each multi-quarter verified winner and each accelerating name gets a card with a plain-English sentence written from its own numbers ('6 straight quarters beating the same quarter a year ago -- latest: profits +64%, sales +105%') plus a REAL per-quarter mini bar chart drawn from qaccel_qhist (violet bars = profit growth, teal = sales growth, dashed lines = the 30%/25% pass bars) -- the graphical representation of exactly what the engine verified. (3) AESTHETICS -- tabular-nums numeric alignment on every table, consistent paddings, softer borders, pastel section bands (violet header / green winners / amber near-miss), white cards. All prior audited machinery (buy candidates, why-chips, Accel column, explainer, tables) retained. Display-only. -->
 <!-- index.html v5.274 (supersedes v5.273; pairs with scanner v1.314.9): (1) TAB 20 TRUE CONSECUTIVE-QUARTER VIEW -- winners + pinned now carry a VERIFIED streak from published quarterly reports (backfilled, up to 8 quarters) and a new ACCEL column: green 'Accel \u26a1' when the growth RATE itself rose vs the prior quarter on BOTH profits and sales (growth on growth -- the owner's question answered with data), grey 'steady' when not, honest em-dash when the history isn't published (streak stays forward-only, marked). Buy candidates rank accelerating names FIRST and carry a \u26a1 badge. Explainer updated to define streak + Accel exactly. (2) NEAR-MISS WHY-CHIPS: every amber row shows exactly WHICH of the five tests it failed (small red chips: ROE 13 \u2717, Annual 36 \u2717 ...) -- the gap the ARGAN/TINGS/BESI question exposed. (3) US Macro WTI card gains a roll-free official-spot trend line (immune to futures contract rolls). Display-only. -->
@@ -104,6 +104,24 @@
   #liveinv .m2x-sec { font-size:15px; font-weight:800; letter-spacing:-.2px; margin:4px 0 6px; color:#065f46; }
   #liveinv table { font-size:12px; }
   #liveinv th { background:#ecfdf5; color:#047857; font-weight:800; text-transform:uppercase; font-size:10.5px; letter-spacing:.5px; }
+  /* v5.285 aligned graphical holdings */
+  #liveinv .lih-head, #liveinv .lih-row { display:grid; grid-template-columns:150px 74px 96px 96px 108px 92px 120px 96px; gap:10px; align-items:center; padding:9px 12px; }
+  #liveinv .lih-head { font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:#059669; background:#ecfdf5; border-radius:8px 8px 0 0; }
+  #liveinv .lih-row { border-bottom:1px solid #f0fdf4; }
+  #liveinv .lih-row:nth-child(even){ background:#fafffb; }
+  #liveinv .lih-row:hover{ background:#f0fdf9; }
+  #liveinv .lih-num { text-align:right; font-variant-numeric:tabular-nums; font-size:12.5px; color:#0f172a; }
+  #liveinv .lih-sub { font-size:10px; color:#94a3b8; text-align:right; }
+  #liveinv .lih-tick { font-weight:800; font-size:13px; color:#065f46; }
+  #liveinv .lih-name { font-size:10.5px; color:#64748b; line-height:1.25; }
+  #liveinv .lih-bar-wrap { position:relative; height:9px; background:#eef2f0; border-radius:5px; overflow:hidden; }
+  #liveinv .lih-bar-mid { position:absolute; left:50%; top:0; bottom:0; width:1px; background:#cbd5e1; }
+  #liveinv .lih-bar-fill { position:absolute; top:0; bottom:0; border-radius:5px; }
+  #liveinv .lih-perf { height:7px; border-radius:4px; background:#eef2f0; overflow:hidden; }
+  #liveinv .lih-perf > span { display:block; height:100%; border-radius:4px; }
+  #liveinv .lih-pill { display:inline-block; font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:999px; letter-spacing:.3px; }
+  #liveinv .lih-trend { font-size:10px; font-weight:700; padding:1px 7px; border-radius:6px; }
+
   #liveinv .m2x-chip { display:inline-block; border-radius:999px; padding:1px 9px; margin:1px 3px 1px 0; font-size:11px; font-weight:600; }
   #m2bu { background: linear-gradient(180deg,#fdf4ff 0%,#ffffff 130px); border:1px solid #f0e5fb; }
   #m2bu .m2x-hero { background: linear-gradient(100deg,#4f46e5 0%,#9333ea 45%,#db2777 100%); border-radius:14px; padding:20px 24px; color:#fff; margin-bottom:16px; box-shadow:0 8px 24px rgba(147,51,234,.28); }
@@ -3037,6 +3055,73 @@ function calcMbUs(){
     var L=(typeof LIVE!=='undefined'&&LIVE&&LIVE.live_investment)||null;
     if(!L){ host.innerHTML='<div class="reading-box">Live Investment populates after the next scanner run (v1.211.0+).</div>'; return; }
     function money(v,c){ if(v==null) return '\u2014'; return (c||'$')+Math.round(v).toLocaleString(); }
+    function _lihMoney(v){ if(v==null) return '\u2014'; return (v<0?'-$':'$')+Math.round(Math.abs(v)).toLocaleString(); }
+    function _lihPct(v,dp){ if(v==null) return '<span style="color:#94a3b8;">\u2014</span>'; var c=v>=0?'#047857':'#b91c1c'; return '<span style="color:'+c+';font-weight:700;">'+(v>=0?'+':'')+v.toFixed(dp==null?1:dp)+'%</span>'; }
+    function _lihRecoPill(r){
+      var lbl=r.tv_reco_label;
+      if(!lbl) return '<span class="lih-pill" style="background:#f1f5f9;color:#94a3b8;" title="TradingView publishes no technical rating for this fund right now.">n/a</span>';
+      var m={'Strong Buy':['#dcfce7','#166534'],'Buy':['#d1fae5','#047857'],'Neutral':['#f1f5f9','#475569'],'Sell':['#fee2e2','#b91c1c'],'Strong Sell':['#fecaca','#991b1b']};
+      var c=m[lbl]||m['Neutral'];
+      return '<span class="lih-pill" style="background:'+c[0]+';color:'+c[1]+';" title="TradingView technical rating for the fund\u2019s own price action (not sell-side analyst coverage \u2014 ETFs have none). Mark '+(r.tv_reco!=null?r.tv_reco:'?')+' on a 1=Strong Buy .. 3=Strong Sell scale.">'+lbl+'</span>';
+    }
+    function _lihTrendChip(r){
+      var p=r.price, s50=r.sma50, s200=r.sma200;
+      if(p==null||s200==null) return '<span class="lih-trend" style="background:#f1f5f9;color:#94a3b8;">\u2014</span>';
+      var above50=(s50!=null&&p>=s50), above200=(p>=s200);
+      var lbl, bg, col;
+      if(above50&&above200){ lbl='\u2191 Uptrend'; bg='#dcfce7'; col='#166534'; }
+      else if(!above50&&!above200){ lbl='\u2193 Downtrend'; bg='#fee2e2'; col='#b91c1c'; }
+      else { lbl='\u2192 Mixed'; bg='#fef3c7'; col='#92400e'; }
+      var t='Price '+(r.price!=null?r.price.toFixed(2):'?')+' vs 50-DMA '+(s50!=null?s50.toFixed(2):'?')+' / 200-DMA '+s200.toFixed(2);
+      return '<span class="lih-trend" style="background:'+bg+';color:'+col+';" title="'+t+'">'+lbl+'</span>';
+    }
+    function _lihPnlBar(pct){
+      // diverging bar centred on 0; clamp to +/-40% for the visual scale.
+      if(pct==null) return '<div class="lih-bar-wrap"><div class="lih-bar-mid"></div></div>';
+      var cl=Math.max(-40,Math.min(40,pct)), w=Math.abs(cl)/40*50, col=pct>=0?'#10b981':'#ef4444';
+      var side=pct>=0?('left:50%;width:'+w+'%;'):('right:50%;width:'+w+'%;');
+      return '<div class="lih-bar-wrap"><div class="lih-bar-mid"></div><div class="lih-bar-fill" style="'+side+'background:'+col+';"></div></div>';
+    }
+    function _lihPerf(pct,max){
+      // one-sided performance bar (YTD/1Y), scaled to max, green up / red down.
+      if(pct==null) return '<div class="lih-perf"></div>';
+      var w=Math.max(0,Math.min(100,Math.abs(pct)/max*100)), col=pct>=0?'#34d399':'#f87171';
+      return '<div class="lih-perf"><span style="width:'+w+'%;background:'+col+';"></span></div>';
+    }
+    function renderLiHoldingCards(L){
+      var hs=(L.holdings||[]);
+      if(!hs.length) return '<div class="m2x-card"><div class="m2x-sec">Holdings</div><div style="font-size:12px;color:#94a3b8;">No holdings priced this run.</div></div>';
+      // scale YTD/1Y bars to the book's own max so the strongest fund fills the bar.
+      var maxY=1, max1=1;
+      hs.forEach(function(r){ if(r.ytd!=null) maxY=Math.max(maxY,Math.abs(r.ytd)); if(r.ret_1y!=null) max1=Math.max(max1,Math.abs(r.ret_1y)); });
+      var g='<div class="m2x-card" style="padding:0;overflow:hidden;">'
+        +'<div style="padding:12px 16px 4px;"><div class="m2x-sec" style="margin:0;">Holdings &mdash; cost, value and momentum</div>'
+        +'<div style="font-size:11px;color:#64748b;margin:2px 0 8px;">Every column is right-aligned on its own track so the numbers line up. The bar under P&amp;L is centred on break-even; the strip under YTD/1Y is scaled to your strongest fund. The rating pill is TradingView\u2019s technical read on each fund\u2019s price action \u2014 ETFs have no sell-side analyst coverage, so this is the closest true \u201crating\u201d for a fund.</div></div>'
+        +'<div class="lih-head"><div>Fund</div><div style="text-align:right;">Acquired</div><div style="text-align:right;">Value</div>'
+        +'<div style="text-align:right;">P&amp;L</div><div style="text-align:center;">P&amp;L vs cost</div>'
+        +'<div style="text-align:center;">Trend</div><div>YTD / 1Y</div><div style="text-align:center;">TV rating</div></div>';
+      hs.forEach(function(r){
+        var pcol=(r.pnl_usd==null?'#0f172a':(r.pnl_usd>=0?'#047857':'#b91c1c'));
+        g+='<div class="lih-row">'
+          +'<div><div class="lih-tick">'+r.ticker+_ownedPill(r)+'</div><div class="lih-name">'+(r.name||'')+'</div>'
+            +'<div style="margin-top:2px;">'+_etfEstatePill(r)+'</div></div>'
+          +'<div class="lih-num" style="font-size:11px;color:#475569;">'+(r.acquired||'\u2014')
+            +'<div class="lih-sub">'+(r.shares!=null?Number(r.shares).toLocaleString(undefined,{maximumFractionDigits:0})+' sh':'')+'</div></div>'
+          +'<div class="lih-num">'+_lihMoney(r.mv_usd)
+            +'<div class="lih-sub">cost '+_lihMoney(r.cost_usd)+'</div></div>'
+          +'<div class="lih-num" style="color:'+pcol+';font-weight:700;">'+_lihMoney(r.pnl_usd)
+            +'<div class="lih-sub">'+_lihPct(r.pnl_pct)+'</div></div>'
+          +'<div>'+_lihPnlBar(r.pnl_pct)+'</div>'
+          +'<div style="text-align:center;">'+_lihTrendChip(r)+'</div>'
+          +'<div><div style="display:flex;justify-content:space-between;font-size:9.5px;color:#94a3b8;"><span>YTD '+(r.ytd!=null?(r.ytd>=0?'+':'')+r.ytd.toFixed(0)+'%':'\u2014')+'</span></div>'+_lihPerf(r.ytd,maxY)
+            +'<div style="display:flex;justify-content:space-between;font-size:9.5px;color:#94a3b8;margin-top:3px;"><span>1Y '+(r.ret_1y!=null?(r.ret_1y>=0?'+':'')+r.ret_1y.toFixed(0)+'%':'\u2014')+'</span></div>'+_lihPerf(r.ret_1y,max1)+'</div>'
+          +'<div style="text-align:center;">'+_lihRecoPill(r)+'</div></div>';
+      });
+      g+='<div style="padding:8px 16px 12px;font-size:10.5px;color:#94a3b8;">'
+        +'Value and P&amp;L are in USD. Cost is your entry from the '+(L.inception_date||'entry')+' statement, so your P&amp;L is the real gain/loss since you bought \u2014 not the fund\u2019s calendar-year YTD. '
+        +'Prices are a free feed ~15 min delayed on London lines (last close outside market hours) vs IBKR real-time, so totals can sit a little apart from your broker app.</div></div>';
+      return g;
+    }
     function pc(v){ if(v==null) return '<span style="color:#94a3b8;">\u2014</span>'; var s=v>=0?'+':''; var col=v>=0?'#047857':'#b91c1c'; return '<span style="color:'+col+';font-weight:600;">'+s+v.toFixed(2)+'%</span>'; }
     var t=L.totals||{};
     function signed(v){ if(v==null) return '\u2014'; return (v>=0?'+$':'-$')+Math.round(Math.abs(v)).toLocaleString(); }
@@ -3054,8 +3139,9 @@ function calcMbUs(){
     if(L.n_pending) h+='<div style="font-size:11px;color:#b45309;margin-top:6px;">'+L.n_pending+' holding(s) awaiting a live price this run (will fill next scan).</div>';
     h+='</div>';
 
-    // holdings table
-    h+='<div class="m2x-card"><div class="m2x-sec">Holdings &mdash; your cost vs. now</div><table><thead><tr>'
+    // v5.285 GRAPHICAL HOLDINGS -- aligned grid + inline charts, replaces the misaligned wide table.
+    h+=renderLiHoldingCards(L);
+    if(false){ h+='<div class="m2x-card"><div class="m2x-sec">Holdings &mdash; your cost vs. now</div><table><thead><tr>'
       +'<th>Ticker</th><th>Fund</th><th>Acquired</th><th>Shares</th><th>Cost</th><th>Price now</th><th>Value (USD)</th><th>Weight</th>'
       +'<th>P&amp;L $</th><th>P&amp;L %</th><th title="Last session move; the $ underneath is that move in dollars on your position (IBKR\u2019s Daily P&amp;L convention)">Today</th><th title="Price change over the last ~7 days (from the daily price store)">WoW</th><th title="Price change over the last ~30 days; shows \u2014 until the store accrues 30 days (seeded 6 Jul)">MoM</th><th>YTD</th><th title="50-day moving average">50-DMA</th><th title="200-day moving average">200-DMA</th><th title="Price vs its 50/200-day averages and the golden/death cross — hover for the plain-English read">MA Trend</th><th>Trend</th></tr></thead><tbody>';
     (L.holdings||[]).forEach(function(r){
@@ -3069,7 +3155,9 @@ function calcMbUs(){
         +'<td>'+pc(r.pnl_pct)+'</td><td>'+pc(r.daily_pct)+(r.day_pnl_usd!=null?('<div style="font-size:10.5px;color:'+(r.day_pnl_usd>=0?'#047857':'#b91c1c')+';">'+signed(r.day_pnl_usd)+'</div>'):'')+'</td><td>'+pc(r.wow)+((L.wow_span_days&&L.wow_span_days<7&&r.wow!=null)?'<span style="font-size:9.5px;color:#94a3b8;"> '+L.wow_span_days+'d</span>':'')+'</td><td>'+pc(r.mom)+'</td><td>'+pc(r.ytd)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma50)+'</td>'+'<td style="font-size:12px;color:#475569;">'+maNum(r.sma200)+'</td>'+'<td style="font-size:12px;">'+maCell(r.price,r.sma50,r.sma200)+'</td>'+'<td>'+ldTrendCell(r.ytd,r.ret_1y,r.daily_pct)+'</td></tr>';
     });
     h+='</tbody></table><div style="font-size:11px;color:#94a3b8;margin-top:4px;">Cost = your entry price from the '+(L.inception_date||'entry')+' statement. P&amp;L is your real gain/loss since you bought \u2014 not the fund\u2019s calendar-year YTD.</div>'
-      +'<div style="font-size:11px;color:#94a3b8;margin-top:2px;"><b>Why numbers can differ slightly from your IBKR app:</b> prices here come from a free feed that is ~15 minutes delayed on London lines (and shows the last close outside market hours), while IBKR is real-time; and the cost basis is seeded from your 6-Jul statement, so IBKR\u2019s unrealized P&amp;L can sit a few hundred dollars apart. Direction and size will track; to re-align the cost basis exactly, share a fresh IBKR statement any time.</div></div>';
+      +'<div style="font-size:11px;color:#94a3b8;margin-top:2px;" data-dead="1"><b>Why numbers can differ slightly from your IBKR app:</b> prices here come from a free feed that is ~15 minutes delayed on London lines (and shows the last close outside market hours), while IBKR is real-time; and the cost basis is seeded from your 6-Jul statement, so IBKR\u2019s unrealized P&amp;L can sit a few hundred dollars apart. Direction and size will track; to re-align the cost basis exactly, share a fresh IBKR statement any time.</div></div>';
+
+    } // end dead legacy holdings table (kept for reference; superseded by renderLiHoldingCards)
 
     // v5.196 BEST PERFORMERS -- funds ranked per window + top underlying companies (scanner v1.218.0)
     (function(){
@@ -3230,7 +3318,7 @@ function calcMbUs(){
       };
       h+='<div class="m2x-card"><div class="m2x-sec">Statements &mdash; weekly &amp; monthly</div>'
         +'<div style="font-size:11.5px;color:#64748b;margin-bottom:8px;">Generated from the daily NAV history since inception ('+(ST.inception||'')+'). Each period shows NAV, period profit/loss, and the since-inception figure &mdash; a running record like a broker statement. A period is marked <i>in progress</i> until it closes.</div>'
-        +'<div style="font-weight:700;color:#065f46;margin:6px 0 4px;">Weekly</div>'+stTbl(ST.weekly,ST.weekly_note)
+        +'<div style="font-weight:700;color:#065f46;margin:6px 0 4px;">Weekly</div>'+'<div style="font-size:10.5px;color:#94a3b8;margin:0 0 6px;">The first week (W28) shows a dash for best/worst because per-fund prices were first recorded on 8 Jul \u2014 two days after you invested \u2014 so there is no start-of-week price to measure each fund\u2019s move against. Every week from W29 has prices at both ends and shows the real best and worst.</div>'+stTbl(ST.weekly,ST.weekly_note)
         +'<div style="font-weight:700;color:#065f46;margin:12px 0 4px;">Monthly</div>'+stTbl(ST.monthly,ST.monthly_note)
         +'</div>';
     }
