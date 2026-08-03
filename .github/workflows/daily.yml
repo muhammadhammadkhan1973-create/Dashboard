@@ -558,6 +558,23 @@ jobs:
           if _stamp_reason:
               data['im3_last_scored_utc'] = datetime.now(timezone.utc).isoformat()
 
+          # data.json trim step 2b (D-105): valuation.metrics dedup. Every full im3 blob's
+          # valuation sub-dict carries a 10-entry metrics list that DUPLICATES entries already
+          # present in the main metrics list (bucket=='valuation'). Consumer census: the detail
+          # modal reads valuation.pct/.label/.score/.max only; Tab-19/tracker chips read .label;
+          # NOTHING reads valuation.metrics (192 KB payload-wide at audit). The book already
+          # strips it (_slim_grade); this sweep makes the six row arrays converge in ONE run,
+          # covering rows carried from before this fix. Idempotent, display-null.
+          for _arr_vm in (data.get('explosive_us') or [], data.get('tce_us') or [],
+                          ((data.get('zacks_radar') or {}).get('rows') or []),
+                          data.get('explosive_psx') or [], data.get('tce_psx') or [],
+                          data.get('psx_candidates') or []):
+              for _r_vm in _arr_vm:
+                  _im_vm = _r_vm.get('im3') if isinstance(_r_vm, dict) else None
+                  if isinstance(_im_vm, dict):
+                      _v_vm = _im_vm.get('valuation')
+                      if isinstance(_v_vm, dict):
+                          _v_vm.pop('metrics', None)
           # Write updated data.json
           with open('data.json', 'w') as f:
               json.dump(data, f, separators=(',',':'), default=str)
@@ -715,6 +732,23 @@ jobs:
                               if _f in exp:
                                   rec[_f] = exp[_f]
 
+          # data.json trim step 2b (D-105): valuation.metrics dedup. Every full im3 blob's
+          # valuation sub-dict carries a 10-entry metrics list that DUPLICATES entries already
+          # present in the main metrics list (bucket=='valuation'). Consumer census: the detail
+          # modal reads valuation.pct/.label/.score/.max only; Tab-19/tracker chips read .label;
+          # NOTHING reads valuation.metrics (192 KB payload-wide at audit). The book already
+          # strips it (_slim_grade); this sweep makes the six row arrays converge in ONE run,
+          # covering rows carried from before this fix. Idempotent, display-null.
+          for _arr_vm in (data.get('explosive_us') or [], data.get('tce_us') or [],
+                          ((data.get('zacks_radar') or {}).get('rows') or []),
+                          data.get('explosive_psx') or [], data.get('tce_psx') or [],
+                          data.get('psx_candidates') or []):
+              for _r_vm in _arr_vm:
+                  _im_vm = _r_vm.get('im3') if isinstance(_r_vm, dict) else None
+                  if isinstance(_im_vm, dict):
+                      _v_vm = _im_vm.get('valuation')
+                      if isinstance(_v_vm, dict):
+                          _v_vm.pop('metrics', None)
           data['im3_psx_tickers'] = psx_syms
           with open('data.json', 'w') as f:
               json.dump(data, f, separators=(',',':'), default=str)
