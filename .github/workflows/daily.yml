@@ -472,16 +472,32 @@ jobs:
                   if _t and isinstance(_im, dict) and _im.get('grade'):
                       _grade_all[_t] = _im          # freshest record wins over the book
           _sm_hit = 0
+          # data.json trim step 1 (D-105, one payload per version): these merge targets are
+          # DISPLAY-ONLY chips -- the index reads exactly im3.grade / .pct / .name /
+          # .valuation.label off them (full consumer census 2026-08-03; top_holdings has ZERO
+          # index consumers and exists for the workflow's own smart-list building). Stamping
+          # the FULL grade record (metrics + metric_values + valuation detail + iv, ~6 KB each)
+          # into ~280 such entries was ~1 MB of pure duplication -- the full records already
+          # live on explosive_us/tce_us rows and in the grade book. Same principle as the
+          # v1.300.3 SLIM BOOK above; a display chip needs a display-sized record.
+          def _disp_slim(_g):
+              try:
+                  return {'ticker': _g.get('ticker'), 'name': _g.get('name'),
+                          'grade': _g.get('grade'), 'pct': _g.get('pct'),
+                          'valuation': ({'label': (_g.get('valuation') or {}).get('label')}
+                                         if isinstance(_g.get('valuation'), dict) else None)}
+              except Exception:
+                  return {'grade': (_g or {}).get('grade')}
           for record in ((data.get('inst_consensus') or {}).get('stocks') or []):
               tk = record.get('ticker')
               if tk in _grade_all:
-                  record['im3'] = _grade_all[tk]; _sm_hit += 1
+                  record['im3'] = _disp_slim(_grade_all[tk]); _sm_hit += 1
           for _wh in ((data.get('whale_13f') or {}).get('whales') or []):
               for _lst in ('top_holdings', 'new_buys', 'adds', 'exits'):
                   for record in (_wh.get(_lst) or []):
                       tk = record.get('ticker')
                       if tk in _grade_all:
-                          record['im3'] = _grade_all[tk]; _sm_hit += 1
+                          record['im3'] = _disp_slim(_grade_all[tk]); _sm_hit += 1
           # v1.300.3 SLIM BOOK (owner-approved): the book was the single biggest key in
           # data.json (1.81 MB) and HALF of it was the per-metric breakdown, duplicated from
           # records that already carry it. Re-stamping a rebuilt block only needs the summary,
