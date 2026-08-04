@@ -369,14 +369,57 @@ jobs:
           print(f"Scoring {len(score_list)} of {len(explosive_tickers)} "
                 f"({'FULL re-score' if _full or score_list == explosive_tickers else 'incremental'}): {score_list}")
 
-          # Run im3_score.py with --json flag
-          # timeout=1800: the set now includes ~55 financials (bank model) on top of the
-          # explosive + TCE-HIGH names; ~60 tickers x ~15s ~= 15 min, well under the job's
-          # 55-min budget but over the old 600s subprocess cap.
-          result = subprocess.run(
-              [sys.executable, 'im3_score.py', '--json'] + score_list,
-              capture_output=True, text=True, timeout=1800
-          )
+          # ROOT-CAUSE FIX (owner-audited): the single-shot subprocess was sized for '~60 tickers
+          # ~= 15 min', but the consensus-source expansion (Banks-tab/Narrative-tab/Sector-Booming/
+          # whale smart lists all feed this union) grew the FULL-path list to 300+. Since ~Jul 30
+          # every full attempt died in one shot -- one bad ticker or one malformed byte anywhere
+          # meant ZERO scores, a silent green soft-exit (sys.exit(0)) BEFORE the row stamps and
+          # im3_last_scored_utc, and nothing recorded where it could be seen. That silent death is
+          # what left the modal's interiors unrecoverable after the im3_detail relocation.
+          # FIX: score in CHUNKS of 40 with per-chunk parse + per-chunk failure capture. A poison
+          # chunk now loses at most 40 names instead of all of them; everything that succeeds gets
+          # stamped and relocated normally; every failed chunk is recorded into data.json
+          # meta.warnings (self-serve diagnosable -- no more invisible step-summary-only deaths).
+          _chunks = [score_list[i:i+40] for i in range(0, len(score_list), 40)]
+          _all_scores = []
+          _chunk_fails = []
+          for _ci, _ch in enumerate(_chunks):
+              try:
+                  _res = subprocess.run(
+                      [sys.executable, 'im3_score.py', '--json'] + _ch,
+                      capture_output=True, text=True, timeout=1800)
+              except subprocess.TimeoutExpired:
+                  _chunk_fails.append({'chunk': _ci, 'n': len(_ch), 'tickers': _ch[:8],
+                                       'reason': 'timeout_1800s'})
+                  continue
+              if _res.stderr:
+                  print(f"STDERR chunk {_ci}:", _res.stderr[:300])
+              _raw = (_res.stdout or '').strip()
+              _js = _raw.find('[')
+              if _js > 0: _raw = _raw[_js:]
+              try:
+                  _sc = json.loads(_raw)
+                  if isinstance(_sc, list): _all_scores.extend(_sc)
+                  else: raise ValueError('non-list JSON')
+              except Exception as _pe:
+                  _chunk_fails.append({'chunk': _ci, 'n': len(_ch), 'tickers': _ch[:8],
+                                       'reason': 'parse:%s' % type(_pe).__name__,
+                                       'rc': _res.returncode, 'head': (_res.stdout or '')[:160],
+                                       'stderr_head': (_res.stderr or '')[:160]})
+          if _chunk_fails:
+              _fmsg = 'IM3 chunks failed: %d/%d -- %s' % (len(_chunk_fails), len(_chunks),
+                       '; '.join('c%s(%s):%s' % (f['chunk'], f['n'], f['reason']) for f in _chunk_fails))
+              print(f"::warning title=IM3 chunk failures::{_fmsg}")
+              try:
+                  data['meta'].setdefault('warnings', []).append('[im3 chunks] ' + _fmsg)
+                  data['im3_chunk_fails'] = _chunk_fails
+              except Exception: pass
+          else:
+              data.pop('im3_chunk_fails', None)
+          print(f"[im3 chunked] {len(_all_scores)} scores from {len(_chunks)-len(_chunk_fails)}/{len(_chunks)} chunks")
+          class _R: pass
+          result = _R(); result.returncode = 0 if _all_scores else 1
+          result.stdout = json.dumps(_all_scores); result.stderr = ''
 
           # stdout should be pure JSON; stderr has any debug output
           if result.stderr:
