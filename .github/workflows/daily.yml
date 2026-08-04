@@ -280,7 +280,10 @@ jobs:
         # OR when manually forced via the "force_im3" Run-workflow toggle. The force path
         # re-scores the CURRENT set with the live im3_score.py (e.g. after a scorer change),
         # without any hand-edit of data.json.
-        if: steps.check_explosive.outputs.changed == 'true' || github.event.inputs.force_im3 == 'true'
+        # v-fix: ALSO run on every manual dispatch -- the change/force gate silently skipped this step
+        # on manual runs (incl. restoration attempts), leaving no trace and no way to heal. Manual runs
+        # now always enter; the step's own incremental logic keeps unneeded runs cheap.
+        if: steps.check_explosive.outputs.changed == 'true' || github.event.inputs.force_im3 == 'true' || github.event_name == 'workflow_dispatch'
         env:
           SCORE_TICKERS: ${{ steps.check_explosive.outputs.score_tickers }}
           FULL_RESCORE: ${{ steps.check_explosive.outputs.full_rescore }}
@@ -361,7 +364,15 @@ jobs:
           # (the full current set) is still stored for change-detection bookkeeping.
           import os as _os
           _force = _os.environ.get('FORCE_IM3', '') == 'true'
-          _full = _force or _os.environ.get('FULL_RESCORE', '') == 'true'
+          # v-fix SELF-HEAL: if the majority of this run's scoring universe has NO entry in the
+          # im3_detail store (the modal's per-metric data), the store was gutted (the prune incident)
+          # -- auto-trigger a FULL re-score to rebuild it. No checkbox, no human step. One-shot:
+          # once the store is populated this condition goes false and runs stay incremental.
+          _det_now = data.get('im3_detail') or {}
+          _backfill = sum(1 for _t in explosive_tickers if _t not in _det_now) > (len(explosive_tickers) // 2)
+          if _backfill:
+              print(f"[im3 self-heal] detail store missing for majority of {len(explosive_tickers)} tickers -- forcing FULL re-score")
+          _full = _force or _backfill or _os.environ.get('FULL_RESCORE', '') == 'true'
           _sel = [t for t in _os.environ.get('SCORE_TICKERS', '').split() if t]
           score_list = explosive_tickers if (_full or not _sel) else [t for t in _sel if t in explosive_tickers]
           if not score_list:
