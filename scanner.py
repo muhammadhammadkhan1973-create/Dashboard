@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.349.0'  # v1.349.0 WAVE R CORE: PSX MACRO NARRATIVE + stmt-cache TTL 7->45d. New build_psx_macro_narrative(data): pure consolidation, zero fetches -- reads the now-live macros.psx (pak_cpi same-day from PBS, SBP rate, USD/PKR, reserves, import cover, REER, CA, fiscal) + sector_selection + econ_clock.psx and emits data['psx_macro_narrative'] = {headline, regime, lines[]} in plain language: rate stance with after-inflation math, inflation vs the 11%% trigger, currency + reserve adequacy, external accounts, and the RED-zone playbook meaning for the PSX book. Fails soft to EXISTING; call placed AFTER build_sector_selection (verified). TTL: statements change QUARTERLY; 7d cache meant Tab-19 churn names re-fetched weekly for zero informational gain -- 45d aligns to reporting cadence, cutting the ~2-3min repeat-fetch cost while keeping always-run reliability (owner-raised). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.350.0'  # v1.350.0: TIPRANKS OVERLAY (owner-instructed, overriding the earlier head-to-head recommendation -- built display-only, never a scoring weight, per that verdict). Probe-first per the no-hit-and-trial rule: the /stocks/<t>/forecast page was fetched live BEFORE coding and confirmed server-rendered with stable sentence anchors; the four parse regexes were validated against the exact fetched text (MSFT: Strong Buy 35/1/0, PT 560.22 high 680 low 450, 46.14%% upside). NEW fetch_tipranks_overlay(data): fetches consensus + rating counts + avg/high/low PT + upside for the TOP 25 US names on the recommended list (Tab 19), 3-day per-ticker TTL cache carried in data['tipranks'] (EXISTING-preserved), ~1s/name only on cache-miss, warn-quiet per failure, whole feature fails soft. Call site AFTER build_recommended (needs the list -- pipeline order verified: recommended at the tail block, this directly after, before the as_of stamps and the final write). Display chips ride index v5.304 on Tabs 19+14. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3308,6 +3308,60 @@ def build_psx_macro_narrative(data, existing=None):
     except Exception as _e:
         log('  [PSX narrative] failed: %s' % type(_e).__name__)
         return (existing or {}).get('psx_macro_narrative') or {}
+
+
+
+def fetch_tipranks_overlay(data, existing=None):
+    """v1.350.0 (owner-instructed): TipRanks analyst consensus overlay for the TOP US names on the
+    recommended list. DISPLAY-ONLY by prior head-to-head verdict (Zacks beat TipRanks on both live
+    disagreements) -- this never enters any score. Server-rendered /forecast pages, sentence-anchor
+    parses validated against a real fetched page before this was written. 3-day TTL, EXISTING-carried,
+    every failure soft + warn-quiet."""
+    import re as _re
+    out = dict(((existing or {}).get('tipranks') or {}).get('by_ticker') or {})
+    picks = [r.get('ticker') for r in ((data.get('recommended') or {}).get('stocks') or [])
+             if isinstance(r, dict) and r.get('market') != 'PSX' and ':' not in str(r.get('ticker') or '')][:25]
+    today = dt.date.today()
+    fetched = 0
+    for tk in picks:
+        try:
+            prev = out.get(tk)
+            if prev and prev.get('as_of'):
+                try:
+                    if (today - dt.date.fromisoformat(prev['as_of'][:10])).days < 3:
+                        continue   # cache fresh -- no request
+                except Exception:
+                    pass
+            r = requests.get('https://www.tipranks.com/stocks/%s/forecast' % tk.lower(),
+                             headers={'User-Agent': UA}, timeout=12)
+            if r.status_code != 200 or not r.text:
+                continue
+            t = r.text
+            m1 = _re.search(r'consensus rating of (Strong Buy|Moderate Buy|Buy|Hold|Moderate Sell|Sell|Strong Sell)', t)
+            m2 = _re.search(r'based on (\d+) buy ratings?, (\d+) hold ratings? and (\d+) sell ratings?', t)
+            m3 = _re.search(r'average price target is \$([\d,\.]+) with a high forecast of \$([\d,\.]+) and a low forecast of \$([\d,\.]+)', t)
+            m4 = _re.search(r'represents an? ([\-\d\.]+)% (?:change|Increase|Decrease)', t)
+            if not (m1 and m3):
+                continue   # page served but shape unknown -- skip, keep prior
+            _f = lambda x: float(str(x).replace(',', '').rstrip('.'))
+            rec = {'consensus': m1.group(1),
+                   'pt_avg': _f(m3.group(1)), 'pt_high': _f(m3.group(2)), 'pt_low': _f(m3.group(3)),
+                   'as_of': today.isoformat()}
+            if m2:
+                rec['buy'], rec['hold'], rec['sell'] = int(m2.group(1)), int(m2.group(2)), int(m2.group(3))
+            if m4:
+                try: rec['upside_pct'] = float(m4.group(1))
+                except Exception: pass
+            out[tk] = rec
+            fetched += 1
+        except Exception as _te:
+            warn('[tipranks] %s: %s' % (tk, type(_te).__name__))
+    # prune tickers no longer on the list (keeps the store honest and small)
+    keep = set(picks)
+    out = {k: v for k, v in out.items() if k in keep}
+    log('  [TipRanks] overlay: %d cached, %d freshly fetched (top-25 recommended US)' % (len(out), fetched))
+    return {'by_ticker': out, 'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
+            'note': 'display-only overlay; never a scoring input (head-to-head verdict: Zacks)'}
 
 
 def build_sector_selection(data, existing=None):
@@ -23594,6 +23648,12 @@ def main():
                 _stamp_rebalance_top_picks(data)  # v1.334.0: pipeline-order-safe, runs after recommended exists
             except Exception as _rce:
                 log('[Recommended] pass skipped: %s' % _rce)
+            # v1.350.0: TipRanks overlay -- AFTER recommended exists (it reads the list), before stamps/write.
+            try:
+                data['tipranks'] = fetch_tipranks_overlay(data, EXISTING)
+            except Exception as _tre:
+                log('[TipRanks] overlay skipped: %s' % type(_tre).__name__)
+                data['tipranks'] = EXISTING.get('tipranks', {}) or {}
             # v1.348.0: self-serve freshness stamps at the FINAL write -- every stage has run and
             # recorded its timing by this point (relocated from mid-main, where cot_futures had not
             # yet run and its stamp could never fire -- placement caught by the pipeline-order rule).
