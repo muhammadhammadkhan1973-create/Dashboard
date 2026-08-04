@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.350.0'  # v1.350.0: TIPRANKS OVERLAY (owner-instructed, overriding the earlier head-to-head recommendation -- built display-only, never a scoring weight, per that verdict). Probe-first per the no-hit-and-trial rule: the /stocks/<t>/forecast page was fetched live BEFORE coding and confirmed server-rendered with stable sentence anchors; the four parse regexes were validated against the exact fetched text (MSFT: Strong Buy 35/1/0, PT 560.22 high 680 low 450, 46.14%% upside). NEW fetch_tipranks_overlay(data): fetches consensus + rating counts + avg/high/low PT + upside for the TOP 25 US names on the recommended list (Tab 19), 3-day per-ticker TTL cache carried in data['tipranks'] (EXISTING-preserved), ~1s/name only on cache-miss, warn-quiet per failure, whole feature fails soft. Call site AFTER build_recommended (needs the list -- pipeline order verified: recommended at the tail block, this directly after, before the as_of stamps and the final write). Display chips ride index v5.304 on Tabs 19+14. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.351.0'  # v1.351.0: (SELF-CORRECTION) TipRanks overlay ran in production and stored ZERO of 25 tickers with ZERO warnings -- because v1.350.0's two skip paths (non-200 response; 200 page that misses the parse anchors) were both silent continues, violating the failures-announce-themselves principle the chunked-scorer fix established. Cannot distinguish runner-IP blocking from anchor drift without evidence. FIX: per-run diagnostics recorded INTO the tipranks payload -- diag = {http: status-code counts, parse_fail count, sample_head: first 160 chars of one 200-but-unparseable body} -- plus one loud warn line whenever picks exist but zero fetches succeed. Next run's data.json names the exact failure mode self-serve. No behavior change on the success path. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3323,6 +3323,7 @@ def fetch_tipranks_overlay(data, existing=None):
              if isinstance(r, dict) and r.get('market') != 'PSX' and ':' not in str(r.get('ticker') or '')][:25]
     today = dt.date.today()
     fetched = 0
+    _diag = {'http': {}, 'parse_fail': 0, 'sample_head': None}   # v1.351.0: failure modes must be visible
     for tk in picks:
         try:
             prev = out.get(tk)
@@ -3334,6 +3335,7 @@ def fetch_tipranks_overlay(data, existing=None):
                     pass
             r = requests.get('https://www.tipranks.com/stocks/%s/forecast' % tk.lower(),
                              headers={'User-Agent': UA}, timeout=12)
+            _diag['http'][str(r.status_code)] = _diag['http'].get(str(r.status_code), 0) + 1
             if r.status_code != 200 or not r.text:
                 continue
             t = r.text
@@ -3342,7 +3344,10 @@ def fetch_tipranks_overlay(data, existing=None):
             m3 = _re.search(r'average price target is \$([\d,\.]+) with a high forecast of \$([\d,\.]+) and a low forecast of \$([\d,\.]+)', t)
             m4 = _re.search(r'represents an? ([\-\d\.]+)% (?:change|Increase|Decrease)', t)
             if not (m1 and m3):
-                continue   # page served but shape unknown -- skip, keep prior
+                _diag['parse_fail'] += 1
+                if _diag['sample_head'] is None:
+                    _diag['sample_head'] = (t or '')[:160]
+                continue   # page served but shape unknown -- recorded above
             _f = lambda x: float(str(x).replace(',', '').rstrip('.'))
             rec = {'consensus': m1.group(1),
                    'pt_avg': _f(m3.group(1)), 'pt_high': _f(m3.group(2)), 'pt_low': _f(m3.group(3)),
@@ -3360,7 +3365,10 @@ def fetch_tipranks_overlay(data, existing=None):
     keep = set(picks)
     out = {k: v for k, v in out.items() if k in keep}
     log('  [TipRanks] overlay: %d cached, %d freshly fetched (top-25 recommended US)' % (len(out), fetched))
-    return {'by_ticker': out, 'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
+    if picks and fetched == 0 and not out:
+        warn('[tipranks] 0/%d fetched -- http=%s parse_fail=%d (see tipranks.diag in data.json)'
+             % (len(picks), _diag['http'] or 'no-response', _diag['parse_fail']))
+    return {'by_ticker': out, 'as_of': dt.datetime.now(dt.timezone.utc).isoformat(), 'diag': _diag,
             'note': 'display-only overlay; never a scoring input (head-to-head verdict: Zacks)'}
 
 
