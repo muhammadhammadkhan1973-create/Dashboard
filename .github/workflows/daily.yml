@@ -583,7 +583,10 @@ jobs:
                       _v_vm = _im_vm.get('valuation')
                       if isinstance(_v_vm, dict):
                           _v_vm.pop('metrics', None)
-                      _tk_vm = _im_vm.get('ticker') or (_r_vm.get('ticker') if isinstance(_r_vm, dict) else None)
+                      # v-fix: key by the ROW ticker -- that is what the index's _im3Full looks up.
+                      # (im3.ticker is 'PSX:AHL' for PSX names while rows carry bare 'AHL'; keying by
+                      # im3.ticker made every stored PSX entry unreachable client-side.)
+                      _tk_vm = (_r_vm.get('ticker') if isinstance(_r_vm, dict) else None) or _im_vm.get('ticker')
                       if _tk_vm:
                           _seen_vm.add(_tk_vm)
                           _mm_vm = _im_vm.pop('metrics', None)
@@ -772,18 +775,28 @@ jobs:
                       _v_vm = _im_vm.get('valuation')
                       if isinstance(_v_vm, dict):
                           _v_vm.pop('metrics', None)
-                      _tk_vm = _im_vm.get('ticker') or (_r_vm.get('ticker') if isinstance(_r_vm, dict) else None)
+                      # v-fix: key by the ROW ticker -- that is what the index's _im3Full looks up.
+                      # (im3.ticker is 'PSX:AHL' for PSX names while rows carry bare 'AHL'; keying by
+                      # im3.ticker made every stored PSX entry unreachable client-side.)
+                      _tk_vm = (_r_vm.get('ticker') if isinstance(_r_vm, dict) else None) or _im_vm.get('ticker')
                       if _tk_vm:
                           _seen_vm.add(_tk_vm)
                           _mm_vm = _im_vm.pop('metrics', None)
                           _mv_vm = _im_vm.pop('metric_values', None)
                           if _mm_vm or _mv_vm:
                               _det_vm[_tk_vm] = {'metrics': _mm_vm, 'metric_values': _mv_vm}
-          # trim step 3 prune: the PSX step is the last writer and its sweep saw every im3 row across all
-          # six arrays -- any im3_detail key NOT seen this run belongs to a ticker no longer on any table.
+          # v-fix: PRUNE REMOVED. Live evidence: the first production run's prune deleted every US entry
+          # from im3_detail (the store held only 48 PSX:-prefixed keys), stripping the detail modal's
+          # data for all US names. Stale keys cost a few KB and self-clear as tickers re-score; a prune
+          # that can destroy modal data has no place here. One-time migration: re-key any legacy
+          # 'PSX:X'-form entries to the bare row-ticker form the index actually looks up.
           for _k_vm in list(_det_vm.keys()):
-              if _k_vm not in _seen_vm:
-                  del _det_vm[_k_vm]
+              if isinstance(_k_vm, str) and ':' in _k_vm:
+                  _bare_vm = _k_vm.split(':', 1)[1]
+                  if _bare_vm and _bare_vm not in _det_vm:
+                      _det_vm[_bare_vm] = _det_vm.pop(_k_vm)
+                  else:
+                      _det_vm.pop(_k_vm)
           data['im3_psx_tickers'] = psx_syms
           with open('data.json', 'w') as f:
               json.dump(data, f, separators=(',',':'), default=str)
