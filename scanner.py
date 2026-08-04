@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.348.0'  # v1.348.0 (owner-approved micro-fix bundle): (1) ARAB LIGHT BASIS PINNED -- the owner's log exposed two spreads in one run (live-estimate used the CMO Dubai-Brent monthly spread, -7.7 -> 71.61, while the E&P trigger used the OSP config -2.0 -> 77.31). ONE basis now: Brent minus ARAB_LIGHT_DIFF_USD (the Aramco-OSP-derived config constant, updated by hand on the monthly OSP release ~5th, per the simplest-reliable-source rule) drives BOTH arab_light_live and the trigger; the CMO monthly print stays stored as the labelled official monthly reference only. Wave-S Trigger B now reads live-first (arab_light_live, monthly fallback) so Tab 5 and the E&P trigger can never quote different Arab Lights. (2) as_of STAMPS added to cot_futures, metals_drivers, macros.metals and estimate_history at the final write (SEC was found ALREADY stamped via sec_last_full_utc/sec_meta -- audit corrected), conditioned on the stage having run this run where a timing exists, so payload freshness is self-serve auditable. Changed: fetch_us_macros live-estimate spread, build_sector_selection input, one stamp block in main. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.349.0'  # v1.349.0 WAVE R CORE: PSX MACRO NARRATIVE + stmt-cache TTL 7->45d. New build_psx_macro_narrative(data): pure consolidation, zero fetches -- reads the now-live macros.psx (pak_cpi same-day from PBS, SBP rate, USD/PKR, reserves, import cover, REER, CA, fiscal) + sector_selection + econ_clock.psx and emits data['psx_macro_narrative'] = {headline, regime, lines[]} in plain language: rate stance with after-inflation math, inflation vs the 11%% trigger, currency + reserve adequacy, external accounts, and the RED-zone playbook meaning for the PSX book. Fails soft to EXISTING; call placed AFTER build_sector_selection (verified). TTL: statements change QUARTERLY; 7d cache meant Tab-19 churn names re-fetched weekly for zero informational gain -- 45d aligns to reporting cadence, cutting the ~2-3min repeat-fetch cost while keeping always-run reliability (owner-raised). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -110,7 +110,7 @@ FOUNDATION_EXPLOSIVE_ADD = 150
 # --- v1.112.0 performance + correctness pass (audit F1-F6); each independently reversible ---
 TCE_YF_FUNDAMENTALS_US_ONLY = True   # F1: skip the doomed PSX .info/.eps/.rev Yahoo calls (.KA has no fundamentals)
 EPS_ENRICH_TRY_FMP          = False  # F3: FMP /stable/ is premium-gated for these small-caps (402 every run) -> Yahoo-first
-EXPLOSIVE_STMT_CACHE_DAYS   = 7      # F2: income statements change quarterly -> cache the computed cond dict 7d
+EXPLOSIVE_STMT_CACHE_DAYS   = 45     # v1.349.0: quarterly-aligned (was 7d): statements change quarterly; 7d meant churn names re-fetched weekly for no informational gain
 EXPLOSIVE_CACHE_SCHEMA      = 'sec4'  # v1.297.1: sec3->sec4 -- the v1.297.0 duration guard
                                       # corrected annual growth for every SEC-path name, but the
                                       # cached conditions REPLAY (DELL replayed its 18-Jul entry:
@@ -3259,6 +3259,55 @@ def _stamp_rebalance_top_picks(data):
     )) + ') -- a real way to act on the theme score above, not just a read on it.') if etf_picks else None
 
 
+
+
+def build_psx_macro_narrative(data, existing=None):
+    """Wave R core (v1.349.0): the Pakistan macro STORY, from levers already live in the payload.
+    Pure consolidation -- no fetch. Plain language by design: each line is a fact + what it means."""
+    try:
+        p = (data.get('macros') or {}).get('psx') or {}
+        ss = ((data.get('sector_selection') or {}).get('psx') or {})
+        ec = ((data.get('econ_clock') or {}).get('psx') or {})
+        rate = p.get('sbp_rate'); cpi = p.get('pak_cpi'); pkr = p.get('usd_pkr')
+        rsv = p.get('sbp_reserves'); cov = p.get('import_cover'); reer = p.get('reer')
+        ca = p.get('pak_ca'); fis = p.get('pak_fiscal')
+        zone = ss.get('zone'); rr = ss.get('real_rate_pp')
+        fired = [t.get('id') for t in (ss.get('triggers') or []) if t.get('fired')]
+        lines = []
+        if rate is not None:
+            lines.append({'topic': 'Policy rate', 'value': '%.1f%%' % rate,
+                'story': ('SBP is holding at %.1f%% -- %s zone. %s' % (rate, (zone or '?').title(),
+                  ('After inflation, savers earn %+.1fpp in real terms -- money stays expensive, favouring banks and cash-rich names over leveraged cyclicals.' % rr) if isinstance(rr,(int,float)) else ''))})
+        if cpi is not None:
+            lines.append({'topic': 'Inflation', 'value': '%.1f%%' % cpi,
+                'story': ('CPI at %.1f%% is %s the 11%% defensive trigger%s' % (cpi,
+                  'below' if cpi < 11 else 'above',
+                  ' -- the inflation tilt is OFF; the defensive stance is rate-driven, not price-driven.' if cpi < 11 else ' -- the defensive inflation tilt is ON.'))})
+        if pkr is not None:
+            _r = ('%.1f' % reer) if isinstance(reer,(int,float)) else '?'
+            lines.append({'topic': 'Currency', 'value': 'PKR %.0f/USD' % pkr,
+                'story': ('Rupee near %.0f with REER at %s -- %s' % (pkr, _r,
+                  ('above 100 means the rupee is rich vs trading partners; devaluation pressure builds slowly rather than imminently.' if isinstance(reer,(int,float)) and reer > 100 else 'no strong over/under-valuation signal.')))})
+        if rsv is not None:
+            lines.append({'topic': 'Reserves', 'value': '$%.1fB' % rsv,
+                'story': ('SBP reserves of $%.1fB cover about %.1f months of imports -- %s' % (rsv, cov or 0,
+                  ('below the 3-month adequacy line: external buffers remain thin, keeping the IMF anchor and import discipline central.' if (cov or 0) < 3 else 'at/above the 3-month adequacy line.')))})
+        if ca is not None or fis is not None:
+            _catxt = ('current account %+0.1fB USD (surplus helps reserves)' % (ca/1000.0)) if isinstance(ca,(int,float)) else ''
+            _fistxt = ('fiscal deficit ~%.1f%% of GDP' % fis) if isinstance(fis,(int,float)) else ''
+            lines.append({'topic': 'External & fiscal', 'value': '--',
+                'story': ('%s%s%s.' % (_catxt, '; ' if _catxt and _fistxt else '', _fistxt))})
+        _fired_txt = (', '.join(fired) if fired else 'none')
+        headline = ('Pakistan: %s zone, triggers fired: %s. %s' % ((zone or '?').title(), _fired_txt,
+                    (ec.get('quadrant_plain') or '')))
+        out = {'headline': headline, 'regime': zone, 'quadrant': ec.get('quadrant'),
+               'fired': fired, 'lines': lines,
+               'basis': 'consolidated from live macros.psx + sector_selection + econ_clock (no new fetches)'}
+        log('  [PSX narrative] %s | %d lines' % ((zone or '?'), len(lines)))
+        return out
+    except Exception as _e:
+        log('  [PSX narrative] failed: %s' % type(_e).__name__)
+        return (existing or {}).get('psx_macro_narrative') or {}
 
 
 def build_sector_selection(data, existing=None):
@@ -22569,6 +22618,12 @@ def main():
     # and sector_booming so every input already exists (pipeline-validation rule).
     try:
         data['sector_selection'] = build_sector_selection(data, EXISTING)
+        # Wave R (v1.349.0): the narrative reads sector_selection -- placed immediately after it.
+        try:
+            data['psx_macro_narrative'] = build_psx_macro_narrative(data, EXISTING)
+        except Exception as _pn:
+            log(f'  [PSX narrative] crashed: {type(_pn).__name__}')
+            data['psx_macro_narrative'] = EXISTING.get('psx_macro_narrative', {}) or {}
     except Exception as _se:
         log(f'  [Sector Selection] crashed: {type(_se).__name__}')
         data['sector_selection'] = EXISTING.get('sector_selection', {}) or {}
