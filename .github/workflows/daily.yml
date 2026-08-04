@@ -565,6 +565,14 @@ jobs:
           # NOTHING reads valuation.metrics (192 KB payload-wide at audit). The book already
           # strips it (_slim_grade); this sweep makes the six row arrays converge in ONE run,
           # covering rows carried from before this fix. Idempotent, display-null.
+          # trim step 3 (D-105): im3_detail dedup -- metrics+metric_values relocate OUT of every row's
+          # im3 into ONE per-ticker store (measured: 357 stamps for 256 unique tickers, 1,307 KB duplicated
+          # down to ~1,003 KB stored once = ~304 KB net). The modal (the interiors' only consumer) merges
+          # them back client-side via _im3Full (index v5.300). Shared-object stamps (the PSX trio stamps
+          # the SAME smap dict into 3 arrays) dedupe naturally: the first pop stores, later arrays see it
+          # already relocated. Idempotent; chip fields (grade/pct/valuation summary/iv/explosive) stay on rows.
+          _det_vm = data.setdefault('im3_detail', {})
+          _seen_vm = set()
           for _arr_vm in (data.get('explosive_us') or [], data.get('tce_us') or [],
                           ((data.get('zacks_radar') or {}).get('rows') or []),
                           data.get('explosive_psx') or [], data.get('tce_psx') or [],
@@ -575,6 +583,13 @@ jobs:
                       _v_vm = _im_vm.get('valuation')
                       if isinstance(_v_vm, dict):
                           _v_vm.pop('metrics', None)
+                      _tk_vm = _im_vm.get('ticker') or (_r_vm.get('ticker') if isinstance(_r_vm, dict) else None)
+                      if _tk_vm:
+                          _seen_vm.add(_tk_vm)
+                          _mm_vm = _im_vm.pop('metrics', None)
+                          _mv_vm = _im_vm.pop('metric_values', None)
+                          if _mm_vm or _mv_vm:
+                              _det_vm[_tk_vm] = {'metrics': _mm_vm, 'metric_values': _mv_vm}
           # Write updated data.json
           with open('data.json', 'w') as f:
               json.dump(data, f, separators=(',',':'), default=str)
@@ -739,6 +754,14 @@ jobs:
           # NOTHING reads valuation.metrics (192 KB payload-wide at audit). The book already
           # strips it (_slim_grade); this sweep makes the six row arrays converge in ONE run,
           # covering rows carried from before this fix. Idempotent, display-null.
+          # trim step 3 (D-105): im3_detail dedup -- metrics+metric_values relocate OUT of every row's
+          # im3 into ONE per-ticker store (measured: 357 stamps for 256 unique tickers, 1,307 KB duplicated
+          # down to ~1,003 KB stored once = ~304 KB net). The modal (the interiors' only consumer) merges
+          # them back client-side via _im3Full (index v5.300). Shared-object stamps (the PSX trio stamps
+          # the SAME smap dict into 3 arrays) dedupe naturally: the first pop stores, later arrays see it
+          # already relocated. Idempotent; chip fields (grade/pct/valuation summary/iv/explosive) stay on rows.
+          _det_vm = data.setdefault('im3_detail', {})
+          _seen_vm = set()
           for _arr_vm in (data.get('explosive_us') or [], data.get('tce_us') or [],
                           ((data.get('zacks_radar') or {}).get('rows') or []),
                           data.get('explosive_psx') or [], data.get('tce_psx') or [],
@@ -749,6 +772,18 @@ jobs:
                       _v_vm = _im_vm.get('valuation')
                       if isinstance(_v_vm, dict):
                           _v_vm.pop('metrics', None)
+                      _tk_vm = _im_vm.get('ticker') or (_r_vm.get('ticker') if isinstance(_r_vm, dict) else None)
+                      if _tk_vm:
+                          _seen_vm.add(_tk_vm)
+                          _mm_vm = _im_vm.pop('metrics', None)
+                          _mv_vm = _im_vm.pop('metric_values', None)
+                          if _mm_vm or _mv_vm:
+                              _det_vm[_tk_vm] = {'metrics': _mm_vm, 'metric_values': _mv_vm}
+          # trim step 3 prune: the PSX step is the last writer and its sweep saw every im3 row across all
+          # six arrays -- any im3_detail key NOT seen this run belongs to a ticker no longer on any table.
+          for _k_vm in list(_det_vm.keys()):
+              if _k_vm not in _seen_vm:
+                  del _det_vm[_k_vm]
           data['im3_psx_tickers'] = psx_syms
           with open('data.json', 'w') as f:
               json.dump(data, f, separators=(',',':'), default=str)
