@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.346.0'  # v1.346.0: CHANGELOG RELOCATED -- the full version history (every entry v1.0->v1.345.0, ~290 KB as one single-line comment on this line) now lives in CHANGELOG.md at the repo root, entry-per-heading, fully preserved. Root cause (owner-audited): any unanchored grep matching this line dumped the ENTIRE history into the session as 'one matching line' -- one such dump measured at 28%% of a whole working session. Relocation makes that failure physically impossible and shrinks every scanner.py pull by ~290 KB. NEW CONVENTION: each version adds a one-line summary HERE and its full rationale as a new top entry in CHANGELOG.md. No code-behaviour change whatsoever. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.347.0'  # v1.347.0: WTI/Brent futures fallback -- the owner's captured per-symbol GET (v1.327.0) now returns HTTP 200 body null for TVC:USOIL/UKOIL (upstream TV change; warning trail proves the fix itself runs and TV degraded beneath it), and the /scan CFD ladder was already rows=0. Added front-month futures NYMEX:CL1! (WTI) and ICEEUR:BRN1! (Brent) to each symbol's try-list -- same class, same /scan route the Arab Light ladder already resolves NYMEX:WS1!/ICEEUR:DUB1! through every run, so the pattern is proven in this file, not assumed. Symbol-GET still leads (cheap when TV restores it); futures fill when it nulls. Sane-band guard 10..400 unchanged. Changed fn: fetch_us_macros oil block only. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -1073,7 +1073,10 @@ def fetch_tv_oil(keys):
     # market was up ~23% (web-verified). TVC:UKOIL/TVC:USOIL are TradingView's CONTINUOUS crude CFDs
     # (no roll), resolved via the proven fetch_index_tv segment scan (cfd->america -- the exact
     # market-list pattern that resolves TVC:DXY every run). The futures scan below stays as fallback.
-    cmap = {'wti': 'TVC:USOIL', 'brent': 'TVC:UKOIL'}
+    # v1.347.0: each key now has a TRY-LIST -- captured symbol-GET target first (TVC continuous CFD),
+    # then the front-month FUTURES symbol on the same /symbol GET (NYMEX:CL1!/ICEEUR:BRN1! -- the same
+    # class the Arab Light ladder resolves via /scan every run, so serving is proven, not assumed).
+    cmap = {'wti': ['TVC:USOIL', 'NYMEX:CL1!'], 'brent': ['TVC:UKOIL', 'ICEEUR:BRN1!']}
     out = {}
     # v1.327.0 SYMBOL-GET FIRST. The captured per-symbol GET is the call TradingView's own pages use
     # for exactly these tickers, so it leads. The /scan ladder below stays as fallback -- it is what
@@ -1081,7 +1084,7 @@ def fetch_tv_oil(keys):
     # missing are passed to it.
     try:
         for _k in [k for k in keys if k in cmap]:
-            _sym = cmap[_k]
+          for _sym in cmap[_k]:   # v1.347.0: walk the try-list; first symbol with a sane close wins
             _q = fetch_tv_symbol_quote(_sym, fields=('close',))
             if not isinstance(_q, dict):
                 continue
@@ -1097,6 +1100,7 @@ def fetch_tv_oil(keys):
             out[f'{_k}_source'] = f'tradingview:{_sym.split(":")[-1]} (continuous, symbol GET)'
             out[f'{_k}_date'] = str(dt.date.today())
             log(f'  \u2713 {_k} (TV symbol GET {_sym}) = {out[_k]}')
+            break
     except Exception as _qe:
         log(f'  \u00b7 oil TV symbol-GET miss: {_qe}')
     try:
