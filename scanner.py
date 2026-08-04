@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.347.0'  # v1.347.0: WTI/Brent futures fallback -- the owner's captured per-symbol GET (v1.327.0) now returns HTTP 200 body null for TVC:USOIL/UKOIL (upstream TV change; warning trail proves the fix itself runs and TV degraded beneath it), and the /scan CFD ladder was already rows=0. Added front-month futures NYMEX:CL1! (WTI) and ICEEUR:BRN1! (Brent) to each symbol's try-list -- same class, same /scan route the Arab Light ladder already resolves NYMEX:WS1!/ICEEUR:DUB1! through every run, so the pattern is proven in this file, not assumed. Symbol-GET still leads (cheap when TV restores it); futures fill when it nulls. Sane-band guard 10..400 unchanged. Changed fn: fetch_us_macros oil block only. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.348.0'  # v1.348.0 (owner-approved micro-fix bundle): (1) ARAB LIGHT BASIS PINNED -- the owner's log exposed two spreads in one run (live-estimate used the CMO Dubai-Brent monthly spread, -7.7 -> 71.61, while the E&P trigger used the OSP config -2.0 -> 77.31). ONE basis now: Brent minus ARAB_LIGHT_DIFF_USD (the Aramco-OSP-derived config constant, updated by hand on the monthly OSP release ~5th, per the simplest-reliable-source rule) drives BOTH arab_light_live and the trigger; the CMO monthly print stays stored as the labelled official monthly reference only. Wave-S Trigger B now reads live-first (arab_light_live, monthly fallback) so Tab 5 and the E&P trigger can never quote different Arab Lights. (2) as_of STAMPS added to cot_futures, metals_drivers, macros.metals and estimate_history at the final write (SEC was found ALREADY stamped via sec_last_full_utc/sec_meta -- audit corrected), conditioned on the stage having run this run where a timing exists, so payload freshness is self-serve auditable. Changed: fetch_us_macros live-estimate spread, build_sector_selection input, one stamp block in main. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -2053,12 +2053,14 @@ def fetch_us_macros():
             # official monthly value stays in arab_light untouched; consumers that need freshness
             # (E&P trigger, devaluation input) read live-first with monthly fallback, basis stated.
             try:
-                _sp = out.get('arab_light_spread')
+                # v1.348.0 BASIS PIN: the SAME OSP config the E&P trigger uses -- one spread, one basis,
+                # everywhere. The CMO Dubai-Brent monthly spread stays stored above as context only.
+                _sp = ARAB_LIGHT_DIFF_USD
                 _br = out.get('brent')
-                if _sp is not None and isinstance(_br, (int, float)) and _br > 0:
+                if isinstance(_br, (int, float)) and _br > 0:
                     out['arab_light_live'] = round(_br - _sp, 2)
-                    out['arab_light_live_note'] = ('estimate: live Brent %.2f minus Dubai-Brent monthly '
-                                                   'spread %.2f (CMO %s)' % (_br, _sp, out.get('arab_light_spread_month')))
+                    out['arab_light_live_note'] = ('pinned basis: live Brent %.2f minus Aramco OSP '
+                                                   'differential %.2f (config, updated on monthly OSP release)' % (_br, _sp))
                     log(f"  \u2713 Arab Light LIVE estimate = {out['arab_light_live']} $/bbl "
                         f"(Brent {_br} - spread {_sp})")
             except Exception as _ale:
@@ -3273,7 +3275,7 @@ def build_sector_selection(data, existing=None):
     try:
         rate = psx_m.get('sbp_rate')
         cpi = psx_m.get('pak_cpi')
-        arab = us_m.get('arab_light')
+        arab = us_m.get('arab_light_live') or us_m.get('arab_light')  # v1.348.0: pinned live basis first
         prior_rate = (((existing or {}).get('macros') or {}).get('psx') or {}).get('sbp_rate')
         if rate is not None:
             r = float(rate)
@@ -23537,6 +23539,22 @@ def main():
                 _stamp_rebalance_top_picks(data)  # v1.334.0: pipeline-order-safe, runs after recommended exists
             except Exception as _rce:
                 log('[Recommended] pass skipped: %s' % _rce)
+            # v1.348.0: self-serve freshness stamps at the FINAL write -- every stage has run and
+            # recorded its timing by this point (relocated from mid-main, where cot_futures had not
+            # yet run and its stamp could never fire -- placement caught by the pipeline-order rule).
+            try:
+                _asof_now = dt.datetime.now(dt.timezone.utc).isoformat()
+                _tms = (data.get('meta') or {}).get('timings_ms') or {}
+                if isinstance(data.get('cot_futures'), dict) and _tms.get('cot_futures'):
+                    data['cot_futures']['as_of'] = _asof_now
+                if isinstance(data.get('metals_drivers'), dict) and _tms.get('metals'):
+                    data['metals_drivers']['as_of'] = _asof_now
+                if isinstance((data.get('macros') or {}).get('metals'), dict) and _tms.get('metals'):
+                    data['macros']['metals']['as_of'] = _asof_now
+                if isinstance(data.get('estimate_history'), dict):
+                    data['estimate_history']['as_of'] = _asof_now
+            except Exception:
+                pass
             _t_json = time.time()   # v1.287.0 timer C (log-only; file closes before meta could carry it)
             # v1.296.0: minified write (separators, no indent) -- indent=2 spent ~5.6MB of the
             # file on whitespace alone; JSON.parse reads it identically. ~12MB -> ~6.3MB.
