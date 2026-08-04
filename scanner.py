@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.351.0'  # v1.351.0: (SELF-CORRECTION) TipRanks overlay ran in production and stored ZERO of 25 tickers with ZERO warnings -- because v1.350.0's two skip paths (non-200 response; 200 page that misses the parse anchors) were both silent continues, violating the failures-announce-themselves principle the chunked-scorer fix established. Cannot distinguish runner-IP blocking from anchor drift without evidence. FIX: per-run diagnostics recorded INTO the tipranks payload -- diag = {http: status-code counts, parse_fail count, sample_head: first 160 chars of one 200-but-unparseable body} -- plus one loud warn line whenever picks exist but zero fetches succeed. Next run's data.json names the exact failure mode self-serve. No behavior change on the success path. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.352.0'  # v1.352.0: TIPRANKS PARSE FIX -- v1.351.0's diagnostics delivered the verdict in one run exactly as designed: http={200:24, 404:1}, parse_fail=24, sample_head = a raw-HTML head. The runner is NOT IP-blocked; the pages serve fine. The anchors failed because they were validated against CONVERTED text while the runner receives raw HTML with tags/whitespace interleaved through the very same sentences (e.g. 'consensus rating of <b>Strong Buy</b>'). FIX: preprocess the body -- strip tags (re.sub <[^>]+> -> space), decode the few entities that touch our anchors (&amp; &nbsp; &#36;), collapse whitespace -- THEN apply the SAME already-validated sentence regexes. Belt-and-braces fallback: if sentences still miss, parse n_analysts from the meta-description ('based on N analysts'), which the diag PROVED serves in the raw head. Diagnostics stay. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3338,7 +3338,10 @@ def fetch_tipranks_overlay(data, existing=None):
             _diag['http'][str(r.status_code)] = _diag['http'].get(str(r.status_code), 0) + 1
             if r.status_code != 200 or not r.text:
                 continue
-            t = r.text
+            # v1.352.0: the runner gets RAW html -- flatten it so the validated sentence anchors match.
+            t = _re.sub(r'<[^>]+>', ' ', r.text)
+            t = t.replace('&amp;', '&').replace('&nbsp;', ' ').replace('&#36;', '$')
+            t = _re.sub(r'\s+', ' ', t)
             m1 = _re.search(r'consensus rating of (Strong Buy|Moderate Buy|Buy|Hold|Moderate Sell|Sell|Strong Sell)', t)
             m2 = _re.search(r'based on (\d+) buy ratings?, (\d+) hold ratings? and (\d+) sell ratings?', t)
             m3 = _re.search(r'average price target is \$([\d,\.]+) with a high forecast of \$([\d,\.]+) and a low forecast of \$([\d,\.]+)', t)
@@ -3347,7 +3350,11 @@ def fetch_tipranks_overlay(data, existing=None):
                 _diag['parse_fail'] += 1
                 if _diag['sample_head'] is None:
                     _diag['sample_head'] = (t or '')[:160]
-                continue   # page served but shape unknown -- recorded above
+                # v1.352.0 fallback: meta-description count -- proven present in the raw head by the diag.
+                _mn = _re.search(r'based on (\d+) analysts', t)
+                if _mn:
+                    out[tk] = {'n_analysts': int(_mn.group(1)), 'as_of': today.isoformat(), 'partial': True}
+                continue
             _f = lambda x: float(str(x).replace(',', '').rstrip('.'))
             rec = {'consensus': m1.group(1),
                    'pt_avg': _f(m3.group(1)), 'pt_high': _f(m3.group(2)), 'pt_low': _f(m3.group(3)),
