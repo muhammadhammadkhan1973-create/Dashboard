@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.353.0'  # v1.353.0: WAVE Z ENGINE -- Zacks #1-ETF x #1-mutual-fund COMMON-HOLDINGS intersection (the plan's research-first wave; research done THIS session: Zacks ETF quote pages serve the rank server-rendered ('1 - Strong Buy of 5', proven on XLK), MF quote pages likewise ('Zacks MF Rank ... 1-Strong Buy', proven on FSPTX/FSPSX incl. a NA case), and BOTH families expose /holding pages -- one source, the same fetch pattern as the proven stock-rank scrape, no stockanalysis dependency). Population note (honest): the full #1 list is premium-screener-gated, and our own ETF estate is UCITS (EURONEXT/IE ISINs Zacks does not rank), so the engine ranks curated US seed lists -- WAVE_Z_ETFS (~34 liquid sector/style/industry ETFs) + WAVE_Z_MFS (~16 major active funds) -- and intersects the top holdings of the rank-1s. Flatten-then-regex parsing (the tipranks lesson), TWO holdings parsers (embedded formatted_data JSON first, flattened-text fallback), per-fund 5-day TTL cache, LOUD diagnostics from day one (wave_z.diag: http counts, rank_parse_fail, holdings_parse_fail, per-mode) -- no silent skip paths anywhere. Emits data['wave_z'] = {rank1:{etfs,mfs}, common:[{ticker,n_funds,funds}] (names held by >=2 rank-1 funds), universe counts, diag, as_of}. Call site at the tail after build_recommended, before the as_of stamps (pipeline-order verified). First cold run ~50 fetches (~90s); ~zero after, 5d TTL. Display rides index v5.307 (Tab 21 card). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.354.0'  # v1.354.0: WAVE Z HOLDINGS FIX -- first run's diagnostics worked exactly as designed: ranks succeeded (68x HTTP 200, 24 rank-1 funds, 3 NA-class skips) while holdings failed 18/18 with BOTH parser modes empty. Root cause then PROVEN by fetching the real page: Zacks /holding pages render the rank server-side but load the holdings TABLE client-side ('Loading Data...' in the raw HTML) -- there was never anything to parse; tested, not assumed. FIX per the plumbed-sources rule: ETF holdings now route through the EXISTING fetch_etf_holdings (stockanalysis /etf/<t>/holdings/, server-rendered, confirmed live 2026-07-30, [{ticker,weight}] top-25); the dead Zacks holdings fetch is removed. Mutual-fund holdings have NO free machine-readable source (Zacks JS-only; tested) -- the MF side honestly degrades to rank-chips-only and the intersection runs over the #1 ETFs (>=2 funds), recorded in diag (mf_holdings:'no-free-source'). Index v5.308 updates the card wording to match. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3370,6 +3370,12 @@ def build_wave_z(data, existing=None):
         return rk
 
     def _holdings_of(sym, kind):
+        # v1.354.0: Zacks /holding tables are JS-loaded (proven by raw-page fetch: 'Loading Data...').
+        # ETFs -> the EXISTING stockanalysis holdings fetcher (server-rendered, confirmed live).
+        # Mutual funds -> no free machine-readable source exists; rank-chips only, recorded in diag.
+        if kind != 'etf':
+            diag['mf_holdings'] = 'no-free-source (Zacks JS-only; tested 2026-08-05)'
+            return []
         c = cache.get(sym) or {}
         if c.get('holdings') and c.get('as_of'):
             try:
@@ -3377,30 +3383,15 @@ def build_wave_z(data, existing=None):
                     return c['holdings']
             except Exception:
                 pass
-        url = ('https://www.zacks.com/funds/etf/%s/holding' % sym if kind == 'etf'
-               else 'https://www.zacks.com/funds/mutual-fund/quote/%s/holding' % sym)
-        raw = _fetch(url)
-        if raw is None:
-            return c.get('holdings') or []
         got = []
-        mj = _re.search(r'formatted_data\s*=\s*(\[\[.*?\]\])\s*;', raw, _re.S)
-        if mj:
-            try:
-                arr = _json.loads(mj.group(1).replace("\\'", "'"))
-                for row in arr[:15]:
-                    for cell in row:
-                        cm = _re.search(r'rel=\\?"([A-Z][A-Z\.]{0,6})\\?"|>([A-Z][A-Z\.]{0,6})<', str(cell))
-                        if cm:
-                            got.append((cm.group(1) or cm.group(2)).strip()); break
-                if got: diag['holdings_mode']['json'] = diag['holdings_mode'].get('json', 0) + 1
-            except Exception:
-                pass
-        if not got:
-            t = _flat(raw)
-            seg = t[t.find('Symbol'):t.find('Symbol') + 4000] if 'Symbol' in t else t[:4000]
-            got = _re.findall(r'\b([A-Z]{1,5})\b\s+\d+[\d,\.]*\s+[\d\.]+%', seg)[:15]
-            if got: diag['holdings_mode']['text'] = diag['holdings_mode'].get('text', 0) + 1
-        got = [g for g in got if g not in ('ETF', 'NA', 'USD', 'FUND', 'CASH')][:15]
+        try:
+            rows = fetch_etf_holdings(sym) or []
+            got = [str(r.get('ticker') or '').upper() for r in rows if r.get('ticker')][:15]
+            if got:
+                diag['holdings_mode']['stockanalysis'] = diag['holdings_mode'].get('stockanalysis', 0) + 1
+        except Exception as _he:
+            diag['http'][type(_he).__name__] = diag['http'].get(type(_he).__name__, 0) + 1
+        got = [g for g in got if g not in ('ETF', 'NA', 'USD', 'FUND', 'CASH')]
         if not got:
             diag['holdings_parse_fail'] += 1
         cache.setdefault(sym, {})['holdings'] = got
@@ -3417,9 +3408,7 @@ def build_wave_z(data, existing=None):
     for sym in rank1['etfs'][:10]:
         for h in _holdings_of(sym, 'etf'):
             counts.setdefault(h, set()).add(sym)
-    for sym in rank1['mfs'][:8]:
-        for h in _holdings_of(sym, 'mf'):
-            counts.setdefault(h, set()).add(sym)
+    # v1.354.0: MF holdings unavailable free -- intersection runs over the #1 ETFs; MF chips still shown.
     common = sorted(({'ticker': k, 'n_funds': len(v), 'funds': sorted(v)}
                      for k, v in counts.items() if len(v) >= 2),
                     key=lambda x: -x['n_funds'])[:40]
