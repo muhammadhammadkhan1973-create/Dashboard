@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.354.0'  # v1.354.0: WAVE Z HOLDINGS FIX -- first run's diagnostics worked exactly as designed: ranks succeeded (68x HTTP 200, 24 rank-1 funds, 3 NA-class skips) while holdings failed 18/18 with BOTH parser modes empty. Root cause then PROVEN by fetching the real page: Zacks /holding pages render the rank server-side but load the holdings TABLE client-side ('Loading Data...' in the raw HTML) -- there was never anything to parse; tested, not assumed. FIX per the plumbed-sources rule: ETF holdings now route through the EXISTING fetch_etf_holdings (stockanalysis /etf/<t>/holdings/, server-rendered, confirmed live 2026-07-30, [{ticker,weight}] top-25); the dead Zacks holdings fetch is removed. Mutual-fund holdings have NO free machine-readable source (Zacks JS-only; tested) -- the MF side honestly degrades to rank-chips-only and the intersection runs over the #1 ETFs (>=2 funds), recorded in diag (mf_holdings:'no-free-source'). Index v5.308 updates the card wording to match. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.355.0'  # v1.355.0: OIL LADDER FUTURES-FIRST -- the run log priced the polite TVC-first ordering at ~45s/run (fetch_us_macros 62.0s vs 16.5s on the prior run): TradingView's null responses for the dead TVC:USOIL/UKOIL symbols were slow before the proven futures rungs rescued the values. The try-lists now lead with the rungs that have resolved EVERY run since v1.347.0 (NYMEX:CL1!, ICEEUR:BRN1!) and keep the TVC symbols as the trailing rung, so the day TradingView restores them they resume automatically -- same ladder, same guard, reordered by evidence. Also silences the two chronic TVC warnings on normal runs (the dead rung is no longer attempted when futures succeed first). Changed: the cmap literal only. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -1076,7 +1076,7 @@ def fetch_tv_oil(keys):
     # v1.347.0: each key now has a TRY-LIST -- captured symbol-GET target first (TVC continuous CFD),
     # then the front-month FUTURES symbol on the same /symbol GET (NYMEX:CL1!/ICEEUR:BRN1! -- the same
     # class the Arab Light ladder resolves via /scan every run, so serving is proven, not assumed).
-    cmap = {'wti': ['TVC:USOIL', 'NYMEX:CL1!'], 'brent': ['TVC:UKOIL', 'ICEEUR:BRN1!']}
+    cmap = {'wti': ['NYMEX:CL1!', 'TVC:USOIL'], 'brent': ['ICEEUR:BRN1!', 'TVC:UKOIL']}  # v1.355.0: proven rung first
     out = {}
     # v1.327.0 SYMBOL-GET FIRST. The captured per-symbol GET is the call TradingView's own pages use
     # for exactly these tickers, so it leads. The /scan ladder below stays as fallback -- it is what
