@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.352.0'  # v1.352.0: TIPRANKS PARSE FIX -- v1.351.0's diagnostics delivered the verdict in one run exactly as designed: http={200:24, 404:1}, parse_fail=24, sample_head = a raw-HTML head. The runner is NOT IP-blocked; the pages serve fine. The anchors failed because they were validated against CONVERTED text while the runner receives raw HTML with tags/whitespace interleaved through the very same sentences (e.g. 'consensus rating of <b>Strong Buy</b>'). FIX: preprocess the body -- strip tags (re.sub <[^>]+> -> space), decode the few entities that touch our anchors (&amp; &nbsp; &#36;), collapse whitespace -- THEN apply the SAME already-validated sentence regexes. Belt-and-braces fallback: if sentences still miss, parse n_analysts from the meta-description ('based on N analysts'), which the diag PROVED serves in the raw head. Diagnostics stay. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.353.0'  # v1.353.0: WAVE Z ENGINE -- Zacks #1-ETF x #1-mutual-fund COMMON-HOLDINGS intersection (the plan's research-first wave; research done THIS session: Zacks ETF quote pages serve the rank server-rendered ('1 - Strong Buy of 5', proven on XLK), MF quote pages likewise ('Zacks MF Rank ... 1-Strong Buy', proven on FSPTX/FSPSX incl. a NA case), and BOTH families expose /holding pages -- one source, the same fetch pattern as the proven stock-rank scrape, no stockanalysis dependency). Population note (honest): the full #1 list is premium-screener-gated, and our own ETF estate is UCITS (EURONEXT/IE ISINs Zacks does not rank), so the engine ranks curated US seed lists -- WAVE_Z_ETFS (~34 liquid sector/style/industry ETFs) + WAVE_Z_MFS (~16 major active funds) -- and intersects the top holdings of the rank-1s. Flatten-then-regex parsing (the tipranks lesson), TWO holdings parsers (embedded formatted_data JSON first, flattened-text fallback), per-fund 5-day TTL cache, LOUD diagnostics from day one (wave_z.diag: http counts, rank_parse_fail, holdings_parse_fail, per-mode) -- no silent skip paths anywhere. Emits data['wave_z'] = {rank1:{etfs,mfs}, common:[{ticker,n_funds,funds}] (names held by >=2 rank-1 funds), universe counts, diag, as_of}. Call site at the tail after build_recommended, before the as_of stamps (pipeline-order verified). First cold run ~50 fetches (~90s); ~zero after, 5d TTL. Display rides index v5.307 (Tab 21 card). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3309,6 +3309,131 @@ def build_psx_macro_narrative(data, existing=None):
         log('  [PSX narrative] failed: %s' % type(_e).__name__)
         return (existing or {}).get('psx_macro_narrative') or {}
 
+
+
+
+WAVE_Z_ETFS = ['XLK','XLE','XLF','XLV','XLI','XLY','XLP','XLU','XLB','XLC','SPY','QQQ','IWM','DIA',
+               'SMH','SOXX','IGV','XBI','ITA','XME','GDX','KRE','IYT','VNQ','MTUM','QUAL','VLUE',
+               'USMV','VGT','VTI','SCHD','VYM','IVW','RSP']
+WAVE_Z_MFS  = ['FSPTX','FSELX','FBGRX','FCNTX','FDGRX','FOCPX','FSMEX','FSPHX','FSENX','FSAGX',
+               'PRGFX','PRWCX','PRMTX','TRBCX','VWUAX','VPMAX']
+
+def build_wave_z(data, existing=None):
+    """v1.353.0 WAVE Z: rank the curated US ETF+MF seed lists on Zacks, take the #1s, intersect their
+    top holdings -> the names the top-ranked funds own in common. All-Zacks (ranks AND holdings), the
+    proven flatten-then-regex pattern, loud diagnostics, 5-day per-fund cache."""
+    import re as _re, json as _json
+    prev = ((existing or {}).get('wave_z') or {})
+    cache = dict(prev.get('fund_cache') or {})
+    diag = {'http': {}, 'rank_parse_fail': 0, 'holdings_parse_fail': 0, 'holdings_mode': {}}
+    today = dt.date.today()
+
+    def _flat(txt):
+        t = _re.sub(r'<[^>]+>', ' ', txt or '')
+        t = t.replace('&amp;', '&').replace('&nbsp;', ' ')
+        return _re.sub(r'\s+', ' ', t)
+
+    def _fetch(url):
+        try:
+            r = requests.get(url, headers={'User-Agent': UA}, timeout=14)
+            diag['http'][str(r.status_code)] = diag['http'].get(str(r.status_code), 0) + 1
+            return r.text if (r.status_code == 200 and r.text) else None
+        except Exception as _fe:
+            diag['http'][type(_fe).__name__] = diag['http'].get(type(_fe).__name__, 0) + 1
+            return None
+
+    def _rank_of(sym, kind):
+        c = cache.get(sym)
+        if c and c.get('as_of'):
+            try:
+                if (today - dt.date.fromisoformat(c['as_of'])).days < 5:
+                    return c.get('rank')
+            except Exception:
+                pass
+        url = ('https://www.zacks.com/funds/etf/%s/profile' % sym if kind == 'etf'
+               else 'https://www.zacks.com/funds/mutual-fund/quote/%s' % sym)
+        raw = _fetch(url)
+        if raw is None:
+            return (c or {}).get('rank')
+        t = _flat(raw)
+        m = _re.search(r'(\d)\s*-\s*Strong Buy of 5|Strong Buy\s+1\b|(\d)\s*-\s*(?:Strong Buy|Buy|Hold|Sell|Strong Sell)\s+of\s+5', t)
+        rk = None
+        m2 = _re.search(r'(\d)\s*-\s*(Strong Buy|Buy|Hold|Sell|Strong Sell)\s+of\s+5', t)
+        if m2:
+            rk = int(m2.group(1))
+        elif 'NA View All Zacks' in t or ' Rank NA ' in t:
+            rk = None
+        else:
+            diag['rank_parse_fail'] += 1
+        cache[sym] = {'rank': rk, 'as_of': today.isoformat(), 'kind': kind,
+                      'holdings': (c or {}).get('holdings')}
+        return rk
+
+    def _holdings_of(sym, kind):
+        c = cache.get(sym) or {}
+        if c.get('holdings') and c.get('as_of'):
+            try:
+                if (today - dt.date.fromisoformat(c['as_of'])).days < 5:
+                    return c['holdings']
+            except Exception:
+                pass
+        url = ('https://www.zacks.com/funds/etf/%s/holding' % sym if kind == 'etf'
+               else 'https://www.zacks.com/funds/mutual-fund/quote/%s/holding' % sym)
+        raw = _fetch(url)
+        if raw is None:
+            return c.get('holdings') or []
+        got = []
+        mj = _re.search(r'formatted_data\s*=\s*(\[\[.*?\]\])\s*;', raw, _re.S)
+        if mj:
+            try:
+                arr = _json.loads(mj.group(1).replace("\\'", "'"))
+                for row in arr[:15]:
+                    for cell in row:
+                        cm = _re.search(r'rel=\\?"([A-Z][A-Z\.]{0,6})\\?"|>([A-Z][A-Z\.]{0,6})<', str(cell))
+                        if cm:
+                            got.append((cm.group(1) or cm.group(2)).strip()); break
+                if got: diag['holdings_mode']['json'] = diag['holdings_mode'].get('json', 0) + 1
+            except Exception:
+                pass
+        if not got:
+            t = _flat(raw)
+            seg = t[t.find('Symbol'):t.find('Symbol') + 4000] if 'Symbol' in t else t[:4000]
+            got = _re.findall(r'\b([A-Z]{1,5})\b\s+\d+[\d,\.]*\s+[\d\.]+%', seg)[:15]
+            if got: diag['holdings_mode']['text'] = diag['holdings_mode'].get('text', 0) + 1
+        got = [g for g in got if g not in ('ETF', 'NA', 'USD', 'FUND', 'CASH')][:15]
+        if not got:
+            diag['holdings_parse_fail'] += 1
+        cache.setdefault(sym, {})['holdings'] = got
+        cache[sym]['as_of'] = today.isoformat()
+        return got
+
+    rank1 = {'etfs': [], 'mfs': []}
+    for sym in WAVE_Z_ETFS:
+        if _rank_of(sym, 'etf') == 1: rank1['etfs'].append(sym)
+    for sym in WAVE_Z_MFS:
+        if _rank_of(sym, 'mf') == 1: rank1['mfs'].append(sym)
+
+    counts = {}
+    for sym in rank1['etfs'][:10]:
+        for h in _holdings_of(sym, 'etf'):
+            counts.setdefault(h, set()).add(sym)
+    for sym in rank1['mfs'][:8]:
+        for h in _holdings_of(sym, 'mf'):
+            counts.setdefault(h, set()).add(sym)
+    common = sorted(({'ticker': k, 'n_funds': len(v), 'funds': sorted(v)}
+                     for k, v in counts.items() if len(v) >= 2),
+                    key=lambda x: -x['n_funds'])[:40]
+
+    log('  [Wave Z] rank-1: %d ETFs %s / %d MFs %s | common holdings (>=2 funds): %d'
+        % (len(rank1['etfs']), rank1['etfs'][:6], len(rank1['mfs']), rank1['mfs'][:4], len(common)))
+    if not rank1['etfs'] and not rank1['mfs']:
+        warn('[wave z] zero rank-1 funds parsed -- http=%s rank_fail=%d (see wave_z.diag)'
+             % (diag['http'], diag['rank_parse_fail']))
+    return {'rank1': rank1, 'common': common,
+            'universe': {'etfs_checked': len(WAVE_Z_ETFS), 'mfs_checked': len(WAVE_Z_MFS)},
+            'fund_cache': cache, 'diag': diag,
+            'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
+            'note': 'names held in common by Zacks #1-ranked funds from the curated US seed lists; universe surfacing only -- not a scoring input'}
 
 
 def fetch_tipranks_overlay(data, existing=None):
@@ -23663,6 +23788,12 @@ def main():
                 _stamp_rebalance_top_picks(data)  # v1.334.0: pipeline-order-safe, runs after recommended exists
             except Exception as _rce:
                 log('[Recommended] pass skipped: %s' % _rce)
+            # v1.353.0 WAVE Z: independent of recommended; runs at the tail with the other overlays.
+            try:
+                data['wave_z'] = build_wave_z(data, EXISTING)
+            except Exception as _wze:
+                log('[Wave Z] skipped: %s' % type(_wze).__name__)
+                data['wave_z'] = EXISTING.get('wave_z', {}) or {}
             # v1.350.0: TipRanks overlay -- AFTER recommended exists (it reads the list), before stamps/write.
             try:
                 data['tipranks'] = fetch_tipranks_overlay(data, EXISTING)
