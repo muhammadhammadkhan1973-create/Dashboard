@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.355.0'  # v1.355.0: OIL LADDER FUTURES-FIRST -- the run log priced the polite TVC-first ordering at ~45s/run (fetch_us_macros 62.0s vs 16.5s on the prior run): TradingView's null responses for the dead TVC:USOIL/UKOIL symbols were slow before the proven futures rungs rescued the values. The try-lists now lead with the rungs that have resolved EVERY run since v1.347.0 (NYMEX:CL1!, ICEEUR:BRN1!) and keep the TVC symbols as the trailing rung, so the day TradingView restores them they resume automatically -- same ladder, same guard, reordered by evidence. Also silences the two chronic TVC warnings on normal runs (the dead rung is no longer attempted when futures succeed first). Changed: the cmap literal only. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.356.0'  # v1.356.0: COT FRESHNESS GATE -- cot_futures cost 76.5s this run (vs its ~8-9s norm; CFTC's endpoint was crawling), and the fetch runs twice daily against data CFTC publishes ONCE A WEEK (Fridays, covering Tuesday positions). The stage now short-circuits when the carried cot_futures.as_of (stamped since v1.348.0) is younger than 72h: carry EXISTING, skip the fetch, log '[COT] carried (fresh <72h)'. A 3-day TTL loses nothing weekly-cadenced -- a Friday release is picked up by Saturday's runs at the latest -- and converts a 9-to-76-second twice-daily cost into at most two fetches a week. Fail-open: absent/undated prior -> fetch as before. Changed: the cot_futures call site in main only. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -22644,8 +22644,23 @@ def main():
         data['rate_path'] = EXISTING.get('rate_path', [])
 
     # v1.11: COT index/commodity futures for US sector gating (SP500/Crude/10yr/VIX/NASDAQ)
+    # v1.356.0: CFTC publishes weekly -- skip the fetch while the carried payload is <72h old.
     try:
-        data['cot_futures'] = _stage('cot_futures', fetch_cot_futures)
+        _cot_prev = EXISTING.get('cot_futures') or {}
+        _cot_fresh = False
+        try:
+            _cot_ts = _cot_prev.get('as_of')
+            if _cot_ts:
+                _cot_age = (dt.datetime.now(dt.timezone.utc)
+                            - dt.datetime.fromisoformat(str(_cot_ts).replace('Z', '+00:00'))).total_seconds()
+                _cot_fresh = _cot_age < 72 * 3600
+        except Exception:
+            _cot_fresh = False
+        if _cot_fresh and _cot_prev:
+            data['cot_futures'] = _cot_prev
+            log('  [COT] carried (fresh <72h) -- CFTC publishes weekly; next fetch when the stamp ages out')
+        else:
+            data['cot_futures'] = _stage('cot_futures', fetch_cot_futures)
     except Exception as e:
         log(f'COT futures crashed: {e}')
         data['meta']['errors'].append(f'cot_futures: {e}')
