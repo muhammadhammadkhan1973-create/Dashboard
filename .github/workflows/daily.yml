@@ -283,7 +283,11 @@ jobs:
         # v-fix: ALSO run on every manual dispatch -- the change/force gate silently skipped this step
         # on manual runs (incl. restoration attempts), leaving no trace and no way to heal. Manual runs
         # now always enter; the step's own incremental logic keeps unneeded runs cheap.
-        if: steps.check_explosive.outputs.changed == 'true' || github.event.inputs.force_im3 == 'true' || github.event_name == 'workflow_dispatch'
+        # v-fix2: run on SCHEDULED runs too -- a quiet cron evening previously skipped this step, wrote a
+        # data.json without the workflow-side keys (im3_detail among them, -1.1MB observed live), and forced
+        # the next run into a self-heal full re-score: a drop-then-rebuild thrash cycle. The step's own
+        # incremental logic keeps quiet runs cheap (~1-2 min); state continuity is worth that always.
+        if: steps.check_explosive.outputs.changed == 'true' || github.event.inputs.force_im3 == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         env:
           SCORE_TICKERS: ${{ steps.check_explosive.outputs.score_tickers }}
           FULL_RESCORE: ${{ steps.check_explosive.outputs.full_rescore }}
