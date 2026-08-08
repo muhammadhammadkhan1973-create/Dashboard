@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.358.0'  # v1.358.0: MOAT LIVE-FETCH FIX (self-corrected from first run: n_live=0, all 317 fell to static). Two faults, both mine: (1) the america/scan call sent BARE tickers ('TER','AMD') but that endpoint resolves EXCHANGE-PREFIXED symbols only (the file's own proven calls use 'TVC:SPX', 'PSX:KSE100' etc) -- so 0 rows came back; FIX: prefix every US ticker 'NASDAQ:<t>' (america/scan resolves NYSE names under the NASDAQ-posted request too, as the foundation-universe call proves) and, cleaner, pull the ready-made 'Perf.Y' 1-year column instead of computing from close. (2) The failure was SILENT (log only) -- violating the failures-announce rule twice-learned this month; FIX: data['moat']['diag'] now carries {http, n_returned, n_matched} and a loud warn when picks exist but 0 resolve. Changed: build_moat_universe live-fetch block only. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.359.0'  # v1.359.0: MOAT NYSE RESOLUTION -- v1.358 diag proved the prefix fix worked but resolved only 77/203 (the NASDAQ-listed names); the ~126 NYSE-listed moat names don't resolve under a NASDAQ: prefix. FIX: send BOTH NASDAQ:<t> and NYSE:<t> candidates per ticker (america/scan returns only what resolves -- the wrong-exchange twin is silently absent, no error, no cost), 100 per chunk. This is the mixed-exchange query the foundation-universe call proves. Expected n_live ~203. diag unchanged (still records match counts). Changed: the MOAT live-fetch loop only. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3382,11 +3382,19 @@ def build_moat_universe(data, existing=None):
     live = {}
     _mdiag = {'http': {}, 'n_returned': 0, 'n_matched': 0, 'sent': len(tickers)}
     try:
-        for i in range(0, len(tickers), 50):
-            chunk = ['NASDAQ:%s' % t for t in tickers[i:i+50]]
+        # v1.359.0: america/scan resolves EXACT exchange prefixes only, and moat names span NASDAQ +
+        # NYSE. We don't carry each name's exchange, so send BOTH candidates (NASDAQ:<t> AND NYSE:<t>);
+        # the real one resolves, the wrong one is simply absent from data (no error, no cost). This is
+        # how america/scan is meant to be queried for a mixed-exchange list -- proven by the foundation
+        # universe call, which resolves both exchanges under markets:['america'].
+        _cands = []
+        for t in tickers:
+            _cands.append('NASDAQ:%s' % t); _cands.append('NYSE:%s' % t)
+        for i in range(0, len(_cands), 100):
+            chunk = _cands[i:i+100]
             r = requests.post('https://scanner.tradingview.com/america/scan',
                               json={'symbols': {'tickers': chunk}, 'columns': ['close', 'change', 'Perf.Y']},
-                              headers={'User-Agent': UA}, timeout=25)
+                              headers={'User-Agent': UA}, timeout=30)
             _mdiag['http'][str(r.status_code)] = _mdiag['http'].get(str(r.status_code), 0) + 1
             if r.status_code == 200:
                 _rows = (r.json().get('data') or [])
