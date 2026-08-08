@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.357.0'  # v1.357.0: WAVE MOAT -- a curated wide-moat global universe (317 names, owner-supplied justETF moat screen) as a new tab + auto-tracking engine. build_moat_universe(): live return tracking forward-from-first-seen for the 203 US large-caps (proven america/scan endpoint, chunked 50s, static file 1Y retained for the 114 non-US names -- NO fabricated live data), full every-engine cross-reference per stock (IM3 grade, Zacks, TipRanks, whale 13F, and Explosive/Turnaround/M1/Multibagger/TCE/WaveZ membership flags), and ETF-conviction confirmation (the file's own n_etfs breadth + which tracked funds actually hold each name, read from the existing wave_z.fund_cache). Emits data['moat'] = {rows, leader_isins (top-20 by best available return), n_total, n_live, as_of}. Call site at the tail after wave_z (reuses its fund_cache + all engine outputs; pipeline-order verified). Display: new MOAT tab in index v5.310. Seed embedded as a constant (~33KB). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.358.0'  # v1.358.0: MOAT LIVE-FETCH FIX (self-corrected from first run: n_live=0, all 317 fell to static). Two faults, both mine: (1) the america/scan call sent BARE tickers ('TER','AMD') but that endpoint resolves EXCHANGE-PREFIXED symbols only (the file's own proven calls use 'TVC:SPX', 'PSX:KSE100' etc) -- so 0 rows came back; FIX: prefix every US ticker 'NASDAQ:<t>' (america/scan resolves NYSE names under the NASDAQ-posted request too, as the foundation-universe call proves) and, cleaner, pull the ready-made 'Perf.Y' 1-year column instead of computing from close. (2) The failure was SILENT (log only) -- violating the failures-announce rule twice-learned this month; FIX: data['moat']['diag'] now carries {http, n_returned, n_matched} and a loud warn when picks exist but 0 resolve. Changed: build_moat_universe live-fetch block only. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3375,24 +3375,36 @@ def build_moat_universe(data, existing=None):
             holders.setdefault(_h, []).append(_fsym)
 
     # --- live price fetch (US tickers) via the proven endpoint, chunked ---
+    # v1.358.0: america/scan resolves EXCHANGE-PREFIXED symbols only. Prefix NASDAQ:<t> (this request
+    # resolves NYSE-listed names too, same as the foundation-universe call). Pull the ready 'Perf.Y'
+    # 1-year column alongside close/change.
     tickers = [r[2] for r in _MOAT_SEED if r[2]]
     live = {}
+    _mdiag = {'http': {}, 'n_returned': 0, 'n_matched': 0, 'sent': len(tickers)}
     try:
         for i in range(0, len(tickers), 50):
-            chunk = ['NASDAQ:%s' % t if False else t for t in tickers[i:i+50]]
-            # america/scan resolves bare US tickers; send as-is (proven pattern)
+            chunk = ['NASDAQ:%s' % t for t in tickers[i:i+50]]
             r = requests.post('https://scanner.tradingview.com/america/scan',
-                              json={'symbols': {'tickers': chunk}, 'columns': ['close', 'change']},
+                              json={'symbols': {'tickers': chunk}, 'columns': ['close', 'change', 'Perf.Y']},
                               headers={'User-Agent': UA}, timeout=25)
+            _mdiag['http'][str(r.status_code)] = _mdiag['http'].get(str(r.status_code), 0) + 1
             if r.status_code == 200:
-                for row in (r.json().get('data') or []):
+                _rows = (r.json().get('data') or [])
+                _mdiag['n_returned'] += len(_rows)
+                for row in _rows:
                     sym = str(row.get('s', '')).split(':')[-1]
                     dvals = row.get('d') or []
                     if dvals and isinstance(dvals[0], (int, float)):
                         live[sym] = {'px': round(float(dvals[0]), 2),
-                                     'chg': round(float(dvals[1]), 2) if len(dvals) > 1 and isinstance(dvals[1], (int, float)) else None}
+                                     'chg': round(float(dvals[1]), 2) if len(dvals) > 1 and isinstance(dvals[1], (int, float)) else None,
+                                     'perf_y': round(float(dvals[2]), 2) if len(dvals) > 2 and isinstance(dvals[2], (int, float)) else None}
+                        _mdiag['n_matched'] += 1
     except Exception as _me:
+        _mdiag['error'] = type(_me).__name__
         log('  [MOAT] live price fetch failed: %s (static returns retained)' % type(_me).__name__)
+    if tickers and _mdiag['n_matched'] == 0:
+        warn('[moat] 0/%d US names resolved live -- http=%s returned=%d (see moat.diag)'
+             % (len(tickers), _mdiag['http'], _mdiag['n_returned']))
 
     rows = []
     n_live = 0
@@ -3413,6 +3425,7 @@ def build_moat_universe(data, existing=None):
                 base = lv['px']; base_date = today
             row['base_px'] = base; row['base_date'] = base_date
             row['ret_since'] = round((lv['px'] / base - 1) * 100, 2) if base else None
+            if lv.get('perf_y') is not None: row['ret_1y_live'] = lv['perf_y']
         else:
             row['base_px'] = pr.get('base_px'); row['base_date'] = pr.get('base_date')
             row['ret_since'] = pr.get('ret_since')
@@ -3446,7 +3459,7 @@ def build_moat_universe(data, existing=None):
     log('  [MOAT] %d names | %d live-tracked (US) | %d with engine grade | leaders top ret %.0f%%'
         % (len(rows), n_live, sum(1 for r in rows if r.get('im3_grade')),
            (_score(leaders[0]) if leaders else 0) or 0))
-    return {'rows': rows, 'leader_isins': leader_isins,
+    return {'rows': rows, 'leader_isins': leader_isins, 'diag': _mdiag,
             'n_total': len(rows), 'n_live': n_live,
             'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
             'note': 'wide-moat watchlist; US names live-tracked forward from first-seen, non-US show file 1Y; engine columns are cross-references, MOAT membership is not itself a score'}
