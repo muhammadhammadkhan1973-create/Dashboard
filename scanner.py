@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.364.0'  # v1.364.0: MOAT turnaround flag fixed. The Turnaround membership flag read a non-existent 'tier' field, so it never fired (0 moat rows flagged). Real marker is the explosive_us 'verdict' string 'TURNAROUND -- quarterly inflection'. f_turn now derives from that. This makes the tab's new display rule (index v5.317: show returns >0, hide <=0, but ALWAYS show qualifying turnarounds) actually surface inflecting names. Changed: f_turn derivation only. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.365.0'  # v1.365.0: MOAT deep holdings via ISSUER full-CSV (not top-25 scrape). Owner is right -- all ETFs publish full holdings; the scanner already fetches BlackRock's authoritative daily CSV for pinned iShares funds (fetch_ishares_holdings, FULL fund not top-25). This extends that proven mechanism to BROAD funds: new fetch_ishares_broad_holdings(ticker) hits the iShares US holdings CSV for IVV (S&P 500, ~500 names) and ITOT (Total US market, ~2600 names) -- one file confirms essentially every US moat mid-cap with real weights. build_moat_cover unions these deep holdings on TOP of the existing top-25 set (so it can only ADD coverage, never lose any) and records moat_cover.deep_diag {ticker: {http, n}} so ONE runner run proves the count or names the exact URL to fix. Fail-open: any error -> existing behavior unchanged. Reuses the proven _parse_ishares_csv (keys columns by name, US/UK agnostic). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3358,9 +3358,20 @@ def build_moat_cover(existing=None):
                 cache[etf] = tks; got += 1
         except Exception:
             pass
-    log('  [MOAT cover] fetched %d/%d ETFs (real holdings)' % (got, len(MOAT_COVER_ETFS)))
+    # v1.365.0: BROAD funds via issuer full-CSV -- deep holdings that reach the mid-caps.
+    deep_diag = {}
+    for _bt in _ISHARES_BROAD:
+        try:
+            _tks, _st = fetch_ishares_broad_holdings(_bt)
+            deep_diag[_bt] = {'http': _st, 'n': len(_tks)}
+            if _tks:
+                cache[_bt] = _tks   # unioned into holders like any other ETF
+        except Exception as _be:
+            deep_diag[_bt] = {'http': type(_be).__name__, 'n': 0}
+    log('  [MOAT cover] fetched %d/%d top-25 ETFs + broad deep: %s'
+        % (got, len(MOAT_COVER_ETFS), {k: v['n'] for k, v in deep_diag.items()}))
     return {'by_etf': cache, 'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
-            'n_etfs': len(cache)}
+            'n_etfs': len(cache), 'deep_diag': deep_diag}
 
 
 def build_moat_universe(data, existing=None):
@@ -4155,6 +4166,36 @@ def fetch_ishares_holdings(isin):
     except Exception as _e:
         log('    · [diag] iShares %s pid=%s EXC %s' % (isin, _pid, _e))
         return []
+
+# v1.365.0: broad-market iShares funds -> FULL issuer holdings CSV (US site). Covers the moat mid-caps that
+# top-25 page scrapes can never reach. Separate from the UK pinned path so that proven fetcher is untouched.
+_ISHARES_BROAD = {
+    'IVV':  ('239726', 'ishares-core-sp-500-etf'),                       # S&P 500  (~500 holdings)
+    'ITOT': ('239724', 'ishares-core-sp-total-us-stock-market-etf'),     # Total US market (~2600 holdings)
+}
+
+def fetch_ishares_broad_holdings(ticker):
+    """FULL holdings for a broad iShares US fund via BlackRock's own daily CSV (authoritative, not top-25).
+    Returns [tickers] or []. Loud-diag friendly: returns (tickers, http_status) via attribute on failure is
+    avoided -- caller reads the count. Fail-open."""
+    _ent = _ISHARES_BROAD.get((ticker or '').upper())
+    if not _ent:
+        return [], None
+    _pid, _slug = _ent
+    _url = ('https://www.ishares.com/us/products/%s/%s/1467271812596.ajax'
+            '?fileType=csv&fileName=%s_holdings&dataType=fund' % (_pid, _slug, ticker.upper()))
+    try:
+        _r = requests.get(_url, headers={'User-Agent': UA, 'Accept': 'text/csv,*/*'}, timeout=35)
+        if _r.status_code != 200 or not _r.text:
+            return [], _r.status_code
+        _rows = _parse_ishares_csv(_r.text)
+        _tks = [str(x.get('ticker') or '').upper() for x in _rows if x.get('ticker')]
+        _tks = [t for t in _tks if t and t.isalnum() or ('.' in t)]
+        return _tks, _r.status_code
+    except Exception as _e:
+        return [], type(_e).__name__
+
+
 # =================== end iShares / BlackRock authoritative holdings ===================
 
 def build_etf_overlap(rank12_etfs, holdings_map, zacks_top_tickers, top_n=ETF_OVERLAP_TOP_N):
