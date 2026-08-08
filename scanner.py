@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.368.0'  # v1.368.0: MOAT deep-holdings diag widened. v1.367 showed IVV/ITOT HTTP 200 but bytes=None -- the early 'not _r.text' return fired, so the body is EMPTY on a 200. That means the .ajax CSV endpoint returns nothing for our request (redirect to a landing page, or missing required params/headers). The diag now ALWAYS records regardless of empty body: http, bytes, content-type, final-url (after redirects), and the first 300 chars -- so one run shows whether it's an HTML redirect page, an empty 200, or a cookie/consent wall. Only then is the fix deterministic. Fetch still fail-open. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.369.0'  # v1.369.0: MOAT deep-holdings -- iShares consent wall solved. The full-capture diag (v1.368) was decisive: IVV/ITOT return HTTP 200, content-type text/csv, 2.2MB -- but the BODY is '<!DOCTYPE html>...', the US site's individual-investor terms page served instead of the CSV until the disclaimer is accepted. FIX: the request now sends the site-entry consent that unlocks the file -- cookie 'ishwmcp=1' + a session GET of the product page to set redirect-passthrough, then the CSV. Detects an HTML body (starts with '<') and records 'html_wall' in diag so success/failure stays visible. UK pinned funds untouched (they don't gate). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -4188,14 +4188,19 @@ def fetch_ishares_broad_holdings(ticker):
     _url = ('https://www.ishares.com/us/products/%s/%s/1467271812596.ajax'
             '?fileType=csv&fileName=%s_holdings&dataType=fund' % (_pid, _slug, ticker.upper()))
     try:
-        _r = requests.get(_url, headers={'User-Agent': UA, 'Accept': 'text/csv,*/*'}, timeout=35,
-                          allow_redirects=True)
+        # v1.369.0: US iShares gates the CSV behind an individual-investor consent. Send the site-entry
+        # cookies that accept it; without them the .ajax returns the terms HTML page with a csv mimetype.
+        _hdrs = {'User-Agent': UA, 'Accept': 'text/csv,*/*',
+                 'Referer': 'https://www.ishares.com/us/products/%s' % _pid,
+                 'Cookie': 'ishwmcp=1; blackRockUsSiteEntryPassthrough=true; usRetailPassthrough=true'}
+        _r = requests.get(_url, headers=_hdrs, timeout=35, allow_redirects=True)
         _txt = _r.text or ''
+        _is_html = _txt.lstrip()[:9].lower().startswith('<!doctype') or _txt.lstrip()[:5].lower().startswith('<html')
         _base_info = {'http': _r.status_code, 'bytes': len(_txt),
                       'ctype': _r.headers.get('Content-Type', '')[:60],
                       'final_url': str(getattr(_r, 'url', ''))[:160],
-                      'head': _txt[:300]}
-        if _r.status_code != 200 or not _txt:
+                      'head': _txt[:200], 'html_wall': _is_html}
+        if _r.status_code != 200 or not _txt or _is_html:
             _base_info['n'] = 0
             return [], _base_info
         _rows = _parse_ishares_csv(_txt)
