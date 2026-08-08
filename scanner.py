@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.366.0'  # v1.366.0: MOAT deep-holdings cache-bust. v1.365 shipped the broad iShares full-CSV fetch but the first run CARRIED the 7h-old moat_cover (5-day TTL) and never executed the new path -- deep_diag empty, ITOT still 25. The freshness gate now ALSO requires the cached payload to already carry deep_diag; a pre-feature cache (no deep_diag) forces one refresh so the broad CSV actually runs. After that first refresh the 5-day TTL resumes normally. Changed: build_moat_cover freshness condition. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.367.0'  # v1.367.0: MOAT deep-holdings parse diagnostics. v1.366 ran the broad fetch and the diag nailed it: IVV/ITOT return HTTP 200 (URL correct, fund exists) but parse=0 -- the real iShares US CSV format differs from the pinned-UK format _parse_ishares_csv expects (different preamble/header wording/columns). To fix the parser I must see the real bytes, which the sandbox cannot fetch, so the fetch now records into moat_cover.deep_diag: the first 400 chars of the raw response (head), the detected header line, and the column names -- one run reveals the exact format and the parser fix is then deterministic, not guessed. Fetch/union logic unchanged; still fail-open. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3364,8 +3364,8 @@ def build_moat_cover(existing=None):
     deep_diag = {}
     for _bt in _ISHARES_BROAD:
         try:
-            _tks, _st = fetch_ishares_broad_holdings(_bt)
-            deep_diag[_bt] = {'http': _st, 'n': len(_tks)}
+            _tks, _info = fetch_ishares_broad_holdings(_bt)
+            deep_diag[_bt] = _info if isinstance(_info, dict) else {'http': _info, 'n': len(_tks)}
             if _tks:
                 cache[_bt] = _tks   # unioned into holders like any other ETF
         except Exception as _be:
@@ -4189,11 +4189,18 @@ def fetch_ishares_broad_holdings(ticker):
     try:
         _r = requests.get(_url, headers={'User-Agent': UA, 'Accept': 'text/csv,*/*'}, timeout=35)
         if _r.status_code != 200 or not _r.text:
-            return [], _r.status_code
-        _rows = _parse_ishares_csv(_r.text)
+            return [], {'http': _r.status_code, 'n': 0}
+        _txt = _r.text
+        _rows = _parse_ishares_csv(_txt)
         _tks = [str(x.get('ticker') or '').upper() for x in _rows if x.get('ticker')]
-        _tks = [t for t in _tks if t and t.isalnum() or ('.' in t)]
-        return _tks, _r.status_code
+        _tks = [t for t in _tks if (t and t.isalnum()) or ('.' in t)]
+        _info = {'http': _r.status_code, 'n': len(_tks), 'bytes': len(_txt)}
+        if not _tks:
+            _lines = _txt.splitlines()
+            _hdr = next((ln for ln in _lines[:20] if 'icker' in ln or 'ISIN' in ln or 'Name' in ln), None)
+            _info['head'] = _txt[:400]
+            _info['hdr_line'] = _hdr
+        return _tks, _info
     except Exception as _e:
         return [], type(_e).__name__
 
