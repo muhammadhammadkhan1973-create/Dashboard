@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.370.0'  # v1.370.0: iShares consent via SESSION (two-step). v1.369 sent consent cookies on a single GET; html_wall still True -- iShares sets the disclaimer acceptance SERVER-side, so a lone cookie header isn't honored. FIX: use a requests.Session -- (1) POST the site's disclaimer-accept endpoint / GET the product page with the passthrough params so the server issues the real consent cookie into the jar, (2) reuse that same session for the CSV. If step 2 still returns HTML, diag keeps html_wall True and we conclude the runner IP can't clear it (then keep the honest label). Fail-open throughout; UK pinned funds untouched. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.371.0'  # v1.371.0: iShares CSV via the BUSINESS-RECORDER technique (owner's insight). BR serves the SPA/HTML shell to a plain GET but returns the real data when the request carries X-Requested-With: XMLHttpRequest (+ JSON/AJAX Accept + XHR fetch-metadata headers) -- signalling an in-page fetch, not a navigation. iShares' wall is the same shape (plain GET -> terms HTML; real CSV only for the browser's own fetch). So the broad-holdings request now sends the XHR header set on the session's CSV call. If it still returns HTML, html_wall stays True and we stop for good. One decisive run. Fail-open; UK pinned funds untouched. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -4200,10 +4200,23 @@ def fetch_ishares_broad_holdings(ticker):
                       timeout=25, allow_redirects=True)
         except Exception:
             pass
-        _hdrs = {'Accept': 'text/csv,application/csv,*/*',
+        # v1.371.0: the Business-Recorder move -- present the request as the browser's in-page fetch so
+        # the server returns DATA, not the SPA/terms shell. XHR header + AJAX accept + fetch metadata.
+        _hdrs = {'Accept': 'text/csv,application/csv,application/json,text/plain,*/*',
+                 'X-Requested-With': 'XMLHttpRequest',
+                 'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty',
                  'Referer': 'https://www.ishares.com/us/products/%s' % _pid}
         _r = _sess.get(_url, headers=_hdrs, timeout=35, allow_redirects=True)
         _txt = _r.text or ''
+        # v1.371.0: if it still handed back the shell, retry once WITHOUT redirects (the terms page is a
+        # redirect; the raw .ajax may serve csv directly to the XHR call).
+        if _txt.lstrip()[:9].lower().startswith('<!doctype'):
+            try:
+                _r2 = _sess.get(_url, headers=_hdrs, timeout=35, allow_redirects=False)
+                if _r2.status_code == 200 and _r2.text and not _r2.text.lstrip()[:9].lower().startswith('<!doctype'):
+                    _r = _r2; _txt = _r2.text or ''
+            except Exception:
+                pass
         _is_html = _txt.lstrip()[:9].lower().startswith('<!doctype') or _txt.lstrip()[:5].lower().startswith('<html')
         _base_info = {'http': _r.status_code, 'bytes': len(_txt),
                       'ctype': _r.headers.get('Content-Type', '')[:60],
