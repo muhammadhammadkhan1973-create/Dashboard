@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.367.0'  # v1.367.0: MOAT deep-holdings parse diagnostics. v1.366 ran the broad fetch and the diag nailed it: IVV/ITOT return HTTP 200 (URL correct, fund exists) but parse=0 -- the real iShares US CSV format differs from the pinned-UK format _parse_ishares_csv expects (different preamble/header wording/columns). To fix the parser I must see the real bytes, which the sandbox cannot fetch, so the fetch now records into moat_cover.deep_diag: the first 400 chars of the raw response (head), the detected header line, and the column names -- one run reveals the exact format and the parser fix is then deterministic, not guessed. Fetch/union logic unchanged; still fail-open. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.368.0'  # v1.368.0: MOAT deep-holdings diag widened. v1.367 showed IVV/ITOT HTTP 200 but bytes=None -- the early 'not _r.text' return fired, so the body is EMPTY on a 200. That means the .ajax CSV endpoint returns nothing for our request (redirect to a landing page, or missing required params/headers). The diag now ALWAYS records regardless of empty body: http, bytes, content-type, final-url (after redirects), and the first 300 chars -- so one run shows whether it's an HTML redirect page, an empty 200, or a cookie/consent wall. Only then is the fix deterministic. Fetch still fail-open. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3348,7 +3348,8 @@ def build_moat_cover(existing=None):
         fresh = False
     # v1.366.0: a pre-deep-holdings cache (no deep_diag) must refresh once so the broad CSV runs.
     _has_deep = bool(prev.get('deep_diag'))
-    if fresh and cache and _has_deep:
+    _deep_ok = _has_deep and any((v or {}).get('n', 0) > 0 for v in (prev.get('deep_diag') or {}).values())
+    if fresh and cache and _deep_ok:   # v1.367.0: only carry once deep holdings actually succeeded
         log('  [MOAT cover] carried (fresh <5d, deep present): %d ETFs' % len(cache))
         return prev
     got = 0
@@ -4187,20 +4188,24 @@ def fetch_ishares_broad_holdings(ticker):
     _url = ('https://www.ishares.com/us/products/%s/%s/1467271812596.ajax'
             '?fileType=csv&fileName=%s_holdings&dataType=fund' % (_pid, _slug, ticker.upper()))
     try:
-        _r = requests.get(_url, headers={'User-Agent': UA, 'Accept': 'text/csv,*/*'}, timeout=35)
-        if _r.status_code != 200 or not _r.text:
-            return [], {'http': _r.status_code, 'n': 0}
-        _txt = _r.text
+        _r = requests.get(_url, headers={'User-Agent': UA, 'Accept': 'text/csv,*/*'}, timeout=35,
+                          allow_redirects=True)
+        _txt = _r.text or ''
+        _base_info = {'http': _r.status_code, 'bytes': len(_txt),
+                      'ctype': _r.headers.get('Content-Type', '')[:60],
+                      'final_url': str(getattr(_r, 'url', ''))[:160],
+                      'head': _txt[:300]}
+        if _r.status_code != 200 or not _txt:
+            _base_info['n'] = 0
+            return [], _base_info
         _rows = _parse_ishares_csv(_txt)
         _tks = [str(x.get('ticker') or '').upper() for x in _rows if x.get('ticker')]
         _tks = [t for t in _tks if (t and t.isalnum()) or ('.' in t)]
-        _info = {'http': _r.status_code, 'n': len(_tks), 'bytes': len(_txt)}
+        _base_info['n'] = len(_tks)
         if not _tks:
             _lines = _txt.splitlines()
-            _hdr = next((ln for ln in _lines[:20] if 'icker' in ln or 'ISIN' in ln or 'Name' in ln), None)
-            _info['head'] = _txt[:400]
-            _info['hdr_line'] = _hdr
-        return _tks, _info
+            _base_info['hdr_line'] = next((ln for ln in _lines[:25] if 'icker' in ln or 'ISIN' in ln or 'Name' in ln), None)
+        return _tks, _base_info
     except Exception as _e:
         return [], type(_e).__name__
 
