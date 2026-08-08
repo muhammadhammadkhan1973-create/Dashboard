@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.369.0'  # v1.369.0: MOAT deep-holdings -- iShares consent wall solved. The full-capture diag (v1.368) was decisive: IVV/ITOT return HTTP 200, content-type text/csv, 2.2MB -- but the BODY is '<!DOCTYPE html>...', the US site's individual-investor terms page served instead of the CSV until the disclaimer is accepted. FIX: the request now sends the site-entry consent that unlocks the file -- cookie 'ishwmcp=1' + a session GET of the product page to set redirect-passthrough, then the CSV. Detects an HTML body (starts with '<') and records 'html_wall' in diag so success/failure stays visible. UK pinned funds untouched (they don't gate). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.370.0'  # v1.370.0: iShares consent via SESSION (two-step). v1.369 sent consent cookies on a single GET; html_wall still True -- iShares sets the disclaimer acceptance SERVER-side, so a lone cookie header isn't honored. FIX: use a requests.Session -- (1) POST the site's disclaimer-accept endpoint / GET the product page with the passthrough params so the server issues the real consent cookie into the jar, (2) reuse that same session for the CSV. If step 2 still returns HTML, diag keeps html_wall True and we conclude the runner IP can't clear it (then keep the honest label). Fail-open throughout; UK pinned funds untouched. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -4188,12 +4188,21 @@ def fetch_ishares_broad_holdings(ticker):
     _url = ('https://www.ishares.com/us/products/%s/%s/1467271812596.ajax'
             '?fileType=csv&fileName=%s_holdings&dataType=fund' % (_pid, _slug, ticker.upper()))
     try:
-        # v1.369.0: US iShares gates the CSV behind an individual-investor consent. Send the site-entry
-        # cookies that accept it; without them the .ajax returns the terms HTML page with a csv mimetype.
-        _hdrs = {'User-Agent': UA, 'Accept': 'text/csv,*/*',
-                 'Referer': 'https://www.ishares.com/us/products/%s' % _pid,
-                 'Cookie': 'ishwmcp=1; blackRockUsSiteEntryPassthrough=true; usRetailPassthrough=true'}
-        _r = requests.get(_url, headers=_hdrs, timeout=35, allow_redirects=True)
+        # v1.370.0: iShares sets consent server-side -> use a SESSION. Step 1: hit the disclaimer-accept
+        # entry so the server drops the real consent cookie into the jar. Step 2: fetch the CSV reusing it.
+        _sess = requests.Session()
+        _sess.headers.update({'User-Agent': UA})
+        try:
+            _sess.get('https://www.ishares.com/us/product-screener/product-screener-v3.1.jsn'
+                      '?siteEntryPassthrough=true&dcrPath=/templatedata/config/product-screener-v3/data/en/us-one/product-screener',
+                      timeout=25, allow_redirects=True)
+            _sess.get('https://www.ishares.com/us/products/%s?siteEntryPassthrough=true' % _pid,
+                      timeout=25, allow_redirects=True)
+        except Exception:
+            pass
+        _hdrs = {'Accept': 'text/csv,application/csv,*/*',
+                 'Referer': 'https://www.ishares.com/us/products/%s' % _pid}
+        _r = _sess.get(_url, headers=_hdrs, timeout=35, allow_redirects=True)
         _txt = _r.text or ''
         _is_html = _txt.lstrip()[:9].lower().startswith('<!doctype') or _txt.lstrip()[:5].lower().startswith('<html')
         _base_info = {'http': _r.status_code, 'bytes': len(_txt),
@@ -4203,7 +4212,7 @@ def fetch_ishares_broad_holdings(ticker):
         if _r.status_code != 200 or not _txt or _is_html:
             _base_info['n'] = 0
             return [], _base_info
-        _rows = _parse_ishares_csv(_txt)
+        _rows = _parse_ishares_csv(_txt.lstrip('\ufeff'))   # v1.369.0: iShares CSVs carry a BOM
         _tks = [str(x.get('ticker') or '').upper() for x in _rows if x.get('ticker')]
         _tks = [t for t in _tks if (t and t.isalnum()) or ('.' in t)]
         _base_info['n'] = len(_tks)
