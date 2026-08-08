@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.362.0'  # v1.362.0: MOAT -> ranked UCITS ETF list holding the top-return moat names. Owner: show the ETFs (with ISIN + all columns, World-ETF format) that concentrate the highest-return moat stocks. build_moat_universe now also assembles data['moat']['top_etfs']: pools every live UCITS ETF that carries ISIN + holdings (etf_momentum_watch + etf_emerging_themes_watch + hydrogen + metals ETC, ~101 funds, all with ter/ytd/live_ret_1y/estate_status), scores each by how many of the top-40 return leaders it holds (name-token match on the real holdings string), and emits the ranked list with FULL columns so the tab renders it exactly like Tab 16. No new fetch -- reuses ETF payloads already live. Changed: build_moat_universe tail only. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.364.0'  # v1.364.0: MOAT turnaround flag fixed. The Turnaround membership flag read a non-existent 'tier' field, so it never fired (0 moat rows flagged). Real marker is the explosive_us 'verdict' string 'TURNAROUND -- quarterly inflection'. f_turn now derives from that. This makes the tab's new display rule (index v5.317: show returns >0, hide <=0, but ALWAYS show qualifying turnarounds) actually surface inflecting names. Changed: f_turn derivation only. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3399,7 +3399,7 @@ def build_moat_universe(data, existing=None):
         return out
     f_expl = _flagset('explosive_us'); f_turn = set()
     for _r in (data.get('explosive_us') or []):
-        if isinstance(_r, dict) and _r.get('ticker') and (_r.get('tier') == 'turnaround' or _r.get('turnaround')):
+        if isinstance(_r, dict) and _r.get('ticker') and 'TURNAROUND' in str(_r.get('verdict', '')).upper():
             f_turn.add(_r['ticker'])
     f_m1 = set((data.get('m1_buylist') or {}).keys()) if isinstance(data.get('m1_buylist'), dict) else _flagset('m1_buylist')
     f_mb = _flagset('m2_watch') | _flagset('us_multibagger')
@@ -3438,7 +3438,7 @@ def build_moat_universe(data, existing=None):
         for i in range(0, len(_cands), 100):
             chunk = _cands[i:i+100]
             r = requests.post('https://scanner.tradingview.com/america/scan',
-                              json={'symbols': {'tickers': chunk}, 'columns': ['close', 'change', 'Perf.Y']},
+                              json={'symbols': {'tickers': chunk}, 'columns': ['close', 'change', 'Perf.Y', 'Perf.YTD']},
                               headers={'User-Agent': UA}, timeout=30)
             _mdiag['http'][str(r.status_code)] = _mdiag['http'].get(str(r.status_code), 0) + 1
             if r.status_code == 200:
@@ -3450,7 +3450,8 @@ def build_moat_universe(data, existing=None):
                     if dvals and isinstance(dvals[0], (int, float)):
                         live[sym] = {'px': round(float(dvals[0]), 2),
                                      'chg': round(float(dvals[1]), 2) if len(dvals) > 1 and isinstance(dvals[1], (int, float)) else None,
-                                     'perf_y': round(float(dvals[2]), 2) if len(dvals) > 2 and isinstance(dvals[2], (int, float)) else None}
+                                     'perf_y': round(float(dvals[2]), 2) if len(dvals) > 2 and isinstance(dvals[2], (int, float)) else None,
+                                     'perf_ytd': round(float(dvals[3]), 2) if len(dvals) > 3 and isinstance(dvals[3], (int, float)) else None}
                         _mdiag['n_matched'] += 1
     except Exception as _me:
         _mdiag['error'] = type(_me).__name__
@@ -3479,6 +3480,7 @@ def build_moat_universe(data, existing=None):
             row['base_px'] = base; row['base_date'] = base_date
             row['ret_since'] = round((lv['px'] / base - 1) * 100, 2) if base else None
             if lv.get('perf_y') is not None: row['ret_1y_live'] = lv['perf_y']
+            if lv.get('perf_ytd') is not None: row['ret_ytd_live'] = lv['perf_ytd']
         else:
             row['base_px'] = pr.get('base_px'); row['base_date'] = pr.get('base_date')
             row['ret_since'] = pr.get('ret_since')
