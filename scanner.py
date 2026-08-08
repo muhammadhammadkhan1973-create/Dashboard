@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.365.0'  # v1.365.0: MOAT deep holdings via ISSUER full-CSV (not top-25 scrape). Owner is right -- all ETFs publish full holdings; the scanner already fetches BlackRock's authoritative daily CSV for pinned iShares funds (fetch_ishares_holdings, FULL fund not top-25). This extends that proven mechanism to BROAD funds: new fetch_ishares_broad_holdings(ticker) hits the iShares US holdings CSV for IVV (S&P 500, ~500 names) and ITOT (Total US market, ~2600 names) -- one file confirms essentially every US moat mid-cap with real weights. build_moat_cover unions these deep holdings on TOP of the existing top-25 set (so it can only ADD coverage, never lose any) and records moat_cover.deep_diag {ticker: {http, n}} so ONE runner run proves the count or names the exact URL to fix. Fail-open: any error -> existing behavior unchanged. Reuses the proven _parse_ishares_csv (keys columns by name, US/UK agnostic). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.366.0'  # v1.366.0: MOAT deep-holdings cache-bust. v1.365 shipped the broad iShares full-CSV fetch but the first run CARRIED the 7h-old moat_cover (5-day TTL) and never executed the new path -- deep_diag empty, ITOT still 25. The freshness gate now ALSO requires the cached payload to already carry deep_diag; a pre-feature cache (no deep_diag) forces one refresh so the broad CSV actually runs. After that first refresh the 5-day TTL resumes normally. Changed: build_moat_cover freshness condition. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3346,8 +3346,10 @@ def build_moat_cover(existing=None):
             fresh = (dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(str(stamp).replace('Z', '+00:00'))).total_seconds() < 5 * 86400
     except Exception:
         fresh = False
-    if fresh and cache:
-        log('  [MOAT cover] carried (fresh <5d): %d ETFs' % len(cache))
+    # v1.366.0: a pre-deep-holdings cache (no deep_diag) must refresh once so the broad CSV runs.
+    _has_deep = bool(prev.get('deep_diag'))
+    if fresh and cache and _has_deep:
+        log('  [MOAT cover] carried (fresh <5d, deep present): %d ETFs' % len(cache))
         return prev
     got = 0
     for etf in MOAT_COVER_ETFS:
