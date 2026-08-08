@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.361.0'  # v1.361.0: MOAT REAL-HOLDINGS COVERAGE (drop the file dependency). Owner: 'don't depend on the file; other tabs fetch full holdings -- use those.' The dashboard's proven fetch_etf_holdings (stockanalysis /etf/<t>/holdings/, real constituents + weights) is now run over a MOAT_COVER_ETFS set of broad + every-sector ETFs (VTI/ITOT hold the whole market; sector SPDRs + SMH/SOXX/IHI/IHF/XBI/KRE/ITA/IYT/XLRE/etc cover the moat sectors), cached 5 days in data['moat_cover'] and reused across runs -- no file, real weights. build_moat_universe now confirms each name against the union of MOAT_COVER holdings + wave_z.fund_cache; row.etf_holders_live carries the actual ETFs that hold it. ucits_file demoted to a secondary hint (kept, labelled). Cold run adds ~20 cached fetches (~25s once); ~0 after. Changed: + build_moat_cover(), build_moat_universe holder source, call site. PRIOR: CHANGELOG.md.
+SCAN_VERSION = '1.362.0'  # v1.362.0: MOAT -> ranked UCITS ETF list holding the top-return moat names. Owner: show the ETFs (with ISIN + all columns, World-ETF format) that concentrate the highest-return moat stocks. build_moat_universe now also assembles data['moat']['top_etfs']: pools every live UCITS ETF that carries ISIN + holdings (etf_momentum_watch + etf_emerging_themes_watch + hydrogen + metals ETC, ~101 funds, all with ter/ytd/live_ret_1y/estate_status), scores each by how many of the top-40 return leaders it holds (name-token match on the real holdings string), and emits the ranked list with FULL columns so the tab renders it exactly like Tab 16. No new fetch -- reuses ETF payloads already live. Changed: build_moat_universe tail only. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3514,10 +3514,39 @@ def build_moat_universe(data, existing=None):
     leaders = sorted(rows, key=lambda r: -(_score(r) if _score(r) is not None else -999))[:20]
     leader_isins = [r['isin'] for r in leaders]
 
+    # v1.362.0: rank live UCITS ETFs by how many top-return moat leaders they hold (full columns kept)
+    import re as _re2
+    _pool = []
+    for _k in ('etf_momentum_watch', 'etf_emerging_themes_watch', 'etf_hydrogen_watch', 'etf_metals_etc_watch'):
+        for _e in (data.get(_k) or []):
+            if isinstance(_e, dict) and _e.get('isin') and _e.get('holdings'):
+                _pool.append(_e)
+    _lead = sorted([r for r in rows if (r.get('ret_1y_live') if r.get('ret_1y_live') is not None else r.get('ret_1y_file')) is not None],
+                   key=lambda r: -((r.get('ret_1y_live') if r.get('ret_1y_live') is not None else r.get('ret_1y_file')) or -999))[:40]
+    _lead_names = [(r['name'].split(',')[0].split(' Inc')[0].split(' Corp')[0].strip().lower(),
+                    r.get('ticker'), (r.get('ret_1y_live') if r.get('ret_1y_live') is not None else r.get('ret_1y_file'))) for r in _lead]
+    _seen_isin = set(); _top_etfs = []
+    for _e in _pool:
+        _iid = _e.get('isin')
+        if _iid in _seen_isin: continue
+        _h = (_e.get('holdings') or '').lower()
+        _hits = [(nm, tk, rt) for (nm, tk, rt) in _lead_names if nm and len(nm) > 3 and nm in _h]
+        if not _hits: continue
+        _seen_isin.add(_iid)
+        _top_etfs.append({'name': _e.get('name'), 'isin': _iid, 'ter': _e.get('ter'),
+                          'ytd': _e.get('live_ytd') if _e.get('live_ytd') is not None else _e.get('ytd'),
+                          'ret_1y': _e.get('live_ret_1y') if _e.get('live_ret_1y') is not None else _e.get('ret_1y'),
+                          'category': _e.get('category') or _e.get('theme') or _e.get('segment'),
+                          'estate_status': _e.get('estate_status'), 'domicile': _e.get('domicile'),
+                          'n_holdings': _e.get('n_holdings'), 'holdings': _e.get('holdings'),
+                          'n_leaders': len(_hits),
+                          'leaders_held': [{'tk': tk, 'name': nm.title(), 'ret': rt} for (nm, tk, rt) in _hits[:6]]})
+    _top_etfs.sort(key=lambda x: (-x['n_leaders'], -((x.get('ret_1y') or -999))))
     log('  [MOAT] %d names | %d live-tracked (US) | %d with engine grade | leaders top ret %.0f%%'
         % (len(rows), n_live, sum(1 for r in rows if r.get('im3_grade')),
            (_score(leaders[0]) if leaders else 0) or 0))
     return {'rows': rows, 'leader_isins': leader_isins, 'diag': _mdiag,
+            'top_etfs': _top_etfs[:25],
             'n_total': len(rows), 'n_live': n_live,
             'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
             'note': 'wide-moat watchlist; US names live-tracked forward from first-seen, non-US show file 1Y; engine columns are cross-references, MOAT membership is not itself a score'}
