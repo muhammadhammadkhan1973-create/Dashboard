@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.383.0'  # v1.383.0: CONCLUDE ETF deep-holdings -- proven unreachable. Owner's DevTools capture was definitive: TV serves ETF constituents over a SESSION-AUTHENTICATED WEBSOCKET (Network>Socket: 'websocket?from=symbols/AMEX-VOO/&auth=sessionid', type=websocket, status 101, streaming). The scanner's requests-based HTTP model cannot consume that (needs a persistent socket + TV subscribe protocol + a logged-in session the runner lacks); page HTML has initData={} and the only HTTP holdings traffic is a WS ping heartbeat. DECISION: disable the TV deep-fetch so it stops consuming runtime; moat_cover reverts to the 39 top-25 ETFs on the normal 5-day cache; MOAT tab keeps the honest 'not a top holding' label for mid-caps. Functions retained for a future dedicated WS client. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.384.0'  # v1.384.0: ETF deep holdings via API NINJAS REST (real solution to the WebSocket wall). TV serves holdings only over an authed websocket (proven); API Ninjas serves them as plain REST JSON with no wall: GET https://api.api-ninjas.com/v1/etf?ticker=<T> + X-Api-Key. New fetch_ninja_etf_holdings(ticker) pulls the full 'holdings' array (ticker/name/weight) for IVV/ITOT/VTI -- covering the moat mid-caps. Key read from env ETF_NINJA_KEY (GitHub Actions secret; NEVER hardcoded, the repo is public). Robust parser handles the documented {holdings:[{ticker,weight}]} shape and variants; junk-reject + n>=50 gate retained; diag captures the response on miss. Fail-open: no key or any error -> existing top-25 behavior unchanged. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3468,6 +3468,57 @@ def _extract_tv_tickers(obj, _depth=0):
     return list(dict.fromkeys(_best or []))
 
 
+
+# v1.384.0: API Ninjas ETF holdings -- plain REST JSON, no consent wall, no websocket. The real path after
+# TV proved websocket-only and iShares proved consent-walled. Key from env (GitHub secret), never hardcoded.
+def fetch_ninja_etf_holdings(ticker):
+    """Full holdings for a US ETF via api-ninjas.com REST. Returns ([tickers], diag). Fail-open."""
+    import os, json as _json
+    _key = os.environ.get('ETF_NINJA_KEY', '').strip()
+    if not _key:
+        return [], {'src': 'ninja', 'n': 0, 'err': 'no_key'}
+    _url = 'https://api.api-ninjas.com/v1/etf?ticker=%s' % (ticker or '').upper()
+    try:
+        _r = requests.get(_url, headers={'X-Api-Key': _key, 'User-Agent': UA}, timeout=30)
+        _txt = _r.text or ''
+        if _r.status_code != 200:
+            return [], {'src': 'ninja', 'n': 0, 'http': _r.status_code, 'head': _txt[:160]}
+        _j = _json.loads(_txt)
+        # documented shape: {"name":..,"holdings":[{"ticker":"AAPL","name":..,"weight":6.85}, ...]}
+        _hold = None
+        if isinstance(_j, dict):
+            _hold = _j.get('holdings') or _j.get('components') or _j.get('constituents')
+        elif isinstance(_j, list):
+            _hold = _j
+        _tks = []
+        if isinstance(_hold, list):
+            for _row in _hold:
+                _t = _ninja_row_ticker(_row)
+                if _t:
+                    _tks.append(_t)
+        _tks = list(dict.fromkeys(_tks))
+        if _tks:
+            return _tks, {'src': 'ninja', 'n': len(_tks), 'http': 200}
+        return [], {'src': 'ninja', 'n': 0, 'http': 200, 'top_keys': list(_j.keys())[:15] if isinstance(_j, dict) else 'list', 'head': _txt[:200]}
+    except Exception as _e:
+        return [], {'src': 'ninja', 'n': 0, 'err': type(_e).__name__}
+
+def _ninja_row_ticker(row):
+    """Pull the constituent ticker from an API Ninjas holdings row."""
+    if isinstance(row, dict):
+        for _k in ('ticker', 'symbol'):
+            _v = row.get(_k)
+            if isinstance(_v, str):
+                _t = _v.split(':')[-1].strip().upper()
+                if 1 <= len(_t) <= 6 and _t.replace('.', '').replace('-', '').isalnum() and _t not in _TV_JUNK:
+                    return _t
+    elif isinstance(row, str):
+        _t = row.split(':')[-1].strip().upper()
+        if 1 <= len(_t) <= 6 and _t.replace('.', '').replace('-', '').isalnum() and _t not in _TV_JUNK:
+            return _t
+    return None
+
+
 def build_moat_cover(existing=None):
     """v1.361.0: real ETF holdings for moat confirmation, via the proven fetch_etf_holdings. Broad funds
     (VTI/ITOT/IWB) plus every-sector ETFs so most moat names -- large AND mid cap -- appear in at least one
@@ -3483,9 +3534,11 @@ def build_moat_cover(existing=None):
         fresh = False
     # v1.366.0: a pre-deep-holdings cache (no deep_diag) must refresh once so the broad CSV runs.
     # v1.373.0: carry only once TV deep holdings have succeeded; else refresh to retry the fetch.
-    # v1.383.0: deep-fetch disabled -> normal 5-day cache carry, no deep retry.
-    if fresh and cache:
-        log('  [MOAT cover] carried (fresh <5d): %d ETFs' % len(cache))
+    # v1.384.0: carry only once ninja deep holdings succeeded (n>=50); else refresh to retry.
+    _pdd = (prev.get('deep_diag') or {})
+    _deep_ok = any((v or {}).get('n', 0) >= 50 for v in _pdd.values() if isinstance(v, dict))
+    if fresh and cache and _deep_ok:
+        log('  [MOAT cover] carried (fresh <5d, ninja deep present): %d ETFs' % len(cache))
         return prev
     got = 0
     for etf in MOAT_COVER_ETFS:
@@ -3497,11 +3550,16 @@ def build_moat_cover(existing=None):
         except Exception:
             pass
     # v1.373.0: BROAD funds via TV holdings (Business-Recorder technique). TV is runner-reachable.
-    # v1.383.0: TV holdings CONCLUDED unreachable (session-authed WebSocket, proven via owner DevTools).
-    # Deep-fetch disabled so it no longer consumes runtime. TV/parser functions retained for a future
-    # dedicated WebSocket client, which is the only way to reach TV's streamed constituents.
-    deep_diag = {'_status': 'disabled_ws_only',
-                 'note': 'TV serves ETF holdings via an authed websocket; not fetchable over HTTP'}
+    # v1.384.0: BROAD funds via API Ninjas REST (no wall, no websocket). Covers mid-caps.
+    deep_diag = {}
+    for _bt in ('IVV', 'ITOT', 'VTI'):
+        try:
+            _tks, _info = fetch_ninja_etf_holdings(_bt)
+            deep_diag[_bt] = _info
+            if _tks:
+                cache[_bt] = _tks
+        except Exception as _be:
+            deep_diag[_bt] = {'src': 'ninja', 'n': 0, 'err': type(_be).__name__}
     log('  [MOAT cover] fetched %d/%d top-25 ETFs + broad deep: %s'
         % (got, len(MOAT_COVER_ETFS), {k: (v or {}).get('n', 0) for k, v in deep_diag.items()}))
     return {'by_etf': cache, 'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
