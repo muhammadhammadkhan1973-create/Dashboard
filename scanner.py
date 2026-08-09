@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.382.0'  # v1.382.0: TV holdings -- CORRECT endpoint from owner's DevTools capture. The capture (tradingview.com/symbols/AMEX-IWM/holdings/) proved two bugs: (1) the symbol must be EXCHANGE-TICKER hyphenated (AMEX-IVV), not bare 'IVV'; (2) holdings load via a dedicated XHR to the holdings API, not the page JSON I was parsing (which only had metadata -> META/NAME/ETF). FIX: fetch uses the exchange-qualified symbol and the holdings API endpoints, with an EXCHANGE map for the broad ETFs (IVV/ITOT=AMEX, VTI=AMEX). Signature parser + junk-reject + n>=50 gate retained. Diag still captures the body on miss so if params differ, one run shows it. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.383.0'  # v1.383.0: CONCLUDE ETF deep-holdings -- proven unreachable. Owner's DevTools capture was definitive: TV serves ETF constituents over a SESSION-AUTHENTICATED WEBSOCKET (Network>Socket: 'websocket?from=symbols/AMEX-VOO/&auth=sessionid', type=websocket, status 101, streaming). The scanner's requests-based HTTP model cannot consume that (needs a persistent socket + TV subscribe protocol + a logged-in session the runner lacks); page HTML has initData={} and the only HTTP holdings traffic is a WS ping heartbeat. DECISION: disable the TV deep-fetch so it stops consuming runtime; moat_cover reverts to the 39 top-25 ETFs on the normal 5-day cache; MOAT tab keeps the honest 'not a top holding' label for mid-caps. Functions retained for a future dedicated WS client. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3483,14 +3483,10 @@ def build_moat_cover(existing=None):
         fresh = False
     # v1.366.0: a pre-deep-holdings cache (no deep_diag) must refresh once so the broad CSV runs.
     # v1.373.0: carry only once TV deep holdings have succeeded; else refresh to retry the fetch.
-    _pdd = (prev.get('deep_diag') or {})
-    _is_tv = _pdd and all((v or {}).get('src') == 'tv' for v in _pdd.values())
-    _deep_ok = _is_tv and any((v or {}).get('n', 0) >= 50 for v in _pdd.values())   # v1.380.0: real holdings, not 2 junk tokens
-    if fresh and cache and _deep_ok:
-        log('  [MOAT cover] carried (fresh <5d, TV deep present): %d ETFs' % len(cache))
+    # v1.383.0: deep-fetch disabled -> normal 5-day cache carry, no deep retry.
+    if fresh and cache:
+        log('  [MOAT cover] carried (fresh <5d): %d ETFs' % len(cache))
         return prev
-    if not _is_tv:
-        log('  [MOAT cover] cache lacks TV-sourced deep_diag -> refreshing to run TV fetch')
     got = 0
     for etf in MOAT_COVER_ETFS:
         try:
@@ -3501,17 +3497,11 @@ def build_moat_cover(existing=None):
         except Exception:
             pass
     # v1.373.0: BROAD funds via TV holdings (Business-Recorder technique). TV is runner-reachable.
-    deep_diag = {}
-    for _bt in ('IVV', 'ITOT', 'VTI'):
-        try:
-            _tks, _info = fetch_tv_etf_holdings(_bt)
-            _info = _info if isinstance(_info, dict) else {'n': len(_tks)}
-            _info['src'] = 'tv'   # v1.375.0: tag so the gate can tell TV diag from the old iShares diag
-            deep_diag[_bt] = _info
-            if _tks:
-                cache[_bt] = _tks
-        except Exception as _be:
-            deep_diag[_bt] = {'http': type(_be).__name__, 'n': 0}
+    # v1.383.0: TV holdings CONCLUDED unreachable (session-authed WebSocket, proven via owner DevTools).
+    # Deep-fetch disabled so it no longer consumes runtime. TV/parser functions retained for a future
+    # dedicated WebSocket client, which is the only way to reach TV's streamed constituents.
+    deep_diag = {'_status': 'disabled_ws_only',
+                 'note': 'TV serves ETF holdings via an authed websocket; not fetchable over HTTP'}
     log('  [MOAT cover] fetched %d/%d top-25 ETFs + broad deep: %s'
         % (got, len(MOAT_COVER_ETFS), {k: (v or {}).get('n', 0) for k, v in deep_diag.items()}))
     return {'by_etf': cache, 'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
