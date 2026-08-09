@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.388.0'  # v1.388.0: fix N-PORT CIK lookup for ETFs. v1.387 used company_tickers.json (STOCKS only) -> ETFs like IVV aren't in it -> err:no_cik. Fix: use company_tickers_exchange.json which includes ETFs (SEC-confirmed: cik/name/ticker/exchange), structure {fields:[...],data:[[cik,name,ticker,exchange],...]}; fall back to company_tickers.json. Now IVV/ITOT/VTI resolve to their fund-trust CIK and N-PORT holdings parse. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.389.0'  # v1.389.0: fix N-PORT CIK -- two problems found. (1) NAME COLLISION: my _SEC_UA (defined near the nport code) is shadowed by a LATER _SEC_UA def elsewhere, and _SEC_HEADERS sets Host: data.sec.gov which BREAKS a www.sec.gov request (wrong Host header -> the exchange-file fetch silently failed -> empty map -> no_cik). (2) my duplicate CIK loader is redundant. FIX: rename to _NPORT_UA (no collision), drop any Host header, and add diag capturing the CIK-map size so we SEE it load. company_tickers_exchange.json (has ETFs) + stocks fallback. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3559,13 +3559,14 @@ def _ninja_row_ticker(row):
 
 # v1.387.0: SEC EDGAR N-PORT holdings for US ETFs. Free, authoritative, no key/wall. The runner already
 # reaches sec.gov. Compliant User-Agent is required by SEC (name + contact).
-_SEC_UA = 'MHK-Dashboard research contact: muhammadhammadkhan1973@gmail.com'
+_NPORT_UA = 'MHK-Dashboard research contact: muhammadhammadkhan1973@gmail.com'
 _SEC_TICKER_CIK = {}   # lazy cache: ticker -> zero-padded CIK
+_NPORT_DIAG = {}       # v1.389.0: visibility into CIK-map load
 
 def _sec_get(url, is_json=True):
     import time as _t
     _t.sleep(0.15)   # stay well under SEC's 10 req/s
-    _r = requests.get(url, headers={'User-Agent': _SEC_UA, 'Accept-Encoding': 'gzip, deflate'}, timeout=30)
+    _r = requests.get(url, headers={'User-Agent': _NPORT_UA, 'Accept-Encoding': 'gzip, deflate'}, timeout=30)
     if _r.status_code != 200:
         return None
     return _r.json() if is_json else _r.text
@@ -3594,6 +3595,8 @@ def _sec_ticker_to_cik(ticker):
                     _SEC_TICKER_CIK.setdefault(str(_v['ticker']).upper(), str(_v['cik_str']).zfill(10))
                 except Exception:
                     pass
+        _NPORT_DIAG['cik_map_size'] = len(_SEC_TICKER_CIK)
+        _NPORT_DIAG['has_IVV'] = 'IVV' in _SEC_TICKER_CIK
     return _SEC_TICKER_CIK.get((ticker or '').upper())
 
 def fetch_sec_nport_holdings(ticker):
@@ -3603,7 +3606,7 @@ def fetch_sec_nport_holdings(ticker):
     try:
         _cik = _sec_ticker_to_cik(ticker)
         if not _cik:
-            return [], {'src': 'nport', 'n': 0, 'err': 'no_cik'}
+            return [], {'src': 'nport', 'n': 0, 'err': 'no_cik', 'map': _NPORT_DIAG.get('cik_map_size'), 'hasIVV': _NPORT_DIAG.get('has_IVV')}
         _sub = _sec_get('https://data.sec.gov/submissions/CIK%s.json' % _cik)
         if not _sub:
             return [], {'src': 'nport', 'n': 0, 'err': 'no_submissions'}
