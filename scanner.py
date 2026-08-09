@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.386.0'  # v1.386.0: match the owner's secret NAME. Owner set the Finnhub key as ETF_FINNHUB_KEY (not FINNHUB_KEY), so the fetch read the wrong env var and got no_key. Fix: fetch_finnhub_etf_holdings reads os.environ['ETF_FINNHUB_KEY']. Also accepts a plaintext root file 'ETF_FINNHUB_KEY' as a fallback if present. daily.yml must pass ETF_FINNHUB_KEY. PRIOR: CHANGELOG.md.
+SCAN_VERSION = '1.387.0'  # v1.387.0: US ETF holdings via SEC EDGAR N-PORT -- FREE, no key, no wall, no websocket. Every US ETF legally files Form NPORT-P with its FULL portfolio (all constituents: name, cusip, isin, ticker, pctVal). The runner already reaches sec.gov (sec_filings step), so this extends a live source. Flow (confirmed against edgartools' real parser + SEC docs): (1) ticker->CIK via sec.gov/files/company_tickers.json; (2) latest NPORT-P accession via data.sec.gov/submissions/CIK<10>.json; (3) fetch the filing's primary_doc.xml; (4) parse formData/invstOrSecs/invstOrSec -> identifiers/ticker (value attr) else name. Compliant User-Agent (SEC 10 req/s rule). Covers the US-listed moat mid-caps (STT/RPRX/WST/BK...). UCITS funds are NOT in EDGAR (EU-domiciled) -- they stay at justETF top-10. Wired into build_moat_cover for IVV/ITOT/VTI, unioned on top; n>=50 gate; fail-open. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3556,6 +3556,92 @@ def _ninja_row_ticker(row):
     return None
 
 
+
+# v1.387.0: SEC EDGAR N-PORT holdings for US ETFs. Free, authoritative, no key/wall. The runner already
+# reaches sec.gov. Compliant User-Agent is required by SEC (name + contact).
+_SEC_UA = 'MHK-Dashboard research contact: muhammadhammadkhan1973@gmail.com'
+_SEC_TICKER_CIK = {}   # lazy cache: ticker -> zero-padded CIK
+
+def _sec_get(url, is_json=True):
+    import time as _t
+    _t.sleep(0.15)   # stay well under SEC's 10 req/s
+    _r = requests.get(url, headers={'User-Agent': _SEC_UA, 'Accept-Encoding': 'gzip, deflate'}, timeout=30)
+    if _r.status_code != 200:
+        return None
+    return _r.json() if is_json else _r.text
+
+def _sec_ticker_to_cik(ticker):
+    global _SEC_TICKER_CIK
+    if not _SEC_TICKER_CIK:
+        _j = _sec_get('https://www.sec.gov/files/company_tickers.json')
+        if isinstance(_j, dict):
+            for _v in _j.values():
+                try:
+                    _SEC_TICKER_CIK[str(_v['ticker']).upper()] = str(_v['cik_str']).zfill(10)
+                except Exception:
+                    pass
+    return _SEC_TICKER_CIK.get((ticker or '').upper())
+
+def fetch_sec_nport_holdings(ticker):
+    """Full holdings for a US ETF via SEC EDGAR N-PORT. Returns ([tickers], diag). Fail-open."""
+    import re as _re
+    _cik = None
+    try:
+        _cik = _sec_ticker_to_cik(ticker)
+        if not _cik:
+            return [], {'src': 'nport', 'n': 0, 'err': 'no_cik'}
+        _sub = _sec_get('https://data.sec.gov/submissions/CIK%s.json' % _cik)
+        if not _sub:
+            return [], {'src': 'nport', 'n': 0, 'err': 'no_submissions'}
+        _rec = (_sub.get('filings') or {}).get('recent') or {}
+        _forms = _rec.get('form') or []
+        _accs = _rec.get('accessionNumber') or []
+        _docs = _rec.get('primaryDocument') or []
+        _acc = _pdoc = None
+        for _i, _f in enumerate(_forms):
+            if _f and _f.upper().startswith('NPORT-P'):
+                _acc = _accs[_i]; _pdoc = _docs[_i] if _i < len(_docs) else 'primary_doc.xml'
+                break
+        if not _acc:
+            return [], {'src': 'nport', 'n': 0, 'err': 'no_nport_filing'}
+        _accnodash = _acc.replace('-', '')
+        _xurl = 'https://www.sec.gov/Archives/edgar/data/%s/%s/%s' % (int(_cik), _accnodash, _pdoc or 'primary_doc.xml')
+        _xml = _sec_get(_xurl, is_json=False)
+        if not _xml:
+            return [], {'src': 'nport', 'n': 0, 'err': 'no_xml', 'url': _xurl[:80]}
+        _tks = _parse_nport_xml(_xml)
+        if _tks:
+            return _tks, {'src': 'nport', 'n': len(_tks), 'acc': _acc}
+        return [], {'src': 'nport', 'n': 0, 'err': 'parse_0', 'url': _xurl[:80], 'xhead': _xml[:200]}
+    except Exception as _e:
+        return [], {'src': 'nport', 'n': 0, 'err': type(_e).__name__}
+
+def _parse_nport_xml(xml_text):
+    """Parse N-PORT primary_doc.xml -> list of US tickers. Confirmed tags: invstOrSec/{name,identifiers/ticker}."""
+    import xml.etree.ElementTree as _ET, re as _re
+    # strip namespaces for simple tag matching
+    _t = _re.sub(r'xmlns(:\w+)?="[^"]+"', '', xml_text)
+    _t = _re.sub(r'<(/?)(\w+):', r'<\1', _t)
+    try:
+        _root = _ET.fromstring(_t)
+    except Exception:
+        return []
+    _out = []
+    for _sec in _root.iter('invstOrSec'):
+        _tk = None
+        _ids = _sec.find('identifiers')
+        if _ids is not None:
+            _tt = _ids.find('ticker')
+            if _tt is not None:
+                _tk = (_tt.get('value') or _tt.text or '').strip().upper()
+        if not _tk:
+            continue   # many rows are bonds/no-ticker; ticker-bearing = equity constituents
+        _tk = _tk.split(':')[-1]
+        if 1 <= len(_tk) <= 6 and _tk.replace('.', '').replace('-', '').isalnum() and _tk not in _TV_JUNK:
+            _out.append(_tk)
+    return list(dict.fromkeys(_out))
+
+
 def build_moat_cover(existing=None):
     """v1.361.0: real ETF holdings for moat confirmation, via the proven fetch_etf_holdings. Broad funds
     (VTI/ITOT/IWB) plus every-sector ETFs so most moat names -- large AND mid cap -- appear in at least one
@@ -3587,21 +3673,24 @@ def build_moat_cover(existing=None):
         except Exception:
             pass
     # v1.373.0: BROAD funds via TV holdings (Business-Recorder technique). TV is runner-reachable.
-    # v1.385.0: BROAD funds -- try Finnhub first (free-tier holdings), fall back to API Ninjas.
+    # v1.387.0: BROAD funds -- SEC EDGAR N-PORT first (free, full holdings), then paid-API fallbacks.
     deep_diag = {}
     for _bt in ('IVV', 'ITOT', 'VTI'):
         _tks, _info = [], {}
         try:
-            _tks, _info = fetch_finnhub_etf_holdings(_bt)
-        except Exception as _fe:
-            _info = {'src': 'finnhub', 'n': 0, 'err': type(_fe).__name__}
-        if len(_tks) < 50:   # finnhub empty/shallow -> try ninja
+            _tks, _info = fetch_sec_nport_holdings(_bt)
+        except Exception as _se:
+            _info = {'src': 'nport', 'n': 0, 'err': type(_se).__name__}
+        if len(_tks) < 50:   # nport failed/shallow -> try finnhub then ninja
+            try:
+                _ft, _fi = fetch_finnhub_etf_holdings(_bt)
+                if len(_ft) > len(_tks): _tks, _info = _ft, _fi
+            except Exception: pass
+        if len(_tks) < 50:
             try:
                 _nt, _ni = fetch_ninja_etf_holdings(_bt)
-                if len(_nt) > len(_tks):
-                    _tks, _info = _nt, _ni
-            except Exception as _be:
-                pass
+                if len(_nt) > len(_tks): _tks, _info = _nt, _ni
+            except Exception: pass
         deep_diag[_bt] = _info
         if _tks:
             cache[_bt] = _tks
