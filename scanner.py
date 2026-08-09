@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.395.0'  # v1.395.0: N-PORT series fix -- the parser works (v1.394), but CIK 930667 was WRONG and returned a derivatives sub-filing (n=2: MMEM26/MURM6 futures). Confirmed from SEC N-PX series map: iShares Trust CIK is 1100663, and IVV=series S000004310, ITOT=S000004317. A trust CIK files N-PORT per-series, so I must pick IVV's series filing, not the first. FIX: (1) correct CIKs to 1100663; (2) map each ETF to its SERIES id; (3) among recent NPORT-P filings, parse and keep the one with the MOST equity tickers (that's the big index fund) -- robust even without perfect series filtering. VTI stays fallback. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.396.0'  # v1.396.0: US ETF holdings via EDGARTOOLS (the maintained library that solves the series resolution we kept missing). Hand-rolled N-PORT hit the per-series problem: iShares Trust files hundreds of NPORT-P and my scan never reached IVV's equity filing (got derivatives). edgartools' FundReport has matches_ticker() + investment_data() which pick the RIGHT series' holdings natively. New fetch_edgar_nport_holdings(ticker): set_identity -> Company(ticker).get_filings(form='NPORT-P') -> find the filing whose FundReport.matches_ticker(ticker) -> investment_data() DataFrame -> ticker column. Free, no key. Requires edgartools on the runner (add to requirements). Falls back to hand-rolled nport then paid APIs. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3612,6 +3612,77 @@ def _sec_ticker_to_cik(ticker):
         _NPORT_DIAG['has_IVV'] = 'IVV' in _SEC_TICKER_CIK
     return _SEC_TICKER_CIK.get((ticker or '').upper())
 
+
+# v1.396.0: edgartools-based ETF holdings. The library resolves the CIK/series/N-PORT chain natively
+# (matches_ticker picks the correct fund series), which the hand-rolled fetch kept missing. Free, no key.
+_EDGAR_READY = [False]
+def fetch_edgar_nport_holdings(ticker):
+    """Full holdings for a US ETF via edgartools. Returns ([tickers], diag). Fail-open."""
+    try:
+        import os as _os
+        from edgar import Company as _Company, set_identity as _set_identity
+        from edgar.funds.reports import FundReport as _FundReport
+    except Exception as _ie:
+        return [], {'src': 'edgar', 'n': 0, 'err': 'import:' + type(_ie).__name__}
+    try:
+        if not _EDGAR_READY[0]:
+            _set_identity('MHK-Dashboard research muhammadhammadkhan1973@gmail.com')
+            _EDGAR_READY[0] = True
+        _co = _Company((ticker or '').upper())
+        _fs = _co.get_filings(form='NPORT-P')
+        if _fs is None or len(_fs) == 0:
+            return [], {'src': 'edgar', 'n': 0, 'err': 'no_nport'}
+        # scan the most recent handful; keep the one matching this ticker (or the largest equity set)
+        _best = []; _matched = False
+        for _k in range(min(12, len(_fs))):
+            try:
+                _filing = _fs[_k]
+                _fr = _FundReport.from_filing(_filing)
+                if _fr is None:
+                    continue
+                _is_match = False
+                try:
+                    _is_match = _fr.matches_ticker(ticker.upper())
+                except Exception:
+                    _is_match = False
+                if not _is_match and _matched:
+                    continue   # already found our series; skip others
+                _df = _fr.investment_data()
+                _tks = _edgar_df_tickers(_df)
+                if _is_match and _tks:
+                    return _tks, {'src': 'edgar', 'n': len(_tks), 'matched': True}
+                if len(_tks) > len(_best):
+                    _best = _tks
+            except Exception:
+                continue
+        if _best:
+            return _best, {'src': 'edgar', 'n': len(_best), 'matched': False}
+        return [], {'src': 'edgar', 'n': 0, 'err': 'no_holdings'}
+    except Exception as _e:
+        return [], {'src': 'edgar', 'n': 0, 'err': type(_e).__name__}
+
+def _edgar_df_tickers(df):
+    """Pull US equity tickers from an edgartools investment_data DataFrame."""
+    try:
+        if df is None or len(df) == 0:
+            return []
+    except Exception:
+        return []
+    _cols = {str(c).lower(): c for c in getattr(df, 'columns', [])}
+    _tcol = _cols.get('ticker') or _cols.get('symbol')
+    _out = []
+    if _tcol is not None:
+        for _v in df[_tcol].tolist():
+            if not _v:
+                continue
+            _t = str(_v).split(':')[-1].strip().upper()
+            if _t in ('NAN', 'NONE', 'NULL', ''):
+                continue
+            if 1 <= len(_t) <= 6 and _t.replace('.', '').replace('-', '').isalnum() and _t not in _TV_JUNK:
+                _out.append(_t)
+    return list(dict.fromkeys(_out))
+
+
 def fetch_sec_nport_holdings(ticker):
     """Full holdings for a US ETF via SEC EDGAR N-PORT. Returns ([tickers], diag). Fail-open."""
     import re as _re
@@ -3753,10 +3824,16 @@ def build_moat_cover(existing=None):
     for _bt in ('IVV', 'ITOT', 'VTI'):
         _tks, _info = [], {}
         try:
-            _tks, _info = fetch_sec_nport_holdings(_bt)
-        except Exception as _se:
-            _info = {'src': 'nport', 'n': 0, 'err': type(_se).__name__}
-        if len(_tks) < 50:   # nport failed/shallow -> try finnhub then ninja
+            _tks, _info = fetch_edgar_nport_holdings(_bt)   # v1.396.0: edgartools first
+        except Exception as _ee:
+            _info = {'src': 'edgar', 'n': 0, 'err': type(_ee).__name__}
+        if len(_tks) < 50:
+            try:
+                _st, _si = fetch_sec_nport_holdings(_bt)
+                if len(_st) > len(_tks): _tks, _info = _st, _si
+            except Exception as _se:
+                pass
+        if len(_tks) < 50:   # still shallow -> try finnhub then ninja
             try:
                 _ft, _fi = fetch_finnhub_etf_holdings(_bt)
                 if len(_ft) > len(_tks): _tks, _info = _ft, _fi
