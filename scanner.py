@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.379.0'  # v1.379.0: TV holdings -- the /holdings/ page 'results' is NOT the constituent list. v1.378 parsed n=2 = ['META','NAME'] (page-metadata false positives), so the real holdings array is elsewhere on that page or needs TV's components endpoint. FIX: (a) reject junk tokens (NAME/META/NULL/etc) in _tv_row_ticker; (b) try TV's dedicated components endpoints first (/api/v1/symbols/<EX>-<SYM>/holdings + scanner components), (c) capture symbol_info + a slice of the TRUE holdings container into diag (top_keys already showed 'results','extra_data','render_results'; now capture each one's first 300 chars) so the real array is identified in ONE run. Still 200/json confirmed. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.380.0'  # v1.380.0: fix the gate that froze the false-positive TV result. v1.379's container-capture never ran because the cache had src:tv + n=2 (>0), so _deep_ok was True and the gate CARRIED it -- freezing the ['META','NAME'] junk. A broad ETF has hundreds/thousands of holdings, so n=2 is clearly not real. FIX: _deep_ok now requires n >= 50 (a real broad-fund holdings count); anything less forces a refresh so v1.379's junk-reject + container-capture actually execute. Changed: the gate threshold only. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3456,7 +3456,7 @@ def build_moat_cover(existing=None):
     # v1.373.0: carry only once TV deep holdings have succeeded; else refresh to retry the fetch.
     _pdd = (prev.get('deep_diag') or {})
     _is_tv = _pdd and all((v or {}).get('src') == 'tv' for v in _pdd.values())
-    _deep_ok = _is_tv and any((v or {}).get('n', 0) > 0 for v in _pdd.values())
+    _deep_ok = _is_tv and any((v or {}).get('n', 0) >= 50 for v in _pdd.values())   # v1.380.0: real holdings, not 2 junk tokens
     if fresh and cache and _deep_ok:
         log('  [MOAT cover] carried (fresh <5d, TV deep present): %d ETFs' % len(cache))
         return prev
