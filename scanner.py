@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.380.0'  # v1.380.0: fix the gate that froze the false-positive TV result. v1.379's container-capture never ran because the cache had src:tv + n=2 (>0), so _deep_ok was True and the gate CARRIED it -- freezing the ['META','NAME'] junk. A broad ETF has hundreds/thousands of holdings, so n=2 is clearly not real. FIX: _deep_ok now requires n >= 50 (a real broad-fund holdings count); anything less forces a refresh so v1.379's junk-reject + container-capture actually execute. Changed: the gate threshold only. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.381.0'  # v1.381.0: TV holdings parser -- POSITIVELY identify the constituent array. Rather than guess which key ('results' was metadata) holds constituents, _extract_tv_tickers now scans EVERY nested list in the whole JSON and picks the array whose rows look like real holdings: a dict with a symbol/ticker string AND a weight/percent/shares-type numeric field (that signature is unique to the constituent table; metadata rows lack it). Falls back to the largest array of symbol-bearing rows. This identifies the holdings array wherever TV nests it (results/extra_data/render_results), so the ~500/2600 names populate in one run. Junk-reject + n>=50 gate retained. Diag still captures containers as a safety net. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3409,34 +3409,58 @@ def _tv_row_ticker(row):
             return _t
     return None
 
-def _extract_tv_tickers(obj, _depth=0):
-    """v1.378.0: TV holdings live under 'results'. Dive there first, then fall back to a deep walk."""
-    out = []
-    if isinstance(obj, dict):
-        for _rk in ('results', 'render_results', 'extra_data'):
-            _rv = obj.get(_rk)
-            if isinstance(_rv, list):
-                for _row in _rv:
-                    _t = _tv_row_ticker(_row)
-                    if _t: out.append(_t)
-                    elif isinstance(_row, (dict, list)):
-                        out += _extract_tv_tickers(_row, _depth + 1)
-            elif isinstance(_rv, dict):
-                out += _extract_tv_tickers(_rv, _depth + 1)
-        if out:
-            return list(dict.fromkeys(out))
-    # fallback: generic deep walk
-    if _depth > 7:
-        return out
-    if isinstance(obj, dict):
-        _t = _tv_row_ticker(obj)
-        if _t: out.append(_t)
-        for _v in obj.values():
-            out += _extract_tv_tickers(_v, _depth + 1)
-    elif isinstance(obj, list):
+_TV_WEIGHT_KEYS = ('weight', 'weight_pct', 'percent', 'percentage', 'allocation', 'shares', 'w', 'pct')
+def _looks_like_holding(row):
+    """A constituent row has a symbol/ticker AND a numeric weight/shares field. Metadata rows don't."""
+    if not isinstance(row, dict):
+        return False
+    if not _tv_row_ticker(row):
+        return False
+    for _wk in _TV_WEIGHT_KEYS:
+        _v = row.get(_wk)
+        if isinstance(_v, (int, float)):
+            return True
+        if isinstance(_v, str):
+            try:
+                float(_v.replace('%', '').replace(',', '')); return True
+            except Exception:
+                pass
+    # some TV rows carry values in a 'd' array alongside the symbol -> treat as holding if 'd' present
+    if isinstance(row.get('d'), list) and _tv_row_ticker(row):
+        return True
+    return False
+
+def _tv_all_arrays(obj, _depth=0, _acc=None):
+    """Collect every list in the JSON tree (bounded depth)."""
+    if _acc is None: _acc = []
+    if _depth > 8: return _acc
+    if isinstance(obj, list):
+        _acc.append(obj)
         for _v in obj:
-            out += _extract_tv_tickers(_v, _depth + 1)
-    return list(dict.fromkeys(out))
+            if isinstance(_v, (list, dict)): _tv_all_arrays(_v, _depth + 1, _acc)
+    elif isinstance(obj, dict):
+        for _v in obj.values():
+            if isinstance(_v, (list, dict)): _tv_all_arrays(_v, _depth + 1, _acc)
+    return _acc
+
+def _extract_tv_tickers(obj, _depth=0):
+    """v1.381.0: positively identify the constituent array anywhere in the JSON."""
+    _arrays = _tv_all_arrays(obj)
+    # 1) prefer the array with the MOST rows that look like real holdings (symbol + weight)
+    _best = None; _best_n = 0
+    for _arr in _arrays:
+        _hits = [r for r in _arr if _looks_like_holding(r)]
+        if len(_hits) > _best_n:
+            _best_n = len(_hits); _best = _hits
+    if _best and _best_n >= 5:
+        return list(dict.fromkeys(t for t in (_tv_row_ticker(r) for r in _best) if t))
+    # 2) fallback: largest array of symbol-bearing rows (no weight requirement)
+    _best = None; _best_n = 0
+    for _arr in _arrays:
+        _tks = [t for t in (_tv_row_ticker(r) for r in _arr) if t]
+        if len(_tks) > _best_n:
+            _best_n = len(_tks); _best = _tks
+    return list(dict.fromkeys(_best or []))
 
 
 def build_moat_cover(existing=None):
