@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.375.0'  # v1.375.0: force the TV holdings fetch to actually run. Root cause found: the deployed moat_cover code DOES call fetch_tv_etf_holdings, but the payload still carries an iShares-format deep_diag -- meaning build_moat_cover isn't re-running; the freshness gate carries the stale cache whose diag lacks TV's signature. FIX: the gate now also treats a cache as stale if its deep_diag was written by the OLD iShares path (has 'final_url'/'html_wall' keys, or lacks a 'src':'tv' tag). New TV diag is tagged src:'tv'; anything without that tag forces one refresh so the TV fetch executes. One clean run then writes the real TV verdict. Changed: gate condition + TV diag tag. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.376.0'  # v1.376.0: FIX the KeyError that froze moat_cover. Root cause (proven by replaying the real function): build_moat_cover's log line did {k: v['n'] ...} -- a hard key access -- but fetch_tv_etf_holdings' miss-path _diag dict has no 'n' key, so every run raised KeyError:'n', hit the except, and carried the stale 04:06 cache -> moat_cover frozen across 3 scans, TV fetch never persisted. FIX: v.get('n', 0) in the log, and the TV fetch always sets n in its diag. Now build_moat_cover completes, the src-tag gate fires, and the TV verdict actually writes. Changed: the log line + TV diag n-default. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3359,7 +3359,7 @@ def fetch_tv_etf_holdings(sym):
             _txt = _r.text or ''
             _ct = _r.headers.get('Content-Type', '')[:50]
             _diag = {'url': _u[:70], 'http': _r.status_code, 'ctype': _ct, 'bytes': len(_txt),
-                     'head': _txt[:200]}
+                     'head': _txt[:200], 'n': 0}
             if _r.status_code != 200 or not _txt:
                 continue
             # try JSON
@@ -3438,7 +3438,7 @@ def build_moat_cover(existing=None):
         except Exception as _be:
             deep_diag[_bt] = {'http': type(_be).__name__, 'n': 0}
     log('  [MOAT cover] fetched %d/%d top-25 ETFs + broad deep: %s'
-        % (got, len(MOAT_COVER_ETFS), {k: v['n'] for k, v in deep_diag.items()}))
+        % (got, len(MOAT_COVER_ETFS), {k: (v or {}).get('n', 0) for k, v in deep_diag.items()}))
     return {'by_etf': cache, 'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
             'n_etfs': len(cache), 'deep_diag': deep_diag}
 
