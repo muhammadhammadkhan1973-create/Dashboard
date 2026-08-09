@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.394.0'  # v1.394.0: N-PORT parser FIXED -- the real cause was a ParseError (diag xml_err:ParseError). My namespace regex stripped tag prefixes but NOT prefixed ATTRIBUTES (e.g. com:curCd=), leaving 'unbound prefix' invalid XML that ElementTree rejected -> zero holdings. Fix: also strip attribute namespace prefixes. Reproduced the exact error and validated the fix parses + extracts tickers. This completes the free SEC N-PORT pipeline: CIK (hardcoded) -> filing -> raw xml -> parse. IVV/ITOT should now yield ~full holdings; the US mid-caps populate. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.395.0'  # v1.395.0: N-PORT series fix -- the parser works (v1.394), but CIK 930667 was WRONG and returned a derivatives sub-filing (n=2: MMEM26/MURM6 futures). Confirmed from SEC N-PX series map: iShares Trust CIK is 1100663, and IVV=series S000004310, ITOT=S000004317. A trust CIK files N-PORT per-series, so I must pick IVV's series filing, not the first. FIX: (1) correct CIKs to 1100663; (2) map each ETF to its SERIES id; (3) among recent NPORT-P filings, parse and keep the one with the MOST equity tickers (that's the big index fund) -- robust even without perfect series filtering. VTI stays fallback. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3571,11 +3571,12 @@ def _sec_get(url, is_json=True):
         return None
     return _r.json() if is_json else _r.text
 
-_NPORT_KNOWN_CIK = {   # v1.391.0: public, fixed fund-trust CIKs for the broad ETFs we need
-    'IVV': '0000930667',    # iShares Trust (IVV series)
-    'ITOT': '0000930667',   # iShares Trust
-    'VTI': '0000875119',    # Vanguard Index Funds (VTI series)
+_NPORT_KNOWN_CIK = {   # v1.395.0: CORRECTED. iShares Trust CIK is 1100663 (confirmed via SEC series map).
+    'IVV': '0001100663',    # iShares Trust, series S000004310
+    'ITOT': '0001100663',   # iShares Trust, series S000004317
+    'VTI': '0000862084',    # Vanguard Index Funds
 }
+_NPORT_SERIES = {'IVV': 'S000004310', 'ITOT': 'S000004317'}  # v1.395.0: pick the right series' filing
 def _sec_ticker_to_cik(ticker):
     global _SEC_TICKER_CIK
     _hk = _NPORT_KNOWN_CIK.get((ticker or '').upper())
@@ -3626,7 +3627,35 @@ def fetch_sec_nport_holdings(ticker):
         _forms = _rec.get('form') or []
         _accs = _rec.get('accessionNumber') or []
         _docs = _rec.get('primaryDocument') or []
-        _acc = _pdoc = None
+        # v1.395.0: collect the recent NPORT-P filings (a trust files one per series); we pick the
+        # filing whose parsed holdings have the MOST equity tickers -> that's the big index fund.
+        _nport_list = []
+        for _i, _f in enumerate(_forms):
+            if _f and _f.upper().startswith('NPORT-P'):
+                _nport_list.append((_accs[_i], _docs[_i] if _i < len(_docs) else 'primary_doc.xml'))
+            if len(_nport_list) >= 8:   # cap: only need to scan the recent handful
+                break
+        if not _nport_list:
+            return [], {'src': 'nport', 'n': 0, 'err': 'no_nport_filing'}
+        _best_tks = []; _best_acc = None
+        for _acc, _pdoc in _nport_list:
+            _accnodash = _acc.replace('-', '')
+            _base = 'https://www.sec.gov/Archives/edgar/data/%s/%s' % (int(_cik), _accnodash)
+            _raw = (_pdoc or 'primary_doc.xml').split('/')[-1]
+            _xml = _sec_get('%s/%s' % (_base, _raw), is_json=False)
+            if not _xml or 'invstOrSec' not in _xml:
+                _xml = _sec_get('%s/primary_doc.xml' % _base, is_json=False)
+            if not _xml:
+                continue
+            _tks = _parse_nport_xml(_xml)
+            if len(_tks) > len(_best_tks):
+                _best_tks = _tks; _best_acc = _acc
+            if len(_best_tks) >= 100:   # found the big index fund; stop scanning
+                break
+        if _best_tks:
+            return _best_tks, {'src': 'nport', 'n': len(_best_tks), 'acc': _best_acc}
+        return [], {'src': 'nport', 'n': 0, 'err': 'parse_0', 'scanned': len(_nport_list)}
+        _acc = _pdoc = None   # (unreached; legacy below)
         for _i, _f in enumerate(_forms):
             if _f and _f.upper().startswith('NPORT-P'):
                 _acc = _accs[_i]; _pdoc = _docs[_i] if _i < len(_docs) else 'primary_doc.xml'
