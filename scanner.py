@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.392.0'  # v1.392.0: N-PORT parse fixed -- BREAKTHROUGH. v1.391's hardcoded CIK worked (CIK 930667 resolved, filing found, real SEC doc fetched). But the URL hit xslFormNPORT-P (SEC's HTML-RENDERED version) instead of the raw XML, so the parser got HTML -> parse_0. Fix: request the raw primary_doc.xml directly -- strip any xslFormNPORT-P/ prefix and force the accession's primary_doc.xml. Also: if primaryDocument is the styled path, build the raw path from the accession dir. VTI (no_nport, Vanguard files differently) stays fallback. IVV/ITOT should now parse ~full holdings. PRIOR: CHANGELOG.md.
+SCAN_VERSION = '1.393.0'  # v1.393.0: N-PORT parser gets RAW XML now (confirmed: xhead shows real edgarSubmission), but parse_0 -- my parser works on sample data, so the LIVE filing's invstOrSec must nest fields differently (likely ISIN/CUSIP but no <ticker>, or a wrapper element). This version captures the FIRST invstOrSec block (first 600 chars) + the total invstOrSec count into the diag so the real structure is visible in ONE run, then the parser is finalised deterministically. Also falls back to ISIN when ticker is absent (ISIN->ticker via existing maps later). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3653,22 +3653,26 @@ def fetch_sec_nport_holdings(ticker):
         _tks = _parse_nport_xml(_xml)
         if _tks:
             return _tks, {'src': 'nport', 'n': len(_tks), 'acc': _acc}
-        return [], {'src': 'nport', 'n': 0, 'err': 'parse_0', 'url': (_used or '')[:90], 'xhead': _xml[:150]}
+        return [], {'src': 'nport', 'n': 0, 'err': 'parse_0', 'n_invst': _NPORT_DIAG.get('n_invst'), 'first_block': _NPORT_DIAG.get('first_block'), 'xml_err': _NPORT_DIAG.get('xml_err')}
     except Exception as _e:
         return [], {'src': 'nport', 'n': 0, 'err': type(_e).__name__}
 
 def _parse_nport_xml(xml_text):
-    """Parse N-PORT primary_doc.xml -> list of US tickers. Confirmed tags: invstOrSec/{name,identifiers/ticker}."""
+    """Parse N-PORT primary_doc.xml -> list of US tickers. v1.393.0: capture real structure on miss."""
     import xml.etree.ElementTree as _ET, re as _re
-    # strip namespaces for simple tag matching
     _t = _re.sub(r'xmlns(:\w+)?="[^"]+"', '', xml_text)
     _t = _re.sub(r'<(/?)(\w+):', r'<\1', _t)
     try:
         _root = _ET.fromstring(_t)
-    except Exception:
+    except Exception as _pe:
+        _NPORT_DIAG['xml_err'] = type(_pe).__name__
         return []
+    _secs = list(_root.iter('invstOrSec'))
+    _NPORT_DIAG['n_invst'] = len(_secs)
+    if _secs:
+        _NPORT_DIAG['first_block'] = _ET.tostring(_secs[0], encoding='unicode')[:600]
     _out = []
-    for _sec in _root.iter('invstOrSec'):
+    for _sec in _secs:
         _tk = None
         _ids = _sec.find('identifiers')
         if _ids is not None:
@@ -3676,7 +3680,7 @@ def _parse_nport_xml(xml_text):
             if _tt is not None:
                 _tk = (_tt.get('value') or _tt.text or '').strip().upper()
         if not _tk:
-            continue   # many rows are bonds/no-ticker; ticker-bearing = equity constituents
+            continue
         _tk = _tk.split(':')[-1]
         if 1 <= len(_tk) <= 6 and _tk.replace('.', '').replace('-', '').isalnum() and _tk not in _TV_JUNK:
             _out.append(_tk)
