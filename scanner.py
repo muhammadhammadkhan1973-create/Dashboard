@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.381.0'  # v1.381.0: TV holdings parser -- POSITIVELY identify the constituent array. Rather than guess which key ('results' was metadata) holds constituents, _extract_tv_tickers now scans EVERY nested list in the whole JSON and picks the array whose rows look like real holdings: a dict with a symbol/ticker string AND a weight/percent/shares-type numeric field (that signature is unique to the constituent table; metadata rows lack it). Falls back to the largest array of symbol-bearing rows. This identifies the holdings array wherever TV nests it (results/extra_data/render_results), so the ~500/2600 names populate in one run. Junk-reject + n>=50 gate retained. Diag still captures containers as a safety net. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.382.0'  # v1.382.0: TV holdings -- CORRECT endpoint from owner's DevTools capture. The capture (tradingview.com/symbols/AMEX-IWM/holdings/) proved two bugs: (1) the symbol must be EXCHANGE-TICKER hyphenated (AMEX-IVV), not bare 'IVV'; (2) holdings load via a dedicated XHR to the holdings API, not the page JSON I was parsing (which only had metadata -> META/NAME/ETF). FIX: fetch uses the exchange-qualified symbol and the holdings API endpoints, with an EXCHANGE map for the broad ETFs (IVV/ITOT=AMEX, VTI=AMEX). Signature parser + junk-reject + n>=50 gate retained. Diag still captures the body on miss so if params differ, one run shows it. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3344,15 +3344,20 @@ def fetch_tv_etf_holdings(sym):
     TV's JSON shapes; captures format on miss. Fail-open."""
     import json as _json
     _sym = (sym or '').upper()
+    # v1.382.0: exchange-qualified symbol (AMEX-IVV), confirmed from owner's DevTools capture.
+    _TV_EXCH = {'IVV': 'AMEX', 'ITOT': 'AMEX', 'VTI': 'AMEX', 'IWM': 'AMEX', 'SPY': 'AMEX', 'VOO': 'AMEX'}
+    _ex = _TV_EXCH.get(_sym, 'AMEX')
+    _qs = '%s-%s' % (_ex, _sym)   # e.g. AMEX-IVV
     _hdrs = {'User-Agent': UA,
              'Accept': 'application/json, text/plain, */*',
              'X-Requested-With': 'XMLHttpRequest',
              'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty',
              'Origin': 'https://www.tradingview.com',
-             'Referer': 'https://www.tradingview.com/symbols/%s/holdings/' % _sym}
-    # Primary: TV website internal holdings endpoint (components), BR-style GET.
-    _urls = ['https://www.tradingview.com/api/v1/symbols/%s/components/' % _sym,
-             'https://www.tradingview.com/symbols/%s/holdings/' % _sym]
+             'Referer': 'https://www.tradingview.com/symbols/%s/holdings/' % _qs}
+    # v1.382.0: holdings API endpoints, exchange-qualified (the XHR the page actually makes).
+    _urls = ['https://www.tradingview.com/api/v1/symbols/%s/holdings/' % _qs,
+             'https://www.tradingview.com/api/v1/symbols/%s/components/' % _qs,
+             'https://www.tradingview.com/symbols/%s/holdings/' % _qs]
     for _u in _urls:
         try:
             _r = requests.get(_u, headers=_hdrs, timeout=25, allow_redirects=True)
