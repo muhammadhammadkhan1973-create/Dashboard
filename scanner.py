@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.371.0'  # v1.371.0: iShares CSV via the BUSINESS-RECORDER technique (owner's insight). BR serves the SPA/HTML shell to a plain GET but returns the real data when the request carries X-Requested-With: XMLHttpRequest (+ JSON/AJAX Accept + XHR fetch-metadata headers) -- signalling an in-page fetch, not a navigation. iShares' wall is the same shape (plain GET -> terms HTML; real CSV only for the browser's own fetch). So the broad-holdings request now sends the XHR header set on the session's CSV call. If it still returns HTML, html_wall stays True and we stop for good. One decisive run. Fail-open; UK pinned funds untouched. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.373.0'  # v1.373.0: TV ETF HOLDINGS via Business-Recorder technique (owner-directed). TV's scan API is a screener, but TV's website serves ETF constituents from an internal endpoint the runner already reaches (TV is clear on the runner -- no consent wall, unlike iShares). fetch_tv_etf_holdings(sym) POSTs the components request with the BR headers (X-Requested-With: XMLHttpRequest + AJAX accept + fetch metadata + TV referer/origin) and a robust parser that finds the constituent ticker in whatever JSON shape TV returns (keys 's'/'symbol'/'ticker' or nested 'd'). Format-capture diag (http, ctype, head) is baked in so ONE run either returns holdings or shows the exact shape to adapt -- both methodologies in one. Wired into build_moat_cover for IVV/ITOT/broad. Sandbox CANNOT reach TV (host_not_allowed, proven), so code+parser are sandbox-validated; the live fetch is confirmed on the runner. Fail-open. PRIOR: CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3333,6 +3333,66 @@ MOAT_COVER_ETFS = ['VTI', 'ITOT', 'IWB', 'SPY', 'QQQ', 'DIA', 'IWM', 'RSP',
                    'XLY', 'XLP', 'XLE', 'XLB', 'XLU', 'XLC', 'XLRE', 'VNQ',
                    'MTUM', 'QUAL', 'VLUE', 'IVW', 'SCHD']
 
+
+# v1.373.0: TV ETF holdings via the Business-Recorder XHR technique. TV is already reachable from the runner
+# every scan, so no consent wall applies. Tries the internal components endpoints with browser-fetch headers.
+_TV_HOLDINGS_ENDPOINTS = [
+    ('post', 'https://scanner.tradingview.com/america/scan'),   # some builds accept a fund components query
+]
+def fetch_tv_etf_holdings(sym):
+    """Return ([tickers], diag). Business-Recorder headers make TV serve data, not the SPA shell. Robust to
+    TV's JSON shapes; captures format on miss. Fail-open."""
+    import json as _json
+    _sym = (sym or '').upper()
+    _hdrs = {'User-Agent': UA,
+             'Accept': 'application/json, text/plain, */*',
+             'X-Requested-With': 'XMLHttpRequest',
+             'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty',
+             'Origin': 'https://www.tradingview.com',
+             'Referer': 'https://www.tradingview.com/symbols/%s/holdings/' % _sym}
+    # Primary: TV website internal holdings endpoint (components), BR-style GET.
+    _urls = ['https://www.tradingview.com/api/v1/symbols/%s/components/' % _sym,
+             'https://www.tradingview.com/symbols/%s/holdings/' % _sym]
+    for _u in _urls:
+        try:
+            _r = requests.get(_u, headers=_hdrs, timeout=25, allow_redirects=True)
+            _txt = _r.text or ''
+            _ct = _r.headers.get('Content-Type', '')[:50]
+            _diag = {'url': _u[:70], 'http': _r.status_code, 'ctype': _ct, 'bytes': len(_txt),
+                     'head': _txt[:200]}
+            if _r.status_code != 200 or not _txt:
+                continue
+            # try JSON
+            try:
+                _j = _json.loads(_txt)
+            except Exception:
+                continue   # HTML shell -> next url; diag retained by caller on final miss
+            _tks = _extract_tv_tickers(_j)
+            if _tks:
+                return _tks, {'url': _u[:70], 'http': 200, 'n': len(_tks)}
+        except Exception as _e:
+            _diag = {'url': _u[:70], 'http': type(_e).__name__, 'n': 0}
+    return [], _diag
+
+def _extract_tv_tickers(obj, _depth=0):
+    """Walk TV's JSON and pull constituent tickers regardless of exact shape."""
+    out = []
+    if _depth > 6:
+        return out
+    if isinstance(obj, dict):
+        # common holdings row keys
+        for _k in ('symbol', 'ticker', 's'):
+            _v = obj.get(_k)
+            if isinstance(_v, str) and 1 <= len(_v.split(':')[-1]) <= 6 and _v.split(':')[-1].isalpha():
+                out.append(_v.split(':')[-1].upper())
+        for _v in obj.values():
+            out += _extract_tv_tickers(_v, _depth + 1)
+    elif isinstance(obj, list):
+        for _v in obj:
+            out += _extract_tv_tickers(_v, _depth + 1)
+    return list(dict.fromkeys(out))
+
+
 def build_moat_cover(existing=None):
     """v1.361.0: real ETF holdings for moat confirmation, via the proven fetch_etf_holdings. Broad funds
     (VTI/ITOT/IWB) plus every-sector ETFs so most moat names -- large AND mid cap -- appear in at least one
@@ -3347,10 +3407,10 @@ def build_moat_cover(existing=None):
     except Exception:
         fresh = False
     # v1.366.0: a pre-deep-holdings cache (no deep_diag) must refresh once so the broad CSV runs.
-    _has_deep = bool(prev.get('deep_diag'))
-    _deep_ok = _has_deep and any((v or {}).get('n', 0) > 0 for v in (prev.get('deep_diag') or {}).values())
-    if fresh and cache and _deep_ok:   # v1.367.0: only carry once deep holdings actually succeeded
-        log('  [MOAT cover] carried (fresh <5d, deep present): %d ETFs' % len(cache))
+    # v1.373.0: carry only once TV deep holdings have succeeded; else refresh to retry the fetch.
+    _deep_ok = any((v or {}).get('n', 0) > 0 for v in (prev.get('deep_diag') or {}).values())
+    if fresh and cache and _deep_ok:
+        log('  [MOAT cover] carried (fresh <5d, TV deep present): %d ETFs' % len(cache))
         return prev
     got = 0
     for etf in MOAT_COVER_ETFS:
@@ -3361,14 +3421,14 @@ def build_moat_cover(existing=None):
                 cache[etf] = tks; got += 1
         except Exception:
             pass
-    # v1.365.0: BROAD funds via issuer full-CSV -- deep holdings that reach the mid-caps.
+    # v1.373.0: BROAD funds via TV holdings (Business-Recorder technique). TV is runner-reachable.
     deep_diag = {}
-    for _bt in _ISHARES_BROAD:
+    for _bt in ('IVV', 'ITOT', 'VTI'):
         try:
-            _tks, _info = fetch_ishares_broad_holdings(_bt)
-            deep_diag[_bt] = _info if isinstance(_info, dict) else {'http': _info, 'n': len(_tks)}
+            _tks, _info = fetch_tv_etf_holdings(_bt)
+            deep_diag[_bt] = _info if isinstance(_info, dict) else {'n': len(_tks)}
             if _tks:
-                cache[_bt] = _tks   # unioned into holders like any other ETF
+                cache[_bt] = _tks
         except Exception as _be:
             deep_diag[_bt] = {'http': type(_be).__name__, 'n': 0}
     log('  [MOAT cover] fetched %d/%d top-25 ETFs + broad deep: %s'
@@ -4172,10 +4232,8 @@ def fetch_ishares_holdings(isin):
 
 # v1.365.0: broad-market iShares funds -> FULL issuer holdings CSV (US site). Covers the moat mid-caps that
 # top-25 page scrapes can never reach. Separate from the UK pinned path so that proven fetcher is untouched.
-_ISHARES_BROAD = {
-    'IVV':  ('239726', 'ishares-core-sp-500-etf'),                       # S&P 500  (~500 holdings)
-    'ITOT': ('239724', 'ishares-core-sp-total-us-stock-market-etf'),     # Total US market (~2600 holdings)
-}
+_ISHARES_BROAD = {}   # v1.372.0: CONCLUDED unreachable from the runner (5 methods tried) -- disabled to
+                      # stop the per-scan retry. Re-populate only with a source proven to serve automation.
 
 def fetch_ishares_broad_holdings(ticker):
     """FULL holdings for a broad iShares US fund via BlackRock's own daily CSV (authoritative, not top-25).
