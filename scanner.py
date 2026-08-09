@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.389.0'  # v1.389.0: fix N-PORT CIK -- two problems found. (1) NAME COLLISION: my _SEC_UA (defined near the nport code) is shadowed by a LATER _SEC_UA def elsewhere, and _SEC_HEADERS sets Host: data.sec.gov which BREAKS a www.sec.gov request (wrong Host header -> the exchange-file fetch silently failed -> empty map -> no_cik). (2) my duplicate CIK loader is redundant. FIX: rename to _NPORT_UA (no collision), drop any Host header, and add diag capturing the CIK-map size so we SEE it load. company_tickers_exchange.json (has ETFs) + stocks fallback. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.391.0'  # v1.391.0: N-PORT -- sidestep the fragile CIK lookup with a hardcoded map of the broad-ETF CIKs (public, fixed values that never change), used FIRST; dynamic exchange/stocks lookup stays as fallback for any other ticker. The exchange-file fetch was adding 0 rows (diag: map=10398 = stocks-only, hasIVV=False), so relying on it blocked everything. With known CIKs, IVV/ITOT/VTI resolve immediately and N-PORT holdings parse. Exchange-fetch diag retained. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3571,12 +3571,24 @@ def _sec_get(url, is_json=True):
         return None
     return _r.json() if is_json else _r.text
 
+_NPORT_KNOWN_CIK = {   # v1.391.0: public, fixed fund-trust CIKs for the broad ETFs we need
+    'IVV': '0000930667',    # iShares Trust (IVV series)
+    'ITOT': '0000930667',   # iShares Trust
+    'VTI': '0000875119',    # Vanguard Index Funds (VTI series)
+}
 def _sec_ticker_to_cik(ticker):
     global _SEC_TICKER_CIK
+    _hk = _NPORT_KNOWN_CIK.get((ticker or '').upper())
+    if _hk:
+        return _hk
     if not _SEC_TICKER_CIK:
         # v1.388.0: company_tickers_exchange.json includes ETFs (STOCKS-only file misses them).
         _je = _sec_get('https://www.sec.gov/files/company_tickers_exchange.json')
+        _NPORT_DIAG['exch_ok'] = _je is not None
+        _NPORT_DIAG['exch_type'] = type(_je).__name__
         if isinstance(_je, dict) and _je.get('data'):
+            _NPORT_DIAG['exch_rows'] = len(_je['data'])
+            _NPORT_DIAG['exch_fields'] = _je.get('fields')
             _flds = [str(f).lower() for f in (_je.get('fields') or ['cik', 'name', 'ticker', 'exchange'])]
             try:
                 _ci = _flds.index('cik'); _ti = _flds.index('ticker')
@@ -3606,7 +3618,7 @@ def fetch_sec_nport_holdings(ticker):
     try:
         _cik = _sec_ticker_to_cik(ticker)
         if not _cik:
-            return [], {'src': 'nport', 'n': 0, 'err': 'no_cik', 'map': _NPORT_DIAG.get('cik_map_size'), 'hasIVV': _NPORT_DIAG.get('has_IVV')}
+            return [], {'src': 'nport', 'n': 0, 'err': 'no_cik', 'map': _NPORT_DIAG.get('cik_map_size'), 'hasIVV': _NPORT_DIAG.get('has_IVV'), 'exch_ok': _NPORT_DIAG.get('exch_ok'), 'exch_rows': _NPORT_DIAG.get('exch_rows'), 'exch_type': _NPORT_DIAG.get('exch_type')}
         _sub = _sec_get('https://data.sec.gov/submissions/CIK%s.json' % _cik)
         if not _sub:
             return [], {'src': 'nport', 'n': 0, 'err': 'no_submissions'}
