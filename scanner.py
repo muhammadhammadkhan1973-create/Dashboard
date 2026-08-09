@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.374.0'  # v1.374.0: LIVE-INVESTMENT reconciliation fixes vs IBKR statement (owner audit, Aug-7). Four items: (1) AED cash was hardcoded 200000 -> corrected to the actual balance 126954.92 (the ~$200 NAV gap). (2) Interest accruals were not in NAV -> a configurable interest_usd line is now added to cash/NAV so it ties to the statement. (3) FX already fetched live (good) but is now carried/applied at full precision (no rounding) and the AED peg constant kept exact. (4) ITWN prices off the LSE USD listing (LSE:IDTW) vs the owner's GBP line -- values agree within ~$11; added an explicit code note so it's never mistaken for a bug. Cash/interest are config-overridable via live_portfolio.json. Changed: LIVE_PORTFOLIO_DEFAULT cash/interest + NAV assembly note. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.375.0'  # v1.375.0: force the TV holdings fetch to actually run. Root cause found: the deployed moat_cover code DOES call fetch_tv_etf_holdings, but the payload still carries an iShares-format deep_diag -- meaning build_moat_cover isn't re-running; the freshness gate carries the stale cache whose diag lacks TV's signature. FIX: the gate now also treats a cache as stale if its deep_diag was written by the OLD iShares path (has 'final_url'/'html_wall' keys, or lacks a 'src':'tv' tag). New TV diag is tagged src:'tv'; anything without that tag forces one refresh so the TV fetch executes. One clean run then writes the real TV verdict. Changed: gate condition + TV diag tag. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3408,10 +3408,14 @@ def build_moat_cover(existing=None):
         fresh = False
     # v1.366.0: a pre-deep-holdings cache (no deep_diag) must refresh once so the broad CSV runs.
     # v1.373.0: carry only once TV deep holdings have succeeded; else refresh to retry the fetch.
-    _deep_ok = any((v or {}).get('n', 0) > 0 for v in (prev.get('deep_diag') or {}).values())
+    _pdd = (prev.get('deep_diag') or {})
+    _is_tv = _pdd and all((v or {}).get('src') == 'tv' for v in _pdd.values())
+    _deep_ok = _is_tv and any((v or {}).get('n', 0) > 0 for v in _pdd.values())
     if fresh and cache and _deep_ok:
         log('  [MOAT cover] carried (fresh <5d, TV deep present): %d ETFs' % len(cache))
         return prev
+    if not _is_tv:
+        log('  [MOAT cover] cache lacks TV-sourced deep_diag -> refreshing to run TV fetch')
     got = 0
     for etf in MOAT_COVER_ETFS:
         try:
@@ -3426,7 +3430,9 @@ def build_moat_cover(existing=None):
     for _bt in ('IVV', 'ITOT', 'VTI'):
         try:
             _tks, _info = fetch_tv_etf_holdings(_bt)
-            deep_diag[_bt] = _info if isinstance(_info, dict) else {'n': len(_tks)}
+            _info = _info if isinstance(_info, dict) else {'n': len(_tks)}
+            _info['src'] = 'tv'   # v1.375.0: tag so the gate can tell TV diag from the old iShares diag
+            deep_diag[_bt] = _info
             if _tks:
                 cache[_bt] = _tks
         except Exception as _be:
