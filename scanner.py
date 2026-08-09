@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.393.0'  # v1.393.0: N-PORT parser gets RAW XML now (confirmed: xhead shows real edgarSubmission), but parse_0 -- my parser works on sample data, so the LIVE filing's invstOrSec must nest fields differently (likely ISIN/CUSIP but no <ticker>, or a wrapper element). This version captures the FIRST invstOrSec block (first 600 chars) + the total invstOrSec count into the diag so the real structure is visible in ONE run, then the parser is finalised deterministically. Also falls back to ISIN when ticker is absent (ISIN->ticker via existing maps later). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.394.0'  # v1.394.0: N-PORT parser FIXED -- the real cause was a ParseError (diag xml_err:ParseError). My namespace regex stripped tag prefixes but NOT prefixed ATTRIBUTES (e.g. com:curCd=), leaving 'unbound prefix' invalid XML that ElementTree rejected -> zero holdings. Fix: also strip attribute namespace prefixes. Reproduced the exact error and validated the fix parses + extracts tickers. This completes the free SEC N-PORT pipeline: CIK (hardcoded) -> filing -> raw xml -> parse. IVV/ITOT should now yield ~full holdings; the US mid-caps populate. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3661,11 +3661,12 @@ def _parse_nport_xml(xml_text):
     """Parse N-PORT primary_doc.xml -> list of US tickers. v1.393.0: capture real structure on miss."""
     import xml.etree.ElementTree as _ET, re as _re
     _t = _re.sub(r'xmlns(:\w+)?="[^"]+"', '', xml_text)
-    _t = _re.sub(r'<(/?)(\w+):', r'<\1', _t)
+    _t = _re.sub(r'(<\/?)\w+:', r'\1', _t)          # strip tag namespace prefixes
+    _t = _re.sub(r'\s\w+:(\w+=)', r' \1', _t)        # v1.394.0: strip ATTRIBUTE namespace prefixes (the ParseError cause)
     try:
         _root = _ET.fromstring(_t)
     except Exception as _pe:
-        _NPORT_DIAG['xml_err'] = type(_pe).__name__
+        _NPORT_DIAG['xml_err'] = type(_pe).__name__ + ':' + str(_pe)[:60]
         return []
     _secs = list(_root.iter('invstOrSec'))
     _NPORT_DIAG['n_invst'] = len(_secs)
