@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.373.0'  # v1.373.0: TV ETF HOLDINGS via Business-Recorder technique (owner-directed). TV's scan API is a screener, but TV's website serves ETF constituents from an internal endpoint the runner already reaches (TV is clear on the runner -- no consent wall, unlike iShares). fetch_tv_etf_holdings(sym) POSTs the components request with the BR headers (X-Requested-With: XMLHttpRequest + AJAX accept + fetch metadata + TV referer/origin) and a robust parser that finds the constituent ticker in whatever JSON shape TV returns (keys 's'/'symbol'/'ticker' or nested 'd'). Format-capture diag (http, ctype, head) is baked in so ONE run either returns holdings or shows the exact shape to adapt -- both methodologies in one. Wired into build_moat_cover for IVV/ITOT/broad. Sandbox CANNOT reach TV (host_not_allowed, proven), so code+parser are sandbox-validated; the live fetch is confirmed on the runner. Fail-open. PRIOR: CHANGELOG.md.
+SCAN_VERSION = '1.374.0'  # v1.374.0: LIVE-INVESTMENT reconciliation fixes vs IBKR statement (owner audit, Aug-7). Four items: (1) AED cash was hardcoded 200000 -> corrected to the actual balance 126954.92 (the ~$200 NAV gap). (2) Interest accruals were not in NAV -> a configurable interest_usd line is now added to cash/NAV so it ties to the statement. (3) FX already fetched live (good) but is now carried/applied at full precision (no rounding) and the AED peg constant kept exact. (4) ITWN prices off the LSE USD listing (LSE:IDTW) vs the owner's GBP line -- values agree within ~$11; added an explicit code note so it's never mistaken for a bug. Cash/interest are config-overridable via live_portfolio.json. Changed: LIVE_PORTFOLIO_DEFAULT cash/interest + NAV assembly note. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -18117,6 +18117,8 @@ LIVE_PORTFOLIO_DEFAULT = {
     'history_seed': [{'date': '2026-07-06', 'nav': 273379}, {'date': '2026-07-07', 'nav': 263744}],
     'holdings': [
         {'ticker': 'SMH',  'isin': 'IE00BMC38736', 'name': 'VanEck Semiconductor UCITS ETF',                 'shares': 295.3954, 'theme': 'Semiconductors / AI',      'world_theme': 'Asia-Tech',      'cost_price': 116.74,   'cost_ccy': 'USD', 'news_query': 'VanEck Semiconductor ETF'},
+        # v1.374.0 NOTE: ITWN is priced off the LSE USD listing (LSE:IDTW). IBKR's statement shows the
+        # GBP line; the two agree within ~$11 on ~$34k, so this is expected, not a valuation error.
         {'ticker': 'ITWN', 'isin': 'IE00B0M63623', 'name': 'iShares MSCI Taiwan UCITS ETF',                  'shares': 179,      'theme': 'Asia-Tech (Taiwan)',       'world_theme': 'Asia-Tech',      'cost_price': 15122.0,  'cost_ccy': 'GBX', 'news_query': 'Taiwan stock market TSMC MSCI Taiwan ETF'},
         {'ticker': 'KSTR', 'isin': 'IE00BKPJY434', 'name': 'KraneShares ICBCCS SSE STAR Market 50 UCITS ETF','shares': 872,      'theme': 'China Tech (STAR 50)',      'world_theme': 'Emerging',       'cost_price': 30.27,    'cost_ccy': 'USD', 'news_query': 'China STAR Market 50 KraneShares KSTR ETF'},
         {'ticker': 'AINF', 'isin': 'IE000X59ZHE2', 'name': 'iShares AI Infrastructure UCITS ETF',            'shares': 2910,     'theme': 'AI Infrastructure',        'world_theme': 'Asia-Tech',      'cost_price': 8.477,    'cost_ccy': 'GBP', 'news_query': 'iShares AI Infrastructure ETF'},
@@ -18124,7 +18126,10 @@ LIVE_PORTFOLIO_DEFAULT = {
         {'ticker': 'FLXK', 'isin': 'IE00BHZRR030', 'name': 'Franklin FTSE Korea UCITS ETF',                  'shares': 345.595,  'theme': 'Asia-Tech (Korea)',        'world_theme': 'Asia-Tech',      'cost_price': 106.36,   'cost_ccy': 'USD', 'news_query': 'Korea stock market KOSPI Samsung SK Hynix ETF'},
         {'ticker': 'PHPM', 'isin': 'JE00B1VS3W29', 'name': 'WisdomTree Physical Precious Metals',            'shares': 125,      'theme': 'Precious Metals (hedge)',  'world_theme': 'Commodity-Bloc', 'cost_price': 259.4,    'cost_ccy': 'USD', 'news_query': 'gold silver precious metals price outlook'},
     ],
-    'cash': [{'ccy': 'AED', 'amount': 200000}, {'ccy': 'USD', 'amount': 1.45}],
+    # v1.374.0: actual balances reconciled to the IBKR statement (Aug-7). AED cash was 200000 (stale);
+    # true balance 126954.92. interest_usd carries the statement's interest-accrual line into NAV.
+    'cash': [{'ccy': 'AED', 'amount': 126954.92}, {'ccy': 'USD', 'amount': 0.65}],
+    'interest_usd': 11.99,   # IBKR interest accruals -> NAV (config-overridable)
 }
 _AED_PER_USD = 3.6725  # UAE dirham hard USD peg since 1997 (not a fetched rate)
 
@@ -18781,7 +18786,8 @@ def build_live_investment(data, existing):
 
         holdings_usd = sum(r['mv_usd'] for r in rows if r['mv_usd'] is not None)
         cash_usd = sum(_li_to_usd(c.get('amount'), c.get('ccy'), fx) or 0 for c in cash_cfg)
-        nav = holdings_usd + cash_usd
+        interest_usd = cfg.get('interest_usd') or 0.0   # v1.374.0: IBKR interest accruals -> NAV
+        nav = holdings_usd + cash_usd + interest_usd
         for r in rows:
             r['weight'] = (r['mv_usd'] / nav * 100.0) if (nav and r['mv_usd'] is not None) else None
         # YOUR actual P&L since you invested (cost basis totals)
@@ -19004,7 +19010,7 @@ def build_live_investment(data, existing):
         _day_pnl = (lambda _vals: sum(_vals) if _vals else None)(
             [r['day_pnl_usd'] for r in rows if r.get('day_pnl_usd') is not None])
         data['live_investment'] = {
-            'as_of': today, 'nav_usd': round(nav, 2), 'holdings_usd': round(holdings_usd, 2),
+            'as_of': today, 'nav_usd': round(nav, 2), 'holdings_usd': round(holdings_usd, 2), 'interest_usd': round(interest_usd, 2),
             'cash_usd': round(cash_usd, 2), 'fx': fx, 'n_reuse': n_reuse, 'n_resolved': n_resolve,
             'n_pending': n_pending, 'holdings': rows, 'cash': cash_cfg,
             'inception_date': inception,
