@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.384.0'  # v1.384.0: ETF deep holdings via API NINJAS REST (real solution to the WebSocket wall). TV serves holdings only over an authed websocket (proven); API Ninjas serves them as plain REST JSON with no wall: GET https://api.api-ninjas.com/v1/etf?ticker=<T> + X-Api-Key. New fetch_ninja_etf_holdings(ticker) pulls the full 'holdings' array (ticker/name/weight) for IVV/ITOT/VTI -- covering the moat mid-caps. Key read from env ETF_NINJA_KEY (GitHub Actions secret; NEVER hardcoded, the repo is public). Robust parser handles the documented {holdings:[{ticker,weight}]} shape and variants; junk-reject + n>=50 gate retained; diag captures the response on miss. Fail-open: no key or any error -> existing top-25 behavior unchanged. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.385.0'  # v1.385.0: add FINNHUB ETF holdings as the primary deep source (API Ninjas free tier paywalls holdings: 'premium users only'). Finnhub's /api/v1/etf/holdings?symbol= is documented to return constituents and its free tier may include them. fetch_finnhub_etf_holdings(ticker) pulls the 'holdings' array (symbol/share/weight). build_moat_cover now tries FINNHUB first, then falls back to API Ninjas -- whichever returns >=50 real holdings wins. Key from env FINNHUB_KEY (GitHub secret; never hardcoded). Junk-reject + n>=50 gate + diag-on-miss retained. Fail-open. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3471,6 +3471,37 @@ def _extract_tv_tickers(obj, _depth=0):
 
 # v1.384.0: API Ninjas ETF holdings -- plain REST JSON, no consent wall, no websocket. The real path after
 # TV proved websocket-only and iShares proved consent-walled. Key from env (GitHub secret), never hardcoded.
+
+# v1.385.0: Finnhub ETF holdings -- REST JSON, documented constituent endpoint. Key from env (GitHub secret).
+def fetch_finnhub_etf_holdings(ticker):
+    """Full holdings for a US ETF via finnhub.io REST. Returns ([tickers], diag). Fail-open."""
+    import os, json as _json
+    _key = os.environ.get('FINNHUB_KEY', '').strip()
+    if not _key:
+        return [], {'src': 'finnhub', 'n': 0, 'err': 'no_key'}
+    _url = 'https://finnhub.io/api/v1/etf/holdings?symbol=%s&token=%s' % ((ticker or '').upper(), _key)
+    try:
+        _r = requests.get(_url, headers={'User-Agent': UA}, timeout=30)
+        _txt = _r.text or ''
+        if _r.status_code != 200:
+            return [], {'src': 'finnhub', 'n': 0, 'http': _r.status_code, 'head': _txt[:160]}
+        _j = _json.loads(_txt)
+        _hold = _j.get('holdings') if isinstance(_j, dict) else (_j if isinstance(_j, list) else None)
+        _tks = []
+        if isinstance(_hold, list):
+            for _row in _hold:
+                _t = _ninja_row_ticker(_row)   # same row shape (symbol/ticker keys); reuse
+                if _t:
+                    _tks.append(_t)
+        _tks = list(dict.fromkeys(_tks))
+        if _tks:
+            return _tks, {'src': 'finnhub', 'n': len(_tks), 'http': 200}
+        return [], {'src': 'finnhub', 'n': 0, 'http': 200,
+                    'top_keys': list(_j.keys())[:15] if isinstance(_j, dict) else 'list', 'head': _txt[:200]}
+    except Exception as _e:
+        return [], {'src': 'finnhub', 'n': 0, 'err': type(_e).__name__}
+
+
 def fetch_ninja_etf_holdings(ticker):
     """Full holdings for a US ETF via api-ninjas.com REST. Returns ([tickers], diag). Fail-open."""
     import os, json as _json
@@ -3550,16 +3581,24 @@ def build_moat_cover(existing=None):
         except Exception:
             pass
     # v1.373.0: BROAD funds via TV holdings (Business-Recorder technique). TV is runner-reachable.
-    # v1.384.0: BROAD funds via API Ninjas REST (no wall, no websocket). Covers mid-caps.
+    # v1.385.0: BROAD funds -- try Finnhub first (free-tier holdings), fall back to API Ninjas.
     deep_diag = {}
     for _bt in ('IVV', 'ITOT', 'VTI'):
+        _tks, _info = [], {}
         try:
-            _tks, _info = fetch_ninja_etf_holdings(_bt)
-            deep_diag[_bt] = _info
-            if _tks:
-                cache[_bt] = _tks
-        except Exception as _be:
-            deep_diag[_bt] = {'src': 'ninja', 'n': 0, 'err': type(_be).__name__}
+            _tks, _info = fetch_finnhub_etf_holdings(_bt)
+        except Exception as _fe:
+            _info = {'src': 'finnhub', 'n': 0, 'err': type(_fe).__name__}
+        if len(_tks) < 50:   # finnhub empty/shallow -> try ninja
+            try:
+                _nt, _ni = fetch_ninja_etf_holdings(_bt)
+                if len(_nt) > len(_tks):
+                    _tks, _info = _nt, _ni
+            except Exception as _be:
+                pass
+        deep_diag[_bt] = _info
+        if _tks:
+            cache[_bt] = _tks
     log('  [MOAT cover] fetched %d/%d top-25 ETFs + broad deep: %s'
         % (got, len(MOAT_COVER_ETFS), {k: (v or {}).get('n', 0) for k, v in deep_diag.items()}))
     return {'by_etf': cache, 'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
