@@ -101,6 +101,7 @@ jobs:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           ETF_NINJA_KEY: ${{ secrets.ETF_NINJA_KEY }}
           FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
+          ETF_FINNHUB_KEY: ${{ secrets.ETF_FINNHUB_KEY }}
         run: python scanner.py
 
       - name: Scanner skipped (inputs unchanged)
