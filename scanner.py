@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.385.0'  # v1.385.0: add FINNHUB ETF holdings as the primary deep source (API Ninjas free tier paywalls holdings: 'premium users only'). Finnhub's /api/v1/etf/holdings?symbol= is documented to return constituents and its free tier may include them. fetch_finnhub_etf_holdings(ticker) pulls the 'holdings' array (symbol/share/weight). build_moat_cover now tries FINNHUB first, then falls back to API Ninjas -- whichever returns >=50 real holdings wins. Key from env FINNHUB_KEY (GitHub secret; never hardcoded). Junk-reject + n>=50 gate + diag-on-miss retained. Fail-open. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.386.0'  # v1.386.0: match the owner's secret NAME. Owner set the Finnhub key as ETF_FINNHUB_KEY (not FINNHUB_KEY), so the fetch read the wrong env var and got no_key. Fix: fetch_finnhub_etf_holdings reads os.environ['ETF_FINNHUB_KEY']. Also accepts a plaintext root file 'ETF_FINNHUB_KEY' as a fallback if present. daily.yml must pass ETF_FINNHUB_KEY. PRIOR: CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3476,7 +3476,13 @@ def _extract_tv_tickers(obj, _depth=0):
 def fetch_finnhub_etf_holdings(ticker):
     """Full holdings for a US ETF via finnhub.io REST. Returns ([tickers], diag). Fail-open."""
     import os, json as _json
-    _key = os.environ.get('FINNHUB_KEY', '').strip()
+    _key = (os.environ.get('ETF_FINNHUB_KEY') or os.environ.get('FINNHUB_KEY') or '').strip()
+    if not _key:
+        try:
+            with open('ETF_FINNHUB_KEY') as _kf:   # v1.386.0: optional plaintext root file fallback
+                _key = _kf.read().strip()
+        except Exception:
+            _key = ''
     if not _key:
         return [], {'src': 'finnhub', 'n': 0, 'err': 'no_key'}
     _url = 'https://finnhub.io/api/v1/etf/holdings?symbol=%s&token=%s' % ((ticker or '').upper(), _key)
