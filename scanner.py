@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.396.0'  # v1.396.0: US ETF holdings via EDGARTOOLS (the maintained library that solves the series resolution we kept missing). Hand-rolled N-PORT hit the per-series problem: iShares Trust files hundreds of NPORT-P and my scan never reached IVV's equity filing (got derivatives). edgartools' FundReport has matches_ticker() + investment_data() which pick the RIGHT series' holdings natively. New fetch_edgar_nport_holdings(ticker): set_identity -> Company(ticker).get_filings(form='NPORT-P') -> find the filing whose FundReport.matches_ticker(ticker) -> investment_data() DataFrame -> ticker column. Free, no key. Requires edgartools on the runner (add to requirements). Falls back to hand-rolled nport then paid APIs. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.397.0'  # v1.397.0: PHASE 1 of dashboard-wide ETF holdings -- a single shared holdings index. Now that EDGAR gives real full holdings (IVV/ITOT/VTI 1748-3462 names, all US caps), expose ONE canonical stock->ETFs map at data['etf_holdings_index'] built from moat_cover.by_etf, so EVERY tab reads the same source (no per-tab duplication). Includes: which ETFs hold a ticker, total holder count, and a cap bucket. Wired in main() right after moat_cover. This is the reusable service; subsequent phases wire it into discovery tabs (Multibagger/Explosive/Global Discovery), the World ETF Engine, and the UCITS->US index bridge. Non-breaking: purely additive. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3850,6 +3850,46 @@ def build_moat_cover(existing=None):
         % (got, len(MOAT_COVER_ETFS), {k: (v or {}).get('n', 0) for k, v in deep_diag.items()}))
     return {'by_etf': cache, 'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
             'n_etfs': len(cache), 'deep_diag': deep_diag}
+
+
+
+def build_etf_holdings_index(data):
+    """v1.397.0: ONE canonical ETF-holdings index for the whole dashboard.
+    Reads the real EDGAR/broad holdings already in moat_cover.by_etf and produces:
+      {'by_stock': {TICKER: [etfs...]}, 'holder_count': {TICKER: n}, 'n_etfs': N, 'n_stocks': M, 'as_of': ...}
+    Any tab can ask 'which ETFs hold X' or 'how many funds hold X' from this single source."""
+    cover = ((data.get('moat_cover') or {}).get('by_etf') or {})
+    wz = ((data.get('wave_z') or {}).get('fund_cache') or {})
+    by_stock = {}
+    for _etf, _tks in cover.items():
+        if not isinstance(_tks, list):
+            continue
+        for _t in _tks:
+            _u = str(_t or '').upper()
+            if _u:
+                by_stock.setdefault(_u, set()).add(_etf)
+    # union in wave_z fund holdings if present (same shape: fund -> [tickers])
+    for _fund, _info in (wz.items() if isinstance(wz, dict) else []):
+        _tks = _info.get('holdings') if isinstance(_info, dict) else _info
+        if isinstance(_tks, list):
+            for _t in _tks:
+                _u = str(_t or '').upper()
+                if _u:
+                    by_stock.setdefault(_u, set()).add(_fund)
+    out_by_stock = {k: sorted(v) for k, v in by_stock.items()}
+    holder_count = {k: len(v) for k, v in out_by_stock.items()}
+    return {
+        'by_stock': out_by_stock,
+        'holder_count': holder_count,
+        'n_etfs': len(cover),
+        'n_stocks': len(out_by_stock),
+        'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
+    }
+
+def etf_holders_for(data, ticker, limit=10):
+    """Convenience accessor any builder can call: list of ETFs holding `ticker`."""
+    idx = (data.get('etf_holdings_index') or {}).get('by_stock') or {}
+    return (idx.get(str(ticker or '').upper()) or [])[:limit]
 
 
 def build_moat_universe(data, existing=None):
@@ -24601,6 +24641,14 @@ def main():
             except Exception as _mce:
                 log('[MOAT cover] skipped: %s' % type(_mce).__name__)
                 data['moat_cover'] = EXISTING.get('moat_cover', {}) or {}
+            # v1.397.0: shared ETF-holdings index (one source every tab reads).
+            try:
+                data['etf_holdings_index'] = build_etf_holdings_index(data)
+                log('  [ETF index] %d stocks across %d ETFs'
+                    % (data['etf_holdings_index']['n_stocks'], data['etf_holdings_index']['n_etfs']))
+            except Exception as _eie:
+                log('[ETF index] skipped: %s' % type(_eie).__name__)
+                data['etf_holdings_index'] = EXISTING.get('etf_holdings_index', {}) or {}
             # v1.357.0 WAVE MOAT: after wave_z (reads its fund_cache) and all engine outputs.
             try:
                 data['moat'] = build_moat_universe(data, EXISTING)
