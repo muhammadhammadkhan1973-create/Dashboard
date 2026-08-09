@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.376.0'  # v1.376.0: FIX the KeyError that froze moat_cover. Root cause (proven by replaying the real function): build_moat_cover's log line did {k: v['n'] ...} -- a hard key access -- but fetch_tv_etf_holdings' miss-path _diag dict has no 'n' key, so every run raised KeyError:'n', hit the except, and carried the stale 04:06 cache -> moat_cover frozen across 3 scans, TV fetch never persisted. FIX: v.get('n', 0) in the log, and the TV fetch always sets n in its diag. Now build_moat_cover completes, the src-tag gate fires, and the TV verdict actually writes. Changed: the log line + TV diag n-default. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.377.0'  # v1.377.0: TV holdings parser -- capture the real structure. BREAKTHROUGH: v1.376 unfroze build_moat_cover and TV now returns HTTP 200 application/json ~39KB for IVV/ITOT/VTI (no consent wall -- owner's TV instinct was right). But the parser extracted 0: the holdings array is nested under a key my walker didn't hit (head shows page_title/canonical metadata wrapping). This version (a) greatly widens the diag to capture the JSON's top-level keys + a slice around 'holdings'/'symbol' so the exact shape is visible, and (b) makes _extract_tv_tickers walk deeper + recognise more row shapes. One run then shows the real keys and the parser is finalised deterministically. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3366,10 +3366,18 @@ def fetch_tv_etf_holdings(sym):
             try:
                 _j = _json.loads(_txt)
             except Exception:
-                continue   # HTML shell -> next url; diag retained by caller on final miss
+                continue   # HTML shell -> next url
             _tks = _extract_tv_tickers(_j)
             if _tks:
-                return _tks, {'url': _u[:70], 'http': 200, 'n': len(_tks)}
+                return _tks, {'url': _u[:70], 'http': 200, 'n': len(_tks), 'src': 'tv'}
+            # v1.377.0: JSON parsed but no tickers -> capture the shape so the parser can be finalised
+            _diag = {'url': _u[:70], 'http': 200, 'n': 0, 'src': 'tv',
+                     'top_keys': list(_j.keys())[:20] if isinstance(_j, dict) else 'not-dict'}
+            _hi = _txt.find('holdings')
+            if _hi < 0: _hi = _txt.find('symbol')
+            if _hi < 0: _hi = _txt.find('"data"')
+            if _hi >= 0: _diag['around'] = _txt[_hi:_hi+300]
+            return [], _diag
         except Exception as _e:
             _diag = {'url': _u[:70], 'http': type(_e).__name__, 'n': 0}
     return [], _diag
