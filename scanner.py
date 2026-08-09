@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.391.0'  # v1.391.0: N-PORT -- sidestep the fragile CIK lookup with a hardcoded map of the broad-ETF CIKs (public, fixed values that never change), used FIRST; dynamic exchange/stocks lookup stays as fallback for any other ticker. The exchange-file fetch was adding 0 rows (diag: map=10398 = stocks-only, hasIVV=False), so relying on it blocked everything. With known CIKs, IVV/ITOT/VTI resolve immediately and N-PORT holdings parse. Exchange-fetch diag retained. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.392.0'  # v1.392.0: N-PORT parse fixed -- BREAKTHROUGH. v1.391's hardcoded CIK worked (CIK 930667 resolved, filing found, real SEC doc fetched). But the URL hit xslFormNPORT-P (SEC's HTML-RENDERED version) instead of the raw XML, so the parser got HTML -> parse_0. Fix: request the raw primary_doc.xml directly -- strip any xslFormNPORT-P/ prefix and force the accession's primary_doc.xml. Also: if primaryDocument is the styled path, build the raw path from the accession dir. VTI (no_nport, Vanguard files differently) stays fallback. IVV/ITOT should now parse ~full holdings. PRIOR: CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3634,14 +3634,26 @@ def fetch_sec_nport_holdings(ticker):
         if not _acc:
             return [], {'src': 'nport', 'n': 0, 'err': 'no_nport_filing'}
         _accnodash = _acc.replace('-', '')
-        _xurl = 'https://www.sec.gov/Archives/edgar/data/%s/%s/%s' % (int(_cik), _accnodash, _pdoc or 'primary_doc.xml')
-        _xml = _sec_get(_xurl, is_json=False)
+        _base = 'https://www.sec.gov/Archives/edgar/data/%s/%s' % (int(_cik), _accnodash)
+        # v1.392.0: force the RAW xml. primaryDocument may be an xslFormNPORT-P/ styled HTML path.
+        _cands = []
+        if _pdoc:
+            _raw = _pdoc.split('/')[-1]                 # strip xslFormNPORT-P/ prefix if present
+            _cands.append('%s/%s' % (_base, _raw))
+        _cands.append('%s/primary_doc.xml' % _base)     # canonical raw name
+        _xml = None; _used = None
+        for _cu in _cands:
+            _try = _sec_get(_cu, is_json=False)
+            if _try and _try.lstrip()[:5].lower() != '<!doc' and 'invstOrSec' in _try:
+                _xml = _try; _used = _cu; break
+            if _try and _used is None:
+                _xml = _try; _used = _cu   # keep first non-empty as fallback for diag
         if not _xml:
-            return [], {'src': 'nport', 'n': 0, 'err': 'no_xml', 'url': _xurl[:80]}
+            return [], {'src': 'nport', 'n': 0, 'err': 'no_xml', 'url': (_used or _cands[0])[:90]}
         _tks = _parse_nport_xml(_xml)
         if _tks:
             return _tks, {'src': 'nport', 'n': len(_tks), 'acc': _acc}
-        return [], {'src': 'nport', 'n': 0, 'err': 'parse_0', 'url': _xurl[:80], 'xhead': _xml[:200]}
+        return [], {'src': 'nport', 'n': 0, 'err': 'parse_0', 'url': (_used or '')[:90], 'xhead': _xml[:150]}
     except Exception as _e:
         return [], {'src': 'nport', 'n': 0, 'err': type(_e).__name__}
 
