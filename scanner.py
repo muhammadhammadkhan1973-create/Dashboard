@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.377.0'  # v1.377.0: TV holdings parser -- capture the real structure. BREAKTHROUGH: v1.376 unfroze build_moat_cover and TV now returns HTTP 200 application/json ~39KB for IVV/ITOT/VTI (no consent wall -- owner's TV instinct was right). But the parser extracted 0: the holdings array is nested under a key my walker didn't hit (head shows page_title/canonical metadata wrapping). This version (a) greatly widens the diag to capture the JSON's top-level keys + a slice around 'holdings'/'symbol' so the exact shape is visible, and (b) makes _extract_tv_tickers walk deeper + recognise more row shapes. One run then shows the real keys and the parser is finalised deterministically. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.378.0'  # v1.378.0: TV holdings parser targets the 'results' key. The v1.377 diag proved TV's holdings live under top-level 'results' (not 'holdings'/'symbol'). _extract_tv_tickers now dives into results/render_results/extra_data first and recognises every plausible constituent row shape (symbol/ticker/s/name + nested 'd' arrays with a symbol string). Diag also widened to capture the real results[] slice as a safety net so if the row shape is unusual, one run shows it exactly. TV data is confirmed arriving (200/json), so this should populate the mid-caps. Changed: _extract_tv_tickers + diag results-capture. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3373,26 +3373,59 @@ def fetch_tv_etf_holdings(sym):
             # v1.377.0: JSON parsed but no tickers -> capture the shape so the parser can be finalised
             _diag = {'url': _u[:70], 'http': 200, 'n': 0, 'src': 'tv',
                      'top_keys': list(_j.keys())[:20] if isinstance(_j, dict) else 'not-dict'}
-            _hi = _txt.find('holdings')
-            if _hi < 0: _hi = _txt.find('symbol')
-            if _hi < 0: _hi = _txt.find('"data"')
-            if _hi >= 0: _diag['around'] = _txt[_hi:_hi+300]
+            _hi = _txt.find('"results"')
+            if _hi < 0: _hi = _txt.find('"render_results"')
+            if _hi >= 0: _diag['results_slice'] = _txt[_hi:_hi+400]
             return [], _diag
         except Exception as _e:
             _diag = {'url': _u[:70], 'http': type(_e).__name__, 'n': 0}
     return [], _diag
 
+def _tv_row_ticker(row):
+    """Pull a US ticker from one TV results row, whatever its shape."""
+    if isinstance(row, dict):
+        for _k in ('symbol', 'ticker', 's', 'name'):
+            _v = row.get(_k)
+            if isinstance(_v, str):
+                _t = _v.split(':')[-1].strip().upper()
+                if 1 <= len(_t) <= 6 and _t.replace('.', '').isalpha():
+                    return _t
+        # some TV rows carry a 'd' array of column values with a symbol string inside
+        _d = row.get('d')
+        if isinstance(_d, list):
+            for _c in _d:
+                if isinstance(_c, str) and ':' in _c:
+                    _t = _c.split(':')[-1].strip().upper()
+                    if 1 <= len(_t) <= 6 and _t.replace('.', '').isalpha():
+                        return _t
+    elif isinstance(row, str):
+        _t = row.split(':')[-1].strip().upper()
+        if 1 <= len(_t) <= 6 and _t.replace('.', '').isalpha():
+            return _t
+    return None
+
 def _extract_tv_tickers(obj, _depth=0):
-    """Walk TV's JSON and pull constituent tickers regardless of exact shape."""
+    """v1.378.0: TV holdings live under 'results'. Dive there first, then fall back to a deep walk."""
     out = []
-    if _depth > 6:
+    if isinstance(obj, dict):
+        for _rk in ('results', 'render_results', 'extra_data'):
+            _rv = obj.get(_rk)
+            if isinstance(_rv, list):
+                for _row in _rv:
+                    _t = _tv_row_ticker(_row)
+                    if _t: out.append(_t)
+                    elif isinstance(_row, (dict, list)):
+                        out += _extract_tv_tickers(_row, _depth + 1)
+            elif isinstance(_rv, dict):
+                out += _extract_tv_tickers(_rv, _depth + 1)
+        if out:
+            return list(dict.fromkeys(out))
+    # fallback: generic deep walk
+    if _depth > 7:
         return out
     if isinstance(obj, dict):
-        # common holdings row keys
-        for _k in ('symbol', 'ticker', 's'):
-            _v = obj.get(_k)
-            if isinstance(_v, str) and 1 <= len(_v.split(':')[-1]) <= 6 and _v.split(':')[-1].isalpha():
-                out.append(_v.split(':')[-1].upper())
+        _t = _tv_row_ticker(obj)
+        if _t: out.append(_t)
         for _v in obj.values():
             out += _extract_tv_tickers(_v, _depth + 1)
     elif isinstance(obj, list):
