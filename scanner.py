@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.378.0'  # v1.378.0: TV holdings parser targets the 'results' key. The v1.377 diag proved TV's holdings live under top-level 'results' (not 'holdings'/'symbol'). _extract_tv_tickers now dives into results/render_results/extra_data first and recognises every plausible constituent row shape (symbol/ticker/s/name + nested 'd' arrays with a symbol string). Diag also widened to capture the real results[] slice as a safety net so if the row shape is unusual, one run shows it exactly. TV data is confirmed arriving (200/json), so this should populate the mid-caps. Changed: _extract_tv_tickers + diag results-capture. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.379.0'  # v1.379.0: TV holdings -- the /holdings/ page 'results' is NOT the constituent list. v1.378 parsed n=2 = ['META','NAME'] (page-metadata false positives), so the real holdings array is elsewhere on that page or needs TV's components endpoint. FIX: (a) reject junk tokens (NAME/META/NULL/etc) in _tv_row_ticker; (b) try TV's dedicated components endpoints first (/api/v1/symbols/<EX>-<SYM>/holdings + scanner components), (c) capture symbol_info + a slice of the TRUE holdings container into diag (top_keys already showed 'results','extra_data','render_results'; now capture each one's first 300 chars) so the real array is identified in ONE run. Still 200/json confirmed. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3371,24 +3371,29 @@ def fetch_tv_etf_holdings(sym):
             if _tks:
                 return _tks, {'url': _u[:70], 'http': 200, 'n': len(_tks), 'src': 'tv'}
             # v1.377.0: JSON parsed but no tickers -> capture the shape so the parser can be finalised
-            _diag = {'url': _u[:70], 'http': 200, 'n': 0, 'src': 'tv',
-                     'top_keys': list(_j.keys())[:20] if isinstance(_j, dict) else 'not-dict'}
-            _hi = _txt.find('"results"')
-            if _hi < 0: _hi = _txt.find('"render_results"')
-            if _hi >= 0: _diag['results_slice'] = _txt[_hi:_hi+400]
-            return [], _diag
+            _diag = {'url': _u[:70], 'http': 200, 'n': len(_tks), 'src': 'tv',
+                     'top_keys': list(_j.keys())[:22] if isinstance(_j, dict) else 'not-dict'}
+            # v1.379.0: capture each candidate container so the TRUE holdings array is identified
+            if isinstance(_j, dict):
+                for _ck in ('results', 'render_results', 'extra_data', 'symbol_info'):
+                    _cv = _j.get(_ck)
+                    if _cv is not None:
+                        _diag['k_' + _ck] = str(_cv)[:220]
+            return _tks, _diag
         except Exception as _e:
             _diag = {'url': _u[:70], 'http': type(_e).__name__, 'n': 0}
     return [], _diag
 
+_TV_JUNK = {'NAME', 'META', 'NULL', 'NONE', 'DATA', 'TYPE', 'VALUE', 'TITLE', 'LABEL', 'ROBOTS',
+            'INDEX', 'TICKER', 'SYMBOL', 'RESULTS', 'TRUE', 'FALSE', 'USD', 'CASH'}
 def _tv_row_ticker(row):
-    """Pull a US ticker from one TV results row, whatever its shape."""
+    """Pull a US ticker from one TV results row, whatever its shape. Rejects metadata false positives."""
     if isinstance(row, dict):
-        for _k in ('symbol', 'ticker', 's', 'name'):
+        for _k in ('symbol', 'ticker', 's'):   # v1.379.0: drop 'name' -- it matched metadata
             _v = row.get(_k)
             if isinstance(_v, str):
                 _t = _v.split(':')[-1].strip().upper()
-                if 1 <= len(_t) <= 6 and _t.replace('.', '').isalpha():
+                if 1 <= len(_t) <= 6 and _t.replace('.', '').isalpha() and _t not in _TV_JUNK:
                     return _t
         # some TV rows carry a 'd' array of column values with a symbol string inside
         _d = row.get('d')
@@ -3396,11 +3401,11 @@ def _tv_row_ticker(row):
             for _c in _d:
                 if isinstance(_c, str) and ':' in _c:
                     _t = _c.split(':')[-1].strip().upper()
-                    if 1 <= len(_t) <= 6 and _t.replace('.', '').isalpha():
+                    if 1 <= len(_t) <= 6 and _t.replace('.', '').isalpha() and _t not in _TV_JUNK:
                         return _t
     elif isinstance(row, str):
         _t = row.split(':')[-1].strip().upper()
-        if 1 <= len(_t) <= 6 and _t.replace('.', '').isalpha():
+        if 1 <= len(_t) <= 6 and _t.replace('.', '').isalpha() and _t not in _TV_JUNK:
             return _t
     return None
 
