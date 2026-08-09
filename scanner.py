@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.387.0'  # v1.387.0: US ETF holdings via SEC EDGAR N-PORT -- FREE, no key, no wall, no websocket. Every US ETF legally files Form NPORT-P with its FULL portfolio (all constituents: name, cusip, isin, ticker, pctVal). The runner already reaches sec.gov (sec_filings step), so this extends a live source. Flow (confirmed against edgartools' real parser + SEC docs): (1) ticker->CIK via sec.gov/files/company_tickers.json; (2) latest NPORT-P accession via data.sec.gov/submissions/CIK<10>.json; (3) fetch the filing's primary_doc.xml; (4) parse formData/invstOrSecs/invstOrSec -> identifiers/ticker (value attr) else name. Compliant User-Agent (SEC 10 req/s rule). Covers the US-listed moat mid-caps (STT/RPRX/WST/BK...). UCITS funds are NOT in EDGAR (EU-domiciled) -- they stay at justETF top-10. Wired into build_moat_cover for IVV/ITOT/VTI, unioned on top; n>=50 gate; fail-open. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.388.0'  # v1.388.0: fix N-PORT CIK lookup for ETFs. v1.387 used company_tickers.json (STOCKS only) -> ETFs like IVV aren't in it -> err:no_cik. Fix: use company_tickers_exchange.json which includes ETFs (SEC-confirmed: cik/name/ticker/exchange), structure {fields:[...],data:[[cik,name,ticker,exchange],...]}; fall back to company_tickers.json. Now IVV/ITOT/VTI resolve to their fund-trust CIK and N-PORT holdings parse. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3573,11 +3573,25 @@ def _sec_get(url, is_json=True):
 def _sec_ticker_to_cik(ticker):
     global _SEC_TICKER_CIK
     if not _SEC_TICKER_CIK:
+        # v1.388.0: company_tickers_exchange.json includes ETFs (STOCKS-only file misses them).
+        _je = _sec_get('https://www.sec.gov/files/company_tickers_exchange.json')
+        if isinstance(_je, dict) and _je.get('data'):
+            _flds = [str(f).lower() for f in (_je.get('fields') or ['cik', 'name', 'ticker', 'exchange'])]
+            try:
+                _ci = _flds.index('cik'); _ti = _flds.index('ticker')
+            except ValueError:
+                _ci, _ti = 0, 2
+            for _row in _je['data']:
+                try:
+                    _SEC_TICKER_CIK[str(_row[_ti]).upper()] = str(_row[_ci]).zfill(10)
+                except Exception:
+                    pass
+        # fallback: stocks file (fills any gaps)
         _j = _sec_get('https://www.sec.gov/files/company_tickers.json')
         if isinstance(_j, dict):
             for _v in _j.values():
                 try:
-                    _SEC_TICKER_CIK[str(_v['ticker']).upper()] = str(_v['cik_str']).zfill(10)
+                    _SEC_TICKER_CIK.setdefault(str(_v['ticker']).upper(), str(_v['cik_str']).zfill(10))
                 except Exception:
                     pass
     return _SEC_TICKER_CIK.get((ticker or '').upper())
