@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.403.0'  # v1.403.0: sector ETFs get their CORRECT deep holdings via edgartools' Fund class. v1.402 made sector ETFs fall back to shallow top-25 (safe but lossy) because matches_ticker fails on multi-series trusts (its series_id->ticker map is incomplete). Better fix: edgar.funds.Fund(ticker)..get_portfolio() resolves the EXACT series (chains latest NPORT-P -> investment_data), so SOXX returns its real ~30 semis, not the S&P 500. fetch_edgar_nport_holdings now tries Fund().get_portfolio() FIRST, then falls back to the Company scan (broad funds only) then empty. This gives every sector ETF its own correct deep holdings. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.404.0'  # v1.404.0: DETERMINISTIC series matching by SERIES NAME. Diagnosed fully in-sandbox from edgartools source: Fund(ticker)/matches_ticker both depend on ticker maps that lack 29 of our 30 ETFs (verified against the bundled company parquet), so sector ETFs resolved to wrong series (S&P 500) or collapsed. THE FIX needs no ticker map: every NPORT-P filing carries general_info.series_name (verified in edgartools' GeneralInfo model). New _NPORT_NAME_KEYS maps each ETF to unambiguous words from its official fund name (SOXX->'semiconductor', IGV->'software', IWM->'russell 2000'...); the fetch scans the trust's recent NPORT-P filings and picks the one whose series_name contains the ETF's keywords -- deterministic, validated offline against real iShares/SPDR series names. Broad-fund largest-set fallback retained; unmatched sector ETFs stay honestly on top-25. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3616,6 +3616,22 @@ def _sec_ticker_to_cik(ticker):
 # v1.396.0: edgartools-based ETF holdings. The library resolves the CIK/series/N-PORT chain natively
 # (matches_ticker picks the correct fund series), which the hand-rolled fetch kept missing. Free, no key.
 _EDGAR_READY = [False]
+# v1.404.0: unambiguous official-fund-name keywords per ETF (all lowercase; ALL words must appear in the
+# filing's general_info.series_name). Sourced from each fund's official name.
+_NPORT_NAME_KEYS = {
+    'IVV': ('core', 's&p 500'), 'ITOT': ('core', 'total'), 'VTI': ('total stock market',),
+    'QQQ': ('qqq',), 'SOXX': ('semiconductor',), 'SMH': ('semiconductor',),
+    'XLK': ('technology select',), 'VGT': ('information technology',), 'IGV': ('software',),
+    'XLE': ('energy select',), 'XLF': ('financial select',), 'KRE': ('regional bank',),
+    'KBE': ('bank',), 'XLV': ('health care select',), 'XBI': ('biotech',), 'IBB': ('biotechnology',),
+    'IHI': ('medical devices',), 'XLI': ('industrial select',), 'PPA': ('aerospace',),
+    'ITA': ('aerospace',), 'XLB': ('materials select',), 'XLP': ('consumer staples select',),
+    'XLY': ('consumer discretionary select',), 'XLU': ('utilities select',),
+    'XLRE': ('real estate select',), 'VNQ': ('real estate',), 'IWM': ('russell 2000',),
+    'SCHD': ('dividend equity',), 'MTUM': ('momentum',), 'QUAL': ('quality',),
+}
+
+
 def fetch_edgar_nport_holdings(ticker):
     """Full holdings for a US ETF via edgartools. Returns ([tickers], diag). Fail-open."""
     try:
@@ -3629,50 +3645,46 @@ def fetch_edgar_nport_holdings(ticker):
         if not _EDGAR_READY[0]:
             _set_identity('MHK-Dashboard research muhammadhammadkhan1973@gmail.com')
             _EDGAR_READY[0] = True
-        # v1.403.0: Fund(ticker).get_portfolio() scopes to the EXACT series -> correct sector holdings.
-        try:
-            _fund = _Fund((ticker or '').upper())
-            _pf = _fund.get_portfolio()
-            _ftks = _edgar_df_tickers(_pf)
-            if _ftks:
-                return _ftks, {'src': 'edgar', 'n': len(_ftks), 'via': 'fund'}
-        except Exception:
-            pass
+        # v1.404.0: the v1.403 Fund() path is REMOVED -- proven (live run + offline source analysis) to
+        # resolve the wrong series for 19/30 ETFs (returns S&P 500 for SOXX). The deterministic
+        # series-NAME match below is the validated path.
         _co = _Company((ticker or '').upper())
         _fs = _co.get_filings(form='NPORT-P')
         if _fs is None or len(_fs) == 0:
             return [], {'src': 'edgar', 'n': 0, 'err': 'no_nport'}
-        # v1.402.0: broad funds legitimately hold thousands; sector/thematic ETFs hold tens-to-hundreds.
-        # Only broad funds may use the 'largest filing' fallback; a sector ETF must MATCH by ticker or we
-        # return empty (the shallow top-25 source covers it) -- never the wrong S&P 500 filing.
+        # v1.404.0: deterministic SERIES-NAME matching. The filing's general_info.series_name identifies
+        # the fund; match it against the ETF's official-name keywords. No ticker map needed.
         _BROAD = {'IVV', 'ITOT', 'VTI', 'VOO', 'SPY', 'IWB', 'RSP', 'SCHB'}
         _tkru = (ticker or '').upper()
-        _best = []; _matched = False
-        for _k in range(min(12, len(_fs))):
+        _keys = _NPORT_NAME_KEYS.get(_tkru)
+        _best = []
+        for _k in range(min(20, len(_fs))):
             try:
                 _filing = _fs[_k]
                 _fr = _FundReport.from_filing(_filing)
                 if _fr is None:
                     continue
-                _is_match = False
+                _sname = ''
                 try:
-                    _is_match = _fr.matches_ticker(_tkru)
+                    _sname = (getattr(_fr.general_info, 'series_name', '') or '').lower()
                 except Exception:
-                    _is_match = False
-                if not _is_match and _matched:
-                    continue
-                _df = _fr.investment_data()
-                _tks = _edgar_df_tickers(_df)
-                if _is_match and _tks:
-                    return _tks, {'src': 'edgar', 'n': len(_tks), 'matched': True}
-                if len(_tks) > len(_best):
-                    _best = _tks
+                    _sname = ''
+                _name_hit = bool(_keys) and _sname and all(_w in _sname for _w in _keys)
+                if _name_hit:
+                    _df = _fr.investment_data()
+                    _tks = _edgar_df_tickers(_df)
+                    if _tks:
+                        return _tks, {'src': 'edgar', 'n': len(_tks), 'matched': 'name', 'series': _sname[:40]}
+                if _tkru in _BROAD:
+                    _df = _fr.investment_data()
+                    _tks = _edgar_df_tickers(_df)
+                    if len(_tks) > len(_best):
+                        _best = _tks
             except Exception:
                 continue
-        # no ticker-match: only broad funds may take the largest filing; sector ETFs return empty.
         if _best and _tkru in _BROAD:
             return _best, {'src': 'edgar', 'n': len(_best), 'matched': False}
-        return [], {'src': 'edgar', 'n': 0, 'err': 'no_ticker_match', 'largest_seen': len(_best)}
+        return [], {'src': 'edgar', 'n': 0, 'err': 'no_series_name_match'}
     except Exception as _e:
         return [], {'src': 'edgar', 'n': 0, 'err': type(_e).__name__}
 
