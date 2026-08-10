@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.400.0'  # v1.400.0: extend EDGAR deep holdings to the SECTOR/THEMATIC ETFs (was only IVV/ITOT/VTI). Now the bridge targets (SOXX/SMH/XLE/XLF/XLV/XLK/XBI/IBB/KRE/KBE/IGV/PPA/QQQ + more) also get full free EDGAR holdings, so both the World ETF Engine (Phase 3) and the UCITS->US bridge (Phase 4) deliver deep constituents, not top-25. edgartools resolves each via matches_ticker. Same fail-open + gate; the broad-ETF loop is widened to the deep-target set. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.401.0'  # v1.401.0: fix the gate so the widened 30-ETF EDGAR loop actually runs. v1.400 added _DEEP_ETFS (30 sector/thematic) but the cache-carry gate saw the old 3-broad-ETF cache as 'deep_ok' (IVV/ITOT/VTI n>=50) and carried it -> the 27 new sector ETFs never fetched, bridge got 0. FIX: the gate now carries only if the cache COVERS the full _DEEP_ETFS set with real holdings; a cache missing any of them forces a refresh so the new ETFs fetch. One run then deep-fetches all 30 and the bridge populates. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3804,10 +3804,16 @@ def build_moat_cover(existing=None):
     # v1.366.0: a pre-deep-holdings cache (no deep_diag) must refresh once so the broad CSV runs.
     # v1.373.0: carry only once TV deep holdings have succeeded; else refresh to retry the fetch.
     # v1.384.0: carry only once ninja deep holdings succeeded (n>=50); else refresh to retry.
+    # v1.401.0: carry only if the cache already covers the full deep-ETF set (else the new sector ETFs
+    # would never fetch). _DEEP_ETFS is defined below; mirror it here for the coverage check.
+    _DEEP_TARGETS = ('IVV', 'ITOT', 'VTI', 'QQQ', 'SOXX', 'SMH', 'XLK', 'VGT', 'IGV', 'XLE', 'XLF', 'KRE',
+                     'KBE', 'XLV', 'XBI', 'IBB', 'IHI', 'XLI', 'PPA', 'ITA', 'XLB', 'XLP', 'XLY', 'XLU',
+                     'XLRE', 'VNQ', 'IWM', 'SCHD', 'MTUM', 'QUAL')
     _pdd = (prev.get('deep_diag') or {})
-    _deep_ok = any((v or {}).get('n', 0) >= 50 for v in _pdd.values() if isinstance(v, dict))
+    _deep_have = set(k for k, v in _pdd.items() if isinstance(v, dict) and (v.get('n', 0) or 0) >= 50)
+    _deep_ok = _deep_have.issuperset(set(_DEEP_TARGETS))
     if fresh and cache and _deep_ok:
-        log('  [MOAT cover] carried (fresh <5d, ninja deep present): %d ETFs' % len(cache))
+        log('  [MOAT cover] carried (fresh <5d, all %d deep ETFs present)' % len(_DEEP_TARGETS))
         return prev
     got = 0
     for etf in MOAT_COVER_ETFS:
