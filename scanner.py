@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.411.0'  # v1.411.0: THE TWIN CLOSER -- depth was the whole story. v1.410's diagnostics returned the verdict: parse_fails=0, names read fine, but iShares Inc lists 1,468 NPORT filings and KraneShares 770 -- these trusts now run 90+ series per quarterly batch, so EWY/EWT/KSTR simply sit beyond the 60-filing window (names seen at the cutoff: South Africa, Germany, 2x-single-stock products...). FIX: scan depth 60->150 for CIK-routed tickers, early-exit on hit so the cost is only until found; once matched, the monotonic cache + the deep-target gate carry 5 days and the rescans stop entirely. Validated offline with the target series planted at position 120. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.412.0'  # v1.412.0: SERIES-DIRECT fetch for the foreign twins. Even at depth 150 EWY/EWT/KSTR missed (iShares Inc 1,468 filings, KraneShares 770) -- and a deeper truth surfaced: these funds hold FOREIGN listings whose N-PORT rows carry no US tickers, so the ticker parser would reject them anyway. THE FIX: SEC filing-index pages (verified) give the series IDs -- EWY=S000004258, EWT=S000004261 -- and EDGAR serves filings PER SERIES. New fetch_nport_by_series(): browse-edgar atom for the series -> latest accession -> primary_doc.xml -> namespace-stripped parse of invstOrSec (name/isin/pctVal/assetCat) -> local codes derived from ISINs (TW0002330008->2330, KR7005930003->005930) with ADR/name aliases (2330->TSM, 005930->Samsung) -> holdings + weights + cash. Wired ahead of the trust scan. KSTR (ID not yet sourced) stays on the name-scan at depth 250. Fixture-validated offline end-to-end. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3641,6 +3641,70 @@ _NPORT_NAME_KEYS = {
 # v1.409.0: registrant CIKs verified from SEC filing URLs -- Company(ticker) cannot resolve these.
 _NPORT_CIK = {'SMH': 1137360, 'EWY': 930667, 'EWT': 930667, 'KSTR': 1547576}
 
+# v1.412.0: series IDs verified from SEC filing-index pages; EDGAR serves filings per series.
+_NPORT_SERIES = {'EWY': 'S000004258', 'EWT': 'S000004261'}
+_ISIN_ALIAS = {'2330': 'TSM', '005930': 'Samsung', '000660': 'SKHynix', '2317': 'HonHai', '2454': 'MediaTek'}
+
+def _isin_local_code(isin):
+    """Local exchange code from an ISIN: TW0002330008 -> 2330, KR7005930003 -> 005930."""
+    _i = str(isin or '').strip().upper()
+    try:
+        if _i.startswith('TW') and len(_i) == 12:
+            return _i[5:9]
+        if _i.startswith('KR') and len(_i) == 12:
+            return _i[3:9]
+    except Exception:
+        pass
+    return None
+
+
+def fetch_nport_by_series(series_id):
+    """Latest NPORT-P holdings for one SEC series: atom -> accession -> primary_doc.xml -> (codes, weights, cash)."""
+    import re as _re
+    import requests as _rq
+    import xml.etree.ElementTree as _ET
+    _hd = {'User-Agent': 'MHK-Dashboard research muhammadhammadkhan1973@gmail.com'}
+    try:
+        _atom = _rq.get('https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=%s&type=NPORT-P'
+                        '&dateb=&owner=include&count=5&output=atom' % series_id, headers=_hd, timeout=30).text
+        _acc = _re.search(r'<accession-n\w*>([0-9\-]{18,22})</', _atom)
+        _cik = _re.search(r'/Archives/edgar/data/(\d+)/', _atom)
+        if not _acc or not _cik:
+            return [], [], None, {'err': 'atom_no_accession'}
+        _accn = _acc.group(1)
+        _url = ('https://www.sec.gov/Archives/edgar/data/%s/%s/primary_doc.xml'
+                % (_cik.group(1), _accn.replace('-', '')))
+        _xml = _rq.get(_url, headers=_hd, timeout=45).text
+        _xml = _re.sub(r'xmlns(:\w+)?="[^"]*"', '', _xml)
+        _xml = _re.sub(r'<(/?)\w+:', r'<\1', _xml)
+        _xml = _re.sub(r'\s\w+:(\w+=")', r' \1', _xml)
+        _root = _ET.fromstring(_xml)
+        _codes, _wts, _cash = [], [], 0.0
+        for _sec in _root.iter('invstOrSec'):
+            _nm = (_sec.findtext('name') or '').strip()
+            _isin_el = _sec.find('.//isin')
+            _isin = _isin_el.get('value') if _isin_el is not None else (_sec.findtext('.//isin') or '')
+            _pct = _sec.findtext('pctVal')
+            _cat = (_sec.findtext('assetCat') or '').strip().upper()
+            try:
+                _pv = float(_pct)
+            except Exception:
+                continue
+            if _cat == 'STIV':
+                _cash += _pv
+                continue
+            _code = _isin_local_code(_isin)
+            _label = _ISIN_ALIAS.get(_code) or _code or (_nm[:10].replace(' ', '') if _nm else None)
+            if _label:
+                _codes.append(_label)
+                _wts.append((_label, round(_pv, 3)))
+        _wts.sort(key=lambda x: -x[1])
+        return _codes, _wts[:60], round(_cash, 2), {'ok': True, 'accession': _accn}
+    except Exception as _e:
+        return [], [], None, {'err': type(_e).__name__}
+
+
+
 def fetch_edgar_nport_holdings(ticker):
     """Full holdings for a US ETF via edgartools. Returns ([tickers], diag). Fail-open."""
     try:
@@ -3658,6 +3722,14 @@ def fetch_edgar_nport_holdings(ticker):
         # resolve the wrong series for 19/30 ETFs (returns S&P 500 for SOXX). The deterministic
         # series-NAME match below is the validated path.
         _tkru0 = (ticker or '').upper()
+        # v1.412.0: series-direct path for the foreign twins (no US tickers in their rows; series verified).
+        if _tkru0 in _NPORT_SERIES:
+            _sc, _sw, _scash, _sd = fetch_nport_by_series(_NPORT_SERIES[_tkru0])
+            if len(_sc) >= 10:
+                if _sw:
+                    _EDGAR_EXTRA[_tkru0] = {'weights': _sw, 'cash_pct': _scash}
+                return _sc[:400], {'src': 'edgar', 'n': len(_sc), 'matched': 'series', 'series_id': _NPORT_SERIES[_tkru0]}
+            # series path failed -> fall through to the trust scan (honest fallback)
         _co = _Company(_NPORT_CIK[_tkru0]) if _tkru0 in _NPORT_CIK else _Company(_tkru0)
         _fs = _co.get_filings(form='NPORT-P')
         if _fs is None or len(_fs) == 0:
@@ -3669,7 +3741,7 @@ def fetch_edgar_nport_holdings(ticker):
         _keys = _NPORT_NAME_KEYS.get(_tkru)
         _best = []
         _scan_n = 0; _fail_n = 0; _names_seen = []
-        for _k in range(min(150 if _tkru in _NPORT_CIK else 20, len(_fs))):
+        for _k in range(min(250 if _tkru in _NPORT_CIK else 20, len(_fs))):
             try:
                 _scan_n += 1
                 _filing = _fs[_k]
@@ -24896,6 +24968,10 @@ def main():
                                 _held_sets[_hf] = set(_cov[_tw])
                         _held_sets['AMD3'] = {'AMD'}
                         _held_sets['TSM3'] = {'TSM'}
+                        # v1.412.0: ADR alias -- the Taiwan fund holds 2330 (TSM's local line)
+                        for _hf2, _ss2 in list(_held_sets.items()):
+                            if 'TSM' in _ss2 or '2330' in _ss2:
+                                _ss2.update({'TSM', '2330'})
                         _rst = (data.get('recommended') or {}).get('stocks')
                         if isinstance(_rst, list) and _held_sets:
                             for _r in _rst:
