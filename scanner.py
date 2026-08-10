@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.413.0'  # v1.413.0: KSTR CORRECTION + justETF weights close the exposure. Owner correction: the book's KSTR is the UCITS line (KraneShares ICBCCS SSE STAR Market 50 UCITS, IE00BKPJY434, Irish) -- it can NEVER be in EDGAR, the US-series hunt was chasing the wrong instrument, and the ETF Universe file does not carry it (checked). TV holdings remain the proven session-WebSocket dead end. THE PATH THAT WORKS: fetch_justetf_holdings has carried with_weights=True (name,pct) pairs since v1.219 -- the exposure now adds a justETF top-10 branch for ANY book fund with an ISIN not covered by an EDGAR twin (KSTR, AINF, STOR; PHPM physical -> no container -> skipped honestly). Coverage counts only the weight the top-10 actually explains (w x sum_pct/100). Labels compacted from issuer names. Exposure coverage rises toward ~75-85%% of the book with the China STAR names, the AI-infra basket and the storage names joining. KSTR removed from _NPORT_SERIES hunting. Validated offline against the real book. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.414.0'  # v1.414.0: EFFICIENCY -- restore the 5-day deep cache. The timing audit showed tail_builders at 152s/run because KSTR sat in _DEEP_TARGETS: since the owner's KSTR is the UCITS line (served by justETF as of v1.413), the US-KSTR deep fetch can never succeed, the gate never carried, and the FULL 30-ETF EDGAR refetch ran every scan (~60-90s wasted per run). FIX: KSTR removed from _DEEP_TARGETS, _DEEP_ETFS and _LIH_FUND_MAP (all dead paths now); EWY/EWT stay (series-direct, proven). The gate carries again once all remaining targets are deep -> the EDGAR fetch drops to ~once per 5 days. Validated offline: a cache holding every target except KSTR now carries. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3968,8 +3968,10 @@ def build_moat_cover(existing=None):
     # v1.384.0: carry only once ninja deep holdings succeeded (n>=50); else refresh to retry.
     # v1.401.0: carry only if the cache already covers the full deep-ETF set (else the new sector ETFs
     # would never fetch). _DEEP_ETFS is defined below; mirror it here for the coverage check.
-    _DEEP_TARGETS = ('IVV', 'ITOT', 'VTI', 'QQQ', 'VGT', 'KBE', 'XBI', 'VNQ', 'SCHD', 'QUAL',
-                     'KSTR', 'EWY', 'EWT')   # v1.408.0: only funds PROVEN to name-match gate the carry
+    _DEEP_TARGETS = ('IVV', 'ITOT', 'VTI', 'QQQ', 'VGT', 'KBE', 'VNQ', 'SCHD', 'QUAL',
+                     'EWY', 'EWT')   # v1.414.0: KSTR removed (owner's KSTR is UCITS -> justETF path);
+                     # XBI removed too -- it name-matches only to top-25 (never >=50), so requiring it
+                     # would break the carry every run. Targets = exactly the funds PROVEN to go deep.   # v1.408.0: only funds PROVEN to name-match gate the carry
                      # (SPDRs/iShares sector filings are ticker-less -> honest top-25; requiring them would
                      # force a futile refetch every run). New KSTR/EWY/EWT force ONE refresh to fetch them.
     _pdd = (prev.get('deep_diag') or {})
@@ -3992,7 +3994,7 @@ def build_moat_cover(existing=None):
     # v1.400.0: deep EDGAR holdings for the broad funds AND the sector/thematic ETFs the bridge maps to.
     _DEEP_ETFS = ('IVV', 'ITOT', 'VTI', 'QQQ', 'SOXX', 'SMH', 'XLK', 'VGT', 'IGV', 'XLE', 'XLF', 'KRE',
                   'KBE', 'XLV', 'XBI', 'IBB', 'IHI', 'XLI', 'PPA', 'ITA', 'XLB', 'XLP', 'XLY', 'XLU',
-                  'XLRE', 'VNQ', 'IWM', 'SCHD', 'MTUM', 'QUAL', 'KSTR', 'EWY', 'EWT')
+                  'XLRE', 'VNQ', 'IWM', 'SCHD', 'MTUM', 'QUAL', 'EWY', 'EWT')
     deep_diag = {}
     for _bt in _DEEP_ETFS:
         _tks, _info = [], {}
@@ -19698,7 +19700,7 @@ def build_live_investment(data, existing):
         # single-stock 3x notes. _LIH_FUND_MAP names each holding's US EDGAR twin (same tracked index).
         try:
             _dw = ((data.get('moat_cover') or {}).get('deep_weights')) or ((EXISTING.get('moat_cover') or {}).get('deep_weights')) or {}
-            _LIH_FUND_MAP = {'SMH': 'SMH', 'ITWN': 'EWT', 'FLXK': 'EWY', 'KSTR': 'KSTR'}
+            _LIH_FUND_MAP = {'SMH': 'SMH', 'ITWN': 'EWT', 'FLXK': 'EWY'}   # KSTR -> justETF branch (v1.413)
             _LIH_SINGLE = {'AMD3': 'AMD', 'TSM3': 'TSM'}
             _exp = {}
             _covered = 0.0
