@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.401.0'  # v1.401.0: fix the gate so the widened 30-ETF EDGAR loop actually runs. v1.400 added _DEEP_ETFS (30 sector/thematic) but the cache-carry gate saw the old 3-broad-ETF cache as 'deep_ok' (IVV/ITOT/VTI n>=50) and carried it -> the 27 new sector ETFs never fetched, bridge got 0. FIX: the gate now carries only if the cache COVERS the full _DEEP_ETFS set with real holdings; a cache missing any of them forces a refresh so the new ETFs fetch. One run then deep-fetches all 30 and the bridge populates. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.403.0'  # v1.403.0: sector ETFs get their CORRECT deep holdings via edgartools' Fund class. v1.402 made sector ETFs fall back to shallow top-25 (safe but lossy) because matches_ticker fails on multi-series trusts (its series_id->ticker map is incomplete). Better fix: edgar.funds.Fund(ticker)..get_portfolio() resolves the EXACT series (chains latest NPORT-P -> investment_data), so SOXX returns its real ~30 semis, not the S&P 500. fetch_edgar_nport_holdings now tries Fund().get_portfolio() FIRST, then falls back to the Company scan (broad funds only) then empty. This gives every sector ETF its own correct deep holdings. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3622,17 +3622,31 @@ def fetch_edgar_nport_holdings(ticker):
         import os as _os
         from edgar import Company as _Company, set_identity as _set_identity
         from edgar.funds.reports import FundReport as _FundReport
+        from edgar.funds import Fund as _Fund
     except Exception as _ie:
         return [], {'src': 'edgar', 'n': 0, 'err': 'import:' + type(_ie).__name__}
     try:
         if not _EDGAR_READY[0]:
             _set_identity('MHK-Dashboard research muhammadhammadkhan1973@gmail.com')
             _EDGAR_READY[0] = True
+        # v1.403.0: Fund(ticker).get_portfolio() scopes to the EXACT series -> correct sector holdings.
+        try:
+            _fund = _Fund((ticker or '').upper())
+            _pf = _fund.get_portfolio()
+            _ftks = _edgar_df_tickers(_pf)
+            if _ftks:
+                return _ftks, {'src': 'edgar', 'n': len(_ftks), 'via': 'fund'}
+        except Exception:
+            pass
         _co = _Company((ticker or '').upper())
         _fs = _co.get_filings(form='NPORT-P')
         if _fs is None or len(_fs) == 0:
             return [], {'src': 'edgar', 'n': 0, 'err': 'no_nport'}
-        # scan the most recent handful; keep the one matching this ticker (or the largest equity set)
+        # v1.402.0: broad funds legitimately hold thousands; sector/thematic ETFs hold tens-to-hundreds.
+        # Only broad funds may use the 'largest filing' fallback; a sector ETF must MATCH by ticker or we
+        # return empty (the shallow top-25 source covers it) -- never the wrong S&P 500 filing.
+        _BROAD = {'IVV', 'ITOT', 'VTI', 'VOO', 'SPY', 'IWB', 'RSP', 'SCHB'}
+        _tkru = (ticker or '').upper()
         _best = []; _matched = False
         for _k in range(min(12, len(_fs))):
             try:
@@ -3642,11 +3656,11 @@ def fetch_edgar_nport_holdings(ticker):
                     continue
                 _is_match = False
                 try:
-                    _is_match = _fr.matches_ticker(ticker.upper())
+                    _is_match = _fr.matches_ticker(_tkru)
                 except Exception:
                     _is_match = False
                 if not _is_match and _matched:
-                    continue   # already found our series; skip others
+                    continue
                 _df = _fr.investment_data()
                 _tks = _edgar_df_tickers(_df)
                 if _is_match and _tks:
@@ -3655,9 +3669,10 @@ def fetch_edgar_nport_holdings(ticker):
                     _best = _tks
             except Exception:
                 continue
-        if _best:
+        # no ticker-match: only broad funds may take the largest filing; sector ETFs return empty.
+        if _best and _tkru in _BROAD:
             return _best, {'src': 'edgar', 'n': len(_best), 'matched': False}
-        return [], {'src': 'edgar', 'n': 0, 'err': 'no_holdings'}
+        return [], {'src': 'edgar', 'n': 0, 'err': 'no_ticker_match', 'largest_seen': len(_best)}
     except Exception as _e:
         return [], {'src': 'edgar', 'n': 0, 'err': type(_e).__name__}
 
