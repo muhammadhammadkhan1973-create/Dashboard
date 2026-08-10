@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.408.0'  # v1.408.0: THE FULL EDGAR-INTELLIGENCE WAVE (owner: build it all in one go). (1) N-PORT weights + cash: the fetch now also captures each holding's pct_value and the fund's cash sleeve (asset_category STIV) into moat_cover.deep_weights / deep_cash -- real portfolio weights, previously discarded. (2) Deep set +KSTR/EWY/EWT (US twins of the owner's KSTR/FLXK/ITWN) so the book's funds have EDGAR weights. (3) Tab 17 look-through EVERYWHERE: rb.exposure = the book's TRUE underlying-company exposures (weight x EDGAR pct across funds + the 3x single-stock notes), with an honest coverage figure; top-picks diversification tags now read the LOOK-THROUGH tech concentration, not the whole-fund label. (4) Tab 19 overlap: each recommended stock is checked against the held funds' real constituent sets and stamped held_via=['SMH',...] so a pick already inside the owner's funds is flagged. All validated offline. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.409.0'  # v1.409.0: two audit fixes. (1) THE DROPPED WIRE: v1.408 computed rb_exposure but the 'exposure' key never entered the rebalance dict (the edit script that added it read the file, replaced in memory, and never wrote -- caught by the payload audit: tilt landed, exposure absent). Wired now. (2) TWIN FETCH: SMH/EWY/EWT/KSTR all returned no_series_name_match because Company(ticker) cannot resolve them (not in the ticker file) and the right registrant was never reached. Registrant CIKs verified from SEC's own filing URLs: VanEck ETF Trust 1137360 (SMH), iShares Inc 930667 (EWY/EWT -- a DIFFERENT registrant from iShares Trust), Krane Shares Trust 1547576 (KSTR). _NPORT_CIK overrides route the fetch to the right trust; scan depth rises to 60 for override tickers (big trusts, early-exit on hit); EWY/EWT keys tightened ('msci south korea etf'/'msci taiwan etf') so the Small-Cap sister funds can never match. Trap-tested offline incl. the small-cap decoy. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3634,9 +3634,12 @@ _NPORT_NAME_KEYS = {
     'XLY': ('consumer discretionary select',), 'XLU': ('utilities select',),
     'XLRE': ('real estate select',), 'VNQ': ('real estate',), 'IWM': ('russell 2000',),
     'SCHD': ('dividend equity',), 'MTUM': ('momentum',), 'QUAL': ('quality',),
-    'KSTR': ('star market',), 'EWY': ('south korea',), 'EWT': ('taiwan',),
+    'KSTR': ('star market',), 'EWY': ('msci south korea etf',), 'EWT': ('msci taiwan etf',),
 }
 
+
+# v1.409.0: registrant CIKs verified from SEC filing URLs -- Company(ticker) cannot resolve these.
+_NPORT_CIK = {'SMH': 1137360, 'EWY': 930667, 'EWT': 930667, 'KSTR': 1547576}
 
 def fetch_edgar_nport_holdings(ticker):
     """Full holdings for a US ETF via edgartools. Returns ([tickers], diag). Fail-open."""
@@ -3654,7 +3657,8 @@ def fetch_edgar_nport_holdings(ticker):
         # v1.404.0: the v1.403 Fund() path is REMOVED -- proven (live run + offline source analysis) to
         # resolve the wrong series for 19/30 ETFs (returns S&P 500 for SOXX). The deterministic
         # series-NAME match below is the validated path.
-        _co = _Company((ticker or '').upper())
+        _tkru0 = (ticker or '').upper()
+        _co = _Company(_NPORT_CIK[_tkru0]) if _tkru0 in _NPORT_CIK else _Company(_tkru0)
         _fs = _co.get_filings(form='NPORT-P')
         if _fs is None or len(_fs) == 0:
             return [], {'src': 'edgar', 'n': 0, 'err': 'no_nport'}
@@ -3664,7 +3668,7 @@ def fetch_edgar_nport_holdings(ticker):
         _tkru = (ticker or '').upper()
         _keys = _NPORT_NAME_KEYS.get(_tkru)
         _best = []
-        for _k in range(min(20, len(_fs))):
+        for _k in range(min(60 if _tkru in _NPORT_CIK else 20, len(_fs))):
             try:
                 _filing = _fs[_k]
                 _fr = _FundReport.from_filing(_filing)
@@ -19720,7 +19724,7 @@ def build_live_investment(data, existing):
                                                 or (existing or {}).get('live_lookthrough')),
             'narrative': {'inception': incep_txt, 'daily': daily_txt, 'weekly': weekly_txt,
                           'monthly': monthly_txt, 'ytd': ytd_txt},
-            'rebalance': {'tilt': tilt, 'global_theme': data.get('global_theme') or [],
+            'rebalance': {'tilt': tilt, 'exposure': rb_exposure, 'global_theme': data.get('global_theme') or [],
                           'regime': regime, 'diffusion_net': diff_net, 'recession': rec,
                           'dollar': dollar, 'reco': reco},
             'benchmark': {'acwi_isin': (data.get('etf_results_tracker') or {}).get('acwi_isin'),
