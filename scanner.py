@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.410.0'  # v1.410.0: two audit follow-ups. (1) BUILD-ORDER FIX: the Tab 17 exposure computed 4.9%% coverage (singles only) though SMH name-matched with 23 real weights -- because live_investment builds BEFORE moat_cover each run, so this run's weights were invisible at compute time. The exposure now falls back to the carried previous payload (EXISTING moat_cover.deep_weights, <=1 run stale, honest for index funds) -- SMH's weights count immediately, coverage ~5%%->~20%%. (2) TWIN DIAGNOSTICS: EWY/EWT/KSTR still no_series_name_match despite correct CIK routing (SMH proves the routing works). Instead of another blind change, the scan now records evidence into deep_diag: filings scanned, parse failures, and the first series names actually seen -- one run will show whether the batch ordering misses them, the parse raises, or the names differ. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.411.0'  # v1.411.0: THE TWIN CLOSER -- depth was the whole story. v1.410's diagnostics returned the verdict: parse_fails=0, names read fine, but iShares Inc lists 1,468 NPORT filings and KraneShares 770 -- these trusts now run 90+ series per quarterly batch, so EWY/EWT/KSTR simply sit beyond the 60-filing window (names seen at the cutoff: South Africa, Germany, 2x-single-stock products...). FIX: scan depth 60->150 for CIK-routed tickers, early-exit on hit so the cost is only until found; once matched, the monotonic cache + the deep-target gate carry 5 days and the rescans stop entirely. Validated offline with the target series planted at position 120. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3669,7 +3669,7 @@ def fetch_edgar_nport_holdings(ticker):
         _keys = _NPORT_NAME_KEYS.get(_tkru)
         _best = []
         _scan_n = 0; _fail_n = 0; _names_seen = []
-        for _k in range(min(60 if _tkru in _NPORT_CIK else 20, len(_fs))):
+        for _k in range(min(150 if _tkru in _NPORT_CIK else 20, len(_fs))):
             try:
                 _scan_n += 1
                 _filing = _fs[_k]
