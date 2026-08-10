@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.404.0'  # v1.404.0: DETERMINISTIC series matching by SERIES NAME. Diagnosed fully in-sandbox from edgartools source: Fund(ticker)/matches_ticker both depend on ticker maps that lack 29 of our 30 ETFs (verified against the bundled company parquet), so sector ETFs resolved to wrong series (S&P 500) or collapsed. THE FIX needs no ticker map: every NPORT-P filing carries general_info.series_name (verified in edgartools' GeneralInfo model). New _NPORT_NAME_KEYS maps each ETF to unambiguous words from its official fund name (SOXX->'semiconductor', IGV->'software', IWM->'russell 2000'...); the fetch scans the trust's recent NPORT-P filings and picks the one whose series_name contains the ETF's keywords -- deterministic, validated offline against real iShares/SPDR series names. Broad-fund largest-set fallback retained; unmatched sector ETFs stay honestly on top-25. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.405.0'  # v1.405.0: two guardrails from the v1.404 audit. Name-matching now CORRECT everywhere (no wrong data; SOXX honest top-25 real semis), but SPDR sector filings (XLK/XLE/XLF...) name-matched with n=1 -- their N-PORT rows carry CUSIP/ISIN without tickers, so only 1 row parsed -- and that 1-name list OVERWROTE the good top-25 cache. FIX (both validated offline): (1) a name-matched result is only accepted if it has >=10 tickers, else keep scanning / return empty; (2) the deep loop only replaces a cache entry when the new list is LARGER (monotonic -- never worse data over better). SPDRs revert to their correct top-25; iShares name-matches (VGT 316, VNQ 144, QUAL 131, KBE 99...) keep their deep sets. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3673,7 +3673,7 @@ def fetch_edgar_nport_holdings(ticker):
                 if _name_hit:
                     _df = _fr.investment_data()
                     _tks = _edgar_df_tickers(_df)
-                    if _tks:
+                    if len(_tks) >= 10:   # v1.405.0: a real fund has >=10 tickered holdings; 1-2 = ticker-less filing
                         return _tks, {'src': 'edgar', 'n': len(_tks), 'matched': 'name', 'series': _sname[:40]}
                 if _tkru in _BROAD:
                     _df = _fr.investment_data()
@@ -3881,7 +3881,7 @@ def build_moat_cover(existing=None):
                 if len(_nt) > len(_tks): _tks, _info = _nt, _ni
             except Exception: pass
         deep_diag[_bt] = _info
-        if _tks:
+        if _tks and len(_tks) > len(cache.get(_bt) or []):   # v1.405.0: monotonic -- never worse over better
             cache[_bt] = _tks
     log('  [MOAT cover] fetched %d/%d top-25 ETFs + broad deep: %s'
         % (got, len(MOAT_COVER_ETFS), {k: (v or {}).get('n', 0) for k, v in deep_diag.items()}))
