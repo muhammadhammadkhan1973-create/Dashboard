@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.406.0'  # v1.406.0: Global Discovery picks get the ETF-holder signal via the POST-PASS. Audit found GD picks carried etf_holder_count=0: build_global_discovery runs BEFORE the holdings index exists, so its inline etf_holders_for() saw an empty index (the same ordering issue fixed for explosive in v1.398 -- but the post-pass only covered explosive_us/multibagger_us, and global_discovery is a dict with 'picks', not a list). FIX: the post-pass now also annotates data['global_discovery']['picks']. Validated offline against the real payload structure. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.407.0'  # v1.407.0: Tab 17 tilt fixed to LOOK-THROUGH (owner audit confirmed the old whole-fund labeling was wrong: SMH+AINF counted 100% as Asia-Tech though their REAL holdings -- justETF/EDGAR-verified -- are ~75-80% US companies; Asia-Tech showed ~64% vs a true ~40%, US-Tech showed 1.2% vs a true ~24%). Each holding now carries a region SPLIT {US, Asia, Other} from its published index composition (_LIH_REGION_SPLIT), and the tilt sums weight x split into Asia-Tech / US-Tech / China / Commodity / Clean buckets. The reco text recalibrates automatically (asia>=45 trigger now uses the honest figure). Deterministic, offline-validated. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19517,11 +19517,44 @@ def build_live_investment(data, existing):
             forward.append(fv)
 
         # ---- rebalancing read wired to Global-Theme + World-Economy ----
+        # v1.407.0: LOOK-THROUGH tilt. Whole-fund labels overstated Asia (SMH/AINF are ~75-80% US firms
+        # by their real holdings). Region split per fund from its published index composition:
+        _LIH_REGION_SPLIT = {   # ticker: (US, Asia, Other) fractions
+            'SMH':  (0.77, 0.20, 0.03),   # VanEck semis: NVDA/AVGO/AMD/INTC/MU... + TSMC/ASML
+            'AINF': (0.80, 0.15, 0.05),   # AI infra: IBM/PANW/AAPL/AMZN/PLTR... + TSMC
+            'ITWN': (0.00, 1.00, 0.00),   # Taiwan
+            'FLXK': (0.00, 1.00, 0.00),   # Korea
+            'KSTR': (0.00, 1.00, 0.00),   # China STAR
+            'TSM3': (0.00, 1.00, 0.00),   # 3x TSMC
+            'AMD3': (1.00, 0.00, 0.00),   # 3x AMD
+            'STOR': (0.40, 0.20, 0.40),   # energy storage/hydrogen: global
+            'PHPM': (0.00, 0.00, 1.00),   # physical metals
+        }
         tilt = {}
         for r in priced:
-            wt = r['world_theme'] or 'Other'
-            tilt[wt] = tilt.get(wt, 0.0) + (r['weight'] or 0.0)
+            _w = (r['weight'] or 0.0)
+            _sp = _LIH_REGION_SPLIT.get(str(r.get('ticker') or '').upper())
+            if _sp:
+                _us, _as, _ot = _sp
+                _wt = r['world_theme'] or 'Other'
+                if _wt in ('Asia-Tech', 'US-Tech'):   # tech funds: split into honest regional tech buckets
+                    tilt['Asia-Tech'] = tilt.get('Asia-Tech', 0.0) + _w * _as
+                    tilt['US-Tech'] = tilt.get('US-Tech', 0.0) + _w * _us
+                    if _ot:
+                        tilt['Global-Other'] = tilt.get('Global-Other', 0.0) + _w * _ot
+                elif _wt == 'Emerging':
+                    tilt['Emerging'] = tilt.get('Emerging', 0.0) + _w * _as
+                    tilt['US-Tech'] = tilt.get('US-Tech', 0.0) + _w * _us
+                    if _ot:
+                        tilt['Global-Other'] = tilt.get('Global-Other', 0.0) + _w * _ot
+                else:
+                    tilt[_wt] = tilt.get(_wt, 0.0) + _w
+            else:
+                _wt = r['world_theme'] or 'Other'
+                tilt[_wt] = tilt.get(_wt, 0.0) + _w
+        tilt = {k: round(v, 2) for k, v in tilt.items() if v >= 0.05}
         tilt = dict(sorted(tilt.items(), key=lambda kv: -kv[1]))
+        tilt['_basis'] = 'look-through'   # v1.407.0: display marker -- computed from real fund holdings
         gtheme = {t['theme']: t for t in (data.get('global_theme') or [])}
         diff = (data.get('us_diffusion') or {})
         diff_net = diff.get('net_score') if diff.get('net_score') is not None else diff.get('net')
