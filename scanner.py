@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.397.0'  # v1.397.0: PHASE 1 of dashboard-wide ETF holdings -- a single shared holdings index. Now that EDGAR gives real full holdings (IVV/ITOT/VTI 1748-3462 names, all US caps), expose ONE canonical stock->ETFs map at data['etf_holdings_index'] built from moat_cover.by_etf, so EVERY tab reads the same source (no per-tab duplication). Includes: which ETFs hold a ticker, total holder count, and a cap bucket. Wired in main() right after moat_cover. This is the reusable service; subsequent phases wire it into discovery tabs (Multibagger/Explosive/Global Discovery), the World ETF Engine, and the UCITS->US index bridge. Non-breaking: purely additive. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.398.0'  # v1.398.0: PHASE 2 -- wire the shared ETF-holdings index into the discovery tabs as an institutional-validation signal. Each candidate now carries etf_holders (which major ETFs hold it) + etf_holder_count (how many), read via etf_holders_for() from the single index built in v1.397. Applied to Global Discovery picks and Explosive rows -- so a name a screen surfaces also shows whether the big index/sector funds already hold it (real conviction context, free from EDGAR). Additive: a new field per row, no scoring change. index.html will render it next. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -21863,6 +21863,8 @@ def build_global_discovery(data, existing):
                 'pe': rec.get('pe'), 'div_yield': rec.get('div_yield'),
                 'market_cap_m': rec.get('market_cap_m'), 'currency': rec.get('currency'),
                 'overlap': rec.get('ticker') in engine_names,
+                'etf_holders': etf_holders_for(data, rec.get('ticker'), 8),
+                'etf_holder_count': len(etf_holders_for(data, rec.get('ticker'), 999)),
             })
         picks.sort(key=lambda p: -p['n_lenses'])
 
@@ -24649,6 +24651,21 @@ def main():
             except Exception as _eie:
                 log('[ETF index] skipped: %s' % type(_eie).__name__)
                 data['etf_holdings_index'] = EXISTING.get('etf_holdings_index', {}) or {}
+            # v1.398.0 PHASE 2: annotate already-built discovery rows with the ETF-holder signal.
+            try:
+                _hidx = (data.get('etf_holdings_index') or {}).get('by_stock') or {}
+                if _hidx:
+                    for _lk in ('explosive_us', 'multibagger_us'):
+                        _lst = data.get(_lk)
+                        if isinstance(_lst, list):
+                            for _r in _lst:
+                                if isinstance(_r, dict) and _r.get('ticker'):
+                                    _hh = _hidx.get(str(_r['ticker']).upper()) or []
+                                    _r['etf_holders'] = _hh[:8]
+                                    _r['etf_holder_count'] = len(_hh)
+                    log('  [ETF index] annotated discovery rows')
+            except Exception as _ap:
+                log('[ETF index] annotate skipped: %s' % type(_ap).__name__)
             # v1.357.0 WAVE MOAT: after wave_z (reads its fund_cache) and all engine outputs.
             try:
                 data['moat'] = build_moat_universe(data, EXISTING)
