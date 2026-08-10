@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.407.0'  # v1.407.0: Tab 17 tilt fixed to LOOK-THROUGH (owner audit confirmed the old whole-fund labeling was wrong: SMH+AINF counted 100% as Asia-Tech though their REAL holdings -- justETF/EDGAR-verified -- are ~75-80% US companies; Asia-Tech showed ~64% vs a true ~40%, US-Tech showed 1.2% vs a true ~24%). Each holding now carries a region SPLIT {US, Asia, Other} from its published index composition (_LIH_REGION_SPLIT), and the tilt sums weight x split into Asia-Tech / US-Tech / China / Commodity / Clean buckets. The reco text recalibrates automatically (asia>=45 trigger now uses the honest figure). Deterministic, offline-validated. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.408.0'  # v1.408.0: THE FULL EDGAR-INTELLIGENCE WAVE (owner: build it all in one go). (1) N-PORT weights + cash: the fetch now also captures each holding's pct_value and the fund's cash sleeve (asset_category STIV) into moat_cover.deep_weights / deep_cash -- real portfolio weights, previously discarded. (2) Deep set +KSTR/EWY/EWT (US twins of the owner's KSTR/FLXK/ITWN) so the book's funds have EDGAR weights. (3) Tab 17 look-through EVERYWHERE: rb.exposure = the book's TRUE underlying-company exposures (weight x EDGAR pct across funds + the 3x single-stock notes), with an honest coverage figure; top-picks diversification tags now read the LOOK-THROUGH tech concentration, not the whole-fund label. (4) Tab 19 overlap: each recommended stock is checked against the held funds' real constituent sets and stamped held_via=['SMH',...] so a pick already inside the owner's funds is flagged. All validated offline. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3215,9 +3215,14 @@ def _stamp_rebalance_top_picks(data):
         t = tce_map.get(tk) or {}
         up = ((t.get('streams') or {}).get('analyst_detail') or {}).get('target_upside_pct')
         sec = s.get('sector')
-        div = ('overlaps your Asia-Tech/semis tilt (deepens existing concentration)'
+        # v1.408.0: tag reads the LOOK-THROUGH tech concentration (Asia-Tech + US-Tech buckets of the
+        # honest tilt), not the whole-fund label -- the book is ~56%% tech split US/Asia, not '64%% Asia'.
+        _lt = ((data.get('live_investment') or {}).get('rebalance') or {}).get('tilt') or {}
+        _tech_conc = round((_lt.get('Asia-Tech') or 0) + (_lt.get('US-Tech') or 0))
+        _conc_txt = (' (look-through: tech is ~%d%% of the book, split US/Asia)' % _tech_conc) if _tech_conc else ''
+        div = (('deepens your semis/tech exposure' + _conc_txt)
                if sec in _CONCENTRATED_SECTORS else
-               'diversifies away from your current Asia-Tech/semis concentration') if sec else 'sector unknown'
+               ('diversifies away from your tech concentration' + _conc_txt)) if sec else 'sector unknown'
         picks.append({
             'ticker': tk, 'name': s.get('name'), 'sector': sec,
             'conviction': s.get('conviction'), 'agree': s.get('agree'),
@@ -3629,6 +3634,7 @@ _NPORT_NAME_KEYS = {
     'XLY': ('consumer discretionary select',), 'XLU': ('utilities select',),
     'XLRE': ('real estate select',), 'VNQ': ('real estate',), 'IWM': ('russell 2000',),
     'SCHD': ('dividend equity',), 'MTUM': ('momentum',), 'QUAL': ('quality',),
+    'KSTR': ('star market',), 'EWY': ('south korea',), 'EWT': ('taiwan',),
 }
 
 
@@ -3674,12 +3680,24 @@ def fetch_edgar_nport_holdings(ticker):
                     _df = _fr.investment_data()
                     _tks = _edgar_df_tickers(_df)
                     if len(_tks) >= 10:   # v1.405.0: a real fund has >=10 tickered holdings; 1-2 = ticker-less filing
+                        try:
+                            _wp, _cp = _edgar_df_weights(_df)
+                            if _wp:
+                                _EDGAR_EXTRA[_tkru] = {'weights': _wp, 'cash_pct': _cp}
+                        except Exception:
+                            pass
                         return _tks, {'src': 'edgar', 'n': len(_tks), 'matched': 'name', 'series': _sname[:40]}
                 if _tkru in _BROAD:
                     _df = _fr.investment_data()
                     _tks = _edgar_df_tickers(_df)
                     if len(_tks) > len(_best):
                         _best = _tks
+                        try:
+                            _wp, _cp = _edgar_df_weights(_df)
+                            if _wp:
+                                _EDGAR_EXTRA[_tkru] = {'weights': _wp, 'cash_pct': _cp}
+                        except Exception:
+                            pass
             except Exception:
                 continue
         if _best and _tkru in _BROAD:
@@ -3687,6 +3705,39 @@ def fetch_edgar_nport_holdings(ticker):
         return [], {'src': 'edgar', 'n': 0, 'err': 'no_series_name_match'}
     except Exception as _e:
         return [], {'src': 'edgar', 'n': 0, 'err': type(_e).__name__}
+
+_EDGAR_EXTRA = {}   # v1.408.0: {ETF: {'weights': [(ticker, pct), ...], 'cash_pct': float}} captured per fetch
+def _edgar_df_weights(df):
+    """(ticker, pct_value) pairs + cash%% (STIV rows) from an investment_data DataFrame. Fail-open."""
+    try:
+        import pandas as _pd
+        if df is None or len(df) == 0:
+            return [], None
+        cols = set(df.columns)
+        pairs = []
+        if 'ticker' in cols and 'pct_value' in cols:
+            for _, _r in df.iterrows():
+                if str(_r.get('asset_category') or '').strip().upper() == 'STIV':
+                    continue   # cash sleeve rows are not equity weights
+                _t = str(_r.get('ticker') or '').strip().upper()
+                try:
+                    _p = float(_r.get('pct_value'))
+                except Exception:
+                    continue
+                if _t and _t not in ('NAN', 'NONE', 'NULL') and _t.replace('.', '').replace('-', '').isalnum() and 1 <= len(_t) <= 6 and _p == _p:
+                    pairs.append((_t, round(_p, 3)))
+            pairs.sort(key=lambda x: -x[1])
+        cash = None
+        if 'asset_category' in cols and 'pct_value' in cols:
+            try:
+                _cs = df[df['asset_category'].astype(str).str.upper() == 'STIV']['pct_value'].astype(float).sum()
+                cash = round(float(_cs), 2)
+            except Exception:
+                cash = None
+        return pairs[:60], cash
+    except Exception:
+        return [], None
+
 
 def _edgar_df_tickers(df):
     """Pull US equity tickers from an edgartools investment_data DataFrame."""
@@ -3833,9 +3884,10 @@ def build_moat_cover(existing=None):
     # v1.384.0: carry only once ninja deep holdings succeeded (n>=50); else refresh to retry.
     # v1.401.0: carry only if the cache already covers the full deep-ETF set (else the new sector ETFs
     # would never fetch). _DEEP_ETFS is defined below; mirror it here for the coverage check.
-    _DEEP_TARGETS = ('IVV', 'ITOT', 'VTI', 'QQQ', 'SOXX', 'SMH', 'XLK', 'VGT', 'IGV', 'XLE', 'XLF', 'KRE',
-                     'KBE', 'XLV', 'XBI', 'IBB', 'IHI', 'XLI', 'PPA', 'ITA', 'XLB', 'XLP', 'XLY', 'XLU',
-                     'XLRE', 'VNQ', 'IWM', 'SCHD', 'MTUM', 'QUAL')
+    _DEEP_TARGETS = ('IVV', 'ITOT', 'VTI', 'QQQ', 'VGT', 'KBE', 'XBI', 'VNQ', 'SCHD', 'QUAL',
+                     'KSTR', 'EWY', 'EWT')   # v1.408.0: only funds PROVEN to name-match gate the carry
+                     # (SPDRs/iShares sector filings are ticker-less -> honest top-25; requiring them would
+                     # force a futile refetch every run). New KSTR/EWY/EWT force ONE refresh to fetch them.
     _pdd = (prev.get('deep_diag') or {})
     _deep_have = set(k for k, v in _pdd.items() if isinstance(v, dict) and (v.get('n', 0) or 0) >= 50)
     _deep_ok = _deep_have.issuperset(set(_DEEP_TARGETS))
@@ -3856,7 +3908,7 @@ def build_moat_cover(existing=None):
     # v1.400.0: deep EDGAR holdings for the broad funds AND the sector/thematic ETFs the bridge maps to.
     _DEEP_ETFS = ('IVV', 'ITOT', 'VTI', 'QQQ', 'SOXX', 'SMH', 'XLK', 'VGT', 'IGV', 'XLE', 'XLF', 'KRE',
                   'KBE', 'XLV', 'XBI', 'IBB', 'IHI', 'XLI', 'PPA', 'ITA', 'XLB', 'XLP', 'XLY', 'XLU',
-                  'XLRE', 'VNQ', 'IWM', 'SCHD', 'MTUM', 'QUAL')
+                  'XLRE', 'VNQ', 'IWM', 'SCHD', 'MTUM', 'QUAL', 'KSTR', 'EWY', 'EWT')
     deep_diag = {}
     for _bt in _DEEP_ETFS:
         _tks, _info = [], {}
@@ -3886,7 +3938,10 @@ def build_moat_cover(existing=None):
     log('  [MOAT cover] fetched %d/%d top-25 ETFs + broad deep: %s'
         % (got, len(MOAT_COVER_ETFS), {k: (v or {}).get('n', 0) for k, v in deep_diag.items()}))
     return {'by_etf': cache, 'as_of': dt.datetime.now(dt.timezone.utc).isoformat(),
-            'n_etfs': len(cache), 'deep_diag': deep_diag}
+            'n_etfs': len(cache), 'deep_diag': deep_diag,
+            # v1.408.0: real per-holding weights + fund cash sleeve from the same N-PORT filings.
+            'deep_weights': {**((prev.get('deep_weights')) or {}), **{k: v['weights'] for k, v in _EDGAR_EXTRA.items() if v.get('weights')}},
+            'deep_cash': {**((prev.get('deep_cash')) or {}), **{k: v['cash_pct'] for k, v in _EDGAR_EXTRA.items() if v.get('cash_pct') is not None}}}
 
 
 
@@ -19555,6 +19610,36 @@ def build_live_investment(data, existing):
         tilt = {k: round(v, 2) for k, v in tilt.items() if v >= 0.05}
         tilt = dict(sorted(tilt.items(), key=lambda kv: -kv[1]))
         tilt['_basis'] = 'look-through'   # v1.407.0: display marker -- computed from real fund holdings
+        # v1.408.0: TRUE underlying-company exposure. weight x EDGAR pct across the book's funds, plus the
+        # single-stock 3x notes. _LIH_FUND_MAP names each holding's US EDGAR twin (same tracked index).
+        try:
+            _dw = ((data.get('moat_cover') or {}).get('deep_weights')) or {}
+            _LIH_FUND_MAP = {'SMH': 'SMH', 'ITWN': 'EWT', 'FLXK': 'EWY', 'KSTR': 'KSTR'}
+            _LIH_SINGLE = {'AMD3': 'AMD', 'TSM3': 'TSM'}
+            _exp = {}
+            _covered = 0.0
+            for r in priced:
+                _tk = str(r.get('ticker') or '').upper()
+                _w = (r['weight'] or 0.0)
+                if _tk in _LIH_SINGLE:
+                    _exp[_LIH_SINGLE[_tk]] = _exp.get(_LIH_SINGLE[_tk], 0.0) + _w
+                    _covered += _w
+                elif _tk in _LIH_FUND_MAP and _dw.get(_LIH_FUND_MAP[_tk]):
+                    _tw = sum(p for _, p in _dw[_LIH_FUND_MAP[_tk]]) or 100.0
+                    for _st, _sp in _dw[_LIH_FUND_MAP[_tk]]:
+                        _exp[_st] = _exp.get(_st, 0.0) + _w * (_sp / _tw)
+                    _covered += _w
+            _top = sorted(_exp.items(), key=lambda kv: -kv[1])[:15]
+            if _top:
+                rb_exposure = {'stocks': [[k, round(v, 2)] for k, v in _top],
+                               'coverage_pct': round(_covered, 1), 'basis': 'look-through',
+                               'note': ('Computed from each fund\u2019s real SEC EDGAR portfolio weights via its US index twin '
+                                        '(SMH, EWT, EWY, KSTR) plus the single-stock 3x notes. AINF/STOR/PHPM have no US EDGAR '
+                                        'twin, so %.0f%% of the book is measured; the rest is stated, not guessed.' % _covered)}
+            else:
+                rb_exposure = None
+        except Exception:
+            rb_exposure = None
         gtheme = {t['theme']: t for t in (data.get('global_theme') or [])}
         diff = (data.get('us_diffusion') or {})
         diff_net = diff.get('net_score') if diff.get('net_score') is not None else diff.get('net')
@@ -24789,6 +24874,25 @@ def main():
                                     _hh = _hidx.get(str(_r['ticker']).upper()) or []
                                     _r['etf_holders'] = _hh[:8]
                                     _r['etf_holder_count'] = len(_hh)
+                    # v1.408.0: Tab 19 overlap -- stamp held_via on recommended stocks already inside the
+                    # owner's held funds (real constituent sets: EDGAR twins + the 3x single-stock notes).
+                    try:
+                        _cov = ((data.get('moat_cover') or {}).get('by_etf')) or {}
+                        _held_sets = {}
+                        for _hf, _tw in (('SMH', 'SMH'), ('ITWN', 'EWT'), ('FLXK', 'EWY'), ('KSTR', 'KSTR')):
+                            if _cov.get(_tw):
+                                _held_sets[_hf] = set(_cov[_tw])
+                        _held_sets['AMD3'] = {'AMD'}
+                        _held_sets['TSM3'] = {'TSM'}
+                        _rst = (data.get('recommended') or {}).get('stocks')
+                        if isinstance(_rst, list) and _held_sets:
+                            for _r in _rst:
+                                if isinstance(_r, dict) and _r.get('ticker'):
+                                    _hv = sorted(_hf for _hf, _ss in _held_sets.items() if str(_r['ticker']).upper() in _ss)
+                                    if _hv:
+                                        _r['held_via'] = _hv
+                    except Exception:
+                        pass
                     # v1.406.0: global_discovery is {'picks': [...]} -- annotate its picks too.
                     _gd = (data.get('global_discovery') or {}).get('picks')
                     if isinstance(_gd, list):
