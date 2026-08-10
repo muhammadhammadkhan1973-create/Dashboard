@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.412.0'  # v1.412.0: SERIES-DIRECT fetch for the foreign twins. Even at depth 150 EWY/EWT/KSTR missed (iShares Inc 1,468 filings, KraneShares 770) -- and a deeper truth surfaced: these funds hold FOREIGN listings whose N-PORT rows carry no US tickers, so the ticker parser would reject them anyway. THE FIX: SEC filing-index pages (verified) give the series IDs -- EWY=S000004258, EWT=S000004261 -- and EDGAR serves filings PER SERIES. New fetch_nport_by_series(): browse-edgar atom for the series -> latest accession -> primary_doc.xml -> namespace-stripped parse of invstOrSec (name/isin/pctVal/assetCat) -> local codes derived from ISINs (TW0002330008->2330, KR7005930003->005930) with ADR/name aliases (2330->TSM, 005930->Samsung) -> holdings + weights + cash. Wired ahead of the trust scan. KSTR (ID not yet sourced) stays on the name-scan at depth 250. Fixture-validated offline end-to-end. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.413.0'  # v1.413.0: KSTR CORRECTION + justETF weights close the exposure. Owner correction: the book's KSTR is the UCITS line (KraneShares ICBCCS SSE STAR Market 50 UCITS, IE00BKPJY434, Irish) -- it can NEVER be in EDGAR, the US-series hunt was chasing the wrong instrument, and the ETF Universe file does not carry it (checked). TV holdings remain the proven session-WebSocket dead end. THE PATH THAT WORKS: fetch_justetf_holdings has carried with_weights=True (name,pct) pairs since v1.219 -- the exposure now adds a justETF top-10 branch for ANY book fund with an ISIN not covered by an EDGAR twin (KSTR, AINF, STOR; PHPM physical -> no container -> skipped honestly). Coverage counts only the weight the top-10 actually explains (w x sum_pct/100). Labels compacted from issuer names. Exposure coverage rises toward ~75-85%% of the book with the China STAR names, the AI-infra basket and the storage names joining. KSTR removed from _NPORT_SERIES hunting. Validated offline against the real book. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19702,6 +19702,10 @@ def build_live_investment(data, existing):
             _LIH_SINGLE = {'AMD3': 'AMD', 'TSM3': 'TSM'}
             _exp = {}
             _covered = 0.0
+            def _lbl(_nm):
+                _n2 = str(_nm or '').replace('Co Ltd', '').replace('Inc', '').replace('Corp', '').strip()
+                _ws = [_x for _x in _n2.split() if _x]
+                return (''.join(_ws[:2]))[:12] if _ws else None
             for r in priced:
                 _tk = str(r.get('ticker') or '').upper()
                 _w = (r['weight'] or 0.0)
@@ -19713,13 +19717,28 @@ def build_live_investment(data, existing):
                     for _st, _sp in _dw[_LIH_FUND_MAP[_tk]]:
                         _exp[_st] = _exp.get(_st, 0.0) + _w * (_sp / _tw)
                     _covered += _w
+                elif r.get('isin'):
+                    # v1.413.0: UCITS fund with no EDGAR twin -> justETF top-10 WITH weights.
+                    try:
+                        _jw = fetch_justetf_holdings(r['isin'], top=10, with_weights=True)
+                    except Exception:
+                        _jw = None
+                    if _jw and isinstance(_jw, list):
+                        _sumj = 0.0
+                        for _nm, _pp in _jw:
+                            _lb = _lbl(_nm)
+                            if _lb and _pp == _pp:
+                                _exp[_lb] = _exp.get(_lb, 0.0) + _w * (_pp / 100.0)
+                                _sumj += _pp
+                        _covered += _w * min(1.0, _sumj / 100.0)
             _top = sorted(_exp.items(), key=lambda kv: -kv[1])[:15]
             if _top:
                 rb_exposure = {'stocks': [[k, round(v, 2)] for k, v in _top],
                                'coverage_pct': round(_covered, 1), 'basis': 'look-through',
-                               'note': ('Computed from each fund\u2019s real SEC EDGAR portfolio weights via its US index twin '
-                                        '(SMH, EWT, EWY, KSTR) plus the single-stock 3x notes. AINF/STOR/PHPM have no US EDGAR '
-                                        'twin, so %.0f%% of the book is measured; the rest is stated, not guessed.' % _covered)}
+                               'note': ('Computed from real portfolio weights: SEC EDGAR filings via each fund\u2019s US index '
+                                        'twin (SMH, EWT, EWY) plus the 3x single-stock notes, and justETF top-10 weights for the '
+                                        'UCITS-only funds (KSTR, AINF, STOR). PHPM holds physical metal, not companies. %.0f%% of '
+                                        'the book is measured; the rest is stated, not guessed.' % _covered)}
             else:
                 rb_exposure = None
         except Exception:
