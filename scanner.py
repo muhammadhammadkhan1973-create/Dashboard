@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.409.0'  # v1.409.0: two audit fixes. (1) THE DROPPED WIRE: v1.408 computed rb_exposure but the 'exposure' key never entered the rebalance dict (the edit script that added it read the file, replaced in memory, and never wrote -- caught by the payload audit: tilt landed, exposure absent). Wired now. (2) TWIN FETCH: SMH/EWY/EWT/KSTR all returned no_series_name_match because Company(ticker) cannot resolve them (not in the ticker file) and the right registrant was never reached. Registrant CIKs verified from SEC's own filing URLs: VanEck ETF Trust 1137360 (SMH), iShares Inc 930667 (EWY/EWT -- a DIFFERENT registrant from iShares Trust), Krane Shares Trust 1547576 (KSTR). _NPORT_CIK overrides route the fetch to the right trust; scan depth rises to 60 for override tickers (big trusts, early-exit on hit); EWY/EWT keys tightened ('msci south korea etf'/'msci taiwan etf') so the Small-Cap sister funds can never match. Trap-tested offline incl. the small-cap decoy. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.410.0'  # v1.410.0: two audit follow-ups. (1) BUILD-ORDER FIX: the Tab 17 exposure computed 4.9%% coverage (singles only) though SMH name-matched with 23 real weights -- because live_investment builds BEFORE moat_cover each run, so this run's weights were invisible at compute time. The exposure now falls back to the carried previous payload (EXISTING moat_cover.deep_weights, <=1 run stale, honest for index funds) -- SMH's weights count immediately, coverage ~5%%->~20%%. (2) TWIN DIAGNOSTICS: EWY/EWT/KSTR still no_series_name_match despite correct CIK routing (SMH proves the routing works). Instead of another blind change, the scan now records evidence into deep_diag: filings scanned, parse failures, and the first series names actually seen -- one run will show whether the batch ordering misses them, the parse raises, or the names differ. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3668,17 +3668,22 @@ def fetch_edgar_nport_holdings(ticker):
         _tkru = (ticker or '').upper()
         _keys = _NPORT_NAME_KEYS.get(_tkru)
         _best = []
+        _scan_n = 0; _fail_n = 0; _names_seen = []
         for _k in range(min(60 if _tkru in _NPORT_CIK else 20, len(_fs))):
             try:
+                _scan_n += 1
                 _filing = _fs[_k]
                 _fr = _FundReport.from_filing(_filing)
                 if _fr is None:
+                    _fail_n += 1
                     continue
                 _sname = ''
                 try:
                     _sname = (getattr(_fr.general_info, 'series_name', '') or '').lower()
                 except Exception:
                     _sname = ''
+                if _sname and len(_names_seen) < 6 and _sname not in _names_seen:
+                    _names_seen.append(_sname[:44])
                 _name_hit = bool(_keys) and _sname and all(_w in _sname for _w in _keys)
                 if _name_hit:
                     _df = _fr.investment_data()
@@ -3703,10 +3708,13 @@ def fetch_edgar_nport_holdings(ticker):
                         except Exception:
                             pass
             except Exception:
+                _fail_n += 1
                 continue
         if _best and _tkru in _BROAD:
             return _best, {'src': 'edgar', 'n': len(_best), 'matched': False}
-        return [], {'src': 'edgar', 'n': 0, 'err': 'no_series_name_match'}
+        return [], {'src': 'edgar', 'n': 0, 'err': 'no_series_name_match',
+                    'scanned': _scan_n, 'parse_fails': _fail_n, 'filings_total': len(_fs),
+                    'names_seen': _names_seen}
     except Exception as _e:
         return [], {'src': 'edgar', 'n': 0, 'err': type(_e).__name__}
 
@@ -19617,7 +19625,7 @@ def build_live_investment(data, existing):
         # v1.408.0: TRUE underlying-company exposure. weight x EDGAR pct across the book's funds, plus the
         # single-stock 3x notes. _LIH_FUND_MAP names each holding's US EDGAR twin (same tracked index).
         try:
-            _dw = ((data.get('moat_cover') or {}).get('deep_weights')) or {}
+            _dw = ((data.get('moat_cover') or {}).get('deep_weights')) or ((EXISTING.get('moat_cover') or {}).get('deep_weights')) or {}
             _LIH_FUND_MAP = {'SMH': 'SMH', 'ITWN': 'EWT', 'FLXK': 'EWY', 'KSTR': 'KSTR'}
             _LIH_SINGLE = {'AMD3': 'AMD', 'TSM3': 'TSM'}
             _exp = {}
