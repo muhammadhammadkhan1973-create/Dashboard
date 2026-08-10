@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.398.0'  # v1.398.0: PHASE 2 -- wire the shared ETF-holdings index into the discovery tabs as an institutional-validation signal. Each candidate now carries etf_holders (which major ETFs hold it) + etf_holder_count (how many), read via etf_holders_for() from the single index built in v1.397. Applied to Global Discovery picks and Explosive rows -- so a name a screen surfaces also shows whether the big index/sector funds already hold it (real conviction context, free from EDGAR). Additive: a new field per row, no scoring change. index.html will render it next. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.400.0'  # v1.400.0: extend EDGAR deep holdings to the SECTOR/THEMATIC ETFs (was only IVV/ITOT/VTI). Now the bridge targets (SOXX/SMH/XLE/XLF/XLV/XLK/XBI/IBB/KRE/KBE/IGV/PPA/QQQ + more) also get full free EDGAR holdings, so both the World ETF Engine (Phase 3) and the UCITS->US bridge (Phase 4) deliver deep constituents, not top-25. edgartools resolves each via matches_ticker. Same fail-open + gate; the broad-ETF loop is widened to the deep-target set. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3820,8 +3820,12 @@ def build_moat_cover(existing=None):
             pass
     # v1.373.0: BROAD funds via TV holdings (Business-Recorder technique). TV is runner-reachable.
     # v1.387.0: BROAD funds -- SEC EDGAR N-PORT first (free, full holdings), then paid-API fallbacks.
+    # v1.400.0: deep EDGAR holdings for the broad funds AND the sector/thematic ETFs the bridge maps to.
+    _DEEP_ETFS = ('IVV', 'ITOT', 'VTI', 'QQQ', 'SOXX', 'SMH', 'XLK', 'VGT', 'IGV', 'XLE', 'XLF', 'KRE',
+                  'KBE', 'XLV', 'XBI', 'IBB', 'IHI', 'XLI', 'PPA', 'ITA', 'XLB', 'XLP', 'XLY', 'XLU',
+                  'XLRE', 'VNQ', 'IWM', 'SCHD', 'MTUM', 'QUAL')
     deep_diag = {}
-    for _bt in ('IVV', 'ITOT', 'VTI'):
+    for _bt in _DEEP_ETFS:
         _tks, _info = [], {}
         try:
             _tks, _info = fetch_edgar_nport_holdings(_bt)   # v1.396.0: edgartools first
@@ -16220,6 +16224,44 @@ def fetch_justetf_holdings(isin, top=6, with_weights=False):
         return None
 
 
+
+# v1.399.0: UCITS -> US-equivalent ETF map. Most index-tracking UCITS funds have a US sibling whose full
+# holdings we already have free from EDGAR. Keyword-matched on fund name (and a few exact ISINs).
+_UCITS_US_KEYWORDS = [
+    (('semiconductor', 'semis', 'soxx', 'nasdaq semi'), 'SOXX'),
+    (('semiconductor', 'smh', 'vaneck semi'), 'SMH'),
+    (('biotech',), 'XBI'),
+    (('nasdaq 100', 'nasdaq-100', 'nasdaq100'), 'QQQ'),
+    (('s&p 500', 's&p500', 'sp 500', '500'), 'IVV'),
+    (('total us', 'total stock', 'total market'), 'VTI'),
+    (('bank',), 'KRE'),
+    (('energy',), 'XLE'),
+    (('technology', 'info tech', ' it '), 'XLK'),
+    (('health', 'healthcare'), 'XLV'),
+    (('financ',), 'XLF'),
+    (('industrial',), 'XLI'),
+    (('real estate', 'reit'), 'XLRE'),
+    (('utilit',), 'XLU'),
+    (('materials',), 'XLB'),
+    (('consumer staple',), 'XLP'),
+    (('consumer discretion',), 'XLY'),
+    (('aerospace', 'defense', 'defence'), 'PPA'),
+    (('software',), 'IGV'),
+    (('momentum',), 'MTUM'),
+    (('quality',), 'QUAL'),
+    (('dividend',), 'SCHD'),
+    (('small cap', 'smallcap', 'russell 2000'), 'IWM'),
+]
+def _ucits_us_equiv(name, sym=''):
+    """Return the US ETF ticker whose EDGAR holdings best represent this UCITS fund, or None."""
+    _n = (str(name or '') + ' ' + str(sym or '')).lower()
+    for _kws, _us in _UCITS_US_KEYWORDS:
+        for _k in _kws:
+            if _k in _n:
+                return _us
+    return None
+
+
 def _attach_discovery_holdings(data, existing=None):
     """Fill the live-discovery funds' 'holdings' using the EXISTING holdings plumbing -- no new source.
     Priority per fund, cheapest first:
@@ -16320,6 +16362,24 @@ def _attach_discovery_holdings(data, existing=None):
             still += 1
             still_who.append(f"{(d.get('name') or '?')[:38]} [{iz}]")
     data['etf_discovery_holdings_cache'] = cache
+    # v1.399.0 PHASE 3+4: UCITS->US-equivalent bridge. Any fund STILL without holdings but that tracks an
+    # index with a US sibling gets that sibling's real EDGAR holdings (top names), labelled honestly.
+    _hidx = (data.get('etf_holdings_index') or {}).get('by_stock') or {}
+    _cover = ((data.get('moat_cover') or {}).get('by_etf') or {})
+    _bridged = 0
+    if _cover:
+        for _d in disc:
+            if _hstr(_d.get('holdings')):
+                continue
+            _us = _ucits_us_equiv(_d.get('name'), _d.get('sym'))
+            if _us and _cover.get(_us):
+                _top = _cover[_us][:10]
+                if _top:
+                    _d['holdings'] = ', '.join(_top)
+                    _d['holdings_via'] = _us   # honest provenance for the display
+                    _bridged += 1
+    if _bridged:
+        log('  [discovery holdings] %d UCITS funds bridged to US-equivalent EDGAR holdings' % _bridged)
     # v1.235.0: any discovery fund that got NO holdings from either fetcher is almost always SWAP-BASED
     # (synthetic) -- it holds a total-return swap, not the underlying shares, so no per-stock holdings table
     # is published (justETF/iShares correctly return nothing). Tag an honest reason so the tab shows a
