@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.414.0'  # v1.414.0: EFFICIENCY -- restore the 5-day deep cache. The timing audit showed tail_builders at 152s/run because KSTR sat in _DEEP_TARGETS: since the owner's KSTR is the UCITS line (served by justETF as of v1.413), the US-KSTR deep fetch can never succeed, the gate never carried, and the FULL 30-ETF EDGAR refetch ran every scan (~60-90s wasted per run). FIX: KSTR removed from _DEEP_TARGETS, _DEEP_ETFS and _LIH_FUND_MAP (all dead paths now); EWY/EWT stay (series-direct, proven). The gate carries again once all remaining targets are deep -> the EDGAR fetch drops to ~once per 5 days. Validated offline: a cache holding every target except KSTR now carries. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.417.0'  # v1.417.0: STATEMENT FIGURES RECORDED, NOT REFETCHED (owner audit). The log showed the explosive income-statement cache working perfectly (336 hit / 10 fetched, 45d) -- but two consumers still refetched statements EVERY scan: Multibagger's 30 SEC CFO/CPAT pulls and M2 Signal-T's ~71 native quarterly fetches. Quarterly figures change quarterly; refetching daily buys nothing. NEW shared persisted store data['sec_stmt_store'] (cfo_cpat + qrows, per-ticker as_of, 45-day quarterly-aligned TTL exactly like the proven explosive cache): both consumers now read the recorded figure first and fetch only on miss/expiry -- the SAME values feed the SAME scoring, so no performance change, just no refetching. Expected: ~30 SEC pulls -> ~0-2/run, M2 native fetches -> near-0 on cached runs. Validated offline: fresh hit skips fetch, stale/missing fetches and records. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -5420,6 +5420,46 @@ def score_multibagger(rec, cc, market='us'):
             'subscores': [{'key': k, 'pts': round(p, 1), 'max': mx} for k, p, mx in facs]}
 
 
+# v1.417.0: persisted statement store -- quarterly figures recorded once, refreshed on a 45-day
+# quarterly-aligned TTL (the proven explosive-cache pattern). Loaded lazily from the previous payload.
+_SEC_STMT_STORE = {'loaded': False, 'cfo_cpat': {}, 'qrows': {}}
+
+def _stmt_store():
+    if not _SEC_STMT_STORE['loaded']:
+        try:
+            _prev = (EXISTING.get('sec_stmt_store') or {})
+            for _k in ('cfo_cpat', 'qrows'):
+                if isinstance(_prev.get(_k), dict):
+                    _SEC_STMT_STORE[_k] = dict(_prev[_k])
+        except Exception:
+            pass
+        _SEC_STMT_STORE['loaded'] = True
+    return _SEC_STMT_STORE
+
+def _stmt_fresh(entry, days=45):
+    try:
+        _ts = dt.datetime.fromisoformat(str(entry.get('as_of', '')).replace('Z', ''))
+        return (dt.datetime.utcnow() - _ts).days < days
+    except Exception:
+        return False
+
+def _cached_cfo_cpat(ticker):
+    """45d-recorded CFO/CPAT: read the store first; fetch + record only on miss/expiry."""
+    _st = _stmt_store()
+    _t = str(ticker or '').upper()
+    _e = _st['cfo_cpat'].get(_t)
+    if _e is not None and _stmt_fresh(_e):
+        return _e.get('v'), False
+    _v = None
+    try:
+        _v = _sec_cfo_cpat(_t)
+    except Exception:
+        _v = None
+    _st['cfo_cpat'][_t] = {'v': _v, 'as_of': dt.datetime.utcnow().isoformat() + 'Z'}
+    return _v, True
+
+
+
 def build_us_multibagger(survivors):
     """M-1.1 live US multibagger list. Pool = small-cap survivors that are PROFITABLE ON CAPITAL
     (ROIC present and > 0) -- this excludes the pre-profit momentum micro-caps that belong on the
@@ -5447,12 +5487,9 @@ def build_us_multibagger(survivors):
     pool.sort(key=lambda s: -(score_multibagger(s, None, 'us').get('total') or 0))
     scored, sec_calls, with_cash = [], 0, 0
     for s in pool[:MB_MAX_SEC]:
-        cc = None
-        try:
-            cc = _sec_cfo_cpat(s.get('ticker'))
-        except Exception:
-            cc = None
-        sec_calls += 1
+        cc, _did_fetch = _cached_cfo_cpat(s.get('ticker'))   # v1.417.0: recorded figures, 45d TTL
+        if _did_fetch:
+            sec_calls += 1
         sc = score_multibagger(s, cc, 'us')
         if sc.get('cfo_cpat') is not None:      # REQUIRE real 3-yr cash data to appear -- cash is king
             with_cash += 1
@@ -17903,6 +17940,86 @@ def sec_recent_filer_ciks(days=SEC_INDEX_LOOKBACK, forms=('4', '8-K')):
     return out
 
 
+def sec_filings_consumers(data):
+    """v1.416.0: the CONSUMER stamp passes extracted from build_sec_filings so they run on BOTH paths --
+    fresh crawl AND the 20h carried events. Pure in-memory (~0s): Multibagger insider-gate repair,
+    Explosive insider confirmation, TCE s13/s14 recording, and the adverse-event sentinel on held names.
+    Reads the event stores from data; never fetches."""
+    insider = data.get('insider_events') or {}
+    matev = data.get('mat_events') or {}
+    # ---- CONSUMER: Multibagger insider-gate REPAIR (Form-4 net-buying as a ranking tilt) ----
+    # The old insider gate died with the Yahoo ownership field. This restores the signal as a
+    # RANK tilt (not a re-gate -- the gate was deliberately dropped): names with confirmed
+    # open-market insider buying rise within the existing cash-ranked list. Also stamps each
+    # multibagger record so the display can show the insider chip.
+    mb = data.get('us_multibagger') or []
+    if mb and insider:
+        for r in mb:
+            se = insider.get((r.get('ticker') or '').upper())
+            if se and se.get('buy_ct') and (se.get('net_buy_usd_6m') or 0) > 0:
+                r['sec_insider'] = se
+                r['insider_tilt'] = (1.10 if se.get('ceo_cfo_buy')
+                                     else 1.06 if (se.get('cluster_buyers') or 0) >= 2 else 1.03)
+            else:
+                r['insider_tilt'] = 1.0
+        # stable re-rank: gate-passers first (unchanged), then insider-tilted cash rank
+        mb.sort(key=lambda x: (0 if x.get('eligible') else 1,
+                               -((x.get('cfo_cpat') or 0) * (x.get('insider_tilt') or 1.0)),
+                               -(x.get('total') or 0), (x.get('market_cap_m') or 1e12)))
+        n_mb_tilt = sum(1 for x in mb if (x.get('insider_tilt') or 1.0) > 1.0)
+        log(f'  [Wave SEC] Multibagger insider-gate repaired: {n_mb_tilt} names insider-tilted')
+
+    # ---- CONSUMER: Explosive rank boost (insider-confirmed names rank higher) ----
+    exu = data.get('explosive_us') or []
+    if exu and insider:
+        n_ex_tilt = 0
+        for r in exu:
+            se = insider.get((r.get('ticker') or '').upper())
+            if se and se.get('buy_ct') and (se.get('net_buy_usd_6m') or 0) > 0:
+                r['sec_insider'] = se; n_ex_tilt += 1
+        if n_ex_tilt:
+            log(f'  [Wave SEC] Explosive: {n_ex_tilt} names carry insider-buying confirmation')
+
+    # ---- CONSUMER: TCE streams s13/s14 RECORDED ONLY (frozen -- never scored) ----
+    # For the September original-vs-augmented comparison. These attach to tce_us records as
+    # inert display/record fields; they do NOT enter any TCE total/tier/conviction path.
+    tce = data.get('tce_us') or []
+    for r in tce:
+        t = (r.get('ticker') or '').upper()
+        se = insider.get(t); sv = matev.get(t)
+        if se: r['s13_institutional_note'] = ('insider buying reported' if se.get('buy_ct') else None)
+        if sv and sv.get('has_adverse'): r['s14_events_note'] = 'adverse 8-K on file'
+
+    # ---- CONSUMER: ADVERSE-EVENT SENTINEL on the PB paper book (Tab 2/3) + Live Investment ----
+    # Downside radar the dashboard never had: an adverse 8-K (bankruptcy / CFO exit / auditor
+    # change / impairment / delisting) on a name YOU hold paints a red flag. US names only.
+    # v1.238.1: ALSO flag HEAVY INSIDER SELLING on a held name (net_buy_usd_6m very negative,
+    # zero buys) -- a second bearish signal beside the 8-K radar (owner: surface the selling).
+    n_sentinel = n_sell_flag = 0
+    pb = data.get('pb') or {}
+    for row in ((pb.get('us') or {}).get('rows') or []):
+        tk = (row.get('ticker') or '').upper()
+        sv = matev.get(tk); se = insider.get(tk)
+        if sv and sv.get('has_adverse'):
+            row['sec_adverse'] = [e for e in sv['events'] if e['adverse']][:2]; n_sentinel += 1
+        if se and se.get('heavy_selling'):
+            row['sec_insider_sell'] = {'net_usd_6m': se.get('net_buy_usd_6m'), 'sell_ct': se.get('sell_ct'),
+                                       'cluster_sellers': se.get('cluster_sellers'), 'ceo_cfo_sell': se.get('ceo_cfo_sell')}
+            n_sell_flag += 1
+    # Live Investment holdings (the ETF wrappers rarely match EDGAR, but any US direct name does)
+    for h in ((data.get('live_investment') or {}).get('holdings') or []):
+        tk = (h.get('ticker') or '').upper()
+        sv = matev.get(tk); se = insider.get(tk)
+        if sv and sv.get('has_adverse'):
+            h['sec_adverse'] = [e for e in sv['events'] if e['adverse']][:2]; n_sentinel += 1
+        if se and se.get('heavy_selling'):
+            h['sec_insider_sell'] = {'net_usd_6m': se.get('net_buy_usd_6m'), 'sell_ct': se.get('sell_ct'),
+                                     'cluster_sellers': se.get('cluster_sellers'), 'ceo_cfo_sell': se.get('ceo_cfo_sell')}
+            n_sell_flag += 1
+    if n_sentinel or n_sell_flag:
+        log(f'  [Wave SEC] sentinel: {n_sentinel} adverse-8K flag(s), {n_sell_flag} heavy-insider-selling flag(s) on held names')
+
+
 def build_sec_filings(data):
     """v1.237.0 Wave SEC. Pull Form 4 + 8-K for the union of all US engine pools; store:
       data['insider_events'][TICKER] = {cluster_buyers, ceo_cfo_buy, net_buy_usd_6m, buy_ct, sell_ct, last_date, titles}
@@ -18192,77 +18309,7 @@ def build_sec_filings(data):
         log(f'  [Wave SEC] {len(names)} US names checked | Form4 insider {n_f4} | 8-K events {n_8k} '
             f'| fetch errors {n_fetch_err}')
 
-        # ---- CONSUMER: Multibagger insider-gate REPAIR (Form-4 net-buying as a ranking tilt) ----
-        # The old insider gate died with the Yahoo ownership field. This restores the signal as a
-        # RANK tilt (not a re-gate -- the gate was deliberately dropped): names with confirmed
-        # open-market insider buying rise within the existing cash-ranked list. Also stamps each
-        # multibagger record so the display can show the insider chip.
-        mb = data.get('us_multibagger') or []
-        if mb and insider:
-            for r in mb:
-                se = insider.get((r.get('ticker') or '').upper())
-                if se and se.get('buy_ct') and (se.get('net_buy_usd_6m') or 0) > 0:
-                    r['sec_insider'] = se
-                    r['insider_tilt'] = (1.10 if se.get('ceo_cfo_buy')
-                                         else 1.06 if (se.get('cluster_buyers') or 0) >= 2 else 1.03)
-                else:
-                    r['insider_tilt'] = 1.0
-            # stable re-rank: gate-passers first (unchanged), then insider-tilted cash rank
-            mb.sort(key=lambda x: (0 if x.get('eligible') else 1,
-                                   -((x.get('cfo_cpat') or 0) * (x.get('insider_tilt') or 1.0)),
-                                   -(x.get('total') or 0), (x.get('market_cap_m') or 1e12)))
-            n_mb_tilt = sum(1 for x in mb if (x.get('insider_tilt') or 1.0) > 1.0)
-            log(f'  [Wave SEC] Multibagger insider-gate repaired: {n_mb_tilt} names insider-tilted')
-
-        # ---- CONSUMER: Explosive rank boost (insider-confirmed names rank higher) ----
-        exu = data.get('explosive_us') or []
-        if exu and insider:
-            n_ex_tilt = 0
-            for r in exu:
-                se = insider.get((r.get('ticker') or '').upper())
-                if se and se.get('buy_ct') and (se.get('net_buy_usd_6m') or 0) > 0:
-                    r['sec_insider'] = se; n_ex_tilt += 1
-            if n_ex_tilt:
-                log(f'  [Wave SEC] Explosive: {n_ex_tilt} names carry insider-buying confirmation')
-
-        # ---- CONSUMER: TCE streams s13/s14 RECORDED ONLY (frozen -- never scored) ----
-        # For the September original-vs-augmented comparison. These attach to tce_us records as
-        # inert display/record fields; they do NOT enter any TCE total/tier/conviction path.
-        tce = data.get('tce_us') or []
-        for r in tce:
-            t = (r.get('ticker') or '').upper()
-            se = insider.get(t); sv = matev.get(t)
-            if se: r['s13_institutional_note'] = ('insider buying reported' if se.get('buy_ct') else None)
-            if sv and sv.get('has_adverse'): r['s14_events_note'] = 'adverse 8-K on file'
-
-        # ---- CONSUMER: ADVERSE-EVENT SENTINEL on the PB paper book (Tab 2/3) + Live Investment ----
-        # Downside radar the dashboard never had: an adverse 8-K (bankruptcy / CFO exit / auditor
-        # change / impairment / delisting) on a name YOU hold paints a red flag. US names only.
-        # v1.238.1: ALSO flag HEAVY INSIDER SELLING on a held name (net_buy_usd_6m very negative,
-        # zero buys) -- a second bearish signal beside the 8-K radar (owner: surface the selling).
-        n_sentinel = n_sell_flag = 0
-        pb = data.get('pb') or {}
-        for row in ((pb.get('us') or {}).get('rows') or []):
-            tk = (row.get('ticker') or '').upper()
-            sv = matev.get(tk); se = insider.get(tk)
-            if sv and sv.get('has_adverse'):
-                row['sec_adverse'] = [e for e in sv['events'] if e['adverse']][:2]; n_sentinel += 1
-            if se and se.get('heavy_selling'):
-                row['sec_insider_sell'] = {'net_usd_6m': se.get('net_buy_usd_6m'), 'sell_ct': se.get('sell_ct'),
-                                           'cluster_sellers': se.get('cluster_sellers'), 'ceo_cfo_sell': se.get('ceo_cfo_sell')}
-                n_sell_flag += 1
-        # Live Investment holdings (the ETF wrappers rarely match EDGAR, but any US direct name does)
-        for h in ((data.get('live_investment') or {}).get('holdings') or []):
-            tk = (h.get('ticker') or '').upper()
-            sv = matev.get(tk); se = insider.get(tk)
-            if sv and sv.get('has_adverse'):
-                h['sec_adverse'] = [e for e in sv['events'] if e['adverse']][:2]; n_sentinel += 1
-            if se and se.get('heavy_selling'):
-                h['sec_insider_sell'] = {'net_usd_6m': se.get('net_buy_usd_6m'), 'sell_ct': se.get('sell_ct'),
-                                         'cluster_sellers': se.get('cluster_sellers'), 'ceo_cfo_sell': se.get('ceo_cfo_sell')}
-                n_sell_flag += 1
-        if n_sentinel or n_sell_flag:
-            log(f'  [Wave SEC] sentinel: {n_sentinel} adverse-8K flag(s), {n_sell_flag} heavy-insider-selling flag(s) on held names')
+        sec_filings_consumers(data)   # v1.416.0: extracted -- runs on carried events too
     except Exception as _e:
         log(f'  [Wave SEC] build failed ({type(_e).__name__}: {_e}) -- carrying last-good')
         for _k in ('insider_events', 'mat_events', 'sec_meta'):
@@ -20887,11 +20934,17 @@ def build_m2_watch(data, existing):
                     _th = _thooks.get(t)
                     if _th is None and _M2_SIGT_STATS['fetched'] < _M2_SIGT_BUDGET:
                         try:
-                            _q = _sa_quarterly_op(t)
-                            if not _q or len(_q) < 6:
-                                _f = _sec_companyfacts(t)
-                                if _f:
-                                    _q = _sec_quarterly_op(_f)
+                            # v1.417.0: recorded quarterly rows first (45d store); fetch only on miss
+                            _qe = _stmt_store()['qrows'].get(t)
+                            if _qe is not None and _stmt_fresh(_qe):
+                                _q = _qe.get('v')
+                            else:
+                                _q = _sa_quarterly_op(t)
+                                if not _q or len(_q) < 6:
+                                    _f = _sec_companyfacts(t)
+                                    if _f:
+                                        _q = _sec_quarterly_op(_f)
+                                _stmt_store()['qrows'][t] = {'v': _q, 'as_of': dt.datetime.utcnow().isoformat() + 'Z'}
                             _M2_SIGT_STATS['seen'] += 1
                             if _q and len(_q) >= 6:
                                 _M2_SIGT_STATS['fetched'] += 1
@@ -21097,11 +21150,17 @@ def build_psx_m2_watch(data, existing):
                 _th2 = _thooks.get(t)
                 if _th2 is None and _M2_SIGT_STATS['fetched'] < _M2_SIGT_BUDGET:
                     try:
-                        _q2 = _sa_quarterly_op(t)
-                        if not _q2 or len(_q2) < 6:
-                            _f2 = _sec_companyfacts(t)
-                            if _f2:
-                                _q2 = _sec_quarterly_op(_f2)
+                        # v1.417.0: recorded quarterly rows first (45d store); fetch only on miss
+                        _qe2 = _stmt_store()['qrows'].get(t)
+                        if _qe2 is not None and _stmt_fresh(_qe2):
+                            _q2 = _qe2.get('v')
+                        else:
+                            _q2 = _sa_quarterly_op(t)
+                            if not _q2 or len(_q2) < 6:
+                                _f2 = _sec_companyfacts(t)
+                                if _f2:
+                                    _q2 = _sec_quarterly_op(_f2)
+                            _stmt_store()['qrows'][t] = {'v': _q2, 'as_of': dt.datetime.utcnow().isoformat() + 'Z'}
                         _M2_SIGT_STATS['seen'] += 1
                         if _q2 and len(_q2) >= 6:
                             _M2_SIGT_STATS['fetched'] += 1
@@ -24747,7 +24806,28 @@ def main():
         except Exception as _ce:
             log(f"  [Crowdedness] buy-list stamp skipped: {_ce}")
         _tail_mark('whale_and_crowding')
-        _stage('sec_filings', build_sec_filings, data)             # v1.237.0 Wave SEC: Form 4 insider + 8-K events
+        # v1.415.0: SEC-filings daily cache -- the Form4/8-K crawl (~90s) runs once per 20h, not every scan.
+        _sf_prev = str(EXISTING.get('sec_filings_as_of') or '')
+        _sf_fresh = False
+        try:
+            if _sf_prev:
+                _sf_age = (dt.datetime.utcnow() - dt.datetime.fromisoformat(_sf_prev.replace('Z', ''))).total_seconds()
+                _sf_fresh = 0 <= _sf_age < 20 * 3600
+        except Exception:
+            _sf_fresh = False
+        if _sf_fresh and (EXISTING.get('insider_events') or EXISTING.get('mat_events')):
+            data['insider_events'] = EXISTING.get('insider_events', {}) or {}
+            data['mat_events'] = EXISTING.get('mat_events', {}) or {}
+            data['sec_meta'] = EXISTING.get('sec_meta', {}) or {}
+            data['sec_filings_as_of'] = _sf_prev
+            log('  [SEC filings] carried (fresh <20h; crawl skipped)')
+            try:
+                sec_filings_consumers(data)   # v1.416.0: stamps run on carried events -- no chip loss
+            except Exception as _sce:
+                log('  [SEC filings] consumer stamps on carry failed: %s' % type(_sce).__name__)
+        else:
+            _stage('sec_filings', build_sec_filings, data)         # v1.237.0 Wave SEC: Form 4 insider + 8-K events
+            data['sec_filings_as_of'] = dt.datetime.utcnow().isoformat() + 'Z'
     except Exception as e:
         log(f'  [M1 buylist] failed: {e} -- carrying last-good')
         data['m1_buylist'] = EXISTING.get('m1_buylist', {})
@@ -24959,6 +25039,12 @@ def main():
             except Exception as _mce:
                 log('[MOAT cover] skipped: %s' % type(_mce).__name__)
                 data['moat_cover'] = EXISTING.get('moat_cover', {}) or {}
+            # v1.417.0: persist the recorded statement figures so the next run reads, not refetches.
+            try:
+                _ss = _stmt_store()
+                data['sec_stmt_store'] = {'cfo_cpat': _ss['cfo_cpat'], 'qrows': _ss['qrows']}
+            except Exception:
+                data['sec_stmt_store'] = EXISTING.get('sec_stmt_store', {}) or {}
             # v1.397.0: shared ETF-holdings index (one source every tab reads).
             try:
                 data['etf_holdings_index'] = build_etf_holdings_index(data)
