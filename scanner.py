@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.405.0'  # v1.405.0: two guardrails from the v1.404 audit. Name-matching now CORRECT everywhere (no wrong data; SOXX honest top-25 real semis), but SPDR sector filings (XLK/XLE/XLF...) name-matched with n=1 -- their N-PORT rows carry CUSIP/ISIN without tickers, so only 1 row parsed -- and that 1-name list OVERWROTE the good top-25 cache. FIX (both validated offline): (1) a name-matched result is only accepted if it has >=10 tickers, else keep scanning / return empty; (2) the deep loop only replaces a cache entry when the new list is LARGER (monotonic -- never worse data over better). SPDRs revert to their correct top-25; iShares name-matches (VGT 316, VNQ 144, QUAL 131, KBE 99...) keep their deep sets. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.406.0'  # v1.406.0: Global Discovery picks get the ETF-holder signal via the POST-PASS. Audit found GD picks carried etf_holder_count=0: build_global_discovery runs BEFORE the holdings index exists, so its inline etf_holders_for() saw an empty index (the same ordering issue fixed for explosive in v1.398 -- but the post-pass only covered explosive_us/multibagger_us, and global_discovery is a dict with 'picks', not a list). FIX: the post-pass now also annotates data['global_discovery']['picks']. Validated offline against the real payload structure. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -24756,6 +24756,14 @@ def main():
                                     _hh = _hidx.get(str(_r['ticker']).upper()) or []
                                     _r['etf_holders'] = _hh[:8]
                                     _r['etf_holder_count'] = len(_hh)
+                    # v1.406.0: global_discovery is {'picks': [...]} -- annotate its picks too.
+                    _gd = (data.get('global_discovery') or {}).get('picks')
+                    if isinstance(_gd, list):
+                        for _r in _gd:
+                            if isinstance(_r, dict) and _r.get('ticker'):
+                                _hh = _hidx.get(str(_r['ticker']).upper()) or []
+                                _r['etf_holders'] = _hh[:8]
+                                _r['etf_holder_count'] = len(_hh)
                     log('  [ETF index] annotated discovery rows')
             except Exception as _ap:
                 log('[ETF index] annotate skipped: %s' % type(_ap).__name__)
