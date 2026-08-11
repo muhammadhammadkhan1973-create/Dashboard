@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.417.0'  # v1.417.0: STATEMENT FIGURES RECORDED, NOT REFETCHED (owner audit). The log showed the explosive income-statement cache working perfectly (336 hit / 10 fetched, 45d) -- but two consumers still refetched statements EVERY scan: Multibagger's 30 SEC CFO/CPAT pulls and M2 Signal-T's ~71 native quarterly fetches. Quarterly figures change quarterly; refetching daily buys nothing. NEW shared persisted store data['sec_stmt_store'] (cfo_cpat + qrows, per-ticker as_of, 45-day quarterly-aligned TTL exactly like the proven explosive cache): both consumers now read the recorded figure first and fetch only on miss/expiry -- the SAME values feed the SAME scoring, so no performance change, just no refetching. Expected: ~30 SEC pulls -> ~0-2/run, M2 native fetches -> near-0 on cached runs. Validated offline: fresh hit skips fetch, stale/missing fetches and records. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.419.0'  # v1.419.0: NetBenefits withholding CORRECTLY LABELLED (owner: salary is tax-free, so no tax deduction should show). The statement deductions are NOT salary tax -- the owner's own numbers prove it: 363.30/1222.04, 1247.08/4199.05, 1651.21/5695.47 are all ~30%% of that year's dividends = the standard US withholding on dividends paid to non-US persons (UAE has no US treaty), charged at source on APD's dividends and printed by Fidelity as Taxes Withheld. The flows stay (real money) but are relabelled us_dividend_withholding, and the dividend engine now shows GROSS and NET: projected 6,023.68 gross -> ~4,216.58 net of 30%%; cumulative paid 14,239.82 gross / 10,978.23 net. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19455,6 +19455,72 @@ def build_li_statements(li, existing=None):
         f"({n_mo_done} complete); from {len(hist)}-day history since {hist[0]['date']}")
 
 
+# ============================== v1.418.0 NETBENEFITS (Tab 17) ==============================
+_NB_FACTS = {
+    'as_of_statement': '2026-06-30', 'zacks_report_date': '2026-08-10',
+    'position': {'shares': 832.0, 'cost_basis': 236877.70, 'statement_px': 293.18,
+                 'statement_mv': 243925.76, 'statement_unrealized': 7048.06},
+    'flows': [
+        {'year': '2021', 'granted': 'RSU 702u + PSU 144 target', 'vested_units': 0, 'dividends': 0.0, 'taxes': 0.0, 'plan_value_eoy': 257403.96},
+        {'year': '2022', 'granted': 'RSU +118u + PSU +177 target', 'vested_units': 0, 'dividends': 0.0, 'taxes': 0.0, 'plan_value_eoy': 351724.66},
+        {'year': '2023', 'granted': '', 'vested_units': 346, 'dividends': 1222.04, 'taxes': -363.30, 'plan_value_eoy': 313264.54},
+        {'year': '2024', 'granted': '', 'vested_units': 474, 'dividends': 4199.05, 'taxes': -1247.08, 'plan_value_eoy': 247892.55,
+         'note': 'all remaining RSUs vested; PFSHR22 expired 0/144 achieved'},
+        {'year': '2025', 'granted': '', 'vested_units': 59, 'dividends': 5695.47, 'taxes': -1651.21, 'plan_value_eoy': 240575.49,
+         'note': 'PFSHR23 delivered 59 sh @ $261.28 (12/2025)'},
+        {'year': '2026 H1', 'granted': '', 'vested_units': 0, 'dividends': 3123.26, 'taxes': 0.0, 'plan_value_eoy': 240575.49},
+    ],
+    'psu_outcomes': [{'grant': 'PFSHR22 (144 target, ended 09/2024)', 'result': '0 achieved'},
+                     {'grant': 'PFSHR23 (177 target, ended 09/2025)', 'result': '59 shares delivered @ $261.28'}],
+    'zacks': {'rank': 2, 'rank_text': '2-Buy', 'value': 'D', 'growth': 'B', 'momentum': 'B', 'vgm': 'C',
+              'industry_rank': 'Top 35% (87 of 246) Chemical - Diversified', 'fwd_pe': 22.60, 'peg': 2.64,
+              'esp': 0.54, 'growth_2026': 'sales +5.7% / EPS +11.3%', 'growth_2027': 'sales +4.4% / EPS +7.7%',
+              'report_px': 308.18, 'div_per_share': 7.24, 'div_yield_pct': 2.39},
+    'news': [
+        {'date': '08/07/26', 'line': 'Is Air Products (APD) Outperforming Other Basic Materials Stocks This Year? (Zacks)'},
+        {'date': '08/05/26', 'line': 'APD: What are Zacks experts saying now? (Zacks Private Portfolio Services)'},
+        {'date': '07/30/26', 'line': 'APD Q3 Earnings Beat on Volume Growth, Sales Miss Estimates (Zacks)'},
+        {'date': '07/30/26', 'line': 'APD Q3: Key Metrics Versus Estimates (Zacks)'},
+    ],
+}
+
+def build_netbenefits(data):
+    """v1.418.0: statement-fact ledger + live APD mark + dividend engine + Zacks layer for Tab 17."""
+    nb = {k: v for k, v in _NB_FACTS.items()}
+    z = nb['zacks']
+    px = None
+    try:
+        q = fetch_tv_symbol_quote('NYSE:APD', ('close', 'change'))
+        if q and q.get('close'):
+            px = float(q['close'])
+            nb['live'] = {'px': round(px, 2), 'chg_pct': round(float(q.get('change') or 0), 2), 'src': 'tv'}
+    except Exception:
+        px = None
+    if px is None:
+        px = float(z['report_px'])
+        nb['live'] = {'px': px, 'chg_pct': None, 'src': 'zacks_report'}
+    sh = nb['position']['shares']
+    nb['live']['mv'] = round(sh * px, 2)
+    nb['live']['unrealized'] = round(sh * px - nb['position']['cost_basis'], 2)
+    _cum = sum((f.get('dividends') or 0) for f in nb['flows'])
+    nb['dividends'] = {'cumulative': round(_cum, 2),
+                       'per_share_fwd': z['div_per_share'],
+                       'projected_annual': round(sh * z['div_per_share'], 2),
+                       'projected_quarterly': round(sh * z['div_per_share'] / 4.0, 2)}
+    nb['taxes_cumulative'] = round(sum((f.get('taxes') or 0) for f in nb['flows']), 2)
+    # v1.419.0: the deductions are US dividend withholding (~30% NRA), NOT salary tax (owner is tax-free).
+    nb['withholding_note'] = ('These are NOT salary taxes (salary is tax-free). They are the standard ~30% US '
+                              'withholding on dividends paid to non-US persons, charged at source on APD '
+                              'dividends: 363.30/1,222.04 = 29.7%, 1,247.08/4,199.05 = 29.7%, '
+                              '1,651.21/5,695.47 = 29.0%.')
+    _wh = 0.30
+    nb['dividends']['projected_annual_net'] = round(nb['dividends']['projected_annual'] * (1 - _wh), 2)
+    nb['dividends']['projected_quarterly_net'] = round(nb['dividends']['projected_quarterly'] * (1 - _wh), 2)
+    nb['dividends']['cumulative_net'] = round(nb['dividends']['cumulative'] + nb['taxes_cumulative'], 2)
+    return nb
+
+
+
 def build_live_investment(data, existing):
     try:
         import datetime as _dt
@@ -19827,6 +19893,14 @@ def build_live_investment(data, existing):
 
         _day_pnl = (lambda _vals: sum(_vals) if _vals else None)(
             [r['day_pnl_usd'] for r in rows if r.get('day_pnl_usd') is not None])
+        try:
+            data['netbenefits'] = build_netbenefits(data)
+            log('  [NetBenefits] APD %s sh @ %.2f (%s) -> MV %.0f' % (
+                data['netbenefits']['position']['shares'], data['netbenefits']['live']['px'],
+                data['netbenefits']['live']['src'], data['netbenefits']['live']['mv']))
+        except Exception as _nbe:
+            log('  [NetBenefits] skipped: %s' % type(_nbe).__name__)
+            data['netbenefits'] = EXISTING.get('netbenefits', {}) or {}
         data['live_investment'] = {
             'as_of': today, 'nav_usd': round(nav, 2), 'holdings_usd': round(holdings_usd, 2), 'interest_usd': round(interest_usd, 2),
             'cash_usd': round(cash_usd, 2), 'fx': fx, 'n_reuse': n_reuse, 'n_resolved': n_resolve,
