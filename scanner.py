@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.420.0'  # v1.420.0: NetBenefits FORWARD LAYER interpreted from the repo Zacks file (owner: forward estimation must come from the file + a full plain-language summary for the coming months/next quarter). Deep-parsed from 'APD 11 August 2026.txt': next earnings 11/5/26; current-qtr consensus 3.60 with Most Accurate 3.62 (ESP +0.54%% = beat setup); next qtr 3.49/3.51; FY26 13.43 / FY27 14.43 vs prior-year 12.03 (+11.6%% then +7.4%%; 3-5yr 8.56%%); ESTIMATE REVISIONS 60d: 100%% agreement UP across Q1/Q2/F1/F2 (9/9 FY revisions up, zero down; trend +2.27%% Q / +2.65%% FY); last quarter (Jul 30): EPS beat on volume growth, sales missed. All carried in zacks.fwd + a written plain_summary field the tab renders verbatim. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.421.0'  # v1.421.0: APD added to the TipRanks display-only overlay pool (owner: include TipRanks analysis of Air Products on the NetBenefits section). fetch_tipranks_overlay now always includes APD ahead of the top-25 recommended names; same 3-day TTL, same display-only rule (never enters any score). The tab reads tipranks.by_ticker.APD directly. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -4376,8 +4376,9 @@ def fetch_tipranks_overlay(data, existing=None):
     every failure soft + warn-quiet."""
     import re as _re
     out = dict(((existing or {}).get('tipranks') or {}).get('by_ticker') or {})
-    picks = [r.get('ticker') for r in ((data.get('recommended') or {}).get('stocks') or [])
-             if isinstance(r, dict) and r.get('market') != 'PSX' and ':' not in str(r.get('ticker') or '')][:25]
+    picks = ['APD'] + [r.get('ticker') for r in ((data.get('recommended') or {}).get('stocks') or [])
+             if isinstance(r, dict) and r.get('market') != 'PSX' and ':' not in str(r.get('ticker') or '')
+             and str(r.get('ticker')).upper() != 'APD'][:25]   # v1.421.0: APD always covered (NetBenefits)
     today = dt.date.today()
     fetched = 0
     _diag = {'http': {}, 'parse_fail': 0, 'sample_head': None}   # v1.351.0: failure modes must be visible
