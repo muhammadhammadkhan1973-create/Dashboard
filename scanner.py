@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.419.0'  # v1.419.0: NetBenefits withholding CORRECTLY LABELLED (owner: salary is tax-free, so no tax deduction should show). The statement deductions are NOT salary tax -- the owner's own numbers prove it: 363.30/1222.04, 1247.08/4199.05, 1651.21/5695.47 are all ~30%% of that year's dividends = the standard US withholding on dividends paid to non-US persons (UAE has no US treaty), charged at source on APD's dividends and printed by Fidelity as Taxes Withheld. The flows stay (real money) but are relabelled us_dividend_withholding, and the dividend engine now shows GROSS and NET: projected 6,023.68 gross -> ~4,216.58 net of 30%%; cumulative paid 14,239.82 gross / 10,978.23 net. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.420.0'  # v1.420.0: NetBenefits FORWARD LAYER interpreted from the repo Zacks file (owner: forward estimation must come from the file + a full plain-language summary for the coming months/next quarter). Deep-parsed from 'APD 11 August 2026.txt': next earnings 11/5/26; current-qtr consensus 3.60 with Most Accurate 3.62 (ESP +0.54%% = beat setup); next qtr 3.49/3.51; FY26 13.43 / FY27 14.43 vs prior-year 12.03 (+11.6%% then +7.4%%; 3-5yr 8.56%%); ESTIMATE REVISIONS 60d: 100%% agreement UP across Q1/Q2/F1/F2 (9/9 FY revisions up, zero down; trend +2.27%% Q / +2.65%% FY); last quarter (Jul 30): EPS beat on volume growth, sales missed. All carried in zacks.fwd + a written plain_summary field the tab renders verbatim. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19475,7 +19475,28 @@ _NB_FACTS = {
     'zacks': {'rank': 2, 'rank_text': '2-Buy', 'value': 'D', 'growth': 'B', 'momentum': 'B', 'vgm': 'C',
               'industry_rank': 'Top 35% (87 of 246) Chemical - Diversified', 'fwd_pe': 22.60, 'peg': 2.64,
               'esp': 0.54, 'growth_2026': 'sales +5.7% / EPS +11.3%', 'growth_2027': 'sales +4.4% / EPS +7.7%',
-              'report_px': 308.18, 'div_per_share': 7.24, 'div_yield_pct': 2.39},
+              'report_px': 308.18, 'div_per_share': 7.24, 'div_yield_pct': 2.39,
+              'fwd': {'next_earnings': '2026-11-05',
+                      'q_cur_est': 3.60, 'q_cur_most_acc': 3.62, 'q_next_est': 3.49, 'q_next_most_acc': 3.51,
+                      'fy26_est': 13.43, 'fy27_est': 14.43, 'prior_fy_eps': 12.03, 'growth_3_5yr_pct': 8.56,
+                      'revisions': '100% agreement UP across Q1/Q2/F1/F2 - 9 of 9 full-year revisions raised in 60 days, zero cut',
+                      'trend_60d': 'consensus drifting up: +2.27% (quarter) / +2.65% (full year) over 60 days',
+                      'last_qtr': 'Q3 (reported Jul 30): EPS BEAT on volume growth; sales missed estimates'}},
+    'plain_summary': ('What Zacks says about the coming months, in plain language: APD goes into its next '
+                      'earnings report (November 5) set up to beat, not just meet - the most accurate recent '
+                      'estimate ($3.62) sits ABOVE the consensus ($3.60), which historically tilts the odds '
+                      'toward a positive surprise, and every single analyst revision in the last 60 days has '
+                      'been UPWARD (9 of 9 full-year estimates raised, none cut) - unusually unanimous. The '
+                      'year itself is expected to deliver about +11.6% earnings growth ($13.43 vs $12.03 last '
+                      'year), then +7.4% more in FY27, with 8.6%/yr expected over 3-5 years. The stock is not '
+                      'cheap for it (Forward PE 22.6, PEG 2.64, Value grade D) - you are paying a full price '
+                      'for a high-quality compounder, which is why Zacks rates it 2-Buy rather than Strong '
+                      'Buy. Last quarter fits the pattern: earnings beat on volume growth even as sales '
+                      'missed - margins and execution carrying the story. For your 832 shares the practical '
+                      'read for the coming months: hold through the November report with the surprise setup '
+                      'in your favor, expect the $1.81/quarter dividend (~$1,506 gross / ~$1,054 net to you) '
+                      'to keep arriving, and watch whether the revision wave continues - that, more than the '
+                      'price, is the signal these analysts are following.'),
     'news': [
         {'date': '08/07/26', 'line': 'Is Air Products (APD) Outperforming Other Basic Materials Stocks This Year? (Zacks)'},
         {'date': '08/05/26', 'line': 'APD: What are Zacks experts saying now? (Zacks Private Portfolio Services)'},
