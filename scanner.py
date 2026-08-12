@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.422.0'  # v1.422.0: TREND LADDER (owner-approved from the Moving-Average Roadmap image, with the owner's amendment: labels must state the CONSEQUENCE of buying or selling in plain language, no jargon). Data: EMA10/EMA20/SMA100 added to _US_TV_COLS (SMA50/200 already there -- same POST, zero new fetches); foundation rows carry all five lines. _trend_ladder() classifies each priced name into one of six zones -- Strong ride / Healthy dip / At the wall / Prove-it zone / Last stand / Trend broken -- each with a written buy-consequence and sell-consequence sentence. A post-pass stamps trend_state onto explosive_us rows, recommended stocks and MOAT rows via foundation lookup (honest absence when a name lacks the lines). The APD NetBenefits quote now also requests the five lines in the same single GET and classifies the owner's own position. DISPLAY-ONLY: never enters any score (roadmap's own caveat: the line is context, not a signal). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.423.0'  # v1.423.0: TREND-LADDER LINES VIA THE PROVEN ENDPOINT (audit fix). The live payload proved the batch /scan endpoint silently serves NULL for EMA10/EMA20/SMA100 across all 1,966 rows while accepting the columns (mapping verified aligned: perf/price/sma50/sma200 all 100%%) -- yet the per-symbol GET serves the same fields perfectly (the APD classification works). FIX: data['ma_lines'] -- a 5-day-TTL per-ticker store of the three missing lines fetched via fetch_tv_symbol_quote for exactly the rows the ladder stamps (recommended + moat + explosive tickers, deduped, ~600 names), hard-capped at 80 fetches/run (~25s) so full coverage builds over the first few runs and steady-state refresh is ~64/run; rows without lines yet stay honestly unstamped. stamp_trend_ladder now reads px/s50/s200 from foundation and e10/e20/s100 from the store. The dead scan columns stay (harmless; TV may enable them). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19510,6 +19510,47 @@ _NB_FACTS = {
     ],
 }
 
+# v1.423.0: the batch /scan serves NULL for EMA10/EMA20/SMA100 (proven live); the per-symbol GET serves
+# them (APD proof). 5-day TTL store, hard fetch budget per run.
+def _ma_lines_store(data):
+    st = data.get('ma_lines')
+    if not isinstance(st, dict):
+        st = dict((EXISTING.get('ma_lines') or {}))
+        data['ma_lines'] = st
+    return st
+
+def refresh_ma_lines(data, tickers, budget=80):
+    st = _ma_lines_store(data)
+    today = dt.date.today()
+    fetched = 0
+    for tk in tickers:
+        if fetched >= budget:
+            break
+        tk = str(tk or '').upper()
+        if not tk or ':' in tk:
+            continue
+        e = st.get(tk)
+        if e and e.get('as_of'):
+            try:
+                if (today - dt.date.fromisoformat(str(e['as_of'])[:10])).days < 5:
+                    continue
+            except Exception:
+                pass
+        try:
+            q = fetch_tv_symbol_quote('NYSE:' + tk, ('EMA10', 'EMA20', 'SMA100'))
+            if not q or q.get('EMA10') is None:
+                q = fetch_tv_symbol_quote('NASDAQ:' + tk, ('EMA10', 'EMA20', 'SMA100'))
+            if q and (q.get('EMA10') is not None or q.get('SMA100') is not None):
+                st[tk] = {'e10': q.get('EMA10'), 'e20': q.get('EMA20'), 's100': q.get('SMA100'),
+                          'as_of': today.isoformat()}
+                fetched += 1
+        except Exception:
+            continue
+    log('  [Trend Ladder] ma_lines store: %d tickers, %d fetched this run (budget %d, 5d TTL)'
+        % (len(st), fetched, budget))
+    return st
+
+
 # ============================ v1.422.0 TREND LADDER ============================
 _TL_TEXT = {
     'ride':   ('Strong ride', '#059669',
@@ -19574,15 +19615,26 @@ def _trend_ladder(px, e10, e20, s50, s100, s200):
 
 
 def stamp_trend_ladder(data):
-    """v1.422.0 post-pass: stamp trend_state onto explosive/recommended/moat rows via foundation lookup."""
+    """v1.423.0: px/s50/s200 from foundation; e10/e20/s100 from the 5d ma_lines store (proven endpoint)."""
     fu = {str(r.get('ticker', '')).upper(): r for r in (data.get('foundation_universe') or [])
           if isinstance(r, dict)}
+    _wanted = []
+    for row in (((data.get('recommended') or {}).get('stocks') or [])
+                + ((data.get('moat') or {}).get('rows') or [])
+                + (data.get('explosive_us') or [])):
+        if isinstance(row, dict):
+            _t = str(row.get('ticker') or '').upper()
+            if _t and _t in fu and _t not in _wanted:
+                _wanted.append(_t)
+    st = refresh_ma_lines(data, _wanted, budget=80)
     def _tl_for(tk):
-        r = fu.get(str(tk or '').upper())
+        tk = str(tk or '').upper()
+        r = fu.get(tk)
         if not r:
             return None
-        return _trend_ladder(r.get('price'), r.get('ema10'), r.get('ema20'),
-                             r.get('sma50'), r.get('sma100'), r.get('sma200'))
+        ml = st.get(tk) or {}
+        return _trend_ladder(r.get('price'), ml.get('e10'), ml.get('e20'),
+                             r.get('sma50'), ml.get('s100'), r.get('sma200'))
     n = 0
     for row in (data.get('explosive_us') or []):
         if isinstance(row, dict):
