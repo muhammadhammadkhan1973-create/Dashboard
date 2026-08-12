@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.426.0'  # v1.426.0: MOAT trend stamps survive the rebuild (audit fix). The first v1.425 run proved everything live (6 metals, 9 holdings, APD, 123+81 stock rows) EXCEPT moat 0/317 -- root cause: stamp_trend_ladder runs in the post-pass BEFORE build_moat_universe rebuilds data['moat'] in the tail, so the moat stamps were applied to the old list and wiped by the rebuild. FIX: a zero-fetch re-stamp (stamp_trend_moat_only, reads the already-filled ma_lines store + foundation, no network) runs immediately after the moat rebuild. Moat coverage now grows with the store exactly like the other surfaces. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.427.0'  # v1.427.0: ma_lines budget efficiency (audit: store grew +47 on an 80 budget -- 33 fetches failed on AMEX/OTC/dot-class tickers and, uncached, would retry EVERY run forever). FIX: (1) AMEX added as the third exchange fallback (NYSE -> NASDAQ -> AMEX); (2) MISS-CACHING -- a failed ticker is recorded {'miss': True, as_of} and not retried for 5 days, so the budget always advances the frontier instead of re-burning known failures. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19540,11 +19540,17 @@ def refresh_ma_lines(data, tickers, budget=80):
             q = fetch_tv_symbol_quote('NYSE:' + tk, ('EMA10', 'EMA20', 'SMA100'))
             if not q or q.get('EMA10') is None:
                 q = fetch_tv_symbol_quote('NASDAQ:' + tk, ('EMA10', 'EMA20', 'SMA100'))
+            if not q or q.get('EMA10') is None:
+                q = fetch_tv_symbol_quote('AMEX:' + tk, ('EMA10', 'EMA20', 'SMA100'))   # v1.427.0
             if q and (q.get('EMA10') is not None or q.get('SMA100') is not None):
                 st[tk] = {'e10': q.get('EMA10'), 'e20': q.get('EMA20'), 's100': q.get('SMA100'),
                           'as_of': today.isoformat()}
-                fetched += 1
+            else:
+                st[tk] = {'miss': True, 'as_of': today.isoformat()}   # v1.427.0: don't re-burn failures
+            fetched += 1
         except Exception:
+            st[tk] = {'miss': True, 'as_of': today.isoformat()}
+            fetched += 1
             continue
     log('  [Trend Ladder] ma_lines store: %d tickers, %d fetched this run (budget %d, 5d TTL)'
         % (len(st), fetched, budget))
