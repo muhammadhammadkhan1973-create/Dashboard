@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.429.0'  # v1.429.0: ECON ANNOUNCEMENTS RECORDED WITH THEIR DATES (owner: whenever any announcement is made it should be displayed with its date). The faireconomy weekly feed populates the 'actual' field in the SAME file once a release happens (the old filter dropped it) -- the filter now carries it, and a persisted data['econ_announced'] log (carried from EXISTING, deduped on title+date, 14-day window, newest first) records every released event with its ACTUAL value, forecast, previous and a computed surprise direction (above/below/inline via numeric parse of '0.2%%'/'202K' style strings). The evening Dubai run (10:00 ET) catches same-day 08:30 ET releases. Index v5.337 renders the Announced column + the 14-day announced list. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.430.0'  # v1.430.0: ECON ACTUALS FROM FRED (investigation closed with live proof: the faireconomy weekly export was fetched directly at 11:45 ET, 3h after the CPI release, and its schema carries NO actual field at all -- the old docstring was right, and the v1.429 assumption that actuals appear in-feed was wrong; MT tools with actual values read the FF site itself, which rate-limits exports to 2/5min since Aug-2024). FIX within proven infrastructure: _enrich_econ_actuals() computes actuals from FRED (existing key, existing library) for RELEASED events via a verified-id map only -- CPIAUCSL / CPILFESL (m/m + y/y), ICSA (claims -> 202K format), RSAFS (retail m/m), UMCSENT (sentiment level) -- formatted to match the feed's own strings, gated on release-time passed + observation freshness (45d monthly / 10d weekly). Unverified ids (PPI, core retail, UoM expectations) stay honestly blank rather than guessed. Enrichment mutates the calendar rows in place (the table column fills) then feeds merge_econ_announced (the 14-day log fills). Max ~5 tiny FRED calls/run, usually 0-2. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -14416,6 +14416,75 @@ def _econ_num(v):
         return None
 
 
+# v1.430.0: actuals via FRED for released calendar events (verified series ids only).
+_ECON_FRED_MAP = {
+    'CPI m/m':        ('CPIAUCSL', 'mom_pct'),
+    'Core CPI m/m':   ('CPILFESL', 'mom_pct'),
+    'CPI y/y':        ('CPIAUCSL', 'yoy_pct'),
+    'Core CPI y/y':   ('CPILFESL', 'yoy_pct'),
+    'Unemployment Claims': ('ICSA', 'level_k'),
+    'Retail Sales m/m':    ('RSAFS', 'mom_pct'),
+    'Prelim UoM Consumer Sentiment': ('UMCSENT', 'level_1dp'),
+}
+
+def _fred_latest_vals(sid, n):
+    """Small standalone FRED pull (existing key/library); returns last n values + last obs date."""
+    try:
+        from fredapi import Fred
+        ser = Fred(api_key=FRED_KEY).get_series(sid).dropna()
+        if ser is None or len(ser) < n:
+            return None, None
+        return list(ser[-n:]), ser.index[-1].date()
+    except Exception:
+        return None, None
+
+def _enrich_econ_actuals(cal):
+    """Fill c['actual'] for RELEASED, mapped, still-blank US events. Mutates rows in place."""
+    if not FRED_KEY or not isinstance(cal, list):
+        return cal
+    now = dt.datetime.now(dt.timezone.utc)
+    filled = 0
+    for c in cal:
+        if not isinstance(c, dict) or str(c.get('actual') or '').strip():
+            continue
+        sid_mode = _ECON_FRED_MAP.get(str(c.get('title') or '').strip())
+        if not sid_mode:
+            continue
+        try:
+            edt = dt.datetime.fromisoformat(str(c.get('date')))
+            if edt.tzinfo is None:
+                edt = edt.replace(tzinfo=dt.timezone.utc)
+        except Exception:
+            continue
+        if now < edt:
+            continue                                   # not released yet
+        sid, mode = sid_mode
+        need = 13 if mode == 'yoy_pct' else (2 if mode == 'mom_pct' else 1)
+        vals, last_obs = _fred_latest_vals(sid, max(need, 1))
+        if not vals or last_obs is None:
+            continue
+        max_age = 10 if mode == 'level_k' else 45
+        if (now.date() - last_obs).days > max_age:
+            continue                                   # FRED not updated yet -- fill next run
+        try:
+            if mode == 'mom_pct':
+                c['actual'] = '%.1f%%' % ((vals[-1] / vals[-2] - 1.0) * 100.0)
+            elif mode == 'yoy_pct':
+                c['actual'] = '%.1f%%' % ((vals[-1] / vals[0] - 1.0) * 100.0)
+            elif mode == 'level_k':
+                c['actual'] = '%dK' % round(vals[-1] / 1000.0)
+            else:
+                c['actual'] = '%.1f' % vals[-1]
+            c['actual_src'] = 'FRED:' + sid
+            filled += 1
+        except Exception:
+            continue
+    if filled:
+        log('  [Econ announced] %d actuals computed from FRED' % filled)
+    return cal
+
+
+
 def merge_econ_announced(data, cal):
     """v1.429.0: persist released events (actual present) with their dates; 14-day window."""
     prev = EXISTING.get('econ_announced') or []
@@ -24278,7 +24347,9 @@ def main():
     try:
         data['recession'] = _stage('recession', fetch_recession)
         try:
-            merge_econ_announced(data, (data.get('recession') or {}).get('calendar') or [])   # v1.429.0
+            _cal429 = (data.get('recession') or {}).get('calendar') or []
+            _enrich_econ_actuals(_cal429)              # v1.430.0: FRED actuals, in place
+            merge_econ_announced(data, _cal429)        # v1.429.0
         except Exception as _eae:
             log('  [Econ announced] merge skipped: %s' % type(_eae).__name__)
             data['econ_announced'] = EXISTING.get('econ_announced', []) or []
