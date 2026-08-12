@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.427.0'  # v1.427.0: ma_lines budget efficiency (audit: store grew +47 on an 80 budget -- 33 fetches failed on AMEX/OTC/dot-class tickers and, uncached, would retry EVERY run forever). FIX: (1) AMEX added as the third exchange fallback (NYSE -> NASDAQ -> AMEX); (2) MISS-CACHING -- a failed ticker is recorded {'miss': True, as_of} and not retried for 5 days, so the budget always advances the frontier instead of re-burning known failures. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.428.0'  # v1.428.0: MOAT NAMES ENTER THE FETCH FRONTIER (audit fix -- the numbers reconciled perfectly once seen: store 207 ~= recommended+explosive fu-names, +3/run = daily rotation only). Root cause: the main stamp pass runs BEFORE build_moat_universe rebuilds data['moat'] in the tail, so at wanted-build time the moat list was absent and its 212 foundation-resident names NEVER entered the fetch frontier -- coverage would cap at incidental overlap (25) forever. FIX: the wanted list reads moat tickers from data['moat'] OR the carried EXISTING moat (tickers only; stamping semantics unchanged -- the v1.426 zero-fetch re-stamp after the rebuild still applies the states). Frontier now 396 names; at 80/run the store completes in ~3 runs. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19682,8 +19682,9 @@ def stamp_trend_ladder(data):
     fu = {str(r.get('ticker', '')).upper(): r for r in (data.get('foundation_universe') or [])
           if isinstance(r, dict)}
     _wanted = []
+    _moat_rows = ((data.get('moat') or {}).get('rows')) or ((EXISTING.get('moat') or {}).get('rows')) or []
     for row in (((data.get('recommended') or {}).get('stocks') or [])
-                + ((data.get('moat') or {}).get('rows') or [])
+                + _moat_rows
                 + (data.get('explosive_us') or [])):
         if isinstance(row, dict):
             _t = str(row.get('ticker') or '').upper()
