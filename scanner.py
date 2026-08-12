@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.425.0'  # v1.425.0: THE PATTERN EVERYWHERE (owner: consequence + technical why on all tabs, including metals). (1) _trend_ladder gains a noun param so the texts read naturally per asset ('stock'/'metal'/'fund'/'index'). (2) METALS: the six Tab-12 tiles (gold/silver/platinum/palladium/copper /DXY) get trend_state via the PROVEN per-symbol GET on the code's own proven symbols (COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1!, TVC:DXY) fetching EMA10/EMA20/SMA100 (px+sma50+sma200 already in macros.metals); 6 GETs/run. (3) HOLDINGS: each Tab-17 UCITS holding classifies via its own resolver symbol (row.sym, already resolved) + the same GET; ~9 GETs/run. All display-only, all six-zone texts identical everywhere (D-110), honest absence when lines are missing. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.426.0'  # v1.426.0: MOAT trend stamps survive the rebuild (audit fix). The first v1.425 run proved everything live (6 metals, 9 holdings, APD, 123+81 stock rows) EXCEPT moat 0/317 -- root cause: stamp_trend_ladder runs in the post-pass BEFORE build_moat_universe rebuilds data['moat'] in the tail, so the moat stamps were applied to the old list and wiped by the rebuild. FIX: a zero-fetch re-stamp (stamp_trend_moat_only, reads the already-filled ma_lines store + foundation, no network) runs immediately after the moat rebuild. Moat coverage now grows with the store exactly like the other surfaces. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19650,6 +19650,27 @@ def _trend_ladder(px, e10, e20, s50, s100, s200, noun=None):
         return None
 
 
+def stamp_trend_moat_only(data):
+    """v1.426.0: zero-fetch re-stamp for moat rows AFTER their rebuild (store + foundation only)."""
+    fu = {str(r.get('ticker', '')).upper(): r for r in (data.get('foundation_universe') or [])
+          if isinstance(r, dict)}
+    st = data.get('ma_lines') or {}
+    n = 0
+    for row in ((data.get('moat') or {}).get('rows') or []):
+        if not isinstance(row, dict):
+            continue
+        tk = str(row.get('ticker') or '').upper()
+        r = fu.get(tk)
+        ml = st.get(tk) or {}
+        if not r:
+            continue
+        ts = _trend_ladder(r.get('price'), ml.get('e10'), ml.get('e20'),
+                           r.get('sma50'), ml.get('s100'), r.get('sma200'))
+        if ts:
+            row['trend_state'] = ts; n += 1
+    log('  [Trend Ladder] moat re-stamp after rebuild: %d rows (zero-fetch)' % n)
+
+
 def stamp_trend_ladder(data):
     """v1.423.0: px/s50/s200 from foundation; e10/e20/s100 from the 5d ma_lines store (proven endpoint)."""
     fu = {str(r.get('ticker', '')).upper(): r for r in (data.get('foundation_universe') or [])
@@ -25427,6 +25448,10 @@ def main():
             # v1.357.0 WAVE MOAT: after wave_z (reads its fund_cache) and all engine outputs.
             try:
                 data['moat'] = build_moat_universe(data, EXISTING)
+                try:
+                    stamp_trend_moat_only(data)   # v1.426.0: stamps must land AFTER the rebuild
+                except Exception as _tme:
+                    log('  [Trend Ladder] moat re-stamp skipped: %s' % type(_tme).__name__)
             except Exception as _moe:
                 log('[MOAT] skipped: %s' % type(_moe).__name__)
                 data['moat'] = EXISTING.get('moat', {}) or {}
