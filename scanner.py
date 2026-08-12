@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.421.0'  # v1.421.0: APD added to the TipRanks display-only overlay pool (owner: include TipRanks analysis of Air Products on the NetBenefits section). fetch_tipranks_overlay now always includes APD ahead of the top-25 recommended names; same 3-day TTL, same display-only rule (never enters any score). The tab reads tipranks.by_ticker.APD directly. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.422.0'  # v1.422.0: TREND LADDER (owner-approved from the Moving-Average Roadmap image, with the owner's amendment: labels must state the CONSEQUENCE of buying or selling in plain language, no jargon). Data: EMA10/EMA20/SMA100 added to _US_TV_COLS (SMA50/200 already there -- same POST, zero new fetches); foundation rows carry all five lines. _trend_ladder() classifies each priced name into one of six zones -- Strong ride / Healthy dip / At the wall / Prove-it zone / Last stand / Trend broken -- each with a written buy-consequence and sell-consequence sentence. A post-pass stamps trend_state onto explosive_us rows, recommended stocks and MOAT rows via foundation lookup (honest absence when a name lacks the lines). The APD NetBenefits quote now also requests the five lines in the same single GET and classifies the owner's own position. DISPLAY-ONLY: never enters any score (roadmap's own caveat: the line is context, not a signal). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -5898,6 +5898,7 @@ _US_TV_COLS = ['name', 'market_cap_basic', 'exchange', 'sector',
                'close', 'price_earnings_ttm', 'debt_to_equity', 'Perf.6M', 'Perf.3M',
                'return_on_invested_capital',   # M-1.1: Multibagger F3/F4 + the ROIC>WACC gate (was in the probe list only, so roic never populated -> gate silently disabled)
                'SMA50', 'SMA200',
+               'EMA10', 'EMA20', 'SMA100',   # v1.422.0: Trend Ladder lines (same POST, zero new fetches)
                # v1.332.0: YTD/1Y performance so every explosive_us candidate (incl. sub-$2bn small-caps the
                # separate foundation_universe scan floors out) carries a real return for the consensus
                # recommendation tab -- same POST, two extra columns, zero new fetches.
@@ -6189,6 +6190,9 @@ def fetch_foundation_universe():
                     'perf_5y':       rec.get('Perf.5Y'),
                     'sma50':         rec.get('SMA50'),    # v1.241.0: MA already fetched in _US_TV_COLS; carry it (Whale Watch full-analysis)
                     'sma200':        rec.get('SMA200'),
+                    'ema10':         rec.get('EMA10'),    # v1.422.0: Trend Ladder
+                    'ema20':         rec.get('EMA20'),
+                    'sma100':        rec.get('SMA100'),
                     'sector':        rec.get('sector') or 'Unknown',
                     'industry':      '',
                     'market_cap':    mc,
@@ -19506,16 +19510,112 @@ _NB_FACTS = {
     ],
 }
 
+# ============================ v1.422.0 TREND LADDER ============================
+_TL_TEXT = {
+    'ride':   ('Strong ride', '#059669',
+               'The stock is in full stride, riding its short-term trend. BUYING now means paying up for '
+               'strength - fine in small size, but you are late to this leg and a routine dip would sit '
+               'below you. SELLING now means stepping off a train that has not slowed; winners are usually '
+               'held here, not sold.'),
+    'dip':    ('Healthy dip', '#16A34A',
+               'This is the routine breather of a rising stock - the spot where healthy trends rest and '
+               'resume. BUYING here has historically been the better entry than chasing the highs. SELLING '
+               'here is the classic mistake: handing over shares exactly where the trend usually restarts. '
+               'Patience, not panic.'),
+    'wall':   ('At the wall', '#D97706',
+               'The stock is testing the line where healthy trends either hold or start to break. BUYING: '
+               'do not rush - wait to see the bounce actually hold for a few days. SELLING part of a '
+               'position becomes sensible only if it keeps closing below this line; one touch is not '
+               'damage, repeated closes below are where real damage starts.'),
+    'reset':  ('Prove-it zone', '#EA580C',
+               'The fall is deeper than a routine dip. BUYING here is catching a falling knife unless '
+               'buyers visibly step back in first - demand must prove itself. If you OWN it, this is where '
+               'you require proof: SELLING into a failed bounce beats riding it lower - decide your exit '
+               'line now, not after the fall resumes.'),
+    'stand':  ('Last stand', '#DC2626',
+               'Price is at the long-term make-or-break line - the last place buyers of the whole trend '
+               'historically defend. BUYING works only if this line visibly holds; watch the reaction, not '
+               'the touch. SELLING here locks in ahead of a potential full breakdown; many investors give '
+               'it exactly one bounce attempt to decide.'),
+    'broken': ('Trend broken', '#991B1B',
+               'The long-term line is lost. BUYING now is fighting the tide - "cheap" can get much cheaper, '
+               'and most big losses happen below this line. Standing aside or SELLING protects capital; '
+               'the disciplined re-entry is only after price retakes the line and holds it, even if that '
+               'means paying more later.'),
+}
+
+def _trend_ladder(px, e10, e20, s50, s100, s200):
+    """Plain-language trend zone. Returns {'zone','label','color','why'} or None when lines are missing."""
+    try:
+        vals = [px, s200, s100, s50]
+        if any(v is None or not (float(v) == float(v)) or float(v) <= 0 for v in vals):
+            return None
+        px, s50, s100, s200 = float(px), float(s50), float(s100), float(s200)
+        e10 = float(e10) if e10 else None
+        e20 = float(e20) if e20 else None
+        if px < s200 * 0.98:
+            z = 'broken'
+        elif px <= s200 * 1.02:
+            z = 'stand'
+        elif px <= s100 * 1.02:
+            z = 'reset'
+        elif px <= s50 * 1.02:
+            z = 'wall'
+        elif e10 and e20 and px >= e10 and e10 >= e20:
+            z = 'ride'
+        elif e20 and px <= e20 * 1.01:
+            z = 'dip'
+        else:
+            z = 'ride' if (e10 and px >= e10) else 'dip'
+        t = _TL_TEXT[z]
+        return {'zone': z, 'label': t[0], 'color': t[1], 'why': t[2]}
+    except Exception:
+        return None
+
+
+def stamp_trend_ladder(data):
+    """v1.422.0 post-pass: stamp trend_state onto explosive/recommended/moat rows via foundation lookup."""
+    fu = {str(r.get('ticker', '')).upper(): r for r in (data.get('foundation_universe') or [])
+          if isinstance(r, dict)}
+    def _tl_for(tk):
+        r = fu.get(str(tk or '').upper())
+        if not r:
+            return None
+        return _trend_ladder(r.get('price'), r.get('ema10'), r.get('ema20'),
+                             r.get('sma50'), r.get('sma100'), r.get('sma200'))
+    n = 0
+    for row in (data.get('explosive_us') or []):
+        if isinstance(row, dict):
+            ts = _tl_for(row.get('ticker'))
+            if ts:
+                row['trend_state'] = ts; n += 1
+    for row in ((data.get('recommended') or {}).get('stocks') or []):
+        if isinstance(row, dict):
+            ts = _tl_for(row.get('ticker'))
+            if ts:
+                row['trend_state'] = ts; n += 1
+    for row in ((data.get('moat') or {}).get('rows') or []):
+        if isinstance(row, dict):
+            ts = _tl_for(row.get('ticker'))
+            if ts:
+                row['trend_state'] = ts; n += 1
+    log('  [Trend Ladder] %d rows stamped (display-only; foundation lines)' % n)
+
+
+
 def build_netbenefits(data):
     """v1.418.0: statement-fact ledger + live APD mark + dividend engine + Zacks layer for Tab 17."""
     nb = {k: v for k, v in _NB_FACTS.items()}
     z = nb['zacks']
     px = None
     try:
-        q = fetch_tv_symbol_quote('NYSE:APD', ('close', 'change'))
+        q = fetch_tv_symbol_quote('NYSE:APD', ('close', 'change', 'EMA10', 'EMA20', 'SMA50', 'SMA100', 'SMA200'))
         if q and q.get('close'):
             px = float(q['close'])
             nb['live'] = {'px': round(px, 2), 'chg_pct': round(float(q.get('change') or 0), 2), 'src': 'tv'}
+            _ts = _trend_ladder(px, q.get('EMA10'), q.get('EMA20'), q.get('SMA50'), q.get('SMA100'), q.get('SMA200'))
+            if _ts:
+                nb['trend_state'] = _ts
     except Exception:
         px = None
     if px is None:
@@ -25135,6 +25235,10 @@ def main():
             except Exception as _mce:
                 log('[MOAT cover] skipped: %s' % type(_mce).__name__)
                 data['moat_cover'] = EXISTING.get('moat_cover', {}) or {}
+            try:
+                stamp_trend_ladder(data)   # v1.422.0 (display-only)
+            except Exception as _tle:
+                log('  [Trend Ladder] skipped: %s' % type(_tle).__name__)
             # v1.417.0: persist the recorded statement figures so the next run reads, not refetches.
             try:
                 _ss = _stmt_store()
