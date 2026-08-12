@@ -65,7 +65,7 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.423.0'  # v1.423.0: TREND-LADDER LINES VIA THE PROVEN ENDPOINT (audit fix). The live payload proved the batch /scan endpoint silently serves NULL for EMA10/EMA20/SMA100 across all 1,966 rows while accepting the columns (mapping verified aligned: perf/price/sma50/sma200 all 100%%) -- yet the per-symbol GET serves the same fields perfectly (the APD classification works). FIX: data['ma_lines'] -- a 5-day-TTL per-ticker store of the three missing lines fetched via fetch_tv_symbol_quote for exactly the rows the ladder stamps (recommended + moat + explosive tickers, deduped, ~600 names), hard-capped at 80 fetches/run (~25s) so full coverage builds over the first few runs and steady-state refresh is ~64/run; rows without lines yet stay honestly unstamped. stamp_trend_ladder now reads px/s50/s200 from foundation and e10/e20/s100 from the store. The dead scan columns stay (harmless; TV may enable them). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.425.0'  # v1.425.0: THE PATTERN EVERYWHERE (owner: consequence + technical why on all tabs, including metals). (1) _trend_ladder gains a noun param so the texts read naturally per asset ('stock'/'metal'/'fund'/'index'). (2) METALS: the six Tab-12 tiles (gold/silver/platinum/palladium/copper /DXY) get trend_state via the PROVEN per-symbol GET on the code's own proven symbols (COMEX:GC1!/SI1!/HG1!, NYMEX:PL1!/PA1!, TVC:DXY) fetching EMA10/EMA20/SMA100 (px+sma50+sma200 already in macros.metals); 6 GETs/run. (3) HOLDINGS: each Tab-17 UCITS holding classifies via its own resolver symbol (row.sym, already resolved) + the same GET; ~9 GETs/run. All display-only, all six-zone texts identical everywhere (D-110), honest absence when lines are missing. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19585,7 +19585,7 @@ _TL_TEXT = {
                'means paying more later.'),
 }
 
-def _trend_ladder(px, e10, e20, s50, s100, s200):
+def _trend_ladder(px, e10, e20, s50, s100, s200, noun=None):
     """Plain-language trend zone. Returns {'zone','label','color','why'} or None when lines are missing."""
     try:
         vals = [px, s200, s100, s50]
@@ -19609,7 +19609,43 @@ def _trend_ladder(px, e10, e20, s50, s100, s200):
         else:
             z = 'ride' if (e10 and px >= e10) else 'dip'
         t = _TL_TEXT[z]
-        return {'zone': z, 'label': t[0], 'color': t[1], 'why': t[2]}
+        def _f(v):
+            return ('$%.2f' % v) if v < 1000 else ('$%.0f' % v)
+        _d200 = 100.0 * (px - s200) / s200
+        _d50 = 100.0 * (px - s50) / s50
+        if z == 'ride':
+            _tech = ('price %s is above its 10-day average (%s) and the averages are stacked upward '
+                     '(10d %s > 20d %s > 50d %s) - the textbook alignment of an active uptrend; the '
+                     'long-term 200-day floor sits at %s, %.1f%% below.'
+                     % (_f(px), _f(e10) if e10 else 'n/a', _f(e10) if e10 else 'n/a',
+                        _f(e20) if e20 else 'n/a', _f(s50), _f(s200), _d200))
+        elif z == 'dip':
+            _tech = ('price %s has eased back to its 20-day average (%s) while holding well above the '
+                     '50-day (%s, %.1f%% below price) - the classic resting spot of an intact uptrend; '
+                     '200-day support is far below at %s (%.1f%%).'
+                     % (_f(px), _f(e20) if e20 else 'n/a', _f(s50), abs(_d50), _f(s200), _d200))
+        elif z == 'wall':
+            _tech = ('price %s is testing its 50-day average (%s, %.1f%% away) - the line that separates '
+                     'a routine dip from real damage; the deeper supports are the 100-day at %s and the '
+                     '200-day at %s (%.1f%% below price).'
+                     % (_f(px), _f(s50), abs(_d50), _f(s100), _f(s200), _d200))
+        elif z == 'reset':
+            _tech = ('price %s has fallen through the 50-day (%s) to its 100-day average (%s) - a deeper '
+                     'reset than a routine dip; the 200-day, the long-term make-or-break line, is at %s, '
+                     '%.1f%% below the current price.'
+                     % (_f(px), _f(s50), _f(s100), _f(s200), _d200))
+        elif z == 'stand':
+            _tech = ('price %s is sitting right at its 200-day average (%s, %.1f%% away) - the long-term '
+                     'boundary where the whole uptrend historically gets defended or lost; every shorter '
+                     'average (50-day %s, 100-day %s) is already above the price.'
+                     % (_f(px), _f(s200), abs(_d200), _f(s50), _f(s100)))
+        else:
+            _tech = ('price %s has closed below its 200-day average (%s) by %.1f%% - the long-term trend '
+                     'line is lost, and the shorter averages (50-day %s, 100-day %s) now sit overhead as '
+                     'resistance rather than support.'
+                     % (_f(px), _f(s200), abs(_d200), _f(s50), _f(s100)))
+        _why = t[2] if not noun else t[2].replace('stock', noun)
+        return {'zone': z, 'label': t[0], 'color': t[1], 'why': _why, 'tech': _tech}
     except Exception:
         return None
 
@@ -19652,6 +19688,43 @@ def stamp_trend_ladder(data):
             if ts:
                 row['trend_state'] = ts; n += 1
     log('  [Trend Ladder] %d rows stamped (display-only; foundation lines)' % n)
+    # v1.425.0: METALS -- proven futures/index symbols; e10/e20/s100 via the proven per-symbol GET.
+    _mm = (data.get('macros') or {}).get('metals') or {}
+    _msym = {'gold': 'COMEX:GC1!', 'silver': 'COMEX:SI1!', 'platinum': 'NYMEX:PL1!',
+             'palladium': 'NYMEX:PA1!', 'copper': 'COMEX:HG1!', 'dxy': 'TVC:DXY'}
+    _mn = 0
+    for _mk, _sym in _msym.items():
+        try:
+            _px = _mm.get(_mk + '_px') if _mk != 'dxy' else _mm.get('dxy')
+            _s50 = _mm.get(_mk + ('_px_sma50' if _mk != 'dxy' else '_sma50')) or _mm.get(_mk + '_sma50')
+            _s200 = _mm.get(_mk + ('_px_sma200' if _mk != 'dxy' else '_sma200')) or _mm.get(_mk + '_sma200')
+            if _px is None or _s50 is None or _s200 is None:
+                continue
+            _q = fetch_tv_symbol_quote(_sym, ('EMA10', 'EMA20', 'SMA100'))
+            _ts = _trend_ladder(_px, (_q or {}).get('EMA10'), (_q or {}).get('EMA20'),
+                                _s50, (_q or {}).get('SMA100'), _s200,
+                                noun=('index' if _mk == 'dxy' else 'metal'))
+            if _ts:
+                _mm[_mk + '_trend_state'] = _ts; _mn += 1
+        except Exception:
+            continue
+    # v1.425.0: HOLDINGS -- each UCITS fund via its own resolver symbol (row.sym).
+    _hn = 0
+    for _h in ((data.get('live_investment') or {}).get('holdings') or []):
+        try:
+            if not isinstance(_h, dict) or not _h.get('sym'):
+                continue
+            _hpx = _h.get('price'); _h50 = _h.get('sma50'); _h200 = _h.get('sma200')
+            if _hpx is None or _h50 is None or _h200 is None:
+                continue
+            _q = fetch_tv_symbol_quote(_h['sym'], ('EMA10', 'EMA20', 'SMA100'))
+            _ts = _trend_ladder(_hpx, (_q or {}).get('EMA10'), (_q or {}).get('EMA20'),
+                                _h50, (_q or {}).get('SMA100'), _h200, noun='fund')
+            if _ts:
+                _h['trend_state'] = _ts; _hn += 1
+        except Exception:
+            continue
+    log('  [Trend Ladder] +%d metals, +%d holdings classified (proven symbol GET)' % (_mn, _hn))
 
 
 
