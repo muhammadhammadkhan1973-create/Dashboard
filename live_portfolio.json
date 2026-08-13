@@ -1,189 +1,190 @@
 {
-  "inception_date": "2026-07-06",
-  "history_seed": [
-    {
-      "date": "2026-07-06",
-      "nav": 273379
-    },
-    {
-      "date": "2026-07-07",
-      "nav": 263744
-    }
-  ],
-  "holdings": [
-    {
-      "ticker": "SMH",
-      "isin": "IE00BMC38736",
-      "name": "VanEck Semiconductor UCITS ETF",
-      "shares": 295.3954,
-      "theme": "Semiconductors / AI",
-      "world_theme": "Asia-Tech",
-      "cost_price": 116.250934205,
-      "cost_ccy": "USD",
-      "news_query": "VanEck Semiconductor ETF",
-      "acquired": "2026-07-06"
-    },
-    {
-      "ticker": "ITWN",
-      "isin": "IE00B0M63623",
-      "name": "iShares MSCI Taiwan UCITS ETF",
-      "shares": 179,
-      "theme": "Asia-Tech (Taiwan)",
-      "world_theme": "Asia-Tech",
-      "cost_price": 15006.9187039,
-      "cost_ccy": "GBX",
-      "news_query": "Taiwan stock market TSMC MSCI Taiwan ETF",
-      "acquired": "2026-07-06"
-    },
-    {
-      "ticker": "KSTR",
-      "isin": "IE00BKPJY434",
-      "name": "KraneShares ICBCCS SSE STAR Market 50 UCITS ETF",
-      "shares": 872,
-      "theme": "China Tech (STAR 50)",
-      "world_theme": "Emerging",
-      "cost_price": 30.35517,
-      "cost_ccy": "USD",
-      "news_query": "China STAR Market 50 KraneShares KSTR ETF",
-      "acquired": "2026-07-06"
-    },
-    {
-      "ticker": "AINF",
-      "isin": "IE000X59ZHE2",
-      "name": "iShares AI Infrastructure UCITS ETF",
-      "shares": 2905.0029,
-      "theme": "AI Infrastructure",
-      "world_theme": "Asia-Tech",
-      "cost_price": 8.419508873,
-      "cost_ccy": "GBP",
-      "news_query": "iShares AI Infrastructure ETF",
-      "acquired": "2026-07-06"
-    },
-    {
-      "ticker": "STOR",
-      "isin": "IE000DR59CI3",
-      "name": "iShares Energy Storage & Hydrogen UCITS ETF",
-      "shares": 1623.275,
-      "theme": "Energy Storage / Hydrogen",
-      "world_theme": "Thematic-Clean",
-      "cost_price": 12.047839834,
-      "cost_ccy": "USD",
-      "news_query": "energy storage hydrogen ETF Plug Power",
-      "acquired": "2026-07-06"
-    },
-    {
-      "ticker": "FLXK",
-      "isin": "IE00BHZRR030",
-      "name": "Franklin FTSE Korea UCITS ETF",
-      "shares": 345.595,
-      "theme": "Asia-Tech (Korea)",
-      "world_theme": "Asia-Tech",
-      "cost_price": 105.910340995,
-      "cost_ccy": "USD",
-      "news_query": "Korea stock market KOSPI Samsung SK Hynix ETF",
-      "acquired": "2026-07-06"
-    },
-    {
-      "ticker": "PHPM",
-      "isin": "JE00B1VS3W29",
-      "name": "WisdomTree Physical Precious Metals",
-      "shares": 125,
-      "theme": "Precious Metals (hedge)",
-      "world_theme": "Commodity-Bloc",
-      "cost_price": 260.88461712,
-      "cost_ccy": "USD",
-      "news_query": "gold silver precious metals price outlook",
-      "acquired": "2026-07-06"
-    },
-    {
-      "ticker": "AMD3",
-      "isin": "XS2337090422",
-      "name": "Leverage Shares 3x AMD",
-      "theme": "Semiconductors / AI (3x)",
-      "world_theme": "US-Tech",
-      "shares": 634,
-      "cost_price": 7.883809148,
-      "cost_ccy": "USD",
-      "news_query": "AMD",
-      "acquired": "2026-07-21"
-    },
-    {
-      "ticker": "TSM3",
-      "isin": "XS2399365043",
-      "name": "Leverage Shares 3x Long TSM",
-      "theme": "Semiconductors / AI (3x)",
-      "world_theme": "Asia-Tech",
-      "shares": 580,
-      "cost_price": 17.245689655,
-      "cost_ccy": "USD",
-      "news_query": "TSMC",
-      "acquired": "2026-07-23"
-    }
-  ],
-  "cash": [
-    {
-      "ccy": "AED",
-      "amount": 126954.92
-    },
-    {
-      "ccy": "USD",
-      "amount": 0.65
-    }
-  ],
-  "reconciled": "2026-07-31 IBKR U21094978 statement (period 2026-07-06..07-31)",
-  "capital_flows": [
-    {
-      "date": "2026-07-20",
-      "ccy": "AED",
-      "amount": -18364,
-      "usd": -4999.97,
-      "note": "Disbursement initiated by owner"
-    }
-  ],
-  "broker_costs": {
-    "source": "IBKR Activity Statement U21094978, 1\u201317 Jul 2026",
-    "commissions_usd": [
-      {
-        "ticker": "SMH",
-        "usd": 21.01
-      },
-      {
-        "ticker": "AINF",
-        "usd": 18.34
-      },
-      {
-        "ticker": "FLXK",
-        "usd": 18.29
-      },
-      {
-        "ticker": "ITWN",
-        "usd": 17.98
-      },
-      {
-        "ticker": "PHPM",
-        "usd": 16.3
-      },
-      {
-        "ticker": "KSTR",
-        "usd": 13.23
-      },
-      {
-        "ticker": "STOR",
-        "usd": 12.96
-      }
-    ],
-    "commissions_total_usd": 118.11,
-    "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units \u2014 worth about 2 pence. IBKR's minimum fee (\u00a31.00) applied to that crumb like any order: a \u00a31 fee on a 2p purchase.",
-    "fx_spread": {
-      "aed_sold": 801249.98,
-      "usd_received": 218079.0,
-      "peg": 3.6725,
-      "note": "AED 801,249.98 \u00f7 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
-    },
-    "interest_accrued_usd": 163.22,
-    "forex_realized_usd": 151.57,
-    "fx_translation_usd": 1.98,
-    "withdrawal_fee_usd": 0.0
+ "inception_date": "2026-07-06",
+ "history_seed": [
+  {
+   "date": "2026-07-06",
+   "nav": 273379
   },
-  "interest_usd": 11.99
+  {
+   "date": "2026-07-07",
+   "nav": 263744
+  }
+ ],
+ "holdings": [
+  {
+   "ticker": "SMH",
+   "isin": "IE00BMC38736",
+   "name": "VanEck Semiconductor UCITS ETF",
+   "shares": 295.3954,
+   "theme": "Semiconductors / AI",
+   "world_theme": "Asia-Tech",
+   "cost_price": 116.250934205,
+   "cost_ccy": "USD",
+   "news_query": "VanEck Semiconductor ETF",
+   "acquired": "2026-07-06"
+  },
+  {
+   "ticker": "ITWN",
+   "isin": "IE00B0M63623",
+   "name": "iShares MSCI Taiwan UCITS ETF",
+   "shares": 179,
+   "theme": "Asia-Tech (Taiwan)",
+   "world_theme": "Asia-Tech",
+   "cost_price": 15006.9187039,
+   "cost_ccy": "GBX",
+   "news_query": "Taiwan stock market TSMC MSCI Taiwan ETF",
+   "acquired": "2026-07-06"
+  },
+  {
+   "ticker": "KSTR",
+   "isin": "IE00BKPJY434",
+   "name": "KraneShares ICBCCS SSE STAR Market 50 UCITS ETF",
+   "shares": 872,
+   "theme": "China Tech (STAR 50)",
+   "world_theme": "Emerging",
+   "cost_price": 30.35517,
+   "cost_ccy": "USD",
+   "news_query": "China STAR Market 50 KraneShares KSTR ETF",
+   "acquired": "2026-07-06"
+  },
+  {
+   "ticker": "AINF",
+   "isin": "IE000X59ZHE2",
+   "name": "iShares AI Infrastructure UCITS ETF",
+   "shares": 2905.0029,
+   "theme": "AI Infrastructure",
+   "world_theme": "Asia-Tech",
+   "cost_price": 8.419508873,
+   "cost_ccy": "GBP",
+   "news_query": "iShares AI Infrastructure ETF",
+   "acquired": "2026-07-06"
+  },
+  {
+   "ticker": "STOR",
+   "isin": "IE000DR59CI3",
+   "name": "iShares Energy Storage & Hydrogen UCITS ETF",
+   "shares": 1623.275,
+   "theme": "Energy Storage / Hydrogen",
+   "world_theme": "Thematic-Clean",
+   "cost_price": 12.047839834,
+   "cost_ccy": "USD",
+   "news_query": "energy storage hydrogen ETF Plug Power",
+   "acquired": "2026-07-06"
+  },
+  {
+   "ticker": "FLXK",
+   "isin": "IE00BHZRR030",
+   "name": "Franklin FTSE Korea UCITS ETF",
+   "shares": 345.595,
+   "theme": "Asia-Tech (Korea)",
+   "world_theme": "Asia-Tech",
+   "cost_price": 105.910340995,
+   "cost_ccy": "USD",
+   "news_query": "Korea stock market KOSPI Samsung SK Hynix ETF",
+   "acquired": "2026-07-06"
+  },
+  {
+   "ticker": "PHPM",
+   "isin": "JE00B1VS3W29",
+   "name": "WisdomTree Physical Precious Metals",
+   "shares": 125,
+   "theme": "Precious Metals (hedge)",
+   "world_theme": "Commodity-Bloc",
+   "cost_price": 260.88461712,
+   "cost_ccy": "USD",
+   "news_query": "gold silver precious metals price outlook",
+   "acquired": "2026-07-06"
+  },
+  {
+   "ticker": "AMD3",
+   "isin": "XS2337090422",
+   "name": "Leverage Shares 3x AMD",
+   "theme": "Semiconductors / AI (3x)",
+   "world_theme": "US-Tech",
+   "shares": 1642,
+   "cost_price": 6.090746041,
+   "cost_ccy": "USD",
+   "news_query": "AMD",
+   "acquired": "2026-07-21",
+   "last_added": "2026-08-13"
+  },
+  {
+   "ticker": "TSM3",
+   "isin": "XS2399365043",
+   "name": "Leverage Shares 3x Long TSM",
+   "theme": "Semiconductors / AI (3x)",
+   "world_theme": "Asia-Tech",
+   "shares": 580,
+   "cost_price": 17.245689655,
+   "cost_ccy": "USD",
+   "news_query": "TSMC",
+   "acquired": "2026-07-23"
+  }
+ ],
+ "cash": [
+  {
+   "ccy": "AED",
+   "amount": 126954.92
+  },
+  {
+   "ccy": "USD",
+   "amount": 0.65
+  }
+ ],
+ "reconciled": "2026-07-31 IBKR U21094978 statement (period 2026-07-06..07-31) | 2026-08-13 AMD3 BUY 1,008 @ 4.9590 (+$4 comm) from trade confirmation; cash legs reconcile at next statement",
+ "capital_flows": [
+  {
+   "date": "2026-07-20",
+   "ccy": "AED",
+   "amount": -18364,
+   "usd": -4999.97,
+   "note": "Disbursement initiated by owner"
+  }
+ ],
+ "broker_costs": {
+  "source": "IBKR Activity Statement U21094978, 1\u201317 Jul 2026",
+  "commissions_usd": [
+   {
+    "ticker": "SMH",
+    "usd": 21.01
+   },
+   {
+    "ticker": "AINF",
+    "usd": 18.34
+   },
+   {
+    "ticker": "FLXK",
+    "usd": 18.29
+   },
+   {
+    "ticker": "ITWN",
+    "usd": 17.98
+   },
+   {
+    "ticker": "PHPM",
+    "usd": 16.3
+   },
+   {
+    "ticker": "KSTR",
+    "usd": 13.23
+   },
+   {
+    "ticker": "STOR",
+    "usd": 12.96
+   }
+  ],
+  "commissions_total_usd": 118.11,
+  "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units \u2014 worth about 2 pence. IBKR's minimum fee (\u00a31.00) applied to that crumb like any order: a \u00a31 fee on a 2p purchase.",
+  "fx_spread": {
+   "aed_sold": 801249.98,
+   "usd_received": 218079.0,
+   "peg": 3.6725,
+   "note": "AED 801,249.98 \u00f7 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
+  },
+  "interest_accrued_usd": 163.22,
+  "forex_realized_usd": 151.57,
+  "fx_translation_usd": 1.98,
+  "withdrawal_fee_usd": 0.0
+ },
+ "interest_usd": 11.99
 }
