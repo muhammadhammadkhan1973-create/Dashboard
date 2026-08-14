@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.439.0'  # v1.439.0: POLICY-RADAR EFFECT + ANALYST LAYER (owner: a reader cannot tell how a catalyst affects each stock, and Zacks + TipRanks should show). (a) Curated _POLICY_FX: per-link effect direction (tailwind/mixed) + one-line reader-grade WHY for all 28 links, written from each catalyst's own sourced labels (TSM under Section 232 = mixed: tariff vs US-plant relief); stamped into tk_rows. (b) All radar tickers join the TipRanks display-only pool (dedup, 3d TTL; order-safe -- overlay runs after the builder). Zacks already stamped from zacks_ranks where ranked; unranked render honest dashes. Pairs with index v5.341. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.440.0'  # v1.440.0: TIPRANKS MISS-CACHE (D-122 family) -- v1.439's pool widening exposed that 404s and full-parse-fails were never stored, so failed names refetched EVERY scan (live diag: 1x404 + 6 parse-fails = 7 wasted fetches/scan, incl. bot-shield shells). Both failure paths now record a miss entry under the same 3-day TTL; index renders no TR chip without a consensus, so display is unchanged and honest. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -4405,6 +4405,9 @@ def fetch_tipranks_overlay(data, existing=None):
                              headers={'User-Agent': UA}, timeout=12)
             _diag['http'][str(r.status_code)] = _diag['http'].get(str(r.status_code), 0) + 1
             if r.status_code != 200 or not r.text:
+                # v1.440.0 miss-cache (D-122 family): non-200 names refetched every scan forever;
+                # record the miss under the same 3-day TTL. Index shows no TR chip without consensus.
+                out[tk] = {'as_of': today.isoformat(), 'miss': True, 'http': r.status_code}
                 continue
             # v1.352.0: the runner gets RAW html -- flatten it so the validated sentence anchors match.
             t = _re.sub(r'<[^>]+>', ' ', r.text)
@@ -4422,6 +4425,9 @@ def fetch_tipranks_overlay(data, existing=None):
                 _mn = _re.search(r'based on (\d+) analysts', t)
                 if _mn:
                     out[tk] = {'n_analysts': int(_mn.group(1)), 'as_of': today.isoformat(), 'partial': True}
+                else:
+                    # v1.440.0: full parse miss (bot-shield shells) cached under the same TTL
+                    out[tk] = {'as_of': today.isoformat(), 'miss': True}
                 continue
             _f = lambda x: float(str(x).replace(',', '').rstrip('.'))
             rec = {'consensus': m1.group(1),
