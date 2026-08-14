@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.431.0'  # v1.431.0: payload soft-ceiling sentinel -- serialize once; if data.json exceeds PAYLOAD_SOFT_CEILING_MB (7.5), the breach + top-3 largest keys are recorded into meta.warnings (the owner's audit channel) and the payload re-serialized so the warning ships in the same run; normal runs stay single-pass. Owner-approved 14-Aug after the payload grew 5.7 -> 7.14 MB (im3_detail healing). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.433.0'  # v1.433.0: PPI actuals live -- _ECON_FRED_MAP + PPIFIS/PPIFES (ids verified against FRED's own series pages 14-Aug; D-126's unverified-id blank lifted for PPI m/m + Core PPI m/m). v1.432.0: Wave P breadth failures now warn() into meta.warnings with HTTP status + body head (stage had failed silently since Wave P; empty EXISTING carry could never heal; runner logs 403 to audits). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -11280,7 +11280,10 @@ def fetch_psx_market_stats():
         r = requests.post('https://scanner.tradingview.com/pakistan/scan', json=body,
                           headers={'User-Agent': UA, 'Accept': 'application/json'}, timeout=15)
         if r.status_code != 200:
-            log(f'  [Wave P breadth] skipped (TV HTTP {r.status_code} - likely the change column)')
+            # v1.432.0: warn (not just log) -- runner logs are 403 to audits; meta.warnings is the
+            # owner's audit channel, and this stage had failed silently since Wave P with an empty
+            # EXISTING carry that could never self-heal. Body head included: it names the bad column.
+            warn(f'[Wave P breadth] TV HTTP {r.status_code}; body: {str(r.text)[:160]}')
             return {}
         rows = parse_tv_scan(r.json(), cols)
         adv = dec = unch = 0
@@ -11295,7 +11298,7 @@ def fetch_psx_market_stats():
             else: unch += 1
             vals.append((nm, cl, vol, ch))
         if not vals:
-            log('  [Wave P breadth] skipped (no parseable rows)')
+            warn(f'[Wave P breadth] HTTP 200 but 0 parseable rows of {len(rows)} returned')   # v1.432.0
             return {}
         vol_leaders = [{'ticker': n, 'volume': int(v), 'price': round(c, 2), 'change_pct': round(ch, 2)}
                        for n, c, v, ch in sorted(vals, key=lambda x: -x[2])[:10]]
@@ -11308,7 +11311,7 @@ def fetch_psx_market_stats():
             f'vol leader={vol_leaders[0]["ticker"]}; val leader={val_leaders[0]["ticker"]}')
         return out
     except Exception as e:
-        log(f'  [Wave P breadth] skipped ({type(e).__name__}: {str(e)[:50]})')
+        warn(f'[Wave P breadth] {type(e).__name__}: {str(e)[:80]}')   # v1.432.0: surface into meta
         return {}
 # ========================== end Wave P breadth/leaders ==========================
 
@@ -14424,6 +14427,11 @@ _ECON_FRED_MAP = {
     'CPI y/y':        ('CPIAUCSL', 'yoy_pct'),
     'Core CPI y/y':   ('CPILFESL', 'yoy_pct'),
     'Unemployment Claims': ('ICSA', 'level_k'),
+    # v1.433.0: PPI ids VERIFIED against FRED's own series pages 2026-08-14 (D-126 satisfied):
+    # PPIFIS = PPI by Commodity: Final Demand (headline, SA monthly); PPIFES = Final Demand
+    # Less Foods and Energy (= Core PPI). Same mom_pct index-ratio math as CPI.
+    'PPI m/m':        ('PPIFIS', 'mom_pct'),
+    'Core PPI m/m':   ('PPIFES', 'mom_pct'),
     'Retail Sales m/m':    ('RSAFS', 'mom_pct'),
     'Prelim UoM Consumer Sentiment': ('UMCSENT', 'level_1dp'),
 }
