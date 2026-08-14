@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.433.0'  # v1.433.0: PPI actuals live -- _ECON_FRED_MAP + PPIFIS/PPIFES (ids verified against FRED's own series pages 14-Aug; D-126's unverified-id blank lifted for PPI m/m + Core PPI m/m). v1.432.0: Wave P breadth failures now warn() into meta.warnings with HTTP status + body head (stage had failed silently since Wave P; empty EXISTING carry could never heal; runner logs 403 to audits). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.434.0'  # v1.434.0: Wave P breadth call-site fix -- the v1.283.0 psx_msci removal deleted this block's try:, silently orphaning the psx_market fetch into the preceding bullion except handler (valid two-except try; fetch only ran if bullion RAISED -> unreachable since v1.283.0; AST-proven, zero stage timing every run). One line restores try:; fetch runs every scan again, v1.432.0 instrumentation now reachable. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -24191,6 +24191,13 @@ def main():
         data['psx_bullion'] = EXISTING.get('psx_bullion', {'available': False, 'note': 'builder error'})
 
     # v1.283.0: psx_msci block removed (see note at former fetch_psx_msci site).
+    # v1.434.0: THE MISSING try: RESTORED. The v1.283.0 removal deleted this block's opening try:
+    # and, because comments are invisible to indentation, the psx_market lines silently reattached
+    # to the PRECEDING bullion except handler -- making a valid two-except try in which the breadth
+    # fetch only ran if build_psx_bullion RAISED. Bullion never raises -> fetch_psx_market_stats was
+    # unreachable since v1.283.0 (AST-proven: Try@24187 body=1 stmt, 2 handlers, fetch inside handler 1;
+    # zero psx_market stage timing in every audited run). Tab 2 breadth panel blank was THIS, not TV.
+    try:
         data['psx_market'] = _stage('psx_market', fetch_psx_market_stats)
         if not data['psx_market']:
             data['psx_market'] = EXISTING.get('psx_market', {})
