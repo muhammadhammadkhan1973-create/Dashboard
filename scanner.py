@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.435.0'  # v1.435.0: US GROWTH DASHBOARD -- owner: unemployment RATE + growth indicators with visible trends, all third-party validated. build_us_growth(): 5 FRED tiles (UNRATE / PAYEMS jobs-added / IC4WSA official 4-wk claims avg / INDPRO y/y / RSAFS y/y -- ids verified against FRED's own pages 14-Aug) each with 13-pt history + 3-period direction + plain verdict + src/as-of; ACTUAL GDP (A191RL1Q225SBEA, 13 quarters) beside GDPNow, which carries the honest early-quarter-volatile label AND a cross-check vs FRED's independent GDPNOW republication (mismatch >0.5pp renders SOURCES DISAGREE); composite N-of-M growing/mixed/slowing. Own try at the call site (v1.434 lesson). ~7 small FRED pulls/run. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.436.0'  # v1.436.0: US-growth claims unit fix -- FRED serves IC4WSA as raw counts (199,000) while the tile unit is K, so the strip showed '199000K'; claims values now scaled /1000 (-> '199K'). PAYEMS verified already correct (FRED level is in thousands, so its monthly diff IS jobs-in-K) and left untouched. Caught on the first live run's own payload. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -14477,7 +14477,10 @@ def build_us_growth(existing_gdpnow=None):
         vals, last_date = _fred_latest_vals(sid, need)
         if not vals:
             out['tiles'].append({'id': sid, 'label': label, 'error': 'fetch failed'}); continue
+        if sid in ('IC4WSA',):
+            vals = [v / 1000.0 for v in vals]   # v1.436.0: FRED serves claims as raw counts (199,000); tile unit is K
         if kind == 'diff_m':
+            # PAYEMS level is ALREADY in thousands (FRED units), so the monthly diff IS jobs-in-K -- no scaling.
             pts = [round((vals[i] - vals[i-1]), 1) for i in range(1, len(vals))][-13:]
         elif kind == 'yoy_m':
             pts = [round((vals[i] / vals[i-12] - 1) * 100, 2) for i in range(12, len(vals))][-13:]
