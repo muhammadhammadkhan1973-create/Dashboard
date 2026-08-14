@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.434.0'  # v1.434.0: Wave P breadth call-site fix -- the v1.283.0 psx_msci removal deleted this block's try:, silently orphaning the psx_market fetch into the preceding bullion except handler (valid two-except try; fetch only ran if bullion RAISED -> unreachable since v1.283.0; AST-proven, zero stage timing every run). One line restores try:; fetch runs every scan again, v1.432.0 instrumentation now reachable. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.435.0'  # v1.435.0: US GROWTH DASHBOARD -- owner: unemployment RATE + growth indicators with visible trends, all third-party validated. build_us_growth(): 5 FRED tiles (UNRATE / PAYEMS jobs-added / IC4WSA official 4-wk claims avg / INDPRO y/y / RSAFS y/y -- ids verified against FRED's own pages 14-Aug) each with 13-pt history + 3-period direction + plain verdict + src/as-of; ACTUAL GDP (A191RL1Q225SBEA, 13 quarters) beside GDPNow, which carries the honest early-quarter-volatile label AND a cross-check vs FRED's independent GDPNOW republication (mismatch >0.5pp renders SOURCES DISAGREE); composite N-of-M growing/mixed/slowing. Own try at the call site (v1.434 lesson). ~7 small FRED pulls/run. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -14447,6 +14447,87 @@ def _fred_latest_vals(sid, n):
     except Exception:
         return None, None
 
+# ============================ US GROWTH DASHBOARD (v1.435.0) ============================
+# Owner: "unemployment rates or other indicators which show economy growing or not, plus a
+# trend -- and all numbers third-party validated." Every tile: FRED series (id verified
+# against FRED's own pages 2026-08-14), 13 periods of history for a sparkline, 3-period
+# direction, plain verdict, source + as-of on its face. GDPNow carries the honest
+# "nowcast -- early-quarter, volatile" label, is cross-checked against FRED's independent
+# republication (GDPNOW), and ACTUAL GDP (BEA A191RL1Q225SBEA) renders beside it so
+# nowcast and reality can never be confused. Composite: N of M signals expanding.
+_USG_SERIES = [
+    # (fred_id, label, unit, kind, good_when_falling)
+    ('UNRATE',   'Unemployment Rate',          '%',   'level_m',  True),
+    ('PAYEMS',   'Jobs Added (Nonfarm)',       'K',   'diff_m',   False),
+    ('IC4WSA',   'Jobless Claims (4-wk avg)',  'K',   'level_w',  True),
+    ('INDPRO',   'Industrial Production y/y',  '%',   'yoy_m',    False),
+    ('RSAFS',    'Retail Sales y/y',           '%',   'yoy_m',    False),
+]
+
+def build_us_growth(existing_gdpnow=None):
+    """US growth strip: FRED-only, verified ids, 13-pt history per tile + composite verdict."""
+    out = {'as_of': dt.datetime.utcnow().strftime('%Y-%m-%d'), 'tiles': [],
+           'source': 'FRED, Federal Reserve Bank of St. Louis (series id on every tile)'}
+    if not FRED_KEY:
+        out['note'] = 'FRED key absent'
+        return out
+    expanding = 0; total = 0
+    for sid, label, unit, kind, good_falls in _USG_SERIES:
+        need = 26 if kind == 'yoy_m' else 14
+        vals, last_date = _fred_latest_vals(sid, need)
+        if not vals:
+            out['tiles'].append({'id': sid, 'label': label, 'error': 'fetch failed'}); continue
+        if kind == 'diff_m':
+            pts = [round((vals[i] - vals[i-1]), 1) for i in range(1, len(vals))][-13:]
+        elif kind == 'yoy_m':
+            pts = [round((vals[i] / vals[i-12] - 1) * 100, 2) for i in range(12, len(vals))][-13:]
+        else:
+            pts = [round(v, 2) for v in vals[-13:]]
+        latest = pts[-1]; ago3 = pts[-4] if len(pts) >= 4 else pts[0]
+        chg3 = round(latest - ago3, 2)
+        direction = 'rising' if chg3 > (0.05 if unit == '%' else 5) else ('falling' if chg3 < -(0.05 if unit == '%' else 5) else 'flat')
+        good = (direction == 'falling') if good_falls else (direction == 'rising')
+        if direction == 'flat':
+            verdict = 'steady'
+        else:
+            verdict = ('improving' if good else 'worsening')
+        if verdict != 'worsening':
+            expanding += 1
+        total += 1
+        out['tiles'].append({'id': sid, 'label': label, 'unit': unit, 'latest': latest,
+                             'as_of': str(last_date), 'points': pts, 'chg_3m': chg3,
+                             'dir': direction, 'verdict': verdict,
+                             'good_when': ('falling' if good_falls else 'rising'),
+                             'src': 'FRED:' + sid})
+    # --- ACTUAL GDP (quarterly, BEA via FRED) ---
+    gvals, gdate = _fred_latest_vals('A191RL1Q225SBEA', 13)
+    if gvals:
+        gpts = [round(v, 1) for v in gvals]
+        out['gdp_actual'] = {'latest': gpts[-1], 'as_of': str(gdate), 'points': gpts,
+                             'src': 'FRED:A191RL1Q225SBEA (BEA, measured GDP)',
+                             'verdict': 'growing' if gpts[-1] > 0 else 'contracting'}
+        if gpts[-1] > 0: expanding += 1
+        total += 1
+    # --- GDPNow: honest nowcast label + independent cross-check ---
+    nvals, ndate = _fred_latest_vals('GDPNOW', 6)
+    gn = {'label': 'GDPNow (Atlanta Fed nowcast)',
+          'note': 'Early-quarter nowcast -- volatile until late in the quarter; not measured growth.'}
+    if existing_gdpnow is not None:
+        gn['value'] = existing_gdpnow; gn['src'] = 'Atlanta Fed (dashboard feed)'
+    if nvals:
+        gn['fred_value'] = round(nvals[-1], 2); gn['fred_as_of'] = str(ndate)
+        if existing_gdpnow is not None:
+            gn['cross_ok'] = abs(float(existing_gdpnow) - nvals[-1]) <= 0.5
+            gn['cross_note'] = ('two independent pipes agree' if gn['cross_ok']
+                                else 'SOURCES DISAGREE -- Atlanta feed %.2f vs FRED %.2f' % (float(existing_gdpnow), nvals[-1]))
+    out['gdpnow'] = gn
+    out['composite'] = {'expanding': expanding, 'total': total,
+                        'verdict': ('growing' if total and expanding >= total * 0.6
+                                    else ('slowing' if total and expanding <= total * 0.4 else 'mixed'))}
+    return out
+# ========================== end US growth dashboard ==========================
+
+
 def _enrich_econ_actuals(cal):
     """Fill c['actual'] for RELEASED, mapped, still-blank US events. Mutates rows in place."""
     if not FRED_KEY or not isinstance(cal, list):
@@ -24373,6 +24454,16 @@ def main():
         log(f'Recession watch crashed: {e}')
         data['meta']['errors'].append(f'recession: {e}')
         data['recession'] = EXISTING.get('recession', {})
+
+    # v1.435.0: US Growth strip -- OWN try (v1.434 lesson: never share a try with another stage)
+    try:
+        _gn_te = ((data.get('recession') or {}).get('signals') or {}).get('gdpnow', {}).get('value')
+        data['us_growth'] = _stage('us_growth', lambda: build_us_growth(existing_gdpnow=_gn_te))
+        if not (data['us_growth'] or {}).get('tiles'):
+            data['us_growth'] = EXISTING.get('us_growth', data.get('us_growth') or {})
+    except Exception as e:
+        warn('[US growth] %s: %s' % (type(e).__name__, str(e)[:80]))
+        data['us_growth'] = EXISTING.get('us_growth', {})
 
     # v1.11: Zacks #1/#2 grouped by GICS sector (fixed S&P universe + this run's survivors)
     # Cadence gate: Zacks ranks update ~weekly, but the scrape costs ~17 min. Skip it if the
