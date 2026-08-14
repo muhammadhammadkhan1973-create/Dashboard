@@ -65,7 +65,8 @@ except Exception as _e:                     # capture (don't swallow) — surfac
 FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
-SCAN_VERSION = '1.430.0'  # v1.430.0: ECON ACTUALS FROM FRED (investigation closed with live proof: the faireconomy weekly export was fetched directly at 11:45 ET, 3h after the CPI release, and its schema carries NO actual field at all -- the old docstring was right, and the v1.429 assumption that actuals appear in-feed was wrong; MT tools with actual values read the FF site itself, which rate-limits exports to 2/5min since Aug-2024). FIX within proven infrastructure: _enrich_econ_actuals() computes actuals from FRED (existing key, existing library) for RELEASED events via a verified-id map only -- CPIAUCSL / CPILFESL (m/m + y/y), ICSA (claims -> 202K format), RSAFS (retail m/m), UMCSENT (sentiment level) -- formatted to match the feed's own strings, gated on release-time passed + observation freshness (45d monthly / 10d weekly). Unverified ids (PPI, core retail, UoM expectations) stay honestly blank rather than guessed. Enrichment mutates the calendar rows in place (the table column fills) then feeds merge_econ_announced (the 14-day log fills). Max ~5 tiny FRED calls/run, usually 0-2. PRIOR: see CHANGELOG.md.
+PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
+SCAN_VERSION = '1.431.0'  # v1.431.0: payload soft-ceiling sentinel -- serialize once; if data.json exceeds PAYLOAD_SOFT_CEILING_MB (7.5), the breach + top-3 largest keys are recorded into meta.warnings (the owner's audit channel) and the payload re-serialized so the warning ships in the same run; normal runs stay single-pass. Owner-approved 14-Aug after the payload grew 5.7 -> 7.14 MB (im3_detail healing). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -25608,8 +25609,26 @@ def main():
             _t_json = time.time()   # v1.287.0 timer C (log-only; file closes before meta could carry it)
             # v1.296.0: minified write (separators, no indent) -- indent=2 spent ~5.6MB of the
             # file on whitespace alone; JSON.parse reads it identically. ~12MB -> ~6.3MB.
-            json.dump(_round_floats(_json_safe(data)), f, separators=(',', ':'),
-                      default=str, allow_nan=False)
+            # v1.431.0: payload soft-ceiling sentinel. Serialize once; if over the ceiling, record the
+            # breach (with the top-3 largest keys) into meta.warnings -- which by this point is a COPY of
+            # WARNINGS (set upstream), so the payload dict is appended directly -- then re-serialize so the
+            # warning ships in the same run's data.json. Normal (under-ceiling) runs keep a single pass.
+            _ser = _round_floats(_json_safe(data))
+            _txt = json.dumps(_ser, separators=(',', ':'), default=str, allow_nan=False)
+            if len(_txt) > PAYLOAD_SOFT_CEILING_MB * 1e6:
+                try:
+                    _big = sorted(((_k, len(json.dumps(_v, separators=(',', ':'), default=str)))
+                                   for _k, _v in _ser.items()), key=lambda _x: -_x[1])[:3]
+                    _msg = ('data.json %.2f MB exceeds the %.1f MB soft ceiling -- largest: %s'
+                            % (len(_txt) / 1e6, PAYLOAD_SOFT_CEILING_MB,
+                               ', '.join('%s %dKB' % (_k, _s // 1024) for _k, _s in _big)))
+                    warn(_msg)
+                    data['meta']['warnings'].append(_msg)
+                    _ser = _round_floats(_json_safe(data))
+                    _txt = json.dumps(_ser, separators=(',', ':'), default=str, allow_nan=False)
+                except Exception as _sce:
+                    log('  [size sentinel] skipped: %s' % type(_sce).__name__)
+            f.write(_txt)
         log(f'data.json written ({OUTPUT_PATH.stat().st_size} bytes)'
             + (f' in {time.time() - _t_json:.1f}s' if '_t_json' in dir() else ''))
     except Exception as e:
