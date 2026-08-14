@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.438.0'  # v1.438.0: POLICY-STAMP PLACEMENT FIX -- v1.437.0 wired stamp_policy_tickers mid-main, ~1,000 lines BEFORE build_policy_catalyst runs in the tail, so it early-returned on an absent radar every run (0/28 stamped, silent). Call moved directly after build_policy_catalyst; empty-radar early-return now logs. Self-inflicted repeat of the pipeline-order failure class (D-123/D-124); caught same-day by the live payload audit. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.439.0'  # v1.439.0: POLICY-RADAR EFFECT + ANALYST LAYER (owner: a reader cannot tell how a catalyst affects each stock, and Zacks + TipRanks should show). (a) Curated _POLICY_FX: per-link effect direction (tailwind/mixed) + one-line reader-grade WHY for all 28 links, written from each catalyst's own sourced labels (TSM under Section 232 = mixed: tariff vs US-plant relief); stamped into tk_rows. (b) All radar tickers join the TipRanks display-only pool (dedup, 3d TTL; order-safe -- overlay runs after the builder). Zacks already stamped from zacks_ranks where ranked; unranked render honest dashes. Pairs with index v5.341. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -4380,6 +4380,15 @@ def fetch_tipranks_overlay(data, existing=None):
     picks = ['APD'] + [r.get('ticker') for r in ((data.get('recommended') or {}).get('stocks') or [])
              if isinstance(r, dict) and r.get('market') != 'PSX' and ':' not in str(r.get('ticker') or '')
              and str(r.get('ticker')).upper() != 'APD'][:25]   # v1.421.0: APD always covered (NetBenefits)
+    # v1.439.0: every Policy-Catalyst radar ticker joins the display-only pool so each radar chip
+    # can show analyst context (owner). Order-safe: this overlay runs at the tail AFTER
+    # build_policy_catalyst (verified 25765 > 25514 in runtime order); dedup preserves cache TTLs.
+    _radar = []
+    for _cat, _its in ((data.get('policy_catalyst') or {}).get('by_category') or {}).items():
+        for _it in (_its or []):
+            for _t in (_it.get('tickers') or []):
+                if _t.get('ticker'): _radar.append(_t['ticker'])
+    picks = list(dict.fromkeys(picks + _radar))
     today = dt.date.today()
     fetched = 0
     _diag = {'http': {}, 'parse_fail': 0, 'sample_head': None}   # v1.351.0: failure modes must be visible
@@ -22358,6 +22367,43 @@ _POLICY_CATALYSTS = [
                  ('AMAT', 'Applied Materials (semi-cap)', 'us'), ('LRCX', 'Lam Research', 'us')]},
 ]
 
+
+# v1.439.0 (owner: "how the catalyst affects the particular stock is unknown to a reader").
+# Curated per-link EFFECT direction + one-line WHY, written strictly from each catalyst's own
+# sourced labels -- every radar entry is by construction a beneficiary map, so the default is
+# 'tailwind'; explicit entries below override with 'mixed' where the policy cuts both ways or
+# expand the label into a reader-grade sentence. Display-only editorial context (D-121).
+_POLICY_FX = {
+    ('uk_smr', 'RYCEY'): ('tailwind', 'Prime SMR builder -- the Wylfa contract is direct order-book revenue.'),
+    ('uk_smr', 'CEG'): ('tailwind', 'Nuclear generators re-rate as new-build programmes validate the asset class.'),
+    ('uk_smr', 'CCJ'): ('tailwind', 'Every new reactor programme adds long-term uranium fuel demand.'),
+    ('uk_smr', 'LEU'): ('tailwind', 'More reactors need more enrichment capacity -- LEU is the listed US play.'),
+    ('us_nuclear', 'CEG'): ('tailwind', 'Hyperscaler power-purchase deals lift long-term nuclear power prices.'),
+    ('us_nuclear', 'VST'): ('tailwind', 'Data-center demand tightens Texas power -- Vistra sells into it.'),
+    ('us_nuclear', 'GEV'): ('tailwind', 'Grid build-out + nuclear services orders on AI power demand.'),
+    ('us_nuclear', 'CCJ'): ('tailwind', 'AI-driven reactor demand flows through to uranium fuel.'),
+    ('nato_defence', 'RNMBY'): ('tailwind', 'European rearmament -- multi-year ammunition and vehicle order books.'),
+    ('nato_defence', 'BAESY'): ('tailwind', 'Multi-domain European prime; benchmark spending lifts the whole backlog.'),
+    ('nato_defence', 'FINMY'): ('tailwind', 'Italian prime -- electronics, helicopters and EU defence-fund work.'),
+    ('nato_defence', 'THLLY'): ('tailwind', 'Defence electronics and air-defence demand across NATO buyers.'),
+    ('nato_defence', 'SAABY'): ('tailwind', 'Nordic rearmament -- Gripen, missiles and sensors order growth.'),
+    ('nato_defence', 'LMT'): ('tailwind', 'Allied procurement of US systems (F-35, missiles) rises with the benchmark.'),
+    ('nato_defence', 'RTX'): ('tailwind', 'Air-defence and missile restocking are the fastest NATO spend lines.'),
+    ('aukus', 'BAESY'): ('tailwind', 'Prime contractor on the UK submarine build -- decade-long visibility.'),
+    ('aukus', 'RYCEY'): ('tailwind', 'Sole supplier of the submarine nuclear power plants.'),
+    ('aukus', 'HII'): ('tailwind', 'US submarine industrial base takes AUKUS workload.'),
+    ('aukus', 'GD'): ('tailwind', 'Electric Boat capacity expansion under the programme.'),
+    ('chip_tariff', 'INTC'): ('tailwind', 'A 25% import tariff shields domestic fab output -- Intel is the largest US fab owner.'),
+    ('chip_tariff', 'MU'): ('tailwind', 'US memory maker with pricing power -- RAM prices +90% in Q1 under the tariff regime.'),
+    ('chip_tariff', 'GFS'): ('tailwind', 'US foundry capacity becomes relatively cheaper than tariffed imports.'),
+    ('chip_tariff', 'TSM'): ('mixed', 'Cuts both ways: 25% tariff hits Taiwan-made chips, but US-plant output earns duty relief.'),
+    ('chips_act', 'INTC'): ('tailwind', 'Largest CHIPS award recipient; the 35% credit subsidises fab build-out to end-2026.'),
+    ('chips_act', 'MU'): ('tailwind', 'Awarded memory fabs; the expiring credit pulls spending forward into 2026.'),
+    ('chips_act', 'TSM'): ('tailwind', 'US fabs qualify for awards + the 35% credit before the 31-Dec-2026 sunset.'),
+    ('chips_act', 'AMAT'): ('tailwind', 'Subsidised fab construction converts directly into equipment orders.'),
+    ('chips_act', 'LRCX'): ('tailwind', 'Etch/deposition tool demand rides the credit-driven build-out.'),
+}
+
 def build_policy_catalyst(data, existing):
     """v1.313.0 — Tab 15 Policy-Catalyst. Maps current, sourced policy catalysts to the tickers
     they move, tags accessibility (US / ADR / foreign) and ENGINE OVERLAP (does the dashboard
@@ -22383,10 +22429,12 @@ def build_policy_catalyst(data, existing):
             tk_rows = []
             for tk, label, access in pc['tickers']:
                 n_links += 1
+                _fx = _POLICY_FX.get((pc['id'], tk), ('tailwind', label + '.'))   # v1.439.0
                 tk_rows.append({
                     'ticker': tk, 'label': label, 'access': access,
                     'on_engine': tk in engine_names,
                     'zacks': zr.get(tk),
+                    'effect': _fx[0], 'why': _fx[1],
                 })
             cats.append({'id': pc['id'], 'category': pc['category'], 'headline': pc['headline'],
                          'as_of': pc['as_of'], 'source': pc['source'], 'tickers': tk_rows})
