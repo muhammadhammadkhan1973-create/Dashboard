@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.436.0'  # v1.436.0: US-growth claims unit fix -- FRED serves IC4WSA as raw counts (199,000) while the tile unit is K, so the strip showed '199000K'; claims values now scaled /1000 (-> '199K'). PAYEMS verified already correct (FRED level is in thousands, so its monthly diff IS jobs-in-K) and left untouched. Caught on the first live run's own payload. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.437.0'  # v1.437.0: POLICY-RADAR PRICE STAMPS -- stamp_policy_tickers() writes px/ytd/y1 onto every policy_catalyst ticker link: US-listed names free from foundation_universe (price/perf_ytd/perf_1y already fetched), the 6 OTC ADRs + NYSE:TSM via the proven per-symbol GET (v1.327.0 capture; close/Perf.YTD/Perf.Y), honest nulls on miss, px_note diagnostics. Own try at the call site. Pairs with index v5.340 (coloured YTD/1Y chips + price on each radar ticker). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -14531,6 +14531,63 @@ def build_us_growth(existing_gdpnow=None):
 # ========================== end US growth dashboard ==========================
 
 
+def stamp_policy_tickers(data):
+    """v1.437.0 (owner: the radar 'doesn't tell me the effect on the stocks -- coloured
+    indicators, present position, YTD and 1-year returns'). Stamp px / ytd / y1 onto every
+    policy_catalyst ticker link. Two sources, cheapest first:
+      1. foundation_universe (already fetched, price/perf_ytd/perf_1y on every row) -- zero cost,
+         covers the US-listed names.
+      2. The proven per-symbol GET (fetch_tv_symbol_quote, the v1.327.0 DevTools-captured call)
+         for the OTC ADRs + NYSE:TSM that the US screen universe excludes -- ~7 GETs, each
+         try/except'd, honest nulls on miss (never fabricates, never blocks the radar).
+    Display-only stamps; the radar stays a watch layer, never a screen (D-121)."""
+    pc = data.get('policy_catalyst') or {}
+    items = pc.get('items') or []
+    if not items:
+        return
+    # v1.437.0 AUDIT CATCH: the index renders from pc['by_category'], not pc['items'] -- and after any
+    # copy/serialize step those can be INDEPENDENT dicts. Walk BOTH structures so the stamp is visible
+    # wherever the renderer reads; double-stamping shared references is harmless.
+    tick_dicts = []
+    for it in items:
+        tick_dicts.extend(it.get('tickers') or [])
+    for _cat, _its in (pc.get('by_category') or {}).items():
+        for it in (_its or []):
+            tick_dicts.extend(it.get('tickers') or [])
+    fu = {r.get('ticker'): r for r in (data.get('foundation_universe') or []) if isinstance(r, dict)}
+    _EXCH = {'RYCEY': 'OTC', 'RNMBY': 'OTC', 'BAESY': 'OTC', 'FINMY': 'OTC',
+             'THLLY': 'OTC', 'SAABY': 'OTC', 'TSM': 'NYSE'}
+    fetched = {}
+    n_fu = n_tv = n_miss = 0
+    for t in tick_dicts:
+        if True:
+            tk = t.get('ticker')
+            r = fu.get(tk)
+            if r and r.get('price') is not None:
+                t['px'] = round(float(r['price']), 2)
+                t['ytd'] = round(float(r['perf_ytd']), 1) if r.get('perf_ytd') is not None else None
+                t['y1'] = round(float(r['perf_1y']), 1) if r.get('perf_1y') is not None else None
+                t['px_src'] = 'tv_universe'
+                n_fu += 1
+                continue
+            if tk not in fetched:
+                q = fetch_tv_symbol_quote('%s:%s' % (_EXCH.get(tk, 'NYSE'), tk),
+                                          fields=('close', 'Perf.YTD', 'Perf.Y'))
+                fetched[tk] = q if isinstance(q, dict) else None
+            q = fetched[tk]
+            if q and q.get('close') is not None:
+                t['px'] = round(float(q['close']), 2)
+                t['ytd'] = round(float(q['Perf.YTD']), 1) if q.get('Perf.YTD') is not None else None
+                t['y1'] = round(float(q['Perf.Y']), 1) if q.get('Perf.Y') is not None else None
+                t['px_src'] = 'tv_quote'
+                n_tv += 1
+            else:
+                n_miss += 1
+    pc['px_note'] = 'prices+returns stamped: %d from the US screen universe, %d via per-symbol quotes%s' % (
+        n_fu, n_tv, (', %d unpriced' % n_miss) if n_miss else '')
+    log('  [policy px] %s' % pc['px_note'])
+
+
 def _enrich_econ_actuals(cal):
     """Fill c['actual'] for RELEASED, mapped, still-blank US events. Mutates rows in place."""
     if not FRED_KEY or not isinstance(cal, list):
@@ -24467,6 +24524,12 @@ def main():
     except Exception as e:
         warn('[US growth] %s: %s' % (type(e).__name__, str(e)[:80]))
         data['us_growth'] = EXISTING.get('us_growth', {})
+
+    # v1.437.0: policy-radar price/return stamps -- OWN try (v1.434 lesson)
+    try:
+        _stage('policy_px', lambda: stamp_policy_tickers(data))
+    except Exception as e:
+        warn('[policy px] %s: %s' % (type(e).__name__, str(e)[:80]))
 
     # v1.11: Zacks #1/#2 grouped by GICS sector (fixed S&P universe + this run's survivors)
     # Cadence gate: Zacks ranks update ~weekly, but the scrape costs ~17 min. Skip it if the
