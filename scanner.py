@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.440.0'  # v1.440.0: TIPRANKS MISS-CACHE (D-122 family) -- v1.439's pool widening exposed that 404s and full-parse-fails were never stored, so failed names refetched EVERY scan (live diag: 1x404 + 6 parse-fails = 7 wasted fetches/scan, incl. bot-shield shells). Both failure paths now record a miss entry under the same 3-day TTL; index renders no TR chip without a consensus, so display is unchanged and honest. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.441.0'  # v1.441.0: MINOR-UNIT CURRENCY FIX in _li_to_usd -- GBX/GBp (pence) was unmapped in the fx table, so cost in pence was valued as USD (x1.0), producing ITWN's fake +$35,449 / +9,775% and the false +13% NAV headline. Now minor units (GBX->GBP, ZAc->ZAR, ILA->ILS) divide by 100 to their major unit before applying fx. Cost basis for ITWN (GBX) and any pence-quoted line now correct; Tab 17 P&L reconciles to the IBKR statement's unrealised total. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19224,7 +19224,15 @@ def _li_fx(data, existing):
 def _li_to_usd(amt, ccy, fx):
     if amt is None:
         return None
-    return amt * fx.get((ccy or 'USD').upper(), 1.0)
+    # v1.441.0: minor-unit currencies. GBX/GBp = pence = GBP/100; the fx table only carries GBP,
+    # so an unmapped 'GBX' was silently multiplying by 1.0 -- valuing pence as dollars (ITWN's
+    # fake +9,775%). Convert the minor unit to its major unit first, THEN apply the major-unit fx.
+    c = (ccy or 'USD').upper()
+    _MINOR = {'GBX': ('GBP', 100.0), 'GBP.': ('GBP', 100.0), 'ZAC': ('ZAR', 100.0), 'ILA': ('ILS', 100.0)}
+    if c in _MINOR:
+        major, div = _MINOR[c]
+        return (amt / div) * fx.get(major, 1.0)
+    return amt * fx.get(c, 1.0)
 
 
 # ===================== LIVE LOOK-THROUGH (v1.213.0) =====================
