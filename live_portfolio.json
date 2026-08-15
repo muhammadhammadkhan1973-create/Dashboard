@@ -30,7 +30,7 @@
    "shares": 179,
    "theme": "Asia-Tech (Taiwan)",
    "world_theme": "Asia-Tech",
-   "cost_price": 15006.9187039,
+   "cost_price": 150.069187039,
    "cost_ccy": "GBX",
    "news_query": "Taiwan stock market TSMC MSCI Taiwan ETF",
    "acquired": "2026-07-06"
@@ -124,14 +124,14 @@
  "cash": [
   {
    "ccy": "AED",
-   "amount": 126954.92
+   "amount": 108570.84
   },
   {
    "ccy": "USD",
-   "amount": 0.65
+   "amount": 0.98
   }
  ],
- "reconciled": "2026-07-31 IBKR U21094978 statement (period 2026-07-06..07-31) | 2026-08-13 AMD3 BUY 1,008 @ 4.9590 (+$4 comm) from trade confirmation; cash legs reconcile at next statement",
+ "reconciled": "2026-07-31 IBKR U21094978 statement (period 2026-07-06..07-31) | 2026-08-13 AMD3 BUY 1,008 @ 4.9590 (+$4 comm) from trade confirmation | 2026-08-14 IBKR statement: AMD3 1,642 @ 6.090747259 ($10,001.01) confirmed cent-identical; AMD3 funding leg settled (AED 126,954.92 -> 108,570.84, -18,384.08 AED ~ $5,005); USD 0.65 -> 0.98 ending; ITWN cost corrected 15006.9187039 -> 150.069187039 (100x decimal, per Aug-12 & Aug-14 Open Positions 150.069187039, basis 26,862.38 / 179)",
  "capital_flows": [
   {
    "date": "2026-07-20",
@@ -142,7 +142,7 @@
   }
  ],
  "broker_costs": {
-  "source": "IBKR Activity Statement U21094978, 1\u201317 Jul 2026",
+  "source": "IBKR Activity Statement U21094978, 1–17 Jul 2026",
   "commissions_usd": [
    {
     "ticker": "SMH",
@@ -174,12 +174,12 @@
    }
   ],
   "commissions_total_usd": 118.11,
-  "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units \u2014 worth about 2 pence. IBKR's minimum fee (\u00a31.00) applied to that crumb like any order: a \u00a31 fee on a 2p purchase.",
+  "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units — worth about 2 pence. IBKR's minimum fee (£1.00) applied to that crumb like any order: a £1 fee on a 2p purchase.",
   "fx_spread": {
    "aed_sold": 801249.98,
    "usd_received": 218079.0,
    "peg": 3.6725,
-   "note": "AED 801,249.98 \u00f7 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
+   "note": "AED 801,249.98 ÷ 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
   },
   "interest_accrued_usd": 163.22,
   "forex_realized_usd": 151.57,
