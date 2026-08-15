@@ -19147,10 +19147,10 @@ LIVE_PORTFOLIO_DEFAULT = {
         {'ticker': 'FLXK', 'isin': 'IE00BHZRR030', 'name': 'Franklin FTSE Korea UCITS ETF',                  'shares': 345.595,  'theme': 'Asia-Tech (Korea)',        'world_theme': 'Asia-Tech',      'cost_price': 106.36,   'cost_ccy': 'USD', 'news_query': 'Korea stock market KOSPI Samsung SK Hynix ETF'},
         {'ticker': 'PHPM', 'isin': 'JE00B1VS3W29', 'name': 'WisdomTree Physical Precious Metals',            'shares': 125,      'theme': 'Precious Metals (hedge)',  'world_theme': 'Commodity-Bloc', 'cost_price': 259.4,    'cost_ccy': 'USD', 'news_query': 'gold silver precious metals price outlook'},
     ],
-    # v1.374.0: actual balances reconciled to the IBKR statement (Aug-7). AED cash was 200000 (stale);
-    # true balance 126954.92. interest_usd carries the statement's interest-accrual line into NAV.
+    # v1.441.0: actual balances reconciled to the IBKR statement (Aug-14). AED cash 108,570.84 (post AMD3
+    # funding leg); interest_usd 26.33 (Ending Accrual Balance USD). interest_usd carries into NAV.
     'cash': [{'ccy': 'AED', 'amount': 126954.92}, {'ccy': 'USD', 'amount': 0.65}],
-    'interest_usd': 11.99,   # IBKR interest accruals -> NAV (config-overridable)
+    'interest_usd': 26.33,   # v1.441.0: IBKR interest accruals -> NAV, Aug-14 statement Ending Accrual Balance in USD (was 11.99 @ Aug-7, config-overridable)
 }
 _AED_PER_USD = 3.6725  # UAE dirham hard USD peg since 1997 (not a fetched rate)
 
