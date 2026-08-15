@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.441.0'  # v1.441.0: MINOR-UNIT CURRENCY FIX in _li_to_usd -- GBX/GBp (pence) was unmapped in the fx table, so cost in pence was valued as USD (x1.0), producing ITWN's fake +$35,449 / +9,775% and the false +13% NAV headline. Now minor units (GBX->GBP, ZAc->ZAR, ILA->ILS) divide by 100 to their major unit before applying fx. Cost basis for ITWN (GBX) and any pence-quoted line now correct; Tab 17 P&L reconciles to the IBKR statement's unrealised total. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.442.0'  # v1.442.0: METALS COT DEPTH -- (A) parse_cot_block now captures the COMMERCIAL (producer/hedger) long/short legs alongside non-commercial from the same CFTC CMX legacy block (was reading only the speculator pair); cot_{metal}_comm_long/short/net(_pct) added. (B) seasonality hit-rate depth (METAL_SEAS_HITS: 'Aug up in N of 26 yrs') + plain-language seasonal_plain. (C) cot_plain: names speculators vs commercials and the price implication (crowded-long top risk / washed-out bottom setup). Display-only, freeze-safe. Pairs with index v5.344. PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -2601,6 +2601,14 @@ COT_HIST_DIAG = False  # v1.112.0: disarmed (runner confirmed ~156 wks/contract)
 # Real monthly seasonality: average month-over-month % change by calendar month, computed from the World Bank
 # CMO monthly Pink Sheet (CMOHistoricalDataMonthly.xlsx), Jan-2000..2025 (312 months). Reproducible from that
 # file; embedded as a constant because seasonality is a slow-moving multi-decade statistic, not a live feed.
+# v1.442.0: seasonality DEPTH -- how many of the ~26 years (2000-2025) that calendar month rose, so the
+# average gains a hit-rate ("August up in 17 of 26 years"), computed from the same CMO monthly series.
+METAL_SEAS_HITS = {
+    'gold':   {1:17,2:16,3:13,4:15,5:14,6:12,7:13,8:16,9:16,10:14,11:15,12:15},
+    'silver': {1:16,2:16,3:14,4:15,5:11,6:12,7:14,8:15,9:14,10:13,11:15,12:16},
+    'copper': {1:15,2:16,3:16,4:15,5:13,6:11,7:14,8:12,9:13,10:12,11:12,12:15},
+}
+METAL_SEAS_YEARS = 26
 METAL_SEASONALITY = {
     'gold':   {1: 2.43, 2: 2.00, 3: 0.28, 4: 1.00, 5: 0.78, 6: -0.05, 7: 0.19, 8: 1.19, 9: 1.46, 10: 0.61, 11: 0.69, 12: 0.81},
     'silver': {1: 2.46, 2: 2.64, 3: 0.92, 4: 1.59, 5: -0.95, 6: -0.39, 7: 0.77, 8: 1.51, 9: 1.08, 10: 0.23, 11: 0.96, 12: 1.62},
@@ -2659,9 +2667,43 @@ def compute_cot_seasonality(metals, month=None):
                 combined, note = 'Neutral', 'neither COT nor seasonality at an extreme'
         else:
             combined, note = 'n/a', 'insufficient COT or seasonality data'
+        # v1.442.0: seasonality hit-rate depth
+        hits = METAL_SEAS_HITS.get(metal, {}).get(mo)
+        seas_plain = None
+        if s_val is not None and hits is not None:
+            seas_plain = ('%s has risen in %d of the last %d years, averaging %+.2f%% -- %s'
+                          % (MON[mo-1], hits, METAL_SEAS_YEARS, s_val,
+                             'a genuine seasonal tailwind' if hits >= 16 else
+                             ('a seasonal headwind' if hits <= 10 else 'a weak / mixed seasonal signal')))
+        # v1.442.0: plain-language COT read naming BOTH trader groups + price implication
+        spec_net = metals.get(f'cot_{metal}_pct')          # non-commercial net %OI
+        comm_net = metals.get(f'cot_{metal}_comm_pct')     # commercial net %OI
+        cot_plain = None
+        if spec_net is not None:
+            spec_side = 'net-long' if spec_net > 0 else 'net-short'
+            crowd = 'heavily' if abs(spec_net) >= 20 else ('moderately' if abs(spec_net) >= 8 else 'lightly')
+            if comm_net is not None:
+                comm_side = 'net-long' if comm_net > 0 else 'net-short'
+                # classic read: specs long + commercials short = crowded top risk; inverse near bottoms
+                if spec_net > 0 and comm_net < 0:
+                    imp = ('Speculators (managed money) are %s %s while commercials (producers/hedgers, the '
+                           '"smart money") are net-short -- the classic crowded-long setup that thins the '
+                           'upside cushion and raises pullback risk if longs unwind.' % (crowd, spec_side))
+                elif spec_net < 0 and comm_net > 0:
+                    imp = ('Speculators are %s %s while commercials are net-long -- washed-out spec positioning '
+                           'with hedgers buying, historically the kind of setup that precedes rallies.' % (crowd, spec_side))
+                else:
+                    imp = ('Speculators are %s %s and commercials are %s -- both on the same side, an unusual '
+                           'alignment that tends to exaggerate the prevailing move.' % (crowd, spec_side, comm_side))
+                cot_plain = imp
+            else:
+                cot_plain = ('Speculators (managed money) are %s %s at %.1f%% of open interest; the commercial '
+                             '(hedger) leg was unavailable this week.' % (crowd, spec_side, spec_net))
         res['metals'][metal] = {
             'cot_pctile': pctile, 'cot_net_oi': net_oi, 'cot_basis': cot_basis, 'cot_bias': cot_bias, 'cot_wow': wow,
+            'cot_spec_net': spec_net, 'cot_comm_net': comm_net, 'cot_plain': cot_plain,
             'seasonal_bias': s_bias, 'seasonal_avg_pct': s_val, 'seasonal_rank': s_rank,
+            'seasonal_hits': hits, 'seasonal_years': METAL_SEAS_YEARS, 'seasonal_plain': seas_plain,
             'combined': combined, 'note': note,
         }
     return res
@@ -5707,21 +5749,30 @@ def fetch_metals():
             def parse_cot_block(label_re):
                 blk = re.search(label_re, text, re.S)
                 if not blk:
-                    return None, None, None
+                    return None, None, None, None, None, None
                 chunk = text[blk.start(): blk.start() + 1500]
                 oi_m = re.search(r'OPEN INTEREST:\s*([\d,]+)', chunk)
                 oi = int(oi_m.group(1).replace(',', '')) if oi_m else None
-                comm = re.search(r'COMMITMENTS\s*\n\s*([\d,]+)\s+([\d,]+)', chunk)
-                if not comm:
-                    return None, None, oi
-                return int(comm.group(1).replace(',', '')), int(comm.group(2).replace(',', '')), oi
+                # v1.442.0: the legacy COMMITMENTS row is Non-Commercial(long short spread) then
+                # Commercial(long short). Capture the first FOUR position numbers so both trader
+                # groups are available: NC-long, NC-short, then (skipping NC-spreading) Comm-long,
+                # Comm-short. The layout is: NCl NCs NCspread COMMl COMMs TOTALl TOTALs.
+                row = re.search(r'COMMITMENTS\s*\n\s*([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)\s+([\d,]+)', chunk)
+                if not row:
+                    comm = re.search(r'COMMITMENTS\s*\n\s*([\d,]+)\s+([\d,]+)', chunk)
+                    if not comm:
+                        return None, None, None, None, None, oi
+                    return int(comm.group(1).replace(',', '')), int(comm.group(2).replace(',', '')), None, None, None, oi
+                def _n(g): return int(row.group(g).replace(',', ''))
+                # groups: 1=NC long, 2=NC short, 3=NC spreading, 4=Comm long, 5=Comm short
+                return _n(1), _n(2), _n(3), _n(4), _n(5), oi
 
             for metal, pat, pfx in [
                 ('gold',   r'GOLD - COMMODITY EXCHANGE INC\.',   'cot_gold'),
                 ('silver', r'SILVER - COMMODITY EXCHANGE INC\.', 'cot_silver'),
                 ('copper', r'COPPER- #1 - COMMODITY EXCHANGE INC\.', 'cot_copper'),
             ]:
-                nc_l, nc_s, oi = parse_cot_block(pat)
+                nc_l, nc_s, nc_sp, cm_l, cm_s, oi = parse_cot_block(pat)
                 if nc_l is not None and oi:
                     out[f'{pfx}_net']  = nc_l - nc_s
                     out[f'{pfx}_oi']   = oi
@@ -5731,6 +5782,16 @@ def fetch_metals():
                     out[f'{pfx}_short']     = nc_s
                     out[f'{pfx}_long_pct']  = round(nc_l / oi * 100, 1)
                     out[f'{pfx}_short_pct'] = round(nc_s / oi * 100, 1)
+                    # v1.442.0: COMMERCIAL (producer/merchant/hedger) legs -- the 'smart money' the
+                    # tab was missing. Net commercial is the mirror of speculators; showing both, and
+                    # their price implication, is the owner's ask.
+                    if cm_l is not None and cm_s is not None:
+                        out[f'{pfx}_comm_long']    = cm_l
+                        out[f'{pfx}_comm_short']   = cm_s
+                        out[f'{pfx}_comm_net']     = cm_l - cm_s
+                        out[f'{pfx}_comm_long_pct']  = round(cm_l / oi * 100, 1)
+                        out[f'{pfx}_comm_short_pct'] = round(cm_s / oi * 100, 1)
+                        out[f'{pfx}_comm_pct']     = round((cm_l - cm_s) / oi * 100, 1)
                     log(f'  ✓ COT {metal}: long={nc_l:,} short={nc_s:,} net={out[f"{pfx}_net"]:,} ({out[f"{pfx}_pct"]}% OI)')
                     # WAVE M5/T1 — dedup-by-report-date {d,v} history (cap 160); percentile + WoW/MoM/QoQ trend
                     hist_key = f'{pfx}_hist'
