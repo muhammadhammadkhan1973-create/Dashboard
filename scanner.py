@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.442.0'  # v1.442.0: METALS COT DEPTH -- (A) parse_cot_block now captures the COMMERCIAL (producer/hedger) long/short legs alongside non-commercial from the same CFTC CMX legacy block (was reading only the speculator pair); cot_{metal}_comm_long/short/net(_pct) added. (B) seasonality hit-rate depth (METAL_SEAS_HITS: 'Aug up in N of 26 yrs') + plain-language seasonal_plain. (C) cot_plain: names speculators vs commercials and the price implication (crowded-long top risk / washed-out bottom setup). Display-only, freeze-safe. Pairs with index v5.344. PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.443.0'  # v1.443.0: BOND-MARKET STRESS FEEDS (owner: the long-end/yen story wasn't on the dashboard). (A) us_30y via FRED DGS30 joins the macro map with the same daily wow handling as DGS10 -- the long-end level the viral posts quote, from the primary source. (B) USDJPY via the proven TV segment-scan path (FX_IDC:USDJPY, the route that resolves DXY), stamped into macros.metals-side out as usdjpy(+smas) -- the yen at intervention levels is the Japan-sells-Treasuries stress signal. Pairs with index v5.350 (bond-stress Market Pulse row). PRIOR: see CHANGELOG.md.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -1611,6 +1611,7 @@ def fetch_us_macros():
             'ppi_yoy':        'PPIFIS',    # PPI Final Demand (headline PPI, SA) -> YoY like CPI
             'ppi_core_yoy':   'PPIFES',    # PPI Final Demand less food & energy (core PPI) -> YoY
             'us_10y':         'DGS10',
+            'us_30y':         'DGS30',   # v1.443.0: long-end stress (owner: bond-market stress row)
             'us_2y':          'DGS2',
             'unemployment':   'UNRATE',
             'umcsi':          'UMCSENT',
@@ -1747,7 +1748,7 @@ def fetch_us_macros():
                         val = round(val, 2)
                     out[key] = val
                     out[f'{key}_date'] = str(s.index[-1].date())
-                    if key in ('us_10y','us_2y','hy_spread'):
+                    if key in ('us_10y','us_30y','us_2y','hy_spread'):
                         for _tk,_tv in _series_trend([round(float(x),2) for x in s.values[-64:]], w=(5,21,63)).items():
                             out[f'{key}_{_tk}'] = _tv
                     # Wave T3: cadence-matched MoM/QoQ/YoY trend on the macro PRINT series,
@@ -5629,6 +5630,9 @@ def fetch_metals():
     _dxy_tv = fetch_index_tv({'dxy': 'TVC:DXY'}, markets=('cfd', 'america', 'forex'))
     if _dxy_tv.get('dxy'):
         _tvmet['dxy'] = _dxy_tv['dxy']
+    # v1.443.0: USDJPY -- yen at intervention levels = the Japan-sells-Treasuries stress signal.
+    # Same proven TV segment-scan path as DXY; honest miss leaves the field absent.
+    _jpy_tv = fetch_index_tv({'usdjpy': 'FX_IDC:USDJPY'}, markets=('forex', 'cfd'))
     _today_str = str(dt.date.today())
     yahoo_tickers = {
         'gold_px':      'GC=F',
@@ -5882,6 +5886,18 @@ def fetch_metals():
                 out[k] = lg
 
     log(f'  Metals complete: {len([k for k in out if not k.endswith(("_date","_source"))])} fields')
+    # v1.443.0: USDJPY stamp for the bond-stress row (from the TV segment scan above)
+    try:
+        _j = _jpy_tv.get('usdjpy') or {}
+        if _j.get('px') is not None:
+            out['usdjpy'] = round(float(_j['px']), 2)
+            if _j.get('sma50') is not None:
+                out['usdjpy_sma50'] = round(float(_j['sma50']), 2)
+            if _j.get('sma200') is not None:
+                out['usdjpy_sma200'] = round(float(_j['sma200']), 2)
+    except Exception as _je:
+        log('  [usdjpy] stamp skipped: %s' % _je)
+
     return out
 
 
