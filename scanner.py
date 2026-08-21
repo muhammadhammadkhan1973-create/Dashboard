@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.443.0'  # v1.443.0: BOND-MARKET STRESS FEEDS (owner: the long-end/yen story wasn't on the dashboard). (A) us_30y via FRED DGS30 joins the macro map with the same daily wow handling as DGS10 -- the long-end level the viral posts quote, from the primary source. (B) USDJPY via the proven TV segment-scan path (FX_IDC:USDJPY, the route that resolves DXY), stamped into macros.metals-side out as usdjpy(+smas) -- the yen at intervention levels is the Japan-sells-Treasuries stress signal. Pairs with index v5.350 (bond-stress Market Pulse row). PRIOR: see CHANGELOG.md.
+SCAN_VERSION = '1.444.0'  # v1.444.0: BUILD-IT-ALL PASS -- (1) RUT candidate fallback (TVC:RUT dead for weeks): one /america/scan POST asks TVC:RUT/CBOE:RUT/CAPITALCOM:RTY/FOREXCOM:US2000/AMEX:IWM, first close wins, IWM x10 proxy-scaled + symbol logged. (2) ARAB LIGHT PRECISION: macros.us.arab_light stamped from the real ARAB_LIGHT_DIFF_USD config so the Tab 3 trigger stops approximating Brent-4. (3) KIBOR_MANUAL config (None=pending; BR 403-blocked, SBP-reserves pattern) -> macros.psx.kibor_manual. (4) TIC JAPAN: fetch_tic_japan() reads Treasury's own MFH table (slt_table5.html primary, mfhhis01.txt validated fallback) -> macros.us.japan_ust_bn/_mom_bn -- completes the bond-stress row with the actual foreign-selling number. Pairs with index v5.351.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -1886,6 +1886,17 @@ def fetch_us_macros():
 
         if out.get('us_10y') is not None and out.get('us_2y') is not None:
             out['us_2s10s'] = round(out['us_10y'] - out['us_2y'], 2)
+        # v1.444.0: TIC Japan Treasury holdings (monthly; honest absence on miss). Field names
+        # match the index v5.351 bond-stress row: japan_treasuries_bn / japan_treasuries_chg_bn.
+        try:
+            _tic = fetch_tic_japan()
+            if _tic.get('japan_ust_bn') is not None:
+                out['japan_treasuries_bn'] = _tic['japan_ust_bn']
+                out['japan_treasuries_chg_bn'] = _tic.get('mom_bn')
+                out['japan_treasuries_src'] = _tic.get('src')
+                log(f"  \u2713 TIC Japan UST = ${out['japan_treasuries_bn']}B ({_tic.get('mom_bn')} m/m)")
+        except Exception as _te:
+            log(f'  [tic] skipped: {_te}')
         # S&P 500 LEVEL (FRED 'SP500', daily close) — the US benchmark for the Results 'vs index'
         # (alpha) read = how much a name/sector is beating the market over the SAME window. Stored as
         # the current level + a compact dated history so append_history can fill the index level onto
@@ -2005,20 +2016,26 @@ def fetch_us_macros():
                     out[key] = lg
                     out[f'{key}_date'] = safe_get(EXISTING, 'macros', 'us', f'{key}_date')
         try:
+            # v1.444.0: RUT candidate fallback -- TVC:RUT returned None every run; same proven
+            # /america/scan POST now asks ordered candidates in ONE call, first close wins
+            # (AMEX:IWM last = ETF proxy, directionally Russell).
             r = requests.post('https://scanner.tradingview.com/america/scan',
-                              json={'symbols': {'tickers': ['TVC:RUT']}, 'columns': ['close']},
+                              json={'symbols': {'tickers': ['TVC:RUT', 'CBOE:RUT', 'CAPITALCOM:RTY', 'FOREXCOM:US2000', 'AMEX:IWM']}, 'columns': ['close']},
                               headers={'User-Agent': UA}, timeout=20)
-            _rut = None
+            _rut = None; _rut_sym = None
             if r.status_code == 200:
-                _d = (r.json().get('data') or [])
-                if _d and _d[0].get('d'):
-                    _rut = _d[0]['d'][0]
-            if isinstance(_rut, (int, float)) and 500 < _rut < 20000:
+                for _row in (r.json().get('data') or []):
+                    _v = (_row.get('d') or [None])[0]
+                    if isinstance(_v, (int, float)) and 20 < _v < 20000:
+                        _rut, _rut_sym = _v, _row.get('s'); break
+            if _rut is not None:
+                # IWM trades ~1/10 of the index; scale the proxy so the level reads as Russell points
+                if _rut_sym == 'AMEX:IWM' and _rut < 1000: _rut = _rut * 10.0
                 out['rut'] = round(float(_rut), 2)
                 out['rut_date'] = str(dt.date.today())
-                log(f'  \u2713 rut (TVC:RUT) = {out["rut"]}')
+                log(f'  \u2713 rut ({_rut_sym}) = {out["rut"]}')
             else:
-                raise ValueError(f'TVC:RUT returned {_rut}')
+                raise ValueError('no Russell candidate returned a close')
         except Exception as e:
             warn(f'Russell-2000 (TVC:RUT) failed: {e}')
             lg = safe_get(EXISTING, 'macros', 'us', 'rut')
@@ -2360,9 +2377,22 @@ def fetch_psx_macros():
             m = re.search(r'(\d{1,2}\.\d{1,2})\s*(?:percent|%)', r.text, re.I)
             if m:
                 out['sbp_rate'] = float(m.group(1))
+                if KIBOR_MANUAL is not None:
+                    out['kibor_manual'] = KIBOR_MANUAL
+
                 log(f'  ✓ SBP rate (SBP official): {out["sbp_rate"]}%')
     except Exception as e:
         log(f'  · SBP rate: {e}')
+    # v1.444.0: 6M KIBOR from manual config (BR 403-blocked; SBP-reserves pattern)
+    if KIBOR_MANUAL is not None:
+        try:
+            if isinstance(KIBOR_MANUAL, (list, tuple)):
+                out['kibor_6m'], out['kibor_as_of'] = float(KIBOR_MANUAL[0]), KIBOR_MANUAL[1]
+            else:
+                out['kibor_6m'] = float(KIBOR_MANUAL)
+            log(f"  \u2713 KIBOR 6M (manual config): {out['kibor_6m']}%")
+        except Exception as _ke:
+            log(f'  [kibor] config unreadable: {_ke}')
     if out.get('sbp_rate') is None:
         lg = safe_get(EXISTING, 'macros', 'psx', 'sbp_rate')
         if lg is not None:
@@ -20161,6 +20191,36 @@ def build_netbenefits(data):
 
 
 
+
+def fetch_tic_japan():
+    """v1.444.0: Japan's US-Treasury holdings from the Treasury's own TIC MFH table (the primary
+    source behind 'Japan dumps Treasuries' posts). Primary: slt_table5.html (current months, the
+    file Treasury says replaced mfh.txt). Fallback: mfhhis01.txt (validated tab-delimited history).
+    Returns dict {japan_ust_bn, prior_bn, mom_bn, as_of} or {} -- NEVER raises."""
+    try:
+        for url, is_html in (('https://ticdata.treasury.gov/resource-center/data-chart-center/tic/Documents/slt_table5.html', True),
+                             ('https://ticdata.treasury.gov/Publish/mfhhis01.txt', False)):
+            try:
+                r = requests.get(url, headers={'User-Agent': UA}, timeout=25)
+                if r.status_code != 200 or len(r.text) < 500:
+                    continue
+                body = r.text
+                if is_html:
+                    body = re.sub(r'<[^>]+>', ' ', body)
+                m = re.search(r'\bJapan\b[ \t]+([\d,]+\.?\d*)[ \t]+([\d,]+\.?\d*)', body)
+                if not m:
+                    continue
+                cur = float(m.group(1).replace(',', '')); prev = float(m.group(2).replace(',', ''))
+                if not (200 < cur < 3000):   # sanity: billions
+                    continue
+                return {'japan_ust_bn': cur, 'prior_bn': prev, 'mom_bn': round(cur - prev, 1),
+                        'as_of': str(dt.date.today()), 'src': url.rsplit('/', 1)[-1]}
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return {}
+
 def build_live_investment(data, existing):
     try:
         import datetime as _dt
@@ -23734,6 +23794,7 @@ def build_narratives(data, existing=None):
 
 
 ARAB_LIGHT_DIFF_USD = 2.0     # Arab Light OSP to Brent: small, stable, config not scrape
+KIBOR_MANUAL = None           # v1.444.0: 6M KIBOR -- BR 403-blocked; set (rate, 'YYYY-MM-DD') manually when it changes (SBP-reserves pattern). None = honest pending.
 EP_TRIGGER_USD      = 60.0    # owner's standing rule: Arab Light > $60 = overweight E&P
 EP_NAMES            = ('XOM', 'CVX', 'COP', 'EOG')
 
