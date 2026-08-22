@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.444.0'  # v1.444.0: BUILD-IT-ALL PASS -- (1) RUT candidate fallback (TVC:RUT dead for weeks): one /america/scan POST asks TVC:RUT/CBOE:RUT/CAPITALCOM:RTY/FOREXCOM:US2000/AMEX:IWM, first close wins, IWM x10 proxy-scaled + symbol logged. (2) ARAB LIGHT PRECISION: macros.us.arab_light stamped from the real ARAB_LIGHT_DIFF_USD config so the Tab 3 trigger stops approximating Brent-4. (3) KIBOR_MANUAL config (None=pending; BR 403-blocked, SBP-reserves pattern) -> macros.psx.kibor_manual. (4) TIC JAPAN: fetch_tic_japan() reads Treasury's own MFH table (slt_table5.html primary, mfhhis01.txt validated fallback) -> macros.us.japan_ust_bn/_mom_bn -- completes the bond-stress row with the actual foreign-selling number. Pairs with index v5.351.
+SCAN_VERSION = '1.445.0'  # v1.445.0: METALS RESEARCH PASS (owner: 'go all together'). (A) COT PERCENTILE BACKFILL: ~5yrs weekly non-commercial history per metal from the LOCKED 6dca-aqww Socrata dataset via the production-proven _fetch_cot_history helper -> cot_{metal}_pctile live immediately (the percentile-first basis compute_cot_seasonality was designed around); PLATINUM/PALLADIUM gain COT coverage from the same dataset (NYMEX contracts, no new endpoint). Failed pulls leave pctile None -> exact prior net-%OI fallback (zero regression). (B) us_real_10y via FRED DFII10 (10-yr TIPS real yield, strongest gold macro driver). (C) WGC_CB_TONNES manual config (central-bank buying floor thresholds >1000t/<500t). Pairs with index v5.354 (own-data two-era seasonality panel). PRIOR: CHANGELOG.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -1612,6 +1612,7 @@ def fetch_us_macros():
             'ppi_core_yoy':   'PPIFES',    # PPI Final Demand less food & energy (core PPI) -> YoY
             'us_10y':         'DGS10',
             'us_30y':         'DGS30',   # v1.443.0: long-end stress (owner: bond-market stress row)
+            'us_real_10y':    'DFII10',  # v1.445.0: 10-yr TIPS real yield -- the strongest gold macro driver (research report P1)
             'us_2y':          'DGS2',
             'unemployment':   'UNRATE',
             'umcsi':          'UMCSENT',
@@ -1748,7 +1749,7 @@ def fetch_us_macros():
                         val = round(val, 2)
                     out[key] = val
                     out[f'{key}_date'] = str(s.index[-1].date())
-                    if key in ('us_10y','us_30y','us_2y','hy_spread'):
+                    if key in ('us_10y','us_30y','us_2y','us_real_10y','hy_spread'):
                         for _tk,_tv in _series_trend([round(float(x),2) for x in s.values[-64:]], w=(5,21,63)).items():
                             out[f'{key}_{_tk}'] = _tv
                     # Wave T3: cadence-matched MoM/QoQ/YoY trend on the macro PRINT series,
@@ -2383,6 +2384,12 @@ def fetch_psx_macros():
                 log(f'  ✓ SBP rate (SBP official): {out["sbp_rate"]}%')
     except Exception as e:
         log(f'  · SBP rate: {e}')
+    # v1.445.0: WGC central-bank gold buying (manual config, annual tonnes)
+    if WGC_CB_TONNES is not None:
+        try:
+            out['wgc_cb_tonnes'] = float(WGC_CB_TONNES)
+        except Exception:
+            pass
     # v1.444.0: 6M KIBOR from manual config (BR 403-blocked; SBP-reserves pattern)
     if KIBOR_MANUAL is not None:
         try:
@@ -5856,6 +5863,51 @@ def fetch_metals():
 
     # 3b. COT x Seasonality (metals-only) — combine the COT Index with real monthly seasonality (freeze-safe, display)
     try:
+        # v1.445.0: COT PERCENTILE BACKFILL -- activates the percentile-first basis that
+        # compute_cot_seasonality was designed around (its docstring called this "a later phase";
+        # this is that phase). Reuses the production-proven _fetch_cot_history helper on the LOCKED
+        # 6dca-aqww dataset (same endpoint/fields/inc-exc mechanics validated every run for
+        # cot_futures) to pull ~5 years of weekly non-commercial net positioning per metal, then
+        # stamps cot_{metal}_pctile = percentile of the CURRENT net-%OI vs that history. Also
+        # extends COT coverage to PLATINUM/PALLADIUM (NYMEX contracts live in the SAME dataset --
+        # no new endpoint), stamping their spec + commercial legs like the CMX metals. Guarded
+        # per-metal; a failed pull leaves pctile None -> the seasonality read falls back to the
+        # net-%OI basis exactly as before (zero regression path).
+        try:
+            _MET_COT = {
+                'gold':      (['GOLD'],      ['MICRO', 'MINI', 'E-MINI', 'RATIO', 'XAU']),
+                'silver':    (['SILVER'],    ['MICRO', 'MINI', '1,000', '1000', 'RATIO']),
+                'copper':    (['COPPER'],    ['MICRO', 'MINI', 'E-MINI']),
+                'platinum':  (['PLATINUM'],  ['MICRO', 'MINI', 'RATIO']),
+                'palladium': (['PALLADIUM'], ['MICRO', 'MINI', 'RATIO']),
+            }
+            _hdrs = {'User-Agent': UA}
+            for _mk, (_inc, _exc) in _MET_COT.items():
+                try:
+                    _ser = _fetch_cot_history(_inc, _exc, _hdrs, '6dca-aqww', weeks=260)
+                    if len(_ser) >= 52:
+                        _pcts = [ (r['net'] / r['oi'] * 100) for r in _ser if r.get('oi') ]
+                        _cur = out.get(f'cot_{_mk}_pct')
+                        if _cur is None and _pcts:
+                            _cur = round(_pcts[-1], 1)
+                        if _cur is not None and _pcts:
+                            _rank = sum(1 for v in _pcts if v <= _cur) / len(_pcts) * 100
+                            out[f'cot_{_mk}_pctile'] = round(_rank, 0)
+                            out[f'cot_{_mk}_pctile_weeks'] = len(_pcts)
+                        # PL/PA had no COT at all -- stamp current legs from the freshest record
+                        if _mk in ('platinum', 'palladium') and out.get(f'cot_{_mk}_pct') is None and _ser:
+                            _last = _ser[-1]
+                            if _last.get('oi'):
+                                out[f'cot_{_mk}_long']  = int(_last['long'])
+                                out[f'cot_{_mk}_short'] = int(_last['short'])
+                                out[f'cot_{_mk}_net']   = int(_last['net'])
+                                out[f'cot_{_mk}_oi']    = int(_last['oi'])
+                                out[f'cot_{_mk}_pct']   = round(_last['net'] / _last['oi'] * 100, 1)
+                        log(f"  \u2713 COT pctile {_mk}: {out.get(f'cot_{_mk}_pctile')} ({len(_ser)}w)")
+                except Exception as _pe:
+                    log(f'  [cot pctile {_mk}] skipped: {_pe}')
+        except Exception as _bfe:
+            log(f'  [cot pctile] backfill skipped: {_bfe}')
         out['cot_seasonality'] = compute_cot_seasonality(out)
         _cs = out['cot_seasonality']['metals']
         _parts = []
@@ -23795,6 +23847,7 @@ def build_narratives(data, existing=None):
 
 ARAB_LIGHT_DIFF_USD = 2.0     # Arab Light OSP to Brent: small, stable, config not scrape
 KIBOR_MANUAL = None           # v1.444.0: 6M KIBOR -- BR 403-blocked; set (rate, 'YYYY-MM-DD') manually when it changes (SBP-reserves pattern). None = honest pending.
+WGC_CB_TONNES = None          # v1.445.0: central-bank gold buying, annual tonnes (World Gold Council quarterly GDT; manual update ~quarterly). >1000 = structural floor intact; <500 = floor thesis weakens. None = honest pending.
 EP_TRIGGER_USD      = 60.0    # owner's standing rule: Arab Light > $60 = overweight E&P
 EP_NAMES            = ('XOM', 'CVX', 'COP', 'EOG')
 
