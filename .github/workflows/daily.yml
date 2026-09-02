@@ -2,8 +2,12 @@ name: Daily Dashboard Scan
 
 on:
   schedule:
-    - cron: '0 2 * * *'   # 06:00 Dubai (UTC+4)
-    - cron: '0 14 * * *'  # 18:00 Dubai (UTC+4)
+    # WALL-TIME FIX (2026-09-02): moved off the :00 minute. GitHub delays scheduled workflows
+    # on popular minutes (:00 worst of all) by 10-20+ min at busy times -- the largest chunk of
+    # the owner's observed ~20-min wall vs the scanner's own ~5.3 min. An odd minute dodges the
+    # queue spike. Dubai clock times shift by the same 23 min (06:23 / 18:23 local).
+    - cron: '23 2 * * *'   # 06:23 Dubai (UTC+4)
+    - cron: '23 14 * * *'  # 18:23 Dubai (UTC+4)
   workflow_dispatch:
     inputs:
       force_im3:
@@ -14,6 +18,14 @@ on:
 permissions:
   contents: write
 
+# WALL-TIME FIX (2026-09-02): one scan at a time. A manual dispatch landing on top of a
+# scheduled run previously let two full jobs stack (the push-retry loop resolved the data
+# race, but the owner experienced back-to-back jobs as one very long run). New runs queue;
+# nothing is cancelled (cancel-in-progress false -- a half-done scan must finish and commit).
+concurrency:
+  group: dashboard-scan
+  cancel-in-progress: false
+
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -22,6 +34,13 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
+
+      - name: Stamp workflow start time
+        # WALL-TIME FIX (2026-09-02): meta.runtime_sec covers ONLY the scanner; the IM3 steps'
+        # minutes were visible only in these 403-walled logs. t0 recorded here; the commit-prep
+        # step below writes wf_wall_sec into data.json meta so slow runs self-explain from the
+        # payload in one pull (self-serve doctrine).
+        run: date +%s > .wf_t0
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -405,10 +424,10 @@ jobs:
               try:
                   _res = subprocess.run(
                       [sys.executable, 'im3_score.py', '--json'] + _ch,
-                      capture_output=True, text=True, timeout=1800)
+                      capture_output=True, text=True, timeout=420)  # WALL-TIME FIX 2026-09-02: was 1800s -- one hung chunk could stall the job 30 min; a healthy 40-name chunk finishes in 1-3 min, so 7 min = decisively hung -> fail fast into the recorded-failure path
               except subprocess.TimeoutExpired:
                   _chunk_fails.append({'chunk': _ci, 'n': len(_ch), 'tickers': _ch[:8],
-                                       'reason': 'timeout_1800s'})
+                                       'reason': 'timeout_420s'})
                   continue
               if _res.stderr:
                   print(f"STDERR chunk {_ci}:", _res.stderr[:300])
@@ -766,7 +785,7 @@ jobs:
           print(f"Scoring {len(psx_syms)} PSX names (set_changed={set_changed} missing={len(missing)} inputs_changed={inputs_changed} ver_changed={ver_changed} forced={forced})")
           tickers = ['PSX:' + s for s in psx_syms]
           result = subprocess.run([sys.executable, 'im3_score.py', '--json'] + tickers,
-                                  capture_output=True, text=True, timeout=900)
+                                  capture_output=True, text=True, timeout=420)  # WALL-TIME FIX 2026-09-02: same fail-fast cap as the US chunks
           if result.stderr: print("STDERR:", result.stderr[:500])
 
           raw = result.stdout.strip()
@@ -864,6 +883,27 @@ jobs:
           try: open('.im3_psx_hash', 'w').write(cur_hash)
           except Exception: pass
           print(f"data.json updated with PSX IM3 for {len(smap)} names")
+          EOF
+
+      - name: Write wall-time into data.json meta
+        # WALL-TIME FIX (2026-09-02): permanent self-serve visibility of the scanner-vs-wall gap.
+        # wf_wall_sec = whole job so far (checkout+pip+scanner+IM3 US+IM3 PSX); alongside
+        # meta.runtime_sec (scanner only) the difference IS the workflow overhead, readable
+        # from data.json in one pull -- no Actions log access needed.
+        run: |
+          python3 - <<'EOF'
+          import json, time
+          try:
+              t0 = int(open('.wf_t0').read().strip())
+              wall = int(time.time()) - t0
+              with open('data.json') as f: d = json.load(f)
+              m = d.setdefault('meta', {})
+              m['wf_wall_sec'] = wall
+              m['wf_overhead_sec'] = max(0, wall - int(m.get('runtime_sec') or 0))
+              with open('data.json', 'w') as f: json.dump(d, f, separators=(',', ':'), default=str)
+              print(f"wf_wall_sec={wall} overhead={m['wf_overhead_sec']}")
+          except Exception as e:
+              print('wall-time stamp skipped:', e)
           EOF
 
       - name: Commit data.json
