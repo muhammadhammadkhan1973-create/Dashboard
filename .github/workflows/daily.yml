@@ -205,7 +205,19 @@ jobs:
 
           # Self-heal: also re-score if any current explosive / TCE-HIGH ticker
           # is MISSING its im3 score (e.g. after a data.json state loss / restore).
+          # WALL-TIME FIX 3 (2026-09-02, the true chronic cost): consult the PERSISTENT grade
+          # book FIRST. The scanner rebuilds explosive_us / tce_us / zacks_radar rows grade-less
+          # every run; grades are re-attached from data['im3_grade_book'] LATER in the scoring
+          # step's restamp. Checking only the freshly-rebuilt rows here declared every name
+          # 'missing' and quietly forced a full ~210-name re-score on EVERY run (proven:
+          # stamp 'selection==full set' 210/210 with scorer hash unchanged and the 14-day
+          # clock fresh). A name graded in the book will be restamped this run without
+          # scoring; only genuinely ungraded names are truly missing.
+          _book = data.get('im3_grade_book') or {}
           def _has_im3(records, tk):
+              _bg = _book.get(tk)
+              if isinstance(_bg, dict) and _bg.get('grade') and not _bg.get('stale_ver'):
+                  return True
               for r in records:
                   if r.get('ticker') == tk:
                       v = r.get('im3')
