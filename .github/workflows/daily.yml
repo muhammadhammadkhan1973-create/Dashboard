@@ -400,9 +400,17 @@ jobs:
               print(f"[im3 self-heal] detail store missing for majority of {len(explosive_tickers)} tickers -- forcing FULL re-score")
           _full = _force or _backfill or _os.environ.get('FULL_RESCORE', '') == 'true'
           _sel = [t for t in _os.environ.get('SCORE_TICKERS', '').split() if t]
-          score_list = explosive_tickers if (_full or not _sel) else [t for t in _sel if t in explosive_tickers]
-          if not score_list:
-              score_list = explosive_tickers
+          # WALL-TIME FIX (2026-09-02): the old line treated 'not _sel' as a FULL trigger and the
+          # empty-list fallback below re-scored the world -- so every QUIET scheduled run (nothing
+          # missing => selection empty) did a full ~211-name re-score (~4 min) for zero new
+          # information (proven by im3_stamp_reason 'selection==full set', scored 211/211).
+          # Nothing missing now means nothing scored; the REST of this step still runs, because
+          # the grade-book restamps onto scanner-rebuilt consensus/whale blocks and the
+          # im3_detail/valuation trims are state-critical every run (v1.300.2 lesson).
+          score_list = explosive_tickers if _full else [t for t in _sel if t in explosive_tickers]
+          if not score_list and not _full:
+              score_list = []
+              print("nothing to score -- proceeding with restamp/trims only")
           print(f"Scoring {len(score_list)} of {len(explosive_tickers)} "
                 f"({'FULL re-score' if _full or score_list == explosive_tickers else 'incremental'}): {score_list}")
 
@@ -455,7 +463,7 @@ jobs:
               data.pop('im3_chunk_fails', None)
           print(f"[im3 chunked] {len(_all_scores)} scores from {len(_chunks)-len(_chunk_fails)}/{len(_chunks)} chunks")
           class _R: pass
-          result = _R(); result.returncode = 0 if _all_scores else 1
+          result = _R(); result.returncode = 0 if (_all_scores or not score_list) else 1  # WALL-TIME FIX 2026-09-02: an intentionally-empty scoring list is not a failure
           result.stdout = json.dumps(_all_scores); result.stderr = ''
 
           # stdout should be pure JSON; stderr has any debug output
@@ -622,9 +630,13 @@ jobs:
           from datetime import datetime, timezone
           # v2 instrumentation (owner-approved): the 14-day clock stamped on runs that looked
           # incremental -- name the exact reason every run so the next occurrence self-explains.
-          _stamp_reason = ('force' if _force else
+          # WALL-TIME FIX (2026-09-02): never stamp the 14-day clock when NOTHING was scored --
+          # the old 'empty-selection fallback' branch would have re-stamped on every quiet run
+          # under the new empty-selection logic, so the staleness ceiling could never fire and
+          # grades would never get their periodic full refresh. Empty run = clock untouched.
+          _stamp_reason = (None if not score_list else
+                           'force' if _force else
                            ('full: ' + (_os.environ.get('FULL_REASON') or 'flag')) if _os.environ.get('FULL_RESCORE','') == 'true' else
-                           'empty-selection fallback' if not _sel else
                            'selection==full set' if score_list == explosive_tickers else
                            None)
           print(f"[stamp check] force={_force} FULL_RESCORE='{_os.environ.get('FULL_RESCORE','')}' "
