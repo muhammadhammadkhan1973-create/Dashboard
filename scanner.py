@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.445.0'  # v1.445.0 REDELIVERY (repo received an ancient v1.10.0 by mistake; this is the clean rebuild from the v1.444.0 base, identical to the version whose 08:16 run PROVED all features live: pctiles gold 96/silver 37/copper 98/platinum 58/palladium 67, PL/PA COT legs, us_real_10y 2.35). Features: (A) COT percentile backfill (~5yr weekly per metal, LOCKED 6dca-aqww via production-proven _fetch_cot_history; PL/PA coverage; zero-regression fallback). (B) us_real_10y via FRED DFII10. (C) WGC_CB_TONNES config. Pairs with index v5.355.
+SCAN_VERSION = '1.446.0'  # v1.446.0: STATEMENT-CACHE TTL JITTER (wall-time pass 2): uniform 45-day statement TTLs bunched -- names cached the same week all expired together ~45d later, and one run bulk-refetched them from SEC EDGAR (sec_filings 140.5s vs normal ~30-40s, proven by the new wf wall-time stamps 2026-09-02). New _stmt_ttl(ticker): deterministic per-ticker TTL in a 40-50d band (md5 hash spread), applied to BOTH statement freshness gates (_stmt_fresh store read + _explosive_cache_fresh, which now receives the ticker). Refetches now trickle a few per run. No change to WHAT is fetched or computed -- only WHEN caches expire. Pairs with the daily.yml empty-selection fix (quiet runs stop full-rescoring 211 IM3 names).
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -112,6 +112,18 @@ FOUNDATION_EXPLOSIVE_ADD = 150
 TCE_YF_FUNDAMENTALS_US_ONLY = True   # F1: skip the doomed PSX .info/.eps/.rev Yahoo calls (.KA has no fundamentals)
 EPS_ENRICH_TRY_FMP          = False  # F3: FMP /stable/ is premium-gated for these small-caps (402 every run) -> Yahoo-first
 EXPLOSIVE_STMT_CACHE_DAYS   = 45     # v1.349.0: quarterly-aligned (was 7d): statements change quarterly; 7d meant churn names re-fetched weekly for no informational gain
+
+def _stmt_ttl(ticker, lo=40, spread=11):
+    """v1.446.0: deterministic per-ticker statement TTL, 40-50 days. A uniform 45-day TTL made
+    every statement cached in the same week expire in the same week ~45 days later -- one unlucky
+    run then refetched hundreds from SEC EDGAR in bulk (sec_filings 140.5s spike, 2026-09-02
+    wall-time stamps). Hashing the ticker spreads expiries across a ~10-day band so refreshes
+    trickle a few per run instead of bunching. Deterministic (same ticker -> same TTL always)."""
+    try:
+        import hashlib as _hl
+        return lo + int(_hl.md5(str(ticker).upper().encode()).hexdigest(), 16) % spread
+    except Exception:
+        return 45
 EXPLOSIVE_CACHE_SCHEMA      = 'sec4'  # v1.297.1: sec3->sec4 -- the v1.297.0 duration guard
                                       # corrected annual growth for every SEC-path name, but the
                                       # cached conditions REPLAY (DELL replayed its 18-Jul entry:
@@ -5545,7 +5557,7 @@ def _cached_cfo_cpat(ticker):
     _st = _stmt_store()
     _t = str(ticker or '').upper()
     _e = _st['cfo_cpat'].get(_t)
-    if _e is not None and _stmt_fresh(_e):
+    if _e is not None and _stmt_fresh(_e, days=_stmt_ttl(_t)):  # v1.446.0 jittered TTL
         return _e.get('v'), False
     _v = None
     try:
@@ -13023,9 +13035,10 @@ def _load_explosive_cache():
 def _save_explosive_cache(cache):
     global _EXPLOSIVE_CACHE_OUT
     _EXPLOSIVE_CACHE_OUT = cache if isinstance(cache, dict) else {}
-def _explosive_cache_fresh(entry):
+def _explosive_cache_fresh(entry, tk=None):
     try:
-        return (dt.date.today() - dt.date.fromisoformat(entry.get('date', ''))).days < EXPLOSIVE_STMT_CACHE_DAYS
+        _days = _stmt_ttl(tk) if tk else EXPLOSIVE_STMT_CACHE_DAYS   # v1.446.0 jittered TTL
+        return (dt.date.today() - dt.date.fromisoformat(entry.get('date', ''))).days < _days
     except Exception:
         return False
 def _cond_jsonable(cond):
@@ -13088,7 +13101,7 @@ def run_explosive(candidates, market='us'):
             # when a name is provisionally EXPLOSIVE (keeps the extra call count tiny).
             if market == 'us' and yf is not None:
                 _ce = _stmt_cache.get(ticker)
-                if (_ce is not None and _explosive_cache_fresh(_ce)
+                if (_ce is not None and _explosive_cache_fresh(_ce, ticker)
                         and _ce.get('v') == EXPLOSIVE_CACHE_SCHEMA and isinstance(_ce.get('cond'), dict)
                         # v1.272.4: null-revenue-with-profits = the label/concept gap class -> bypass
                         # the cache so the widened lookup retries THIS run instead of days later
