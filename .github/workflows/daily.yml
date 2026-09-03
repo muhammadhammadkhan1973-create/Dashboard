@@ -29,7 +29,7 @@ concurrency:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 25   # TELEMETRY PASS 2026-09-02: healthy run <=12m; was 55 -- a hung run could burn an hour invisibly
 
     steps:
       - name: Checkout repo
@@ -40,7 +40,9 @@ jobs:
         # minutes were visible only in these 403-walled logs. t0 recorded here; the commit-prep
         # step below writes wf_wall_sec into data.json meta so slow runs self-explain from the
         # payload in one pull (self-serve doctrine).
-        run: date +%s > .wf_t0
+        run: |
+          date +%s > .wf_t0
+          echo "{\"t0\": $(cat .wf_t0), \"marks\": {}}" > .run_marks.json
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -113,6 +115,10 @@ jobs:
         env:
           FORCE_IM3: ${{ github.event.inputs.force_im3 }}
 
+      - name: Mark setup done
+        if: always()
+        run: python3 -c "import json,time; j=json.load(open('.run_marks.json')); j['marks']['setup_done']=int(time.time()); json.dump(j,open('.run_marks.json','w'))" || true
+
       - name: Run scanner
         if: steps.inputs_hash.outputs.skip_scanner != 'true'
         env:
@@ -126,6 +132,10 @@ jobs:
       - name: Scanner skipped (inputs unchanged)
         if: steps.inputs_hash.outputs.skip_scanner == 'true'
         run: echo "Scanner skipped — manual re-run with unchanged inputs and a valid data.json already present. IM3 steps below still run against the existing data.json."
+
+      - name: Mark scanner done
+        if: always()
+        run: python3 -c "import json,time; j=json.load(open('.run_marks.json')); j['marks']['scanner_done']=int(time.time()); json.dump(j,open('.run_marks.json','w'))" || true
 
       - name: Check if explosive list changed
         id: check_explosive
@@ -909,6 +919,10 @@ jobs:
           print(f"data.json updated with PSX IM3 for {len(smap)} names")
           EOF
 
+      - name: Mark scoring done
+        if: always()
+        run: python3 -c "import json,time; j=json.load(open('.run_marks.json')); j['marks']['scoring_done']=int(time.time()); json.dump(j,open('.run_marks.json','w'))" || true
+
       - name: Write wall-time into data.json meta
         # WALL-TIME FIX (2026-09-02): permanent self-serve visibility of the scanner-vs-wall gap.
         # wf_wall_sec = whole job so far (checkout+pip+scanner+IM3 US+IM3 PSX); alongside
@@ -957,3 +971,42 @@ jobs:
             sleep $((i * 4))
           done
           [ -n "$pushed" ] || { echo "::error title=Scan push failed::could not push after 5 attempts (persistent concurrent writes)"; exit 1; }
+
+
+      - name: Commit run health (always -- even on failure)
+        # TELEMETRY PASS (2026-09-02): prior diagnoses could only see runs that COMPLETED and
+        # committed data.json -- queued/failed/hung runs left zero reachable evidence (Actions
+        # logs are 403). This step runs on ANY outcome and commits run_health.json: job start,
+        # per-segment seconds (setup/scanner/scoring/commit-tail), end, and job status. A
+        # 17-minute failure becomes as visible as an 11-minute success, from the repo alone.
+        if: always()
+        run: |
+          python3 - <<'EOF'
+          import json, time
+          try:
+              j = json.load(open('.run_marks.json'))
+          except Exception:
+              j = {'t0': None, 'marks': {}}
+          j['t_end'] = int(time.time())
+          j['status'] = '${{ job.status }}'
+          j['wall_sec'] = (j['t_end'] - j['t0']) if j.get('t0') else None
+          m = j.get('marks', {}); t0 = j.get('t0')
+          if t0:
+              seg = {}; prev = t0
+              for name in ('setup_done', 'scanner_done', 'scoring_done'):
+                  if name in m:
+                      seg[name.replace('_done', '')] = m[name] - prev
+                      prev = m[name]
+              seg['commit_tail'] = j['t_end'] - prev
+              j['segments_sec'] = seg
+          json.dump(j, open('run_health.json', 'w'), indent=1)
+          print('run_health:', j)
+          EOF
+          git config user.name  "dashboard-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add run_health.json
+          git commit -m "run health: ${{ job.status }}" || true
+          for i in 1 2 3; do
+            git push origin HEAD:main && break
+            git pull --rebase origin main || true
+          done || true
