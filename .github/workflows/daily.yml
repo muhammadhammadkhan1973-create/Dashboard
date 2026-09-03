@@ -316,6 +316,26 @@ jobs:
               f.write(f"tickers={' '.join(new_tickers)}\n")
               f.write(f"score_tickers={' '.join(score_tickers)}\n")
               f.write(f"full_rescore={'true' if full_rescore else 'false'}\n")
+
+          # HANDOFF TELEMETRY (2026-09-03): the one interface no artifact ever recorded -- what
+          # THIS step actually saw in the scanner-written data.json. Rides into run_health.json.
+          try:
+              import json as _hj
+              _hm = _hj.load(open('.run_marks.json'))
+              _hm['check_verdict'] = {
+                  'book_at_check': len(data.get('im3_grade_book') or {}),
+                  'universe': len(new_tickers),
+                  'missing_im3': len(missing_im3),
+                  'missing_sample': missing_im3[:5],
+                  'full_rescore': bool(full_rescore),
+                  'scorer_changed': bool(scorer_changed),
+                  'stale': bool(stale),
+                  'last_scored_seen': str(data.get('im3_last_scored_utc'))[:19],
+              }
+              _hj.dump(_hm, open('.run_marks.json', 'w'))
+              print('check_verdict ->', _hm['check_verdict'])
+          except Exception as _he:
+              print('check_verdict skipped:', _he)
               f.write(f"full_reason={full_reason}\n")
           EOF
 
@@ -433,6 +453,13 @@ jobs:
           if not score_list and not _full:
               score_list = []
               print("nothing to score -- proceeding with restamp/trims only")
+          try:
+              import json as _sj
+              _sm = _sj.load(open('.run_marks.json'))
+              _sm['scoring_entry'] = {'score_list': len(score_list), 'full': bool(_full), 'sel': len(_sel)}
+              _sj.dump(_sm, open('.run_marks.json', 'w'))
+          except Exception:
+              pass
           print(f"Scoring {len(score_list)} of {len(explosive_tickers)} "
                 f"({'FULL re-score' if _full or score_list == explosive_tickers else 'incremental'}): {score_list}")
 
