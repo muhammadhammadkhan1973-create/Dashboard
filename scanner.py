@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.446.0'  # v1.446.0: STATEMENT-CACHE TTL JITTER (wall-time pass 2): uniform 45-day statement TTLs bunched -- names cached the same week all expired together ~45d later, and one run bulk-refetched them from SEC EDGAR (sec_filings 140.5s vs normal ~30-40s, proven by the new wf wall-time stamps 2026-09-02). New _stmt_ttl(ticker): deterministic per-ticker TTL in a 40-50d band (md5 hash spread), applied to BOTH statement freshness gates (_stmt_fresh store read + _explosive_cache_fresh, which now receives the ticker). Refetches now trickle a few per run. No change to WHAT is fetched or computed -- only WHEN caches expire. Pairs with the daily.yml empty-selection fix (quiet runs stop full-rescoring 211 IM3 names).
+SCAN_VERSION = '1.447.0'  # v1.447.0: carry im3_grade_book (+im3_chunk_fails) forward through the rebuild -- the last full-rescore root cause. The book postdated the v1.286.0 state-carry fix, so every scan wiped it; the workflow's book-first check then saw an empty book, full-rescored ~210 names (~4 min/run), and the full score rebuilt the book pre-commit, self-concealing the wipe. One tuple addition ends the loop; with the deployed pass-3 daily.yml, quiet runs log 'Scoring 0 of ~210'. Prior features unchanged (TTL jitter, COT backfill, DFII10, WGC, RUT, TIC, KIBOR).
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -25433,7 +25433,16 @@ def main():
     # 'durable hash' fix was right but this deletion erased it before the trigger could read
     # it). Carrying them forward ends the loop: the next trigger finally sees a fresh clock +
     # matching hash -> genuinely incremental runs.
-    for _wk in ('im3_last_scored_utc', 'im3_scorer_hash', 'im3_errors', 'im3_stamp_reason'):
+    # v1.447.0 THE LAST FULL-RESCORE ROOT CAUSE (owner's 17-min audit; wall-stamps chain,
+    # pass 4): im3_grade_book was NOT in this carry list -- it postdates the v1.286.0 fix
+    # (book arrived v1.300.2). The scanner therefore WIPED the persistent grade book on every
+    # rebuild; the workflow's book-first missing-check then found an empty book, declared all
+    # ~210 names ungraded and full-rescored them (~4 min) EVERY run -- and that full score
+    # rebuilt the book from scratch before commit, so the committed data.json always looked
+    # healthy and the wipe was self-concealing. Carrying the book forward ends the loop:
+    # check sees 210/210 graded -> 'Scoring 0 of 210' -> quiet runs finally incremental.
+    for _wk in ('im3_last_scored_utc', 'im3_scorer_hash', 'im3_errors', 'im3_stamp_reason',
+                'im3_grade_book', 'im3_chunk_fails'):
         if _wk not in data and _wk in EXISTING:
             data[_wk] = EXISTING[_wk]
 
