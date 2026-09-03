@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.447.0'  # v1.447.0: carry im3_grade_book (+im3_chunk_fails) forward through the rebuild -- the last full-rescore root cause. The book postdated the v1.286.0 state-carry fix, so every scan wiped it; the workflow's book-first check then saw an empty book, full-rescored ~210 names (~4 min/run), and the full score rebuilt the book pre-commit, self-concealing the wipe. One tuple addition ends the loop; with the deployed pass-3 daily.yml, quiet runs log 'Scoring 0 of ~210'. Prior features unchanged (TTL jitter, COT backfill, DFII10, WGC, RUT, TIC, KIBOR).
+SCAN_VERSION = '1.448.0'  # v1.448.0: LOUD EXISTING LOADER + meta.existing_load stamp. Root cause of the 2026-09-03 07:02 anomaly (139s SEC full-crawl 'first run' + 209-name IM3 full re-score despite a fully-stocked committed data.json): load_existing() swallowed every failure silently into DEFAULT_DATA -- file-missing and parse errors alike left zero log lines and zero meta trace, so two independent subsystems saw an empty EXISTING and no evidence survived. The loader now logs every outcome and stamps meta.existing_load {ok,path_exists,bytes,keys,error}; a recurrence will name its exact cause (missing file vs corrupt json vs truncation) in one data.json pull. Carry tuples and all v1.447/v1.446 features unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -203,13 +203,30 @@ DEFAULT_DATA = {
 WARNINGS = []
 
 
+EXISTING_LOAD = {'ok': False, 'path_exists': None, 'bytes': 0, 'keys': 0, 'error': None}
+
 def load_existing():
+    """v1.448.0 LOUD LOADER. The silent `except: pass -> DEFAULT` here was the last invisible
+    failure: on 2026-09-03 07:02 a run behaved as if EXISTING was empty (SEC index full-crawled
+    139s 'first run'; the IM3 book carry delivered nothing so 209 names full-rescored) while the
+    committed data.json PROVABLY held every key -- and this loader could fail without leaving a
+    single log line or meta trace. Now every outcome is logged AND stamped into meta.existing_load
+    (ok / path_exists / bytes / keys / error), so the next occurrence names itself in one pull."""
     try:
-        if OUTPUT_PATH.exists():
-            with open(OUTPUT_PATH) as f:
-                return json.load(f)
-    except Exception:
-        pass
+        EXISTING_LOAD['path_exists'] = bool(OUTPUT_PATH.exists())
+        if EXISTING_LOAD['path_exists']:
+            raw = open(OUTPUT_PATH, 'rb').read()
+            EXISTING_LOAD['bytes'] = len(raw)
+            d = json.loads(raw)
+            EXISTING_LOAD['ok'] = True
+            EXISTING_LOAD['keys'] = len(d)
+            print(f"  [existing] loaded {len(raw):,} bytes / {len(d)} top-level keys", flush=True)
+            return d
+        print('  [existing] NO data.json IN WORKSPACE -> DEFAULT (every carry-forward will be empty: '
+              'IM3 book, SEC events, statements, pb_track all rebuild from scratch this run!)', flush=True)
+    except Exception as e:
+        EXISTING_LOAD['error'] = str(e)[:200]
+        print(f'  [existing] LOAD FAILED ({e}) -> DEFAULT (every carry-forward empty this run!)', flush=True)
     return DEFAULT_DATA.copy()
 
 
@@ -25838,6 +25855,7 @@ def main():
                 except Exception:
                     pass
                 data['meta']['runtime_sec'] = _tot
+                data['meta']['existing_load'] = dict(EXISTING_LOAD)   # v1.448.0: loader outcome rides in meta
                 # v1.310.0 TIMING HIERARCHY FIX. _STAGE_MS mixed THREE levels in one flat dict:
                 #   (a) ordinary stages, (b) tail_builders -- a PARENT window, and
                 #   (c) tail.* -- its CHILDREN, which sum to exactly the parent (74.1s = 74.1s).
