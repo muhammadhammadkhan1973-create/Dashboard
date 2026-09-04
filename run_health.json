@@ -1,32 +1,35 @@
 {
- "t0": 1788527572,
+ "t0": 1788543547,
  "marks": {
-  "setup_done": 1788527597,
-  "scanner_done": 1788527597,
-  "scoring_done": 1788527623
+  "setup_done": 1788543573,
+  "scanner_done": 1788543978,
+  "scoring_done": 1788544000
  },
  "check_verdict": {
   "book_at_check": 288,
-  "universe": 212,
-  "missing_im3": 0,
-  "missing_sample": [],
+  "universe": 213,
+  "missing_im3": 2,
+  "missing_sample": [
+   "AGIO",
+   "DSP"
+  ],
   "full_rescore": false,
   "scorer_changed": false,
   "stale": false,
   "last_scored_seen": "2026-09-03T08:48:48"
  },
  "scoring_entry": {
-  "score_list": 0,
+  "score_list": 2,
   "full": false,
-  "sel": 0
+  "sel": 2
  },
- "t_end": 1788527626,
+ "t_end": 1788544003,
  "status": "success",
- "wall_sec": 54,
+ "wall_sec": 456,
  "segments_sec": {
-  "setup": 25,
-  "scanner": 0,
-  "scoring": 26,
+  "setup": 26,
+  "scanner": 405,
+  "scoring": 22,
   "commit_tail": 3
  }
 }
