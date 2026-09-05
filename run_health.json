@@ -1,17 +1,18 @@
 {
- "t0": 1788543547,
+ "t0": 1788591544,
  "marks": {
-  "setup_done": 1788543573,
-  "scanner_done": 1788543978,
-  "scoring_done": 1788544000
+  "setup_done": 1788591564,
+  "scanner_done": 1788592194,
+  "scoring_done": 1788592221
  },
  "check_verdict": {
-  "book_at_check": 288,
-  "universe": 213,
-  "missing_im3": 2,
+  "book_at_check": 290,
+  "universe": 215,
+  "missing_im3": 3,
   "missing_sample": [
-   "AGIO",
-   "DSP"
+   "ALMR",
+   "TARS",
+   "TTMI"
   ],
   "full_rescore": false,
   "scorer_changed": false,
@@ -19,17 +20,17 @@
   "last_scored_seen": "2026-09-03T08:48:48"
  },
  "scoring_entry": {
-  "score_list": 2,
+  "score_list": 3,
   "full": false,
-  "sel": 2
+  "sel": 3
  },
- "t_end": 1788544003,
+ "t_end": 1788592224,
  "status": "success",
- "wall_sec": 456,
+ "wall_sec": 680,
  "segments_sec": {
-  "setup": 26,
-  "scanner": 405,
-  "scoring": 22,
+  "setup": 20,
+  "scanner": 630,
+  "scoring": 27,
   "commit_tail": 3
  }
 }
