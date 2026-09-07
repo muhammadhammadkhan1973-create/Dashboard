@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.453.0'  # v1.453.0: parser-version-aware FMR TTL (v1.452 gap, owned: the 7-day freshness gate checked data age only, so the new pension parser idled behind a same-day OLD-parse carry -- first v1.452 run logged 'fetch skipped <7d'). amc_fmr now stamps parser_ver; the skip requires fresh AND same parser version, so every parser upgrade re-parses exactly once then resumes the weekly cadence. All v1.452 parsers and features unchanged.
+SCAN_VERSION = '1.454.0'  # v1.454.0: first-live-run hardening (production-text variances the sandbox proof could not see). (1) NAV/Net-Assets triples via line-capture + float-findall -- production pdfplumber injected spaces after commas and split NAV 2,153.19 into 2.0/153.19/4.0. (2) Holdings label bleed stripped (Benchmark/ALHIPF-Index prefixes -- one was visible on the Tab-3 advisor card). (3) Pension report_date anywhere-fallback. (4) Stock double-strike: dedupe tolerance widened + interleaved-pair text collapse fallback (dedupe_chars(1) did not take in production). Bumps _FMR_PARSER_VER to 4 so all fixes re-parse on the next run. Everything else unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -25877,7 +25877,7 @@ def main():
                 # Display: NONE this wave -- data lands in data['amc_fmr'] for the FMR-4 Tab-3 card.
                 try:
                     _prev_fmr = EXISTING.get('amc_fmr') or {}
-                    _FMR_PARSER_VER = 3   # v1.453.0: bump on ANY parser change -> forces one re-parse.
+                    _FMR_PARSER_VER = 4   # v1.453.0: bump on ANY parser change -> forces one re-parse.
                     # (v1.452 lesson, owned: the TTL gated on data age only, so the new pension
                     # parser sat idle behind a fresh-but-OLD-parse carry for up to 7 days.)
                     _fmr_fresh = False
@@ -25942,21 +25942,52 @@ def main():
                                 _o['sub_funds'][_key] = _sf
                             _m = _re2.search(r'Year to Date Return \(%\)\s+(-?[\d.]+)%\s+(-?[\d.]+)%\s+(-?[\d.]+)%', _t)
                             if _m: _o['ytd'] = {'equity': float(_m.group(1)), 'debt': float(_m.group(2)), 'money_market': float(_m.group(3))}
-                            _m = _re2.search(r'Net Assets \(PKR M\)\s+([\d,\.]+)\s+([\d,\.]+)\s+([\d,\.]+)', _t)
-                            if _m: _o['net_assets_m'] = {'equity': float(_m.group(1).replace(',', '')), 'debt': float(_m.group(2).replace(',', '')), 'money_market': float(_m.group(3).replace(',', ''))}
-                            _m = _re2.search(r'NAV \(Rs\. Per unit\)\s+([\d,\.]+)\s+([\d,\.]+)\s+([\d,\.]+)', _t)
-                            if _m: _o['nav'] = {'equity': float(_m.group(1).replace(',', '')), 'debt': float(_m.group(2).replace(',', '')), 'money_market': float(_m.group(3).replace(',', ''))}
+                            def _triple(_lbl):
+                                # v1.454.0: production pdfplumber can inject spaces around commas
+                                # ('2, 153.19') -- the first live run split NAV into 2.0/153.19/4.0.
+                                # Capture the label's LINE, strip spaces after commas, then take the
+                                # first three floats. Immune to any space/comma mangling.
+                                _mm = _re2.search(_re2.escape(_lbl) + r'([^\n]*)', _t)
+                                if not _mm: return None
+                                _toks = _re2.findall(r'[\d,\.]+', _mm.group(1))
+                                # stitch production splits: '2,'+'153.19' and '4'+'72.92' -> 472.92
+                                _st = []
+                                _i = 0
+                                while _i < len(_toks):
+                                    _tk = _toks[_i]
+                                    while _i + 1 < len(_toks) and (_tk.endswith(',') or ('.' not in _tk and '.' in _toks[_i+1])):
+                                        _i += 1
+                                        _tk += _toks[_i]
+                                    _st.append(_tk)
+                                    _i += 1
+                                _fl = []
+                                for _tk in _st:
+                                    try: _fl.append(float(_tk.replace(',', '')))
+                                    except Exception: pass
+                                if len(_fl) < 3: return None
+                                return {'equity': _fl[0], 'debt': _fl[1], 'money_market': _fl[2]}
+                            _v = _triple('Net Assets (PKR M)')
+                            if _v: _o['net_assets_m'] = _v
+                            _v = _triple('NAV (Rs. Per unit)')
+                            if _v: _o['nav'] = _v
                             _hold = {}
                             _hs = _t.find('Top 10 Equity Holdings')
                             if _hs >= 0:
                                 for _ln in _t[_hs:_hs+1400].split('\n'):
                                     if 'Front end Load' in _ln: break
                                     for _r in _re2.finditer(r"([A-Z][\w&.\-' ]+?(?:Limited|Ltd\.?|Company Limited))\s+(\d{1,2}\.\d)%", _ln):
-                                        _hold[_r.group(1).strip()] = float(_r.group(2))
+                                        _hl = _r.group(1).strip()
+                                        # v1.454.0: production lines bleed the left column into the
+                                        # name ('Benchmark Lucky Cement Limited', 'ALHIPF - Equity
+                                        # KMI-30 Index Oil & Gas...'). Strip known bleed prefixes.
+                                        _hl = _re2.sub(r'^(?:ALHIPF[\w &\-]*?Index|Benchmark|banks or [\w ]*?MUFAP|highest rates[\w ()]*)\s+', '', _hl).strip()
+                                        _hold[_hl] = float(_r.group(2))
                             _o['top_holdings'] = _hold
                             _m = _re2.search(r'Manager.{0,3}s Comment\s*\n(.{40,700}?)(?:\nAlhamra Islamic Pension Fund|\nInvestment Objective|$)', _t, _re2.S)
                             if _m: _o['comment'] = _re2.sub(r'\s+', ' ', _m.group(1)).strip()[:500]
                             _m = _re2.search(r'([A-Z][a-z]+ \d{1,2}, \d{4})\s*$', _t.strip())
+                            if not _m:
+                                _m = _re2.search(r'(?:Pension Fund|NAV)[^\n]{0,40}?\n?\s*([A-Z][a-z]+ \d{1,2}, \d{4})', _t) or _re2.search(r'([A-Z][a-z]+ \d{1,2}, \d{4})', _t)
                             if _m: _o['report_date'] = _m.group(1)
                             _m = _re2.search(r'ALHIPF- ?EQ\*?\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)', _t)
                             if _m: _o['equity_yearly'] = [float(_x) for _x in _m.groups()]
@@ -25982,12 +26013,21 @@ def main():
                                     if _rp.status_code == 200 and _rp.content[:4] == b'%PDF':
                                         with _pp.open(_io.BytesIO(_rp.content)) as _doc:
                                             def _fmr_pgtext(_pg):
-                                                # v1.452.0: the stock fund's PDF double-strikes every character
-                                                # ('G G e e n n...'); pdfplumber's dedupe_chars collapses it.
+                                                # v1.452.0: the stock fund's PDF double-strikes every character;
+                                                # v1.454.0: dedupe_chars(tolerance=1) did NOT collapse it in the
+                                                # first live run (glyphs sit at distinct x) -- widen tolerance and
+                                                # add a text-level collapse fallback for the interleaved-pair
+                                                # pattern ('G G e e n n' / 'InInvveesst').
                                                 try:
-                                                    return _pg.dedupe_chars(tolerance=1).extract_text() or ''
+                                                    _tx = _pg.dedupe_chars(tolerance=3).extract_text() or ''
                                                 except Exception:
-                                                    return _pg.extract_text() or ''
+                                                    try:
+                                                        _tx = _pg.extract_text() or ''
+                                                    except Exception:
+                                                        _tx = ''
+                                                if _re2.search(r'(?:(\S)\1[ ]?){4,}', _tx.replace(' ', '')[:400]) or ' G G e e ' in _tx or 'InInvv' in _tx:
+                                                    _tx = _re2.sub(r'(\S)\1', r'\1', _tx)
+                                                return _tx
                                             _txt = '\n'.join(_fmr_pgtext(_pg) for _pg in _doc.pages)
                                         _pr = _fmr_parse_pension(_txt) if _fk == 'pension' else _fmr_parse(_txt)
                                         _pr['raw_head'] = _re2.sub(r'\s+', ' ', _txt[:300])
