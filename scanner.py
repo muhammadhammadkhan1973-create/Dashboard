@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.452.0'  # v1.452.0 WAVE FMR-2.1 (owner: pension is THE fund): PENSION PARSER + extraction fixes. The real pension PDF was fetched in-sandbox (via its fund page link) and the 3-sub-fund parser built+proven on its full text: per-sub-fund 2-month allocations (MM Cash 70.0/62.4 GoP 28.2/33.8; Debt Cash 31.5/22.9 GoP 66.5/72.7; EQUITY = sector rows E&P 16.7/18.2, Cement 13.9/15.8, Banks 9.2/8.8), 3-column YTD (-4.41/10.60/10.75), NAV + net-assets triples, all 10 top holdings (Meezan 8.7, PPL 8.1, OGDC 6.9...), per-sub-fund comments, 5yr equity series, date -- 17/17 assertions, re-proven as embedded. Plus: dedupe_chars extraction fixes the stock fund's double-struck text (unlocks its sector table); vocab gains sector + Government-Backed terms; consolidated-macro scan widened to 10 pages with broader policy-rate/oil patterns. Keep-last-good and all v1.446-451 features unchanged.
+SCAN_VERSION = '1.453.0'  # v1.453.0: parser-version-aware FMR TTL (v1.452 gap, owned: the 7-day freshness gate checked data age only, so the new pension parser idled behind a same-day OLD-parse carry -- first v1.452 run logged 'fetch skipped <7d'). amc_fmr now stamps parser_ver; the skip requires fresh AND same parser version, so every parser upgrade re-parses exactly once then resumes the weekly cadence. All v1.452 parsers and features unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -25877,10 +25877,13 @@ def main():
                 # Display: NONE this wave -- data lands in data['amc_fmr'] for the FMR-4 Tab-3 card.
                 try:
                     _prev_fmr = EXISTING.get('amc_fmr') or {}
+                    _FMR_PARSER_VER = 3   # v1.453.0: bump on ANY parser change -> forces one re-parse.
+                    # (v1.452 lesson, owned: the TTL gated on data age only, so the new pension
+                    # parser sat idle behind a fresh-but-OLD-parse carry for up to 7 days.)
                     _fmr_fresh = False
                     try:
                         _fa = _prev_fmr.get('as_of')
-                        if _fa:
+                        if _fa and _prev_fmr.get('parser_ver') == _FMR_PARSER_VER:
                             _fmr_fresh = (dt.date.today() - dt.date.fromisoformat(_fa)).days < 7
                     except Exception:
                         pass
@@ -25969,7 +25972,7 @@ def main():
                         _prevm = (_nowf.replace(day=1) - dt.timedelta(days=1))
                         _cons = (f"https://alhamra.mcbfunds.com/download/fund_manager_reports/year_{_prevm.year}/"
                                  f"{_prevm.strftime('%B').lower()}/FMR-{_prevm.strftime('%B').upper()}-{_prevm.year}-SHARIAH.pdf")
-                        _out = {'as_of': _nowf.isoformat(), 'amc': 'MCB-IM / Alhamra', 'funds': {}, 'macro': {}, 'errors': []}
+                        _out = {'as_of': _nowf.isoformat(), 'parser_ver': _FMR_PARSER_VER, 'amc': 'MCB-IM / Alhamra', 'funds': {}, 'macro': {}, 'errors': []}
                         if _pp is None:
                             _out['errors'].append('pdfplumber unavailable')
                         else:
