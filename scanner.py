@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.451.0'  # v1.451.0 WAVE FMR-2 (owner: 'go fmr2'): AMC FMR PILOT PARSER. Discovery: per-fund LATEST-FMR stable URLs on mcbfunds.com (/download/latest_fmrs_for_website/shariah_funds/<Fund>.pdf) -- the Money-Market fund's PDF was fetched and its real extracted text used to BUILD AND PROVE the parser (2-month asset-allocation with MoM, YTM 11.20, NAV, returns, manager comment, report date, sector rows; two-column label bleed solved by rightmost-vocabulary cleaning). Each run (7-day TTL, keep-last-good): fetch pension/stock/income/money-market per-fund PDFs + the consolidated monthly (runner-proven path) -> parse -> data['amc_fmr'] {funds, macro{cpi/policy_rate/oil + context}, errors, raw_head per fund for unknown-layout self-verification}. NO display this wave (FMR-4 builds the Tab-3 VPS Advisor card on this data). pdfplumber already in requirements. FMR probe extended with the per-fund host target. All v1.446-450 features unchanged.
+SCAN_VERSION = '1.452.0'  # v1.452.0 WAVE FMR-2.1 (owner: pension is THE fund): PENSION PARSER + extraction fixes. The real pension PDF was fetched in-sandbox (via its fund page link) and the 3-sub-fund parser built+proven on its full text: per-sub-fund 2-month allocations (MM Cash 70.0/62.4 GoP 28.2/33.8; Debt Cash 31.5/22.9 GoP 66.5/72.7; EQUITY = sector rows E&P 16.7/18.2, Cement 13.9/15.8, Banks 9.2/8.8), 3-column YTD (-4.41/10.60/10.75), NAV + net-assets triples, all 10 top holdings (Meezan 8.7, PPL 8.1, OGDC 6.9...), per-sub-fund comments, 5yr equity series, date -- 17/17 assertions, re-proven as embedded. Plus: dedupe_chars extraction fixes the stock fund's double-struck text (unlocks its sector table); vocab gains sector + Government-Backed terms; consolidated-macro scan widened to 10 pages with broader policy-rate/oil patterns. Keep-last-good and all v1.446-451 features unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -25894,6 +25894,7 @@ def main():
                         except Exception:
                             _pp = None
                         _VOC = (r'(Cash|Other including receivables|Others?|Shariah Compliant (?:Bank Deposits|Commercial Papers?|Placement with Banks & DFIs|[A-Za-z &]+?)|'
+                                r'Other equity sectors|OIL & GAS [A-Z ]+|Cement|Commercial Banks|Fertilizer|Pharmaceuticals?|Government Backed/? ?Guaranteed Securities|Shariah Compliant Placement in Banks & DFIs|'
                                 r'Short term Sukuks?|Certificate of Musharika|GoP Ijara Sukuk\*?|Sukuks?\*?|Stocks?(?: ?/ ?Equit(?:y|ies))?|Equit(?:y|ies)|'
                                 r'T-?Bills?|PIBs?|TFCs?|TDRs?|Spread Transactions?|Bank Deposits|Commercial Papers?|Placement with Banks & DFIs)')
                         def _fmr_clean(_raw):
@@ -25923,6 +25924,40 @@ def main():
                             if _ms:
                                 _o['sectors'] = {_re2.sub(r'\s+', ' ', _a).strip(): float(_b) for _a, _b in _re2.findall(r"([A-Z][A-Z &/,\.\'()-]+?)\s*(\d{1,2}\.\d{1,2})%", _ms.group(1))}
                             return _o
+                        def _fmr_parse_pension(_t):
+                            """v1.452.0: 3-sub-fund pension FMR (owner's fund). Built and PROVEN on the
+                            real July-2026 pension PDF text fetched in-sandbox (17/17 assertions)."""
+                            _o = {'sub_funds': {}}
+                            for _key, _hdr in [('money_market', 'ALHIPF-Money Market'), ('debt', 'ALHIPF-Debt'), ('equity', 'ALHIPF-Equity')]:
+                                _m = _re2.search(_re2.escape(_hdr) + r' \(%age of Total Assets\)\s+(\w{3}-\d{2})\s+(\w{3}-\d{2})', _t)
+                                if not _m: continue
+                                _sf = {'months': [_m.group(1), _m.group(2)], 'alloc': {}}
+                                for _ln in _t[_m.end():_m.end()+1800].split('\n'):
+                                    if _re2.search(r'ALHIPF-(?:Money Market|Debt|Equity) \(%age|Manager.{0,3}s Comment|Returns are computed', _ln): break
+                                    _r = _re2.search(r"([A-Za-z][A-Za-z &/,\.'()\[\]:*%\d-]{2,110}?)\s+(\d{1,3}\.\d)%\s+(\d{1,3}\.\d)%\s*$", _ln.strip())
+                                    if _r: _sf['alloc'][_fmr_clean(_r.group(1))] = (float(_r.group(2)), float(_r.group(3)))
+                                _o['sub_funds'][_key] = _sf
+                            _m = _re2.search(r'Year to Date Return \(%\)\s+(-?[\d.]+)%\s+(-?[\d.]+)%\s+(-?[\d.]+)%', _t)
+                            if _m: _o['ytd'] = {'equity': float(_m.group(1)), 'debt': float(_m.group(2)), 'money_market': float(_m.group(3))}
+                            _m = _re2.search(r'Net Assets \(PKR M\)\s+([\d,\.]+)\s+([\d,\.]+)\s+([\d,\.]+)', _t)
+                            if _m: _o['net_assets_m'] = {'equity': float(_m.group(1).replace(',', '')), 'debt': float(_m.group(2).replace(',', '')), 'money_market': float(_m.group(3).replace(',', ''))}
+                            _m = _re2.search(r'NAV \(Rs\. Per unit\)\s+([\d,\.]+)\s+([\d,\.]+)\s+([\d,\.]+)', _t)
+                            if _m: _o['nav'] = {'equity': float(_m.group(1).replace(',', '')), 'debt': float(_m.group(2).replace(',', '')), 'money_market': float(_m.group(3).replace(',', ''))}
+                            _hold = {}
+                            _hs = _t.find('Top 10 Equity Holdings')
+                            if _hs >= 0:
+                                for _ln in _t[_hs:_hs+1400].split('\n'):
+                                    if 'Front end Load' in _ln: break
+                                    for _r in _re2.finditer(r"([A-Z][\w&.\-' ]+?(?:Limited|Ltd\.?|Company Limited))\s+(\d{1,2}\.\d)%", _ln):
+                                        _hold[_r.group(1).strip()] = float(_r.group(2))
+                            _o['top_holdings'] = _hold
+                            _m = _re2.search(r'Manager.{0,3}s Comment\s*\n(.{40,700}?)(?:\nAlhamra Islamic Pension Fund|\nInvestment Objective|$)', _t, _re2.S)
+                            if _m: _o['comment'] = _re2.sub(r'\s+', ' ', _m.group(1)).strip()[:500]
+                            _m = _re2.search(r'([A-Z][a-z]+ \d{1,2}, \d{4})\s*$', _t.strip())
+                            if _m: _o['report_date'] = _m.group(1)
+                            _m = _re2.search(r'ALHIPF- ?EQ\*?\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)', _t)
+                            if _m: _o['equity_yearly'] = [float(_x) for _x in _m.groups()]
+                            return _o
                         _PF = 'https://www.mcbfunds.com/download/latest_fmrs_for_website/shariah_funds/'
                         _FMR_FUNDS = [
                             ('pension',      _PF + 'Alhamra-Islamic-Pension-Fund.pdf'),
@@ -25943,12 +25978,19 @@ def main():
                                     _rp = requests.get(_fu, headers={'User-Agent': UA}, timeout=25)
                                     if _rp.status_code == 200 and _rp.content[:4] == b'%PDF':
                                         with _pp.open(_io.BytesIO(_rp.content)) as _doc:
-                                            _txt = '\n'.join((_pg.extract_text() or '') for _pg in _doc.pages)
-                                        _pr = _fmr_parse(_txt)
+                                            def _fmr_pgtext(_pg):
+                                                # v1.452.0: the stock fund's PDF double-strikes every character
+                                                # ('G G e e n n...'); pdfplumber's dedupe_chars collapses it.
+                                                try:
+                                                    return _pg.dedupe_chars(tolerance=1).extract_text() or ''
+                                                except Exception:
+                                                    return _pg.extract_text() or ''
+                                            _txt = '\n'.join(_fmr_pgtext(_pg) for _pg in _doc.pages)
+                                        _pr = _fmr_parse_pension(_txt) if _fk == 'pension' else _fmr_parse(_txt)
                                         _pr['raw_head'] = _re2.sub(r'\s+', ' ', _txt[:300])
                                         _pr['url'] = _fu
                                         _out['funds'][_fk] = _pr
-                                        log(f"  [AMC FMR] {_fk}: alloc rows {len(_pr.get('alloc') or {})}, ytm {_pr.get('ytm')}, date {_pr.get('report_date')}")
+                                        log(f"  [AMC FMR] {_fk}: alloc rows {len(_pr.get('alloc') or {})}, sub_funds {len(_pr.get('sub_funds') or {})}, holdings {len(_pr.get('top_holdings') or {})}, date {_pr.get('report_date')}")
                                     else:
                                         _out['errors'].append(f'{_fk}: HTTP {_rp.status_code}')
                                         log(f"  [AMC FMR] {_fk}: HTTP {_rp.status_code}")
@@ -25958,16 +26000,16 @@ def main():
                                 _rc = requests.get(_cons, headers={'User-Agent': UA}, timeout=40)
                                 if _rc.status_code == 200 and _rc.content[:4] == b'%PDF':
                                     with _pp.open(_io.BytesIO(_rc.content)) as _doc:
-                                        _ct = '\n'.join((_pg.extract_text() or '') for _pg in _doc.pages[:6])
+                                        _ct = '\n'.join((_pg.extract_text() or '') for _pg in _doc.pages[:10])
                                     _mac = {}
                                     for _mk, _mp in [('cpi', r'(?:CPI|[Ii]nflation)[^.\n]{0,90}?([\d.]{1,5})\s*%'),
-                                                     ('policy_rate', r'[Pp]olicy [Rr]ate[^.\n]{0,70}?([\d.]{1,5})\s*%'),
-                                                     ('oil', r'(?:Brent|[Oo]il)[^.\n]{0,90}?(?:USD|\$)\s*([\d.]{1,6})')]:
+                                                     ('policy_rate', r'(?:[Pp]olicy [Rr]ate|SBP)[^.\n]{0,80}?([\d.]{1,5})\s*%'),
+                                                     ('oil', r'(?:Brent|WTI|[Oo]il)[^.\n]{0,90}?(?:USD|\$)?\s*([\d.]{2,6})\s*(?:USD|/ ?bbl|per barrel|\$)')]:
                                         _mm = _re2.search(_mp, _ct)
                                         if _mm:
                                             _mac[_mk] = float(_mm.group(1))
                                             _mac[_mk + '_ctx'] = _re2.sub(r'\s+', ' ', _ct[max(0, _mm.start()-40):_mm.end()+30])
-                                    _mac['pages_scanned'] = 6
+                                    _mac['pages_scanned'] = 10
                                     _out['macro'] = _mac
                                     _mac_show = {k: v for k, v in _mac.items() if not k.endswith("_ctx")}
                                     log(f"  [AMC FMR] consolidated macro: {_mac_show}")
