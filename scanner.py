@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.450.0'  # v1.450.0 WAVE FMR-1 (owner: 'go ahead fmr 1'): runner-side FMR reachability probe. Sandbox validation locked the Alhamra/MCB-IM source (ONE consolidated monthly Shariah FMR PDF at a deterministic dated path -- Aug-2026 verified live, cadence proven to 2011) and Sarmaaya's role (server-rendered directory; allocations stale/paywalled). This probe GETs the Alhamra month pages + prior-month PDF (magic-byte check), Sarmaaya, and cand_ index pages for MUFAP/Al Meezan/NBP from the RUNNER -- the historically-403 gate -- stamping meta.fmr_probe with status/bytes/pdf-link counts, evidence only, zero display/parsing. Gates Wave FMR-2 (pilot parse) on its verdict. All v1.446-449 features unchanged.
+SCAN_VERSION = '1.451.0'  # v1.451.0 WAVE FMR-2 (owner: 'go fmr2'): AMC FMR PILOT PARSER. Discovery: per-fund LATEST-FMR stable URLs on mcbfunds.com (/download/latest_fmrs_for_website/shariah_funds/<Fund>.pdf) -- the Money-Market fund's PDF was fetched and its real extracted text used to BUILD AND PROVE the parser (2-month asset-allocation with MoM, YTM 11.20, NAV, returns, manager comment, report date, sector rows; two-column label bleed solved by rightmost-vocabulary cleaning). Each run (7-day TTL, keep-last-good): fetch pension/stock/income/money-market per-fund PDFs + the consolidated monthly (runner-proven path) -> parse -> data['amc_fmr'] {funds, macro{cpi/policy_rate/oil + context}, errors, raw_head per fund for unknown-layout self-verification}. NO display this wave (FMR-4 builds the Tab-3 VPS Advisor card on this data). pdfplumber already in requirements. FMR probe extended with the per-fund host target. All v1.446-450 features unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -25863,6 +25863,128 @@ def main():
                     pass
                 data['meta']['runtime_sec'] = _tot
                 data['meta']['existing_load'] = dict(EXISTING_LOAD)   # v1.448.0: loader outcome rides in meta
+                # ============ v1.451.0 WAVE FMR-2: AMC FMR PILOT PARSER (Alhamra/MCB-IM) ============
+                # Sources validated this wave: per-fund LATEST-FMR stable URLs on mcbfunds.com
+                # (/download/latest_fmrs_for_website/shariah_funds/<Fund>.pdf -- Money-Market fund
+                # fetched + parsed in-sandbox; parser regexes PROVEN on its real extracted text:
+                # 2-month asset-allocation table (Jul-26/Jun-26 with MoM shift for free), YTM, NAV,
+                # net assets, YTD/365d returns, manager's comment, report date, sector rows) and the
+                # consolidated monthly PDF on the alhamra host (runner-proven 200 + %PDF magic by the
+                # v1.450 probe) for directors-report macro (CPI / policy rate / oil mentions).
+                # 7-day TTL with keep-last-good via EXISTING (Wave-P pattern); every failure degrades
+                # to last-good + an errors[] note; raw_head sample stored per fund so unknown layouts
+                # (the 3-sub-fund pension PDF) self-verify from the payload after first live parse.
+                # Display: NONE this wave -- data lands in data['amc_fmr'] for the FMR-4 Tab-3 card.
+                try:
+                    _prev_fmr = EXISTING.get('amc_fmr') or {}
+                    _fmr_fresh = False
+                    try:
+                        _fa = _prev_fmr.get('as_of')
+                        if _fa:
+                            _fmr_fresh = (dt.date.today() - dt.date.fromisoformat(_fa)).days < 7
+                    except Exception:
+                        pass
+                    if _fmr_fresh:
+                        data['amc_fmr'] = _prev_fmr
+                        log(f"  [AMC FMR] fetch skipped (<7d) -- carrying last-good ({_fa})")
+                    else:
+                        import io as _io, re as _re2
+                        try:
+                            import pdfplumber as _pp
+                        except Exception:
+                            _pp = None
+                        _VOC = (r'(Cash|Other including receivables|Others?|Shariah Compliant (?:Bank Deposits|Commercial Papers?|Placement with Banks & DFIs|[A-Za-z &]+?)|'
+                                r'Short term Sukuks?|Certificate of Musharika|GoP Ijara Sukuk\*?|Sukuks?\*?|Stocks?(?: ?/ ?Equit(?:y|ies))?|Equit(?:y|ies)|'
+                                r'T-?Bills?|PIBs?|TFCs?|TDRs?|Spread Transactions?|Bank Deposits|Commercial Papers?|Placement with Banks & DFIs)')
+                        def _fmr_clean(_raw):
+                            _h = list(_re2.finditer(_VOC, _raw))
+                            return _h[-1].group(1).strip() if _h else _raw.strip()
+                        def _fmr_parse(_t):
+                            _o = {}
+                            _m = _re2.search(r'Asset Allocation \(%age of Total Assets\)\s+(\w{3}-\d{2})\s+(\w{3}-\d{2})', _t)
+                            if _m:
+                                _o['alloc_months'] = [_m.group(1), _m.group(2)]
+                                _al = {}
+                                for _ln in _t[_m.end():_m.end()+2500].split('\n'):
+                                    if 'Fund Facts' in _ln: break
+                                    _r = _re2.search(r"([A-Za-z][A-Za-z &/,\.'()\[\]:*%\d-]{2,90}?)\s+(\d{1,2}\.\d)%\s+(\d{1,2}\.\d)%\s*$", _ln.strip())
+                                    if _r: _al[_fmr_clean(_r.group(1))] = (float(_r.group(2)), float(_r.group(3)))
+                                _o['alloc'] = _al
+                            for _k, _p in [('nav', r'NAV per Unit \(PKR\)\s+([\d,\.]+)'), ('net_assets_m', r'Net Assets \(PKR M\)\s+([\d,]+)'),
+                                           ('ytm', r'Yield to Maturity \(YTM\)\s+([\d.]+)%'), ('ytd_ret', r'Year to Date Return\s+([\d.]+)%'),
+                                           ('ret_365', r'365 Days Return\s+([\d.]+)%')]:
+                                _mm = _re2.search(_p, _t)
+                                if _mm: _o[_k] = float(_mm.group(1).replace(',', ''))
+                            _mm = _re2.search(r'Manager.{0,3}s Comment\s*\n(.{20,600}?)(?:\nNot Rated|\nDISCLOSURE|$)', _t, _re2.S)
+                            if _mm: _o['comment'] = _re2.sub(r'\s+', ' ', _mm.group(1)).strip()[:400]
+                            _mm = _re2.search(r'([A-Z][a-z]+ \d{1,2}, \d{4})\s+NAV', _t)
+                            if _mm: _o['report_date'] = _mm.group(1)
+                            _ms = _re2.search(r'Sector Allocation[^\n]*\n((?:[A-Z][A-Z &/,\.\'()-]+\s*\d{1,2}\.\d{1,2}%\s*\n?){2,})', _t)
+                            if _ms:
+                                _o['sectors'] = {_re2.sub(r'\s+', ' ', _a).strip(): float(_b) for _a, _b in _re2.findall(r"([A-Z][A-Z &/,\.\'()-]+?)\s*(\d{1,2}\.\d{1,2})%", _ms.group(1))}
+                            return _o
+                        _PF = 'https://www.mcbfunds.com/download/latest_fmrs_for_website/shariah_funds/'
+                        _FMR_FUNDS = [
+                            ('pension',      _PF + 'Alhamra-Islamic-Pension-Fund.pdf'),
+                            ('stock',        _PF + 'Alhamra-Islamic-Stock-Fund.pdf'),
+                            ('income',       _PF + 'Alhamra-Islamic-Income-Fund.pdf'),
+                            ('money_market', _PF + 'Alhamra-Islamic-Money-Market-Fund.pdf'),
+                        ]
+                        _nowf = dt.date.today()
+                        _prevm = (_nowf.replace(day=1) - dt.timedelta(days=1))
+                        _cons = (f"https://alhamra.mcbfunds.com/download/fund_manager_reports/year_{_prevm.year}/"
+                                 f"{_prevm.strftime('%B').lower()}/FMR-{_prevm.strftime('%B').upper()}-{_prevm.year}-SHARIAH.pdf")
+                        _out = {'as_of': _nowf.isoformat(), 'amc': 'MCB-IM / Alhamra', 'funds': {}, 'macro': {}, 'errors': []}
+                        if _pp is None:
+                            _out['errors'].append('pdfplumber unavailable')
+                        else:
+                            for _fk, _fu in _FMR_FUNDS:
+                                try:
+                                    _rp = requests.get(_fu, headers={'User-Agent': UA}, timeout=25)
+                                    if _rp.status_code == 200 and _rp.content[:4] == b'%PDF':
+                                        with _pp.open(_io.BytesIO(_rp.content)) as _doc:
+                                            _txt = '\n'.join((_pg.extract_text() or '') for _pg in _doc.pages)
+                                        _pr = _fmr_parse(_txt)
+                                        _pr['raw_head'] = _re2.sub(r'\s+', ' ', _txt[:300])
+                                        _pr['url'] = _fu
+                                        _out['funds'][_fk] = _pr
+                                        log(f"  [AMC FMR] {_fk}: alloc rows {len(_pr.get('alloc') or {})}, ytm {_pr.get('ytm')}, date {_pr.get('report_date')}")
+                                    else:
+                                        _out['errors'].append(f'{_fk}: HTTP {_rp.status_code}')
+                                        log(f"  [AMC FMR] {_fk}: HTTP {_rp.status_code}")
+                                except Exception as _fe:
+                                    _out['errors'].append(f'{_fk}: {str(_fe)[:80]}')
+                            try:
+                                _rc = requests.get(_cons, headers={'User-Agent': UA}, timeout=40)
+                                if _rc.status_code == 200 and _rc.content[:4] == b'%PDF':
+                                    with _pp.open(_io.BytesIO(_rc.content)) as _doc:
+                                        _ct = '\n'.join((_pg.extract_text() or '') for _pg in _doc.pages[:6])
+                                    _mac = {}
+                                    for _mk, _mp in [('cpi', r'(?:CPI|[Ii]nflation)[^.\n]{0,90}?([\d.]{1,5})\s*%'),
+                                                     ('policy_rate', r'[Pp]olicy [Rr]ate[^.\n]{0,70}?([\d.]{1,5})\s*%'),
+                                                     ('oil', r'(?:Brent|[Oo]il)[^.\n]{0,90}?(?:USD|\$)\s*([\d.]{1,6})')]:
+                                        _mm = _re2.search(_mp, _ct)
+                                        if _mm:
+                                            _mac[_mk] = float(_mm.group(1))
+                                            _mac[_mk + '_ctx'] = _re2.sub(r'\s+', ' ', _ct[max(0, _mm.start()-40):_mm.end()+30])
+                                    _mac['pages_scanned'] = 6
+                                    _out['macro'] = _mac
+                                    _mac_show = {k: v for k, v in _mac.items() if not k.endswith("_ctx")}
+                                    log(f"  [AMC FMR] consolidated macro: {_mac_show}")
+                                else:
+                                    _out['errors'].append(f'consolidated: HTTP {_rc.status_code}')
+                            except Exception as _ce:
+                                _out['errors'].append(f'consolidated: {str(_ce)[:80]}')
+                        if not _out['funds'] and _prev_fmr.get('funds'):
+                            data['amc_fmr'] = _prev_fmr
+                            data['amc_fmr'].setdefault('errors', []).append(f"all fetches failed {_nowf.isoformat()} -- kept last-good")
+                            log('  [AMC FMR] all fetches failed -- carrying last-good')
+                        else:
+                            data['amc_fmr'] = _out
+                except Exception as _afe:
+                    log(f'  [AMC FMR] skipped: {_afe}')
+                    if EXISTING.get('amc_fmr'):
+                        data['amc_fmr'] = EXISTING['amc_fmr']
                 # v1.450.0 WAVE FMR-1: runner-side reachability probe for the Pakistani-AMC FMR
                 # engine (owner-approved). Sandbox-validated facts baked in: Alhamra/MCB-IM
                 # publishes ONE consolidated Shariah FMR PDF per month at the deterministic path
@@ -25889,6 +26011,7 @@ def main():
                         ('cand_mufap',         'https://www.mufap.com.pk/'),
                         ('cand_almeezan',      'https://www.almeezangroup.com/investor-services/fund-manager-reports/'),
                         ('cand_nbpfunds',      'https://nbpfunds.com/downloads/fund-manager-report/'),
+                        ('mcb_perfund_pdf',    'https://www.mcbfunds.com/download/latest_fmrs_for_website/shariah_funds/Alhamra-Islamic-Money-Market-Fund.pdf'),
                     ]
                     _fp = {}
                     for _nm, _u in _targets:
