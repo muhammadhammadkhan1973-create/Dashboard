@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.449.0'  # v1.449.0: carry im3_detail (+im3_psx_tickers) through the rebuild -- LAYER FIVE, the eternal self-heal. Handoff telemetry's first verdict proved the check perfect (missing 0, full false) while scoring entered full=true: the v-fix self-heal saw the detail store empty (this rebuild dropped it) and forced a full ~209-name re-score EVERY run, then rebuilt+committed the store, self-concealing exactly like the grade book. With the store carried, the self-heal's condition finally goes false and quiet runs score nothing. All v1.446-448 features unchanged (jitter, loud loader, book carry, COT backfill, DFII10, WGC).
+SCAN_VERSION = '1.450.0'  # v1.450.0 WAVE FMR-1 (owner: 'go ahead fmr 1'): runner-side FMR reachability probe. Sandbox validation locked the Alhamra/MCB-IM source (ONE consolidated monthly Shariah FMR PDF at a deterministic dated path -- Aug-2026 verified live, cadence proven to 2011) and Sarmaaya's role (server-rendered directory; allocations stale/paywalled). This probe GETs the Alhamra month pages + prior-month PDF (magic-byte check), Sarmaaya, and cand_ index pages for MUFAP/Al Meezan/NBP from the RUNNER -- the historically-403 gate -- stamping meta.fmr_probe with status/bytes/pdf-link counts, evidence only, zero display/parsing. Gates Wave FMR-2 (pilot parse) on its verdict. All v1.446-449 features unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -25863,6 +25863,59 @@ def main():
                     pass
                 data['meta']['runtime_sec'] = _tot
                 data['meta']['existing_load'] = dict(EXISTING_LOAD)   # v1.448.0: loader outcome rides in meta
+                # v1.450.0 WAVE FMR-1: runner-side reachability probe for the Pakistani-AMC FMR
+                # engine (owner-approved). Sandbox-validated facts baked in: Alhamra/MCB-IM
+                # publishes ONE consolidated Shariah FMR PDF per month at the deterministic path
+                # /download/fund_manager_reports/year_{YYYY}/{month}/FMR-{MONTH}-{YYYY}-SHARIAH.pdf
+                # (Aug-2026 verified live; monthly cadence proven back to 2011); sarmaaya per-fund
+                # pages are server-rendered (NAV/AUM live, allocations stale+paywalled -> directory
+                # role only). THE open gate is whether these hosts answer from the GitHub runner
+                # (PK sites historically 403'd; BR now works). This probe GETs each target, stamps
+                # meta.fmr_probe = {name: {status, bytes, ctype, pdf_links, sample}} and logs one
+                # line each -- evidence only, nothing parsed into any tab. Candidates for Al Meezan
+                # / NBP / MUFAP are marked cand_ (unvalidated index paths; the probe IS their test).
+                try:
+                    import re as _fre
+                    _now = dt.date.today()
+                    _prev = (_now.replace(day=1) - dt.timedelta(days=1))
+                    _MON = lambda d: d.strftime('%B').lower()
+                    _MONU = lambda d: d.strftime('%B').upper()
+                    _alh = 'https://alhamra.mcbfunds.com'
+                    _targets = [
+                        ('alhamra_month_page', f'{_alh}/downloads/fund-managers-reports/year-{_now.year}/{_MON(_now)}/'),
+                        ('alhamra_month_prev', f'{_alh}/downloads/fund-managers-reports/year-{_prev.year}/{_MON(_prev)}/'),
+                        ('alhamra_pdf_prev',   f'{_alh}/download/fund_manager_reports/year_{_prev.year}/{_MON(_prev)}/FMR-{_MONU(_prev)}-{_prev.year}-SHARIAH.pdf'),
+                        ('sarmaaya_fund',      'https://sarmaaya.pk/mutual-funds/fund/a7eef86d-4bc4-4218-8074-11e007147e73'),
+                        ('cand_mufap',         'https://www.mufap.com.pk/'),
+                        ('cand_almeezan',      'https://www.almeezangroup.com/investor-services/fund-manager-reports/'),
+                        ('cand_nbpfunds',      'https://nbpfunds.com/downloads/fund-manager-report/'),
+                    ]
+                    _fp = {}
+                    for _nm, _u in _targets:
+                        _r = {'url': _u, 'status': None, 'bytes': 0, 'ctype': None, 'pdf_links': None, 'sample': None}
+                        try:
+                            _resp = requests.get(_u, headers={'User-Agent': UA}, timeout=15, stream=(_nm.endswith('_pdf_prev')))
+                            _r['status'] = _resp.status_code
+                            _r['ctype'] = (_resp.headers.get('Content-Type') or '')[:40]
+                            if _nm.endswith('_pdf_prev'):
+                                _chunk = next(_resp.iter_content(8192), b'')
+                                _r['bytes'] = len(_chunk)
+                                _r['sample'] = 'pdf-magic' if _chunk[:4] == b'%PDF' else 'NOT-PDF'
+                                _resp.close()
+                            else:
+                                _body = _resp.text[:400000]
+                                _r['bytes'] = len(_body)
+                                _pdfs = _fre.findall(r'href="([^"]+\.pdf)"', _body)
+                                _r['pdf_links'] = len(_pdfs)
+                                _r['sample'] = _pdfs[0][-70:] if _pdfs else None
+                        except Exception as _pe:
+                            _r['sample'] = f'ERR: {str(_pe)[:90]}'
+                        _fp[_nm] = _r
+                        log(f"  [FMR probe] {_nm}: status={_r['status']} bytes={_r['bytes']} pdfs={_r['pdf_links']} {(_r['sample'] or '')[:60]}")
+                    _fp['as_of'] = dt.date.today().isoformat()
+                    data['meta']['fmr_probe'] = _fp
+                except Exception as _fpe:
+                    log(f'  [FMR probe] skipped: {_fpe}')
                 # v1.310.0 TIMING HIERARCHY FIX. _STAGE_MS mixed THREE levels in one flat dict:
                 #   (a) ordinary stages, (b) tail_builders -- a PARENT window, and
                 #   (c) tail.* -- its CHILDREN, which sum to exactly the parent (74.1s = 74.1s).
