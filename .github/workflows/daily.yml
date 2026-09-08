@@ -69,7 +69,8 @@ jobs:
           # these changed AND this is a manual re-run AND a valid data.json already exists,
           # the expensive scanner run is skipped (identical output guaranteed). Scheduled
           # (cron) runs ALWAYS execute — live market data moves regardless of input hashes.
-          FILES = ['scanner.py', 'live_portfolio.json', 'psx_financials.json',
+          FILES = ['.github/workflows/daily.yml',   # GUARD FIX 2026-09-08: the workflow file itself now counts as an input -- deploying daily.yml previously did NOT change the hash, so a post-deploy test dispatch was skipped (the owner's exact sequence, twice). Any deploy -> the next dispatch runs for real.
+                   'scanner.py', 'live_portfolio.json', 'psx_financials.json',
                    'psx_macros_manual.json', 'bank_ig2_inputs.json', 'bank_ig2_overrides.json',
                    'ETF_Universe.xlsx', 'GICS_Breakdown_For_US_Market_Only.xlsx',
                    'm1_force_rescore.json']
