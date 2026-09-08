@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.457.0'  # v1.457.0 STRUCTURAL UNIVERSE FIX (owner: 'not one stock, a build issue -- audit the engine structures'). Audit findings (evidence-run on the live source CSV + engine sets): the universe took only the $300M-$2B band (5,367-name file) + a 218-name curated set -- leaving 1,521 US companies >$2B (V $670B, MA, PLTR $419B, PANW, KLAC, CRWD, MRVL, UBER...) and 292/503 S&P-500 members engine-invisible (Hole B), and the source carries ZERO foreign issuers at any size, so the whole ADR class (ARM, NVO, SAP, TM, SHEL, BABA, SONY...) was absent unless hand-added like TSM (Hole A). FIXES: (1) dynamic >$2B intake from the SAME csv (volume>0 trims inactive rows; residual ghost symbols die at the quote stage) -- +~1,500 names, screen cost est +12-15s; (2) FOREIGN_MEGA_US_LISTED config (~22 largest) merged into the large-cap set -- the maintained door; (3) UNIVERSE SENTINEL: every run compares the engine universe to ETF-holdings-derived names and stamps meta.universe_sentinel with any giants the engines cannot see -- structural blindness now self-reports. ASML line retained.
+SCAN_VERSION = '1.458.0'  # v1.458.0: sentinel wiring fix (v1.457's sentinel read data['us_universe'] -- a key that never existed -- and stamped zeros on its first live run instead of the measured ~306-name residual). Engine side now sourced from _US_UNIVERSE_STASH filled inside fetch_us_universe at the moment of truth; holdings side tolerates dict-shaped ETF entries and falls back to EXISTING's last-good index. Everything else from v1.457 (dynamic >$2B intake, FOREIGN_MEGA door, ASML) unchanged and already proven live: first run scored V=A, PLTR=A, UBER=B via the 3-name incremental.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -82,6 +82,7 @@ TCE_BATCH_HISTORY = True   # v1.111.0: batch the TCE pool's 6mo price-history fe
                            # fallback preserves coverage exactly. Flip False to revert to pure per-name.
 US_SMALL_CAP_MIN  = 300_000_000
 US_SMALL_CAP_MAX  = 2_000_000_000
+_US_UNIVERSE_STASH = set()   # v1.458.0: filled by fetch_us_universe; the sentinel's engine-side source (the v1.457 sentinel read data['us_universe'], A KEY THAT NEVER EXISTED, and stamped zeros)
 FOREIGN_MEGA_US_LISTED = ['ARM','NVO','SAP','TM','AZN','SHEL','SONY','BABA','PDD','MELI',
                           'HSBC','UL','TTE','BHP','RIO','MUFG','SNY','INFY','IBN','SE','NU','SPOT']  # v1.457.0: the foreign-issuer door (Hole A)
 US_REV_GROWTH_MIN = 0.15
@@ -6078,6 +6079,7 @@ def fetch_us_universe():
             _lcset = set(_large_csv)
             merged = tickers + _large_csv + [t for t in large if t not in _scset and t not in _lcset]
             log(f'  Got {len(tickers)} small-cap + {len(_large_csv)} large-cap(csv) + {len(merged)-len(tickers)-len(_large_csv)} curated/foreign = {len(merged)} merged US tickers (v1.457 full-market)')
+            _US_UNIVERSE_STASH.clear(); _US_UNIVERSE_STASH.update(merged)   # v1.458.0: sentinel source of truth
             if len(merged) > 0:
                 return merged
     except Exception as e:
@@ -25901,9 +25903,13 @@ def main():
                 # engine universe against the ETF-holdings-derived names each run; stamp and log
                 # the biggest absentees so a silent structural blindness can never re-form.
                 try:
-                    _uni = set(data.get('us_universe') or [])
+                    # v1.458.0: engine side now comes from the stash fetch_us_universe fills at
+                    # source (the v1.457 read of data['us_universe'] -- a key that never existed --
+                    # stamped zeros on the first live run); holdings side tolerates value shapes
+                    # and falls back to EXISTING's last-good index if this run's is absent here.
+                    _uni = set(_US_UNIVERSE_STASH)
                     _seen = set()
-                    _bys = (data.get('etf_holdings_index') or {}).get('by_stock') or {}
+                    _bys = (data.get('etf_holdings_index') or {}).get('by_stock') or (EXISTING.get('etf_holdings_index') or {}).get('by_stock') or {}
                     _CORE = {'SPY', 'QQQ', 'DIA', 'IVV', 'IVW'}   # v1.457.0 final calibration: VTI/IWB REMOVED -- total-market ETFs whose holdings span thousands of sub-$300M micro-caps the engine EXCLUDES BY DESIGN; counting them made the sentinel flag designed behavior. These five are large-cap index funds: membership = large-cap by construction, so engine-absence is ALWAYS a real defect.
                     for _t, _etfs in _bys.items():
                         _t = str(_t).upper()
@@ -25911,8 +25917,9 @@ def main():
                         # world locals can never be scored, and sub-$300M micro caps are designed
                         # exclusions -- but a name inside SPY/QQQ/DIA is large-cap by construction,
                         # so its absence from the engines is ALWAYS a defect (the ASML class).
+                        _enames = [(_e.get('etf') if isinstance(_e, dict) else _e) for _e in (_etfs if isinstance(_etfs, list) else [])]
                         if (_t and _t.replace('.','').isalpha() and len(_t) <= 5
-                                and isinstance(_etfs, list) and any(_e in _CORE for _e in _etfs)):
+                                and any(_e in _CORE for _e in _enames)):
                             _seen.add(_t)
                     _blind = sorted(_seen - _uni)
                     data['meta']['universe_sentinel'] = {'engine_universe': len(_uni), 'holdings_names': len(_seen), 'blind': _blind[:20], 'n_blind': len(_blind)}
