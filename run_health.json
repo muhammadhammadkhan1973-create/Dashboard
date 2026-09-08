@@ -1,17 +1,38 @@
 {
- "t0": 1788877614,
+ "t0": 1788879855,
  "marks": {
-  "setup_done": 1788877638,
-  "scanner_done": 1788879125,
-  "scoring_done": 1788879125
+  "setup_done": 1788879874,
+  "scanner_done": 1788880393,
+  "scoring_done": 1788880420
  },
- "t_end": 1788879125,
- "status": "cancelled",
- "wall_sec": 1511,
+ "check_verdict": {
+  "book_at_check": 309,
+  "universe": 159,
+  "missing_im3": 7,
+  "missing_sample": [
+   "ARGX",
+   "INVH",
+   "RTX",
+   "SAN",
+   "SKHY"
+  ],
+  "full_rescore": false,
+  "scorer_changed": false,
+  "stale": false,
+  "last_scored_seen": "2026-09-03T08:48:48"
+ },
+ "scoring_entry": {
+  "score_list": 7,
+  "full": false,
+  "sel": 7
+ },
+ "t_end": 1788880424,
+ "status": "success",
+ "wall_sec": 569,
  "segments_sec": {
-  "setup": 24,
-  "scanner": 1487,
-  "scoring": 0,
-  "commit_tail": 0
+  "setup": 19,
+  "scanner": 519,
+  "scoring": 27,
+  "commit_tail": 4
  }
 }
