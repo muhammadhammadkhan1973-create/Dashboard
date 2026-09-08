@@ -958,6 +958,11 @@ jobs:
         run: python3 -c "import json,time; j=json.load(open('.run_marks.json')); j['marks']['scoring_done']=int(time.time()); json.dump(j,open('.run_marks.json','w'))" || true
 
       - name: Write wall-time into data.json meta
+        # TELEMETRY FIX (2026-09-08): on GUARD-SKIPPED runs this step previously rewrote the
+        # REAL run's wf_wall_sec/overhead in data.json with the skip's tiny numbers (observed:
+        # a ~500s real run stamped wall=59/overhead=0 by the idle dispatch 30 min later).
+        # Skipped runs keep their story in run_health.json only; data.json stamps stay real.
+        if: steps.inputs_hash.outputs.skip_scanner != 'true'
         # WALL-TIME FIX (2026-09-02): permanent self-serve visibility of the scanner-vs-wall gap.
         # wf_wall_sec = whole job so far (checkout+pip+scanner+IM3 US+IM3 PSX); alongside
         # meta.runtime_sec (scanner only) the difference IS the workflow overhead, readable
