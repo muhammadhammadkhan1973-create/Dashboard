@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.458.0'  # v1.458.0: sentinel wiring fix (v1.457's sentinel read data['us_universe'] -- a key that never existed -- and stamped zeros on its first live run instead of the measured ~306-name residual). Engine side now sourced from _US_UNIVERSE_STASH filled inside fetch_us_universe at the moment of truth; holdings side tolerates dict-shaped ETF entries and falls back to EXISTING's last-good index. Everything else from v1.457 (dynamic >$2B intake, FOREIGN_MEGA door, ASML) unchanged and already proven live: first run scored V=A, PLTR=A, UBER=B via the 3-name incremental.
+SCAN_VERSION = '1.459.0'  # v1.459.0 HOLE C (owner: 'ASML doesnt even get explosive? all q? turnaround? tce, m1, m2'): the Foundation Universe TV scan filtered type==stock, which excludes depositary receipts -- a THIRD independent gate that kept ASML/TSM/NVO/SAP/SE out of M2 keystone, the Explosive top-150-accelerating lane, M1 pools, Signal-T and sector medians even after v1.456-458 opened the screen universe (MELI/NU passed as primary US listings; audit proved all five DR names absent from the 1,957-row foundation block). Filter widened to ['stock','dr'] on the foundation scan ONLY; downstream lanes inherit DRs automatically. Honest note: ASML's All-Q history already shows it would be judged fairly -- EPS +92.9/+47.1 mid-2025 then +3.8/+7.2 deceleration, so qualification is up to the numbers, as designed.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -6379,7 +6379,7 @@ def fetch_foundation_universe():
             payload = {
                 "columns": _cols,
                 "filter": [
-                    {"left": "type", "operation": "equal", "right": "stock"},
+                    {"left": "type", "operation": "in_range", "right": ["stock", "dr"]},  # v1.459.0 HOLE C: type==stock excluded depositary receipts -- the Foundation scan (feeder for M2 keystone, the Explosive top-150-accelerating lane, M1 pools, Signal-T and sector medians) never saw ASML/TSM/NVO/SAP/SE even after the universe fix; MELI/NU passed only as primary US listings. DRs join; downstream inherits this run.
                     {"left": "market_cap_basic", "operation": "egreater", "right": US_SMALL_CAP_MAX},
                 ],
                 "sort": {"sortBy": "market_cap_basic", "sortOrder": "desc"},
