@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.455.0'  # v1.455.0 REGRESSION FIX (owned, same-day): the v1.454 double-strike trigger fired on CLEAN PDFs and its collapse destroyed legitimate double letters (Allocation->Alocation), zeroing every allocation table (pension 3->0 sub-funds, income 7->0, MM 8->0) while holdings survived -- the audit fingerprint. New density trigger (>60% of first 300 squeezed chars in identical pairs = genuine double-strike only), dedupe tolerance experiment reverted to plain extraction (v1.452-proven safe), parser ver ->5 for immediate re-parse. NAV token-stitch, holdings bleed-strip and date fallback from v1.454 all retained.
+SCAN_VERSION = '1.456.0'  # v1.456.0: ASML joins the engine universe (owner query root-caused: foreign mega-caps triple-excluded -- above the small-cap band, non-US-domicile so outside the S&P-500 fallback, and missing from the hardcoded large-cap set that TSM did make; the holdings layers saw ASML 27x while every engine was blind). One-line fix in us_large_cap_set; ASML flows into screen_us -> explosive/TCE evaluation next run and IM3 scores it the same run via incremental missing-detection. Everything else unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -6018,7 +6018,14 @@ def us_large_cap_set():
         for _tk in ZACKS_SECTOR_UNIVERSE.values():
             s.update(_tk)
         s.update(['XOM','CVX','COP','EOG','GOOGL','MSFT','META','UNH','GIS','KO',
-                  'NVDA','TSM','ANET','MU','WDC','STX','DELL','AMD','LLY','AVGO'])
+                  'NVDA','TSM','ANET','MU','WDC','STX','DELL','AMD','LLY','AVGO',
+                  # v1.456.0 (owner: 'why is ASML missing from every engine?'): foreign mega-caps
+                  # are TRIPLE-excluded by construction -- above the small-cap band, ineligible for
+                  # the S&P-500 fallback (non-US domicile), and absent from this hardcoded set
+                  # (TSM made it in; ASML never did). The holdings-derived layers (moat, Wave Z,
+                  # world stocks) always saw it -- only the scoring engines were blind. Any future
+                  # foreign mega-cap belongs on this line.
+                  'ASML'])
         _LARGE_CAP_CACHE = s
     return _LARGE_CAP_CACHE
 
