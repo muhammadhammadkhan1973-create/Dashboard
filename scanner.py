@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.461.0'  # v1.461.0 TIMEOUT-CANCEL FIX (owned: the v1.460 intake collected 3,648 large tickers but DISCARDED their TV fundamentals already in hand -- the screen builder then saw 3,611 'gaps' and crawled Yahoo per-name at 0.35s until the 25-min job cap killed the run; nothing committed, dashboard unharmed on last-good). Fix: larges keep their scan recs (_large_recs) and merge into band_map so they ride the TV-first lane with ZERO Yahoo fallback; dot-class symbols (AGM.A) dropped at collection (the 404 noise); gap-cap guard so an unbounded per-name crawl can never run again. Expected full-market run: ~7-9 min. v1.459/460 structure unchanged.
+SCAN_VERSION = '1.462.0'  # v1.462.0: (a) v1.461's KeyError('skip') root-caused and fixed -- the large-rec merge had been inserted INSIDE the classify loop at a dedent that made buckets[cls]+=1 the merge-loop's body with a leftover cls of 'skip'; merge now sits correctly AFTER the loop, so the 3,640 larges ride the TV-first lane with zero Yahoo fallback (the v1.460 timeout class stays dead) and the prefilter/bucket lines print again. (b) SELF-HEALING UNIVERSE: the sentinel's blind list (first real stamp: 215 names, the ABNB/ADI/AFL pagination-drift class) is adopted into the next run's screen automatically (capped 250), draining engine blindness run over run. Dot-class symbols still dropped (404 noise). Sentinel note: blind[:20] stored, full count stamped.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -6252,7 +6252,7 @@ def fetch_us_universe_tv():
 
     rows = []
     _large_scan = []   # v1.460.0: >$2B names from the SAME scan (full-market universe)
-    _large_recs = {}   # v1.461.0: their TV recs -- discarding these caused the 1,093s Yahoo crawl (3,611 'gaps' -> per-name fallback -> 25-min timeout cancel)
+    _large_recs = {}   # v1.462.0: their TV recs (v1.461 discarded placement caused KeyError-skip; see below)
     try:
         start, page, cap = 0, 500, 6000
         while start < cap:
@@ -6285,7 +6285,7 @@ def fetch_us_universe_tv():
                     # they take the existing L1 large-cap fundamentals lane downstream.
                     if is_common_us_ticker(rec['ticker']) and '.' not in rec['ticker']:
                         _large_scan.append(rec['ticker'])
-                        _large_recs[rec['ticker']] = rec   # v1.461.0: KEEP the TV fundamentals already in hand
+                        _large_recs[rec['ticker']] = rec   # v1.462.0: KEEP the TV fundamentals already in hand
                     continue
                 if not is_common_us_ticker(rec['ticker']):
                     continue      # drop TV-leaked preferred-share series (ABR/PE, GNL/PD, ...) — they 502 on Yahoo
@@ -6346,9 +6346,27 @@ def fetch_us_universe_tv():
             continue
         cands.add(rec['ticker'])
         band_map[rec['ticker']] = rec
-    for _lt, _lr in _large_recs.items():
-        band_map.setdefault(_lt, _lr)   # v1.461.0: larges ride the TV-first lane; no Yahoo fallback
         buckets[cls] += 1
+    # v1.462.0: merge the large-scan TV recs AFTER the classify loop (v1.461 put this
+    # INSIDE the loop at the wrong indent: the dedented for terminated the loop body and
+    # adopted `buckets[cls] += 1` as its own -- firing per-large with the last band row's
+    # leftover cls, which was 'skip' -> KeyError('skip'), screen aborted, engines degraded).
+    # Larges ride the TV-first lane with zero Yahoo fallback; the L1 named-large fetch
+    # still overrides via fund_map.update(large_map) downstream.
+    for _lt, _lr in _large_recs.items():
+        band_map.setdefault(_lt, _lr)
+    # v1.462.0 SELF-HEALING UNIVERSE: names the sentinel proved holdings-visible but
+    # engine-blind last run (TV pagination drift class: ABNB/ADI/AFL...) are adopted into
+    # the universe automatically, capped, so the blind list drains itself run over run.
+    try:
+        _prev_blind = ((EXISTING.get('meta') or {}).get('universe_sentinel') or {}).get('blind') or []
+        _adopt = [t for t in _prev_blind[:250] if isinstance(t, str) and t.isalpha() and len(t) <= 5]
+        if _adopt:
+            cands.update(_adopt)
+            _US_UNIVERSE_STASH.update(_adopt)
+            log(f'  [universe] adopted {len(_adopt)} sentinel-blind names into the screen (self-heal)')
+    except Exception:
+        pass
     out = sorted(cands)
     log(f'  TV prefilter: {len(rows)} band names scanned -> Yahoo screens {len(out)} '
         f'(large-cap {len(large)} + financials {buckets["financial"]} + '
