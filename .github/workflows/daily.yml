@@ -131,7 +131,12 @@ jobs:
 
       - name: Scanner skipped (inputs unchanged)
         if: steps.inputs_hash.outputs.skip_scanner == 'true'
-        run: echo "Scanner skipped — manual re-run with unchanged inputs and a valid data.json already present. IM3 steps below still run against the existing data.json."
+        # GUARD VISIBILITY (2026-09-08): the owner saw two 56-second runs with no explanation --
+        # the guard's reasoning lived only in the 403-walled Actions log. Now a skipped run
+        # stamps WHY into run_health.json, so a short run self-explains from the repo alone.
+        run: |
+          echo "Scanner skipped — manual re-run with unchanged inputs and a fresh data.json (<90 min). IM3 steps below still run against the existing data.json. Tick force_im3 to override."
+          python3 -c "import json,time; j=json.load(open('.run_marks.json')); j['skipped_guard']='manual re-run, inputs unchanged, data.json <90min old -- identical output guaranteed; tick force_im3 to override'; json.dump(j,open('.run_marks.json','w'))" || true
 
       - name: Mark scanner done
         if: always()
@@ -353,6 +358,7 @@ jobs:
         # incremental logic keeps quiet runs cheap (~1-2 min); state continuity is worth that always.
         if: steps.check_explosive.outputs.changed == 'true' || github.event.inputs.force_im3 == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         env:
+          FORCE_IM3: ${{ github.event.inputs.force_im3 }}   # GUARD FIX 2026-09-08: the checkbox unskipped the scanner and opened this step, but _force inside read an env NEVER SET here -- so 'force IM3' never actually forced a re-score (proven by the forced run's run_health: full=false). Now it does what its label says.
           SCORE_TICKERS: ${{ steps.check_explosive.outputs.score_tickers }}
           FULL_RESCORE: ${{ steps.check_explosive.outputs.full_rescore }}
           FULL_REASON: ${{ steps.check_explosive.outputs.full_reason }}
