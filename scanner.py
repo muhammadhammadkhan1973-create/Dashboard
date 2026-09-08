@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.454.0'  # v1.454.0: first-live-run hardening (production-text variances the sandbox proof could not see). (1) NAV/Net-Assets triples via line-capture + float-findall -- production pdfplumber injected spaces after commas and split NAV 2,153.19 into 2.0/153.19/4.0. (2) Holdings label bleed stripped (Benchmark/ALHIPF-Index prefixes -- one was visible on the Tab-3 advisor card). (3) Pension report_date anywhere-fallback. (4) Stock double-strike: dedupe tolerance widened + interleaved-pair text collapse fallback (dedupe_chars(1) did not take in production). Bumps _FMR_PARSER_VER to 4 so all fixes re-parse on the next run. Everything else unchanged.
+SCAN_VERSION = '1.455.0'  # v1.455.0 REGRESSION FIX (owned, same-day): the v1.454 double-strike trigger fired on CLEAN PDFs and its collapse destroyed legitimate double letters (Allocation->Alocation), zeroing every allocation table (pension 3->0 sub-funds, income 7->0, MM 8->0) while holdings survived -- the audit fingerprint. New density trigger (>60% of first 300 squeezed chars in identical pairs = genuine double-strike only), dedupe tolerance experiment reverted to plain extraction (v1.452-proven safe), parser ver ->5 for immediate re-parse. NAV token-stitch, holdings bleed-strip and date fallback from v1.454 all retained.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -25877,7 +25877,7 @@ def main():
                 # Display: NONE this wave -- data lands in data['amc_fmr'] for the FMR-4 Tab-3 card.
                 try:
                     _prev_fmr = EXISTING.get('amc_fmr') or {}
-                    _FMR_PARSER_VER = 4   # v1.453.0: bump on ANY parser change -> forces one re-parse.
+                    _FMR_PARSER_VER = 5   # v1.453.0: bump on ANY parser change -> forces one re-parse.
                     # (v1.452 lesson, owned: the TTL gated on data age only, so the new pension
                     # parser sat idle behind a fresh-but-OLD-parse carry for up to 7 days.)
                     _fmr_fresh = False
@@ -26019,14 +26019,25 @@ def main():
                                                 # add a text-level collapse fallback for the interleaved-pair
                                                 # pattern ('G G e e n n' / 'InInvveesst').
                                                 try:
-                                                    _tx = _pg.dedupe_chars(tolerance=3).extract_text() or ''
+                                                    _tx = _pg.extract_text() or ''
                                                 except Exception:
-                                                    try:
-                                                        _tx = _pg.extract_text() or ''
-                                                    except Exception:
-                                                        _tx = ''
-                                                if _re2.search(r'(?:(\S)\1[ ]?){4,}', _tx.replace(' ', '')[:400]) or ' G G e e ' in _tx or 'InInvv' in _tx:
-                                                    _tx = _re2.sub(r'(\S)\1', r'\1', _tx)
+                                                    _tx = ''
+                                                # v1.455.0 REGRESSION FIX (owned): the v1.454 double-strike trigger
+                                                # fired on CLEAN documents (any 4 doubled pairs in 400 chars) and the
+                                                # collapse then destroyed legitimate double letters -- 'Allocation'->
+                                                # 'Alocation', 'Assets'->'Asets' -- killing every table header (pension
+                                                # 3->0 sub-funds, income 7->0, MM 8->0; holdings survived, no doubles
+                                                # in 'Limited': the exact fingerprint). New trigger is DENSITY-based:
+                                                # true double-strike text has ~every char doubled, so fire only when
+                                                # >60% of the first 300 non-space chars sit in identical pairs. The
+                                                # collapse itself is unchanged (correct on genuinely doubled text,
+                                                # where even real doubles appear quadrupled). tolerance=3 dedupe also
+                                                # reverted -- v1.452's plain extraction never harmed clean docs.
+                                                _sq = _tx.replace(' ', '').replace('\n', '')[:300]
+                                                if len(_sq) > 60:
+                                                    _pairs = sum(1 for _k in range(0, len(_sq) - 1, 2) if _sq[_k] == _sq[_k + 1])
+                                                    if _pairs / max(1, len(_sq) // 2) > 0.6:
+                                                        _tx = _re2.sub(r'(\S)\1', r'\1', _tx)
                                                 return _tx
                                             _txt = '\n'.join(_fmr_pgtext(_pg) for _pg in _doc.pages)
                                         _pr = _fmr_parse_pension(_txt) if _fk == 'pension' else _fmr_parse(_txt)
