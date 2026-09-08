@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.460.0'  # v1.460.0 HOLE B/C IN THE REAL PATH: production uses fetch_us_universe_tv (TV america scan), NOT the legacy CSV function -- so the v1.457 dynamic intake and v1.458 sentinel stash were dead code (proven: 'TV prefilter 1,979 band names' unchanged, sentinel engine=0 twice). The REAL scan stopped at the $2B ceiling AND filtered type==stock. Fixed where it executes: types ['stock','dr'], larges collected past the ceiling into the candidate set (existing L1 large-cap lane serves them), and _US_UNIVERSE_STASH filled HERE from the true engine universe with a log line proving the counts every run. Legacy CSV fallback keeps its own intake+stash. v1.459 foundation DR fix unchanged.
+SCAN_VERSION = '1.461.0'  # v1.461.0 TIMEOUT-CANCEL FIX (owned: the v1.460 intake collected 3,648 large tickers but DISCARDED their TV fundamentals already in hand -- the screen builder then saw 3,611 'gaps' and crawled Yahoo per-name at 0.35s until the 25-min job cap killed the run; nothing committed, dashboard unharmed on last-good). Fix: larges keep their scan recs (_large_recs) and merge into band_map so they ride the TV-first lane with ZERO Yahoo fallback; dot-class symbols (AGM.A) dropped at collection (the 404 noise); gap-cap guard so an unbounded per-name crawl can never run again. Expected full-market run: ~7-9 min. v1.459/460 structure unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -6252,6 +6252,7 @@ def fetch_us_universe_tv():
 
     rows = []
     _large_scan = []   # v1.460.0: >$2B names from the SAME scan (full-market universe)
+    _large_recs = {}   # v1.461.0: their TV recs -- discarding these caused the 1,093s Yahoo crawl (3,611 'gaps' -> per-name fallback -> 25-min timeout cancel)
     try:
         start, page, cap = 0, 500, 6000
         while start < cap:
@@ -6282,8 +6283,9 @@ def fetch_us_universe_tv():
                     # at the $2B ceiling, so every larger company existed for the engines only
                     # via the curated set. Now larges are collected and join the candidate set;
                     # they take the existing L1 large-cap fundamentals lane downstream.
-                    if is_common_us_ticker(rec['ticker']):
+                    if is_common_us_ticker(rec['ticker']) and '.' not in rec['ticker']:
                         _large_scan.append(rec['ticker'])
+                        _large_recs[rec['ticker']] = rec   # v1.461.0: KEEP the TV fundamentals already in hand
                     continue
                 if not is_common_us_ticker(rec['ticker']):
                     continue      # drop TV-leaked preferred-share series (ABR/PE, GNL/PD, ...) — they 502 on Yahoo
@@ -6344,6 +6346,8 @@ def fetch_us_universe_tv():
             continue
         cands.add(rec['ticker'])
         band_map[rec['ticker']] = rec
+    for _lt, _lr in _large_recs.items():
+        band_map.setdefault(_lt, _lr)   # v1.461.0: larges ride the TV-first lane; no Yahoo fallback
         buckets[cls] += 1
     out = sorted(cands)
     log(f'  TV prefilter: {len(rows)} band names scanned -> Yahoo screens {len(out)} '
