@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.456.0'  # v1.456.0: ASML joins the engine universe (owner query root-caused: foreign mega-caps triple-excluded -- above the small-cap band, non-US-domicile so outside the S&P-500 fallback, and missing from the hardcoded large-cap set that TSM did make; the holdings layers saw ASML 27x while every engine was blind). One-line fix in us_large_cap_set; ASML flows into screen_us -> explosive/TCE evaluation next run and IM3 scores it the same run via incremental missing-detection. Everything else unchanged.
+SCAN_VERSION = '1.457.0'  # v1.457.0 STRUCTURAL UNIVERSE FIX (owner: 'not one stock, a build issue -- audit the engine structures'). Audit findings (evidence-run on the live source CSV + engine sets): the universe took only the $300M-$2B band (5,367-name file) + a 218-name curated set -- leaving 1,521 US companies >$2B (V $670B, MA, PLTR $419B, PANW, KLAC, CRWD, MRVL, UBER...) and 292/503 S&P-500 members engine-invisible (Hole B), and the source carries ZERO foreign issuers at any size, so the whole ADR class (ARM, NVO, SAP, TM, SHEL, BABA, SONY...) was absent unless hand-added like TSM (Hole A). FIXES: (1) dynamic >$2B intake from the SAME csv (volume>0 trims inactive rows; residual ghost symbols die at the quote stage) -- +~1,500 names, screen cost est +12-15s; (2) FOREIGN_MEGA_US_LISTED config (~22 largest) merged into the large-cap set -- the maintained door; (3) UNIVERSE SENTINEL: every run compares the engine universe to ETF-holdings-derived names and stamps meta.universe_sentinel with any giants the engines cannot see -- structural blindness now self-reports. ASML line retained.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -82,6 +82,8 @@ TCE_BATCH_HISTORY = True   # v1.111.0: batch the TCE pool's 6mo price-history fe
                            # fallback preserves coverage exactly. Flip False to revert to pure per-name.
 US_SMALL_CAP_MIN  = 300_000_000
 US_SMALL_CAP_MAX  = 2_000_000_000
+FOREIGN_MEGA_US_LISTED = ['ARM','NVO','SAP','TM','AZN','SHEL','SONY','BABA','PDD','MELI',
+                          'HSBC','UL','TTE','BHP','RIO','MUFG','SNY','INFY','IBN','SE','NU','SPOT']  # v1.457.0: the foreign-issuer door (Hole A)
 US_REV_GROWTH_MIN = 0.15
 ROE_FIN_MIN       = 8.0   # %; D1 step 3 — the PRIMARY financial (bank) screen gate. From the
                           # live ROE diag (354/387 financials have ROE, median 9.2%): >=8% keeps
@@ -6026,6 +6028,12 @@ def us_large_cap_set():
                   # world stocks) always saw it -- only the scoring engines were blind. Any future
                   # foreign mega-cap belongs on this line.
                   'ASML'])
+        # v1.457.0 HOLE A (the foreign class): the source CSV contains ZERO foreign issuers at any
+        # size (verified: ASML, ARM, NVO, SAP, TM, AZN, SHEL, BABA, SONY, PDD, MELI all absent;
+        # TSM only ever scored because it was hand-added). No US-domiciled feed will ever carry
+        # them, so the door is a maintained config -- the ~22 largest US-listed foreign issuers.
+        # Refresh occasionally; additions are one line here.
+        s.update(FOREIGN_MEGA_US_LISTED)
         _LARGE_CAP_CACHE = s
     return _LARGE_CAP_CACHE
 
@@ -6037,6 +6045,7 @@ def fetch_us_universe():
         r = requests.get(url, headers={'User-Agent': UA}, timeout=30)
         if r.status_code == 200:
             tickers = []
+            _large_csv = []   # v1.457.0: dynamic >$2B intake (see below)
             reader = csv.DictReader(StringIO(r.text))
             for row in reader:
                 sym = (row.get('symbol') or '').strip().upper()
@@ -6048,10 +6057,27 @@ def fetch_us_universe():
                 if sym and sym.replace('.','').replace('-','').isalnum() and len(sym) <= 5:
                     if US_SMALL_CAP_MIN <= mc_val <= US_SMALL_CAP_MAX:
                         tickers.append(sym)
+                    elif mc_val > US_SMALL_CAP_MAX:
+                        # v1.457.0 STRUCTURAL FIX (owner audit: 'not one stock, a build issue'):
+                        # the old universe took ONLY the $300M-$2B band from this 5,367-name file
+                        # and relied on a 218-name curated set for everything larger -- leaving
+                        # 1,521 US companies above $2B (V $670B, MA $507B, PLTR $419B, PANW, KLAC,
+                        # CRWD, MRVL, UBER...) and 292 of 503 S&P-500 members invisible to every
+                        # engine. The source already carries them all -- take them dynamically.
+                        # volume>0 trims inactive rows; a handful of ghost symbols (GOOGM/SPCX
+                        # class) DO carry volume in the file and slip through -- they die at the
+                        # quote stage and never reach any engine (tolerable, documented noise).
+                        try:
+                            _vol = float(row.get('volume') or 0)
+                        except ValueError:
+                            _vol = 0
+                        if _vol > 0:
+                            _large_csv.append(sym)
             large = us_large_cap_set()
             _scset = set(tickers)
-            merged = tickers + [t for t in large if t not in _scset]
-            log(f'  Got {len(tickers)} small-cap + {len(merged)-len(tickers)} large-cap = {len(merged)} merged US tickers (Decision 5)')
+            _lcset = set(_large_csv)
+            merged = tickers + _large_csv + [t for t in large if t not in _scset and t not in _lcset]
+            log(f'  Got {len(tickers)} small-cap + {len(_large_csv)} large-cap(csv) + {len(merged)-len(tickers)-len(_large_csv)} curated/foreign = {len(merged)} merged US tickers (v1.457 full-market)')
             if len(merged) > 0:
                 return merged
     except Exception as e:
@@ -25870,6 +25896,30 @@ def main():
                     pass
                 data['meta']['runtime_sec'] = _tot
                 data['meta']['existing_load'] = dict(EXISTING_LOAD)   # v1.448.0: loader outcome rides in meta
+                # v1.457.0 UNIVERSE SENTINEL: the ASML class of hole -- a giant visible to the
+                # holdings layers but absent from every engine -- must self-report. Compare the
+                # engine universe against the ETF-holdings-derived names each run; stamp and log
+                # the biggest absentees so a silent structural blindness can never re-form.
+                try:
+                    _uni = set(data.get('us_universe') or [])
+                    _seen = set()
+                    _bys = (data.get('etf_holdings_index') or {}).get('by_stock') or {}
+                    _CORE = {'SPY', 'QQQ', 'DIA', 'IVV', 'IVW'}   # v1.457.0 final calibration: VTI/IWB REMOVED -- total-market ETFs whose holdings span thousands of sub-$300M micro-caps the engine EXCLUDES BY DESIGN; counting them made the sentinel flag designed behavior. These five are large-cap index funds: membership = large-cap by construction, so engine-absence is ALWAYS a real defect.
+                    for _t, _etfs in _bys.items():
+                        _t = str(_t).upper()
+                        # Scope: US-style alpha symbols held by CORE index ETFs only. Numeric
+                        # world locals can never be scored, and sub-$300M micro caps are designed
+                        # exclusions -- but a name inside SPY/QQQ/DIA is large-cap by construction,
+                        # so its absence from the engines is ALWAYS a defect (the ASML class).
+                        if (_t and _t.replace('.','').isalpha() and len(_t) <= 5
+                                and isinstance(_etfs, list) and any(_e in _CORE for _e in _etfs)):
+                            _seen.add(_t)
+                    _blind = sorted(_seen - _uni)
+                    data['meta']['universe_sentinel'] = {'engine_universe': len(_uni), 'holdings_names': len(_seen), 'blind': _blind[:20], 'n_blind': len(_blind)}
+                    if _blind:
+                        log(f"  [universe sentinel] {len(_blind)} holdings-visible names absent from engines: {_blind[:8]}")
+                except Exception as _use:
+                    log(f'  [universe sentinel] skipped: {_use}')
                 # ============ v1.451.0 WAVE FMR-2: AMC FMR PILOT PARSER (Alhamra/MCB-IM) ============
                 # Sources validated this wave: per-fund LATEST-FMR stable URLs on mcbfunds.com
                 # (/download/latest_fmrs_for_website/shariah_funds/<Fund>.pdf -- Money-Market fund
