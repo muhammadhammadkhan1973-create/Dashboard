@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.459.0'  # v1.459.0 HOLE C (owner: 'ASML doesnt even get explosive? all q? turnaround? tce, m1, m2'): the Foundation Universe TV scan filtered type==stock, which excludes depositary receipts -- a THIRD independent gate that kept ASML/TSM/NVO/SAP/SE out of M2 keystone, the Explosive top-150-accelerating lane, M1 pools, Signal-T and sector medians even after v1.456-458 opened the screen universe (MELI/NU passed as primary US listings; audit proved all five DR names absent from the 1,957-row foundation block). Filter widened to ['stock','dr'] on the foundation scan ONLY; downstream lanes inherit DRs automatically. Honest note: ASML's All-Q history already shows it would be judged fairly -- EPS +92.9/+47.1 mid-2025 then +3.8/+7.2 deceleration, so qualification is up to the numbers, as designed.
+SCAN_VERSION = '1.460.0'  # v1.460.0 HOLE B/C IN THE REAL PATH: production uses fetch_us_universe_tv (TV america scan), NOT the legacy CSV function -- so the v1.457 dynamic intake and v1.458 sentinel stash were dead code (proven: 'TV prefilter 1,979 band names' unchanged, sentinel engine=0 twice). The REAL scan stopped at the $2B ceiling AND filtered type==stock. Fixed where it executes: types ['stock','dr'], larges collected past the ceiling into the candidate set (existing L1 large-cap lane serves them), and _US_UNIVERSE_STASH filled HERE from the true engine universe with a log line proving the counts every run. Legacy CSV fallback keeps its own intake+stash. v1.459 foundation DR fix unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -6251,13 +6251,14 @@ def fetch_us_universe_tv():
         return s.split(':')[-1]
 
     rows = []
+    _large_scan = []   # v1.460.0: >$2B names from the SAME scan (full-market universe)
     try:
         start, page, cap = 0, 500, 6000
         while start < cap:
             payload = {
                 "columns": _US_TV_COLS,
                 "filter": [
-                    {"left": "type", "operation": "equal", "right": "stock"},
+                    {"left": "type", "operation": "in_range", "right": ["stock", "dr"]},  # v1.460.0: DRs join the REAL universe scan (ASML class)
                     {"left": "market_cap_basic", "operation": "egreater", "right": US_SMALL_CAP_MIN},
                 ],
                 "sort": {"sortBy": "market_cap_basic", "sortOrder": "asc"},
@@ -6275,8 +6276,15 @@ def fetch_us_universe_tv():
                 rec = dict(zip(_US_TV_COLS, d['d']))
                 rec['ticker'] = _bare(d['s'])
                 if (rec.get('market_cap_basic') or 0) > US_SMALL_CAP_MAX:
-                    stop = True   # ascending sort -> past the band ceiling, done
-                    break
+                    # v1.460.0 HOLE B IN THE REAL PATH (the v1.457 intake landed in the legacy
+                    # CSV fallback -- dead code in production, proven by 'TV prefilter: 1,979
+                    # band names' and the sentinel's engine=0): the ascending scan used to STOP
+                    # at the $2B ceiling, so every larger company existed for the engines only
+                    # via the curated set. Now larges are collected and join the candidate set;
+                    # they take the existing L1 large-cap fundamentals lane downstream.
+                    if is_common_us_ticker(rec['ticker']):
+                        _large_scan.append(rec['ticker'])
+                    continue
                 if not is_common_us_ticker(rec['ticker']):
                     continue      # drop TV-leaked preferred-share series (ABR/PE, GNL/PD, ...) — they 502 on Yahoo
                 rows.append(rec)
@@ -6293,6 +6301,11 @@ def fetch_us_universe_tv():
 
     large = us_large_cap_set()
     cands = set(large)   # named large-caps always reach the screen (band bypass lives in _candidate_from_tv/screen_us_stock)
+    cands.update(_large_scan)   # v1.460.0: dynamic >$2B intake in the REAL path
+    _US_UNIVERSE_STASH.clear()
+    _US_UNIVERSE_STASH.update(cands)
+    _US_UNIVERSE_STASH.update(r.get('ticker') for r in rows if r.get('ticker'))
+    log(f'  [universe] band {len(rows)} + large-scan {len(_large_scan)} + curated/foreign {len(large)} -> engine universe {len(_US_UNIVERSE_STASH)}')
     band_map = {}        # L1: {ticker: TV rec} for band names that pass classify -> screen built from TV, no per-name Yahoo .info
     # v1.42.0: TV type=stock leaks baby-bond / preferred SERIES as bare base+letter symbols
     # (ADAM->ADAMH/L/M/N/Z, RILY->RILYL/P, NEWT->NEWTG/P, ATLC->ATLCP/Z, CCNE->CCNEP). Yahoo's
