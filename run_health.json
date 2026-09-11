@@ -1,16 +1,17 @@
 {
- "t0": 1789062246,
+ "t0": 1789111272,
  "marks": {
-  "setup_done": 1789062271,
-  "scanner_done": 1789062720,
-  "scoring_done": 1789062757
+  "setup_done": 1789111296,
+  "scanner_done": 1789111883,
+  "scoring_done": 1789111907
  },
  "check_verdict": {
-  "book_at_check": 326,
-  "universe": 210,
-  "missing_im3": 1,
+  "book_at_check": 327,
+  "universe": 212,
+  "missing_im3": 2,
   "missing_sample": [
-   "SLNHP"
+   "AADX",
+   "TEN"
   ],
   "full_rescore": false,
   "scorer_changed": false,
@@ -18,17 +19,17 @@
   "last_scored_seen": "2026-09-03T08:48:48"
  },
  "scoring_entry": {
-  "score_list": 1,
+  "score_list": 2,
   "full": false,
-  "sel": 1
+  "sel": 2
  },
- "t_end": 1789062761,
+ "t_end": 1789111910,
  "status": "success",
- "wall_sec": 515,
+ "wall_sec": 638,
  "segments_sec": {
-  "setup": 25,
-  "scanner": 449,
-  "scoring": 37,
-  "commit_tail": 4
+  "setup": 24,
+  "scanner": 587,
+  "scoring": 24,
+  "commit_tail": 3
  }
 }
