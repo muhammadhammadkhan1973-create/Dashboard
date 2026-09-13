@@ -142,7 +142,7 @@
   }
  ],
  "broker_costs": {
-  "source": "IBKR Activity Statement U21094978, 1–17 Jul 2026",
+  "source": "IBKR Activity Statement U21094978, 1\u201317 Jul 2026",
   "commissions_usd": [
    {
     "ticker": "SMH",
@@ -174,17 +174,33 @@
    }
   ],
   "commissions_total_usd": 118.11,
-  "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units — worth about 2 pence. IBKR's minimum fee (£1.00) applied to that crumb like any order: a £1 fee on a 2p purchase.",
+  "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units \u2014 worth about 2 pence. IBKR's minimum fee (\u00a31.00) applied to that crumb like any order: a \u00a31 fee on a 2p purchase.",
   "fx_spread": {
    "aed_sold": 801249.98,
    "usd_received": 218079.0,
    "peg": 3.6725,
-   "note": "AED 801,249.98 ÷ 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
+   "note": "AED 801,249.98 \u00f7 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
   },
   "interest_accrued_usd": 163.22,
   "forex_realized_usd": 151.57,
   "fx_translation_usd": 1.98,
   "withdrawal_fee_usd": 0.0
  },
- "interest_usd": 26.33
+ "interest_usd": 26.33,
+ "dividends": [
+  {
+   "ticker": "ITWN",
+   "isin": "IE00B0M63623",
+   "name": "iShares MSCI Taiwan UCITS ETF",
+   "type": "cash_dividend",
+   "rate": 1.5178,
+   "ccy": "USD",
+   "shares_at_ex": 179,
+   "gross_usd": 271.69,
+   "ex_date": "2026-09-17",
+   "pay_date": "2026-09-30",
+   "source": "IBKR corporate-action notice 2026-09-12",
+   "status_note": "gross; actual credit reconciles via IBKR cash on receipt"
+  }
+ ]
 }
