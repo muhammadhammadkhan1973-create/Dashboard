@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.462.0'  # v1.462.0: (a) v1.461's KeyError('skip') root-caused and fixed -- the large-rec merge had been inserted INSIDE the classify loop at a dedent that made buckets[cls]+=1 the merge-loop's body with a leftover cls of 'skip'; merge now sits correctly AFTER the loop, so the 3,640 larges ride the TV-first lane with zero Yahoo fallback (the v1.460 timeout class stays dead) and the prefilter/bucket lines print again. (b) SELF-HEALING UNIVERSE: the sentinel's blind list (first real stamp: 215 names, the ABNB/ADI/AFL pagination-drift class) is adopted into the next run's screen automatically (capped 250), draining engine blindness run over run. Dot-class symbols still dropped (404 noise). Sentinel note: blind[:20] stored, full count stamped.
+SCAN_VERSION = '1.463.0'  # v1.463.0: DIVIDEND TRACK on Live Investment. live_portfolio.json gains a dividends[] array (first entry: ITWN cash dividend USD 1.5178/sh x 179 = $271.69 gross, ex 2026-09-17, pay 2026-09-30, from the IBKR corporate-action notice); the scanner passes it through into live_investment.dividends as an INFORMATION track -- deliberately never added to NAV or cash (the actual credit arrives in IBKR cash and reconciles there; auto-adding would double-count). Tab-17 renders pending/paid by date (index v5.360). Everything else unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -20434,6 +20434,7 @@ def build_live_investment(data, existing):
         holdings_usd = sum(r['mv_usd'] for r in rows if r['mv_usd'] is not None)
         cash_usd = sum(_li_to_usd(c.get('amount'), c.get('ccy'), fx) or 0 for c in cash_cfg)
         interest_usd = cfg.get('interest_usd') or 0.0   # v1.374.0: IBKR interest accruals -> NAV
+        dividends_cfg = cfg.get('dividends') or []   # v1.463.0: declared corporate-action dividends (ITWN Sep-2026 first) -- INFORMATION track only: never added to NAV/cash here; the actual credit reconciles via IBKR cash on receipt (double-count guard)
         nav = holdings_usd + cash_usd + interest_usd
         for r in rows:
             r['weight'] = (r['mv_usd'] / nav * 100.0) if (nav and r['mv_usd'] is not None) else None
@@ -20748,6 +20749,7 @@ def build_live_investment(data, existing):
             data['netbenefits'] = EXISTING.get('netbenefits', {}) or {}
         data['live_investment'] = {
             'as_of': today, 'nav_usd': round(nav, 2), 'holdings_usd': round(holdings_usd, 2), 'interest_usd': round(interest_usd, 2),
+            'dividends': dividends_cfg,
             'cash_usd': round(cash_usd, 2), 'fx': fx, 'n_reuse': n_reuse, 'n_resolved': n_resolve,
             'n_pending': n_pending, 'holdings': rows, 'cash': cash_cfg,
             'inception_date': inception,
