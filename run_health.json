@@ -1,32 +1,38 @@
 {
- "t0": 1789483077,
+ "t0": 1789496194,
  "marks": {
-  "setup_done": 1789483096,
-  "scanner_done": 1789483594,
-  "scoring_done": 1789483622
+  "setup_done": 1789496218,
+  "scanner_done": 1789497431,
+  "scoring_done": 1789497473
  },
  "check_verdict": {
-  "book_at_check": 339,
-  "universe": 214,
-  "missing_im3": 0,
-  "missing_sample": [],
+  "book_at_check": 342,
+  "universe": 219,
+  "missing_im3": 8,
+  "missing_sample": [
+   "AMGN",
+   "APD",
+   "ATO",
+   "CAI",
+   "ELV"
+  ],
   "full_rescore": false,
   "scorer_changed": false,
   "stale": false,
   "last_scored_seen": "2026-09-14T05:22:02"
  },
  "scoring_entry": {
-  "score_list": 0,
+  "score_list": 8,
   "full": false,
-  "sel": 0
+  "sel": 8
  },
- "t_end": 1789483625,
+ "t_end": 1789497477,
  "status": "success",
- "wall_sec": 548,
+ "wall_sec": 1283,
  "segments_sec": {
-  "setup": 19,
-  "scanner": 498,
-  "scoring": 28,
-  "commit_tail": 3
+  "setup": 24,
+  "scanner": 1213,
+  "scoring": 42,
+  "commit_tail": 4
  }
 }
