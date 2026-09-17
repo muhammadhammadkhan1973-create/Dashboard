@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.464.0'  # v1.464.0 FORWARD FOMC (owner: 'why can't I see the Fed announcement today?'): the existing FOMC engine only surfaced the latest PUBLISHED press item (e.g. the month-old July minutes) with no notion of the next scheduled decision, and the rate value was never tied to a meeting. Added the 2026 FOMC decision-day calendar to macros.us.fomc: next_decision, days_to_next, last_decision, decision_today, fresh_window (<=2d after a meeting, when the rate feed may still be catching up), and rate_at_read. Computed on BOTH the RSS-success and RSS-fail/last-good paths so the countdown never depends on the feed. Sept 17 is the next decision -- dashboard will show it coming and flag the day. Index v5.361 renders it on Tab 2/economy. No other behavior changed.
+SCAN_VERSION = '1.465.0'  # v1.465.0 FEED-DRIVEN FORWARD FOMC. The v1.464 hardcoded 2026 schedule was proven one day wrong on live evidence (the decision landed 16 Sep; the list said 17 Sep, so decision_today never fired on the real day and the amber flag never showed). Replaced in BOTH the RSS-success and last-good paths with _fomc_forward(), which reads the 'Federal Funds Rate' rows from the live ForexFactory release feed already in the payload (recession.calendar: ISO date, forecast, previous, actual) -- so the countdown, decision-day flag and fresh-window now track the authoritative schedule AND surface the decision's forecast/previous/actual; the fixed list survives only as an explicitly-labelled 'fixed-fallback' when the feed has no Fed row (with the Sep date corrected to the 16th). No other behavior changed.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -1622,6 +1622,67 @@ def fetch_tv_econ(keys):
     return {}
 
 
+
+def _fomc_forward(fed_rate_now):
+    """v1.465.0: forward-FOMC resolved from the LIVE ForexFactory release feed (the 'Federal
+    Funds Rate' rows in the recession calendar), not a hardcoded date list. The v1.464 fixed
+    2026 schedule was proven one day wrong on live evidence (decision landed 16 Sep; the list
+    said 17 Sep, so decision_today never fired on the actual day). Feed rows carry title,
+    ISO date, forecast, previous, actual -- so this also surfaces the decision's forecast and,
+    once posted, its actual. Fallback to the fixed schedule ONLY if the feed has no Fed row."""
+    import datetime as _dt
+    _td = _dt.date.today()
+    _out = {'next_decision': None, 'days_to_next': None, 'last_decision': None,
+            'decision_today': False, 'fresh_window': False, 'rate_at_read': fed_rate_now,
+            'source': 'feed', 'forecast': None, 'actual': None, 'previous': None}
+    _rows = []
+    try:
+        for _r in (safe_get(EXISTING, 'recession', 'calendar') or []):
+            if not isinstance(_r, dict): continue
+            if 'Federal Funds Rate' in str(_r.get('title', '')):
+                _d = str(_r.get('date', ''))[:10]
+                try: _rows.append((_dt.date.fromisoformat(_d), _r))
+                except Exception: pass
+    except Exception:
+        _rows = []
+    # The live calendar only carries a rolling window; also consider FOMC rows we already stamped.
+    if _rows:
+        _rows.sort(key=lambda x: x[0])
+        _fut = [x for x in _rows if x[0] >= _td]
+        _pas = [x for x in _rows if x[0] < _td]
+        if _fut:
+            _nd, _nr = _fut[0]
+            _out['next_decision'] = _nd.isoformat(); _out['days_to_next'] = (_nd - _td).days
+            _out['decision_today'] = (_nd == _td)
+            _out['forecast'] = _nr.get('forecast') or None; _out['previous'] = _nr.get('previous') or None
+            _out['actual'] = _nr.get('actual') or None
+        if _pas:
+            _ld, _lr = _pas[-1]
+            _out['last_decision'] = _ld.isoformat()
+            _out['fresh_window'] = (_td - _ld).days <= 2
+            if _out['actual'] is None: _out['actual'] = _lr.get('actual') or None
+            if _out['forecast'] is None and not _fut: _out['forecast'] = _lr.get('forecast') or None
+        if not _fut:
+            # The feed window is only ~10 days ahead; between meetings it holds no future Fed row.
+            # Borrow ONLY the next date from the published schedule and label it, so the countdown
+            # never goes blank -- the feed re-takes over the moment the meeting enters its window.
+            _F = ['2026-10-28', '2026-12-09', '2027-01-27', '2027-03-17']
+            _nf = [x for x in _F if _dt.date.fromisoformat(x) >= _td]
+            if _nf:
+                _out['next_decision'] = _nf[0]; _out['days_to_next'] = (_dt.date.fromisoformat(_nf[0]) - _td).days
+                _out['next_source'] = 'schedule (feed window not yet open)'
+        return _out
+    # FALLBACK (feed had no Fed row): fixed schedule, explicitly labelled so it's never mistaken for truth.
+    _F = ['2026-01-28', '2026-03-18', '2026-04-29', '2026-06-17', '2026-07-29', '2026-09-16', '2026-10-28', '2026-12-09']
+    _fut = [x for x in _F if _dt.date.fromisoformat(x) >= _td]; _pas = [x for x in _F if _dt.date.fromisoformat(x) < _td]
+    _out['source'] = 'fixed-fallback'
+    if _fut:
+        _out['next_decision'] = _fut[0]; _out['days_to_next'] = (_dt.date.fromisoformat(_fut[0]) - _td).days
+        _out['decision_today'] = (_td.isoformat() in _F)
+    if _pas:
+        _out['last_decision'] = _pas[-1]; _out['fresh_window'] = (_td - _dt.date.fromisoformat(_pas[-1])).days <= 2
+    return _out
+
 def fetch_us_macros():
     import re
     log('Fetching US macros from FRED...')
@@ -2190,31 +2251,7 @@ def fetch_us_macros():
                         days = None
                 out['fomc'] = {'title': fomc['title'], 'link': fomc['link'], 'date': fomc['date'],
                                'days_ago': days, 'stance': stance, 'recent': items[:5]}
-                # v1.464.0 FORWARD FOMC (owner: 'why can't I see the Fed announcement today?'):
-                # the RSS only surfaces the latest PUBLISHED release (e.g. month-old minutes), with
-                # no notion of the next scheduled decision. Add the 2026 FOMC meeting calendar
-                # (decision days = the 2nd day of each 2-day meeting; source: federalreserve.gov
-                # published schedule) so the dashboard shows a decision COMING, flags the day, and
-                # marks the window right after when the new rate posts to the rate feed.
-                _FOMC_2026 = ['2026-01-28','2026-03-18','2026-04-29','2026-06-17',
-                              '2026-07-29','2026-09-17','2026-10-28','2026-12-09']
-                try:
-                    _td = dt.date.today()
-                    _future = [d for d in _FOMC_2026 if dt.date.fromisoformat(d) >= _td]
-                    _past   = [d for d in _FOMC_2026 if dt.date.fromisoformat(d) <  _td]
-                    _next = _future[0] if _future else None
-                    _last = _past[-1] if _past else None
-                    _dtn = (dt.date.fromisoformat(_next) - _td).days if _next else None
-                    out['fomc']['next_decision'] = _next
-                    out['fomc']['days_to_next'] = _dtn
-                    out['fomc']['last_decision'] = _last
-                    # decision-day / fresh-window flag: today IS a meeting day, or the last meeting
-                    # was <=2 days ago (the rate feed may still be catching up to the new level).
-                    out['fomc']['decision_today'] = (_td.isoformat() in _FOMC_2026)
-                    out['fomc']['fresh_window'] = bool(_last and (_td - dt.date.fromisoformat(_last)).days <= 2)
-                    out['fomc']['rate_at_read'] = out.get('fed_rate')
-                except Exception as _fe:
-                    log(f'  \u00b7 FOMC forward-calendar skipped: {_fe}')
+                out['fomc'].update(_fomc_forward(out.get('fed_rate')))   # v1.465.0: feed-driven
                 log(f'  \u2713 FOMC: {fomc.get("date")} \u2014 {fomc["title"][:60]}')
         except Exception as e:
             log(f'  \u00b7 FOMC RSS (last-good): {e}')
@@ -2222,23 +2259,7 @@ def fetch_us_macros():
             lg = safe_get(EXISTING, 'macros', 'us', 'fomc')
             if lg is not None:
                 out['fomc'] = lg
-            # v1.464.0: even on an RSS-fail day, recompute the forward schedule so the countdown
-            # and decision-day flag never depend on the feed succeeding.
-            try:
-                _FOMC_2026 = ['2026-01-28','2026-03-18','2026-04-29','2026-06-17',
-                              '2026-07-29','2026-09-17','2026-10-28','2026-12-09']
-                _td = dt.date.today()
-                _future = [d for d in _FOMC_2026 if dt.date.fromisoformat(d) >= _td]
-                _past   = [d for d in _FOMC_2026 if dt.date.fromisoformat(d) <  _td]
-                out.setdefault('fomc', {})
-                out['fomc']['next_decision'] = _future[0] if _future else None
-                out['fomc']['days_to_next'] = ((dt.date.fromisoformat(_future[0]) - _td).days if _future else None)
-                out['fomc']['last_decision'] = _past[-1] if _past else None
-                out['fomc']['decision_today'] = (_td.isoformat() in _FOMC_2026)
-                out['fomc']['fresh_window'] = bool(_past and (_td - dt.date.fromisoformat(_past[-1])).days <= 2)
-                out['fomc']['rate_at_read'] = out.get('fed_rate')
-            except Exception:
-                pass
+            out.setdefault('fomc', {}); out['fomc'].update(_fomc_forward(out.get('fed_rate')))   # v1.465.0: feed-driven
             # v1.288.0 (old-backlog confirm, owner-approved): fomc has sat null with no explanation.
             # If the feed produced nothing AND there is no last-good, say so in the data -- and the
             # next run's meta['swallowed']/fomc_status names whether the Fed RSS is reachable at all.
