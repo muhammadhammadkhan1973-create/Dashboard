@@ -1,32 +1,34 @@
 {
- "t0": 1789649196,
+ "t0": 1789654942,
  "marks": {
-  "setup_done": 1789649218,
-  "scanner_done": 1789649622,
-  "scoring_done": 1789649645
+  "setup_done": 1789654966,
+  "scanner_done": 1789655379,
+  "scoring_done": 1789655406
  },
  "check_verdict": {
   "book_at_check": 353,
-  "universe": 222,
-  "missing_im3": 0,
-  "missing_sample": [],
+  "universe": 221,
+  "missing_im3": 1,
+  "missing_sample": [
+   "ACIW"
+  ],
   "full_rescore": false,
   "scorer_changed": false,
   "stale": false,
   "last_scored_seen": "2026-09-16T19:15:40"
  },
  "scoring_entry": {
-  "score_list": 0,
+  "score_list": 1,
   "full": false,
-  "sel": 0
+  "sel": 1
  },
- "t_end": 1789649648,
+ "t_end": 1789655410,
  "status": "success",
- "wall_sec": 452,
+ "wall_sec": 468,
  "segments_sec": {
-  "setup": 22,
-  "scanner": 404,
-  "scoring": 23,
-  "commit_tail": 3
+  "setup": 24,
+  "scanner": 413,
+  "scoring": 27,
+  "commit_tail": 4
  }
 }
