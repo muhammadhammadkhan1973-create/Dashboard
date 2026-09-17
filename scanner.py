@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.465.0'  # v1.465.0 FEED-DRIVEN FORWARD FOMC. The v1.464 hardcoded 2026 schedule was proven one day wrong on live evidence (the decision landed 16 Sep; the list said 17 Sep, so decision_today never fired on the real day and the amber flag never showed). Replaced in BOTH the RSS-success and last-good paths with _fomc_forward(), which reads the 'Federal Funds Rate' rows from the live ForexFactory release feed already in the payload (recession.calendar: ISO date, forecast, previous, actual) -- so the countdown, decision-day flag and fresh-window now track the authoritative schedule AND surface the decision's forecast/previous/actual; the fixed list survives only as an explicitly-labelled 'fixed-fallback' when the feed has no Fed row (with the Sep date corrected to the 16th). No other behavior changed.
+SCAN_VERSION = '1.466.0'  # v1.466.0 FED DECISION INTO 'RELEASED -- LAST 14 DAYS'. Root cause (owner: 'why is it not here?'): that list is built solely from _ECON_FRED_MAP because ForexFactory never publishes actuals -- and 'Federal Funds Rate' was never in the map, so the decision could never appear (CPI/PPI/claims could). Added 'Federal Funds Rate' -> FRED DFEDTARU with a new pct_level mode ('4.00%'), 10-day freshness like other daily series. Next run: 'Wed Sep 16, 2:00 PM ET -- Federal Funds Rate: 4.00% (in line 4.00%) prev 3.75%' joins the released list. Nothing else changed.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -14764,6 +14764,11 @@ _ECON_FRED_MAP = {
     'Core PPI m/m':   ('PPIFES', 'mom_pct'),
     'Retail Sales m/m':    ('RSAFS', 'mom_pct'),
     'Prelim UoM Consumer Sentiment': ('UMCSENT', 'level_1dp'),
+    # v1.466.0 (owner: 'why is the Fed decision not in RELEASED?'): the released list is built
+    # ONLY from this map (ForexFactory never supplies actuals), and the Fed funds rate was never
+    # in it -- so the decision could never enter the list. DFEDTARU = target-range upper bound
+    # (daily; posts the day after the meeting) -- the same series the fed_rate fallback uses.
+    'Federal Funds Rate':  ('DFEDTARU', 'pct_level'),
 }
 
 def _fred_latest_vals(sid, n):
@@ -14944,7 +14949,7 @@ def _enrich_econ_actuals(cal):
         vals, last_obs = _fred_latest_vals(sid, max(need, 1))
         if not vals or last_obs is None:
             continue
-        max_age = 10 if mode == 'level_k' else 45
+        max_age = 10 if mode in ('level_k', 'pct_level') else 45
         if (now.date() - last_obs).days > max_age:
             continue                                   # FRED not updated yet -- fill next run
         try:
@@ -14954,6 +14959,8 @@ def _enrich_econ_actuals(cal):
                 c['actual'] = '%.1f%%' % ((vals[-1] / vals[0] - 1.0) * 100.0)
             elif mode == 'level_k':
                 c['actual'] = '%dK' % round(vals[-1] / 1000.0)
+            elif mode == 'pct_level':
+                c['actual'] = '%.2f%%' % vals[-1]          # v1.466.0: rate-as-percent (Fed funds)
             else:
                 c['actual'] = '%.1f' % vals[-1]
             c['actual_src'] = 'FRED:' + sid
