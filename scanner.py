@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.466.0'  # v1.466.0 FED DECISION INTO 'RELEASED -- LAST 14 DAYS'. Root cause (owner: 'why is it not here?'): that list is built solely from _ECON_FRED_MAP because ForexFactory never publishes actuals -- and 'Federal Funds Rate' was never in the map, so the decision could never appear (CPI/PPI/claims could). Added 'Federal Funds Rate' -> FRED DFEDTARU with a new pct_level mode ('4.00%'), 10-day freshness like other daily series. Next run: 'Wed Sep 16, 2:00 PM ET -- Federal Funds Rate: 4.00% (in line 4.00%) prev 3.75%' joins the released list. Nothing else changed.
+SCAN_VERSION = '1.467.0'  # v1.467.0 WAVE RB -- research-based REBALANCING ADVISOR for the live book. live_investment.rebalance: per-holding target (cost-basis weights scaled to the regime cash floor, or config 'targets'), live weight, drift pp/relative, Swedroe 5/25 band, trend gate (ADD only above the 200-day line, else WAIT), leveraged-3x caps (5% each / 10% total), cluster caps (semis/AI, Asia-tech <=35%), hedge floor 10%, regime cash floor from us_diffusion.phase, $ actions to the band destination, headline + structural notes. Threshold policy, not calendar (Vanguard 2022/2024). Index v5.363 renders it on Tab 17.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -20436,6 +20436,85 @@ def fetch_tic_japan():
         pass
     return {}
 
+
+def _rebalance_engine(rows, nav, cash_usd, cfg, data):
+    """v1.467.0 WAVE RB -- research-based rebalancing advisor for the live book.
+    Rules and sources: threshold bands not calendar (Vanguard 2022/2024: annual/threshold beats
+    monthly/quarterly after costs; 200/175bp destination); Swedroe 5/25 band = trip when |drift|
+    > min(5pp absolute, 25% relative); trend gate -- ADD to a laggard only above its 200DMA
+    (trend-conditional rebalancing; LETF autocorrelation paper 2025); leveraged 3x ETPs capped
+    (daily-reset path dependency -> size discipline, not buy-and-hold); cluster caps for the
+    semis/AI and Asia-tech correlation blocks; regime-linked cash floor from the US diffusion
+    phase (mirrors the paper Model Portfolio). Targets default to COST weights (what the owner
+    chose to buy) scaled to the cash floor, unless live_portfolio.json supplies 'targets'."""
+    try:
+        if not rows or not nav or nav <= 0:
+            return None
+        targets_cfg = cfg.get('targets') or {}
+        cost_total = sum((r.get('cost_usd') or 0.0) for r in rows) or 1.0
+        phase = str(((data.get('us_diffusion') or {}).get('phase')) or 'Expansion')
+        cash_floor = {'Expansion': 0.05, 'Slowdown': 0.10, 'Peak': 0.10, 'Contraction': 0.20, 'Recovery': 0.05}.get(phase, 0.05)
+        invest_target = 1.0 - cash_floor
+        LEV_CAP_EACH, LEV_CAP_ALL, CLUSTER_CAP = 0.05, 0.10, 0.35
+        out_rows, actions, lev_w = [], [], 0.0
+        clusters = {'semis_ai': 0.0, 'asia_tech': 0.0, 'hedge': 0.0}
+        for r in rows:
+            mv = float(r.get('mv_usd') or 0.0); w = mv / nav
+            tk = str(r.get('ticker') or ''); theme = str(r.get('theme') or ''); tl = theme.lower()
+            is_lev = ('3x' in tl) or tk.endswith('3')
+            if is_lev: lev_w += w
+            if 'semi' in tl or 'ai infra' in tl: clusters['semis_ai'] += w
+            if 'asia' in tl or 'china' in tl or 'taiwan' in tl or 'korea' in tl: clusters['asia_tech'] += w
+            if 'metal' in tl or 'hedge' in tl or 'gold' in tl: clusters['hedge'] += w
+            if tk in targets_cfg:
+                _t = float(targets_cfg[tk]); tgt = _t / 100.0 if _t > 1 else _t
+            else:
+                tgt = ((r.get('cost_usd') or 0.0) / cost_total) * invest_target
+            drift_pp = (w - tgt) * 100.0
+            drift_rel = ((w - tgt) / tgt * 100.0) if tgt > 0 else 0.0
+            band_pp = min(5.0, tgt * 100.0 * 0.25)
+            tripped = abs(drift_pp) > band_pp
+            px, s200 = r.get('price'), r.get('sma200')
+            above200 = (px is not None and s200 is not None and float(px) >= float(s200))
+            verdict, why, trade_usd = 'HOLD', 'inside band', 0.0
+            if is_lev and w > LEV_CAP_EACH:
+                verdict = 'TRIM'; trade_usd = -(w - LEV_CAP_EACH) * nav
+                why = '3x product above %.0f%% cap -- daily-reset decay: size discipline, not buy-and-hold' % (LEV_CAP_EACH*100)
+            elif tripped and drift_pp > 0:
+                verdict = 'TRIM'; trade_usd = -(drift_pp/100.0 - band_pp/100.0*0.5) * nav
+                why = '%+.1fpp above target (band %.1fpp) -- take gains back toward target' % (drift_pp, band_pp)
+            elif tripped and drift_pp < 0:
+                if above200:
+                    verdict = 'ADD'; trade_usd = (abs(drift_pp)/100.0 - band_pp/100.0*0.5) * nav
+                    why = '%+.1fpp below target and above its 200-day line -- buy the dip in an intact uptrend' % drift_pp
+                else:
+                    verdict = 'WAIT'; why = '%+.1fpp below target but BELOW its 200-day line -- do not add into a downtrend; re-check when it reclaims' % drift_pp
+            out_rows.append({'ticker': tk, 'theme': theme, 'weight_pct': round(w*100, 1), 'target_pct': round(tgt*100, 1),
+                             'drift_pp': round(drift_pp, 1), 'drift_rel_pct': round(drift_rel, 0), 'band_pp': round(band_pp, 1),
+                             'tripped': tripped, 'above_200d': above200, 'leveraged': is_lev,
+                             'verdict': verdict, 'why': why, 'trade_usd': round(trade_usd, 0)})
+            if verdict in ('TRIM', 'ADD'):
+                actions.append({'ticker': tk, 'verdict': verdict, 'trade_usd': round(trade_usd, 0), 'why': why})
+        cash_w = (cash_usd or 0.0) / nav
+        notes = []
+        if lev_w > LEV_CAP_ALL: notes.append('Leveraged 3x products total %.1f%% (cap %.0f%%) -- trim.' % (lev_w*100, LEV_CAP_ALL*100))
+        for ck, cv in clusters.items():
+            if cv > CLUSTER_CAP: notes.append('%s cluster %.0f%% exceeds %.0f%% cap -- one correlated block, not diversification.' % (ck.replace('_', ' '), cv*100, CLUSTER_CAP*100))
+        if clusters['hedge'] < 0.10: notes.append('Hedge sleeve %.0f%% is below the 10%% floor.' % (clusters['hedge']*100))
+        if cash_w < cash_floor: notes.append('Cash %.1f%% is below the %.0f%% floor for the %s regime.' % (cash_w*100, cash_floor*100, phase))
+        elif cash_w > cash_floor + 0.10: notes.append('Cash %.1f%% is well above the %.0f%% regime floor -- deployable into ADD names above their 200-day line.' % (cash_w*100, cash_floor*100))
+        n_trip = sum(1 for x in out_rows if x['tripped'])
+        headline = ('No band tripped -- hold; next full review at the quarter (threshold policy, not calendar).' if not actions and not notes
+                    else '%d action(s) suggested, %d band(s) tripped; %d structural note(s).' % (len(actions), n_trip, len(notes)))
+        return {'as_of': dt.date.today().isoformat(), 'policy': 'threshold 5/25 + trend gate + leverage/cluster caps + regime cash (annual full review)',
+                'regime_phase': phase, 'cash_floor_pct': round(cash_floor*100, 0), 'cash_pct': round(cash_w*100, 1),
+                'leveraged_pct': round(lev_w*100, 1), 'clusters_pct': {k: round(v*100, 1) for k, v in clusters.items()},
+                'rows': out_rows, 'actions': actions, 'notes': notes, 'headline': headline,
+                'targets_source': 'config targets' if targets_cfg else 'cost-basis weights (what you bought), scaled to the regime cash floor'}
+    except Exception as _e:
+        log('  \u00b7 rebalance engine skipped: %s' % _e)
+        return None
+
 def build_live_investment(data, existing):
     try:
         import datetime as _dt
@@ -20820,6 +20899,7 @@ def build_live_investment(data, existing):
         data['live_investment'] = {
             'as_of': today, 'nav_usd': round(nav, 2), 'holdings_usd': round(holdings_usd, 2), 'interest_usd': round(interest_usd, 2),
             'dividends': dividends_cfg,
+            'rebalance': _rebalance_engine(rows, nav, cash_usd, cfg, data),   # v1.467.0 WAVE RB
             'cash_usd': round(cash_usd, 2), 'fx': fx, 'n_reuse': n_reuse, 'n_resolved': n_resolve,
             'n_pending': n_pending, 'holdings': rows, 'cash': cash_cfg,
             'inception_date': inception,
