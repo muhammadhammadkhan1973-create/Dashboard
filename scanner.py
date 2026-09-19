@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.468.0'  # v1.468.0 KEY-COLLISION FIX (owner: 'the rebalancing advisor is empty?'): v1.467 wrote the advisor to live_investment['rebalance'], a key that ALREADY existed -- the look-through tilt/exposure block assigned later in the same dict -- so the older block overwrote the engine's output and the Tab-17 card rendered with no rows. Advisor now lives at live_investment['rebalance_advisor']; the legacy 'rebalance' block is untouched. Engine logic unchanged.
+SCAN_VERSION = '1.469.0'  # v1.469.0 WAVE RB v2 HOLISTIC (owner: 'not just hold/buy/sell -- how much to cost-average, opportunities, TipRanks/Zacks, COT, sectors, seasonality, policy changes'). Six lenses per holding (price, regime early-warning, thesis w/ owner notes+policy+news+country LEI, consensus from Zacks/TipRanks on the companies INSIDE the fund, COT positioning, sector-booming + rotation + calendar season) -> dollar-sized tranched instructions (ADD/TRIM/WAIT/REDUCE TARGET/HOLD) with every reason listed; Daryanani 20% bands; trend gate with crisis-buy override when the early-warning check is clear; vol-scaled 3x caps (Harvey 2018); candidates from booming sectors the book lacks via estate-safe UCITS funds. Key: live_investment.rebalance_advisor (unchanged). Index v5.366 renders it.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -20437,82 +20437,215 @@ def fetch_tic_japan():
     return {}
 
 
+# ======================== WAVE RB v2 (v1.469.0): HOLISTIC REBALANCING ADVISOR ========================
+# Six lenses per holding -> a dollar-sized, tranched instruction with the reasons listed.
+#   price      drift vs target (Daryanani 20%-relative band, 5pp absolute ceiling) + 10-month line + 12m momentum
+#   regime     the dashboard's own early-warning check (credit stress, curve, growth) -> wobble vs breaking
+#   thesis     owner notes (override) + policy catalysts + narrative sentiment + country LEI -> intact/watch/damaged
+#   consensus  weighted Zacks rank + TipRanks consensus of the companies INSIDE the fund (honest n/a when uncovered)
+#   position   COT (commercial/large-spec positioning) on the market the fund depends on
+#   cycle      sector-booming score + Zacks sector rotation + calendar seasonality by theme
+# Sources: Vanguard 2022/2024, Daryanani 2008, Faber 2007/2013, Harvey et al. 2018 (vol-scaled 3x sizing).
+_RB_UNDERLYING = {   # fund -> proxy underlying names that carry Zacks/TipRanks data (documented; extend freely)
+    'SMH': ['NVDA', 'TSM', 'AVGO', 'AMD', 'ASML', 'LRCX', 'AMAT'], 'AMD3': ['AMD'], 'TSM3': ['TSM'], 'ITWN': ['TSM'],
+    'AINF': ['NVDA', 'AVGO', 'ANET', 'ALAB', 'VRT', 'MRVL'], 'FLXK': [], 'KSTR': [], 'STOR': ['BE', 'PLUG', 'EOSE'], 'PHPM': [],
+}
+_RB_COT = {'SMH': 'NASDAQ', 'AMD3': 'NASDAQ', 'TSM3': 'NASDAQ', 'AINF': 'NASDAQ', 'ITWN': 'SP500', 'FLXK': 'SP500',
+           'KSTR': 'SP500', 'STOR': 'Crude', 'PHPM': 'GOLD'}
+_RB_SECTOR = {'SMH': 'Information Technology', 'AMD3': 'Information Technology', 'TSM3': 'Information Technology',
+              'AINF': 'Information Technology', 'ITWN': 'Information Technology', 'FLXK': 'Information Technology',
+              'KSTR': 'Information Technology', 'STOR': 'Energy', 'PHPM': 'Materials'}
+_RB_COUNTRY = {'FLXK': 'South Korea', 'KSTR': 'China', 'ITWN': 'Taiwan'}
+# Calendar pattern by theme: months that have historically favoured (+) or hurt (-) the theme. Documented as a pattern.
+_RB_SEASON = {'semi': {'+': [11, 12, 1, 2, 3], '-': [8, 9, 10]}, 'metal': {'+': [9, 10, 11, 12, 1, 2], '-': [3, 6, 7]},
+              'energy': {'+': [2, 3, 4, 5, 6], '-': [9, 10, 11]}, 'asia': {'+': [11, 12, 1, 4], '-': [8, 9]}}
+
+def _rb_theme_key(theme):
+    t = (theme or '').lower()
+    if 'metal' in t or 'gold' in t or 'hedge' in t: return 'metal'
+    if 'energy' in t or 'hydrogen' in t or 'storage' in t: return 'energy'
+    if 'semi' in t or 'ai infra' in t: return 'semi'
+    if 'asia' in t or 'china' in t or 'korea' in t or 'taiwan' in t: return 'asia'
+    return 'semi'
+
 def _rebalance_engine(rows, nav, cash_usd, cfg, data):
-    """v1.467.0 WAVE RB -- research-based rebalancing advisor for the live book.
-    Rules and sources: threshold bands not calendar (Vanguard 2022/2024: annual/threshold beats
-    monthly/quarterly after costs; 200/175bp destination); Swedroe 5/25 band = trip when |drift|
-    > min(5pp absolute, 25% relative); trend gate -- ADD to a laggard only above its 200DMA
-    (trend-conditional rebalancing; LETF autocorrelation paper 2025); leveraged 3x ETPs capped
-    (daily-reset path dependency -> size discipline, not buy-and-hold); cluster caps for the
-    semis/AI and Asia-tech correlation blocks; regime-linked cash floor from the US diffusion
-    phase (mirrors the paper Model Portfolio). Targets default to COST weights (what the owner
-    chose to buy) scaled to the cash floor, unless live_portfolio.json supplies 'targets'."""
     try:
-        if not rows or not nav or nav <= 0:
-            return None
-        targets_cfg = cfg.get('targets') or {}
+        if not rows or not nav or nav <= 0: return None
+        today = dt.date.today(); month = today.month
+        us = safe_get(data, 'macros', 'us') or {}
+        # ---- regime lens (early-warning check, same three tests as the compass) ----
+        hy = us.get('hy_spread'); y10 = us.get('us_10y'); y2 = us.get('us_2y'); gdp = us.get('gdp_growth')
+        trips = []
+        if hy is not None and hy > 5.0: trips.append('credit stress %.1f%% > 5%%' % hy)
+        if y10 is not None and y2 is not None and (y10 - y2) < 0: trips.append('curve inverted %.2f' % (y10 - y2))
+        if gdp is not None and gdp < 0: trips.append('economy shrinking %.1f%%' % gdp)
+        regime_ok = not trips
+        phase = str((data.get('us_diffusion') or {}).get('phase') or 'Expansion')
+        cash_floor = {'Expansion': 0.05, 'Recovery': 0.05, 'Slowdown': 0.10, 'Peak': 0.10, 'Contraction': 0.20}.get(phase, 0.05)
+        vix = us.get('vix'); storm = (vix is not None and vix >= 25) or (hy is not None and hy >= 4.0)
+        tranches = 4 if (storm and not regime_ok) else (3 if storm else 2)
+        # ---- shared inputs ----
+        cot = data.get('cot_futures') or {}; zr = data.get('zacks_ranks') or {}
+        tp = (data.get('tipranks') or {}).get('by_ticker') or {}
+        book = data.get('im3_grade_book') or {}
+        sb = {s.get('sector'): s for s in (data.get('sector_booming') or []) if isinstance(s, dict)}
+        zs = data.get('zacks_sectors') or {}; wl = data.get('world_lei') or {}
+        pol = (data.get('policy_catalyst') or {}).get('items') or []
+        themes = (data.get('narratives') or {}).get('themes') or []
+        notes_cfg = cfg.get('thesis_notes') or {}; targets_cfg = cfg.get('targets') or {}
         cost_total = sum((r.get('cost_usd') or 0.0) for r in rows) or 1.0
-        phase = str(((data.get('us_diffusion') or {}).get('phase')) or 'Expansion')
-        cash_floor = {'Expansion': 0.05, 'Slowdown': 0.10, 'Peak': 0.10, 'Contraction': 0.20, 'Recovery': 0.05}.get(phase, 0.05)
         invest_target = 1.0 - cash_floor
-        LEV_CAP_EACH, LEV_CAP_ALL, CLUSTER_CAP = 0.05, 0.10, 0.35
+        cash_w = (cash_usd or 0.0) / nav; deployable = max(0.0, cash_w - cash_floor) * nav
         out_rows, actions, lev_w = [], [], 0.0
         clusters = {'semis_ai': 0.0, 'asia_tech': 0.0, 'hedge': 0.0}
         for r in rows:
+            tk = str(r.get('ticker') or ''); theme = str(r.get('theme') or ''); tl = theme.lower(); tkey = _rb_theme_key(theme)
             mv = float(r.get('mv_usd') or 0.0); w = mv / nav
-            tk = str(r.get('ticker') or ''); theme = str(r.get('theme') or ''); tl = theme.lower()
             is_lev = ('3x' in tl) or tk.endswith('3')
             if is_lev: lev_w += w
             if 'semi' in tl or 'ai infra' in tl: clusters['semis_ai'] += w
             if 'asia' in tl or 'china' in tl or 'taiwan' in tl or 'korea' in tl: clusters['asia_tech'] += w
             if 'metal' in tl or 'hedge' in tl or 'gold' in tl: clusters['hedge'] += w
+            # target: cost weight scaled to the cash floor, or config
             if tk in targets_cfg:
                 _t = float(targets_cfg[tk]); tgt = _t / 100.0 if _t > 1 else _t
             else:
                 tgt = ((r.get('cost_usd') or 0.0) / cost_total) * invest_target
+            # 3x products: vol-scaled cap (Harvey 2018): 10% vol target / realised vol proxy from |mom| and |wow|
+            if is_lev:
+                # Harvey-style vol scaling applied as a BOUNDED cap (a 10% portfolio vol target cannot be
+                # imposed on a single 3x sleeve -- it would always read ~0): 5% when the product trades
+                # calmly, 2.5% when it or the market is in a storm (|week| >= 8%, |day| >= 6%, VIX >= 25, HY >= 4%).
+                _fund_storm = abs(float(r.get('wow') or 0)) >= 8 or abs(float(r.get('daily_pct') or 0)) >= 6 or storm
+                cap = 0.025 if _fund_storm else 0.05
+                tgt = min(tgt, cap)
+            # ---- price lens ----
             drift_pp = (w - tgt) * 100.0
-            drift_rel = ((w - tgt) / tgt * 100.0) if tgt > 0 else 0.0
-            band_pp = min(5.0, tgt * 100.0 * 0.25)
+            band_pp = min(5.0, tgt * 100.0 * 0.20)          # Daryanani 20% relative, 5pp ceiling
             tripped = abs(drift_pp) > band_pp
             px, s200 = r.get('price'), r.get('sma200')
             above200 = (px is not None and s200 is not None and float(px) >= float(s200))
-            verdict, why, trade_usd = 'HOLD', 'inside band', 0.0
-            if is_lev and w > LEV_CAP_EACH:
-                verdict = 'TRIM'; trade_usd = -(w - LEV_CAP_EACH) * nav
-                why = '3x product above %.0f%% cap -- daily-reset decay: size discipline, not buy-and-hold' % (LEV_CAP_EACH*100)
+            mom12 = r.get('ret_1y'); mom_ok = (mom12 is None) or (float(mom12) > 0)
+            ts = r.get('trend_state') or {}; zone = str(ts.get('label') or '')
+            price_txt = ('%+.1fpp vs target (band \u00b1%.1f)' % (drift_pp, band_pp)) + (', above 10-month line' if above200 else ', BELOW 10-month line') + ((' \u00b7 ' + zone) if zone else '')
+            # ---- thesis lens ----
+            th_status, th_why = 'intact', []
+            nt = notes_cfg.get(tk)
+            if isinstance(nt, dict) and nt.get('status') in ('watch', 'damaged'):
+                th_status = nt['status']; th_why.append('owner note: ' + str(nt.get('note') or ''))
+            ctry = _RB_COUNTRY.get(tk)
+            if ctry and isinstance(wl.get(ctry), dict):
+                sig = str(wl[ctry].get('signal') or '')
+                if sig and 'contract' in sig.lower():
+                    th_status = 'watch' if th_status == 'intact' else th_status; th_why.append('%s LEI %s' % (ctry, sig))
+                elif sig: th_why.append('%s LEI %s' % (ctry, sig))
+            unders = set(_RB_UNDERLYING.get(tk, []))
+            hits = [p.get('headline') for p in pol if isinstance(p, dict) and any((x.get('ticker') in unders) for x in (p.get('tickers') or []) if isinstance(x, dict))]
+            if hits: th_why.append('policy catalyst: ' + hits[0][:60]); th_status = 'watch' if th_status == 'intact' else th_status
+            neg = 0; tot = 0
+            for th in themes:
+                if not isinstance(th, dict): continue
+                tid = (str(th.get('id') or '') + ' ' + str(th.get('title') or '')).lower()
+                rel = (tkey == 'semi' and ('chip' in tid or 'semi' in tid or 'ai' in tid)) or (tkey == 'asia' and ('china' in tid or 'taiwan' in tid or 'korea' in tid or 'asia' in tid)) or (tkey == 'metal' and ('gold' in tid or 'metal' in tid)) or (tkey == 'energy' and ('energy' in tid or 'oil' in tid or 'hydrogen' in tid)) or ('tariff' in tid and tkey in ('asia', 'semi'))
+                if not rel: continue
+                for hl in (th.get('headlines') or []):
+                    if isinstance(hl, dict) and (hl.get('age_d') or 99) <= 14:
+                        tot += 1; neg += 1 if (hl.get('sent') or 0) < 0 else 0
+            if tot >= 4 and neg / tot >= 0.6:
+                th_why.append('news %d of %d recent headlines negative' % (neg, tot)); th_status = 'watch' if th_status == 'intact' else th_status
+            if not th_why: th_why.append('no policy, country or news flag')
+            # ---- consensus lens (underlying names) ----
+            zr_vals = [zr[u] for u in unders if u in zr]; tp_vals = [tp[u] for u in unders if u in tp]
+            if zr_vals or tp_vals:
+                z_avg = (sum(zr_vals) / len(zr_vals)) if zr_vals else None
+                buys = sum((v.get('buy') or 0) for v in tp_vals); holds = sum((v.get('hold') or 0) for v in tp_vals); sells = sum((v.get('sell') or 0) for v in tp_vals)
+                ups = [v.get('upside_pct') for v in tp_vals if v.get('upside_pct') is not None]
+                up_avg = (sum(ups) / len(ups)) if ups else None
+                cons = 'Buy' if (z_avg is not None and z_avg <= 2.5) or (buys > (holds + sells)) else ('Sell' if (z_avg is not None and z_avg >= 4) else 'Hold')
+                cons_txt = cons + (' \u00b7 Zacks avg %.1f' % z_avg if z_avg is not None else '') + (' \u00b7 TipRanks %d buy / %d hold / %d sell' % (buys, holds, sells) if tp_vals else '') + (' \u00b7 upside %+.0f%%' % up_avg if up_avg is not None else '') + ' (inside: ' + ', '.join(sorted(u for u in unders if u in zr or u in tp)) + ')'
+                grades = [book[u]['grade'] for u in unders if u in book and (book[u] or {}).get('grade')]
+                if grades: cons_txt += ' \u00b7 engine grades ' + ''.join(sorted(grades))
+            else:
+                cons = 'n/a'; cons_txt = 'no US-covered names inside this fund (bullion / local-market constituents)'
+            # ---- positioning lens (COT) ----
+            mkt = _RB_COT.get(tk); c = cot.get(mkt) if mkt else None
+            if isinstance(c, dict):
+                pos = str(c.get('signal') or 'NEUTRAL'); pos_txt = '%s: %s (net %s, %s w/w; COT index 1y %s)' % (mkt, pos, c.get('net'), c.get('net_wow_dir'), (c.get('analytics') or {}).get('cot_index_1y'))
+            else:
+                pos, pos_txt = 'n/a', ('no COT series for %s in this feed' % (mkt or 'this market'))
+            # ---- cycle & season lens ----
+            sec = _RB_SECTOR.get(tk); s = sb.get(sec) or {}
+            band = str(s.get('band') or 'n/a'); zsec = zs.get(sec) or {}
+            rot = zsec.get('pct_top_chg')
+            seas = _RB_SEASON.get(tkey, {}); s_pos = month in seas.get('+', []); s_neg = month in seas.get('-', [])
+            cyc_txt = '%s sector %s (score %s)' % (sec or 'sector', band, s.get('score')) + (' \u00b7 Zacks rotation %+.1fpp' % rot if rot is not None else '') + (' \u00b7 seasonally favourable month' if s_pos else (' \u00b7 seasonally weak month' if s_neg else ' \u00b7 neutral season'))
+            # ---- decision (votes) ----
+            score = 0
+            score += 1 if above200 else -1; score += 1 if mom_ok else -1
+            score += 1 if regime_ok else -2
+            score += {'intact': 1, 'watch': -1, 'damaged': -3}[th_status]
+            score += {'Buy': 1, 'Hold': 0, 'Sell': -1, 'n/a': 0}[cons]
+            score += 1 if pos in ('BULLISH',) else (-1 if pos in ('BEARISH',) else 0)
+            score += 1 if band in ('Booming', 'Strong') else (-1 if band in ('Weak', 'Fading') else 0)
+            score += 1 if s_pos else (-1 if s_neg else 0)
+            action, amt, why = 'HOLD', 0.0, 'inside band; lenses net %+d' % score
+            edge_gap = (abs(drift_pp) - band_pp) / 100.0 * nav if tripped else 0.0
+            if th_status == 'damaged':
+                new_t = max(0.0, tgt * 0.6); action = 'REDUCE TARGET'; amt = -max(0.0, (w - new_t)) * nav
+                why = 'thesis damaged (rule change) -- lower target to %.0f%%; sell into strength, do not average down' % (new_t * 100)
+            elif is_lev and w > tgt + 0.005:
+                action = 'TRIM'; amt = -(w - tgt) * nav; why = '3x product above its vol-scaled cap %.1f%% -- size discipline' % (tgt * 100)
             elif tripped and drift_pp > 0:
-                verdict = 'TRIM'; trade_usd = -(drift_pp/100.0 - band_pp/100.0*0.5) * nav
-                why = '%+.1fpp above target (band %.1fpp) -- take gains back toward target' % (drift_pp, band_pp)
+                action = 'TRIM'; amt = -(edge_gap + band_pp / 200.0 * nav); why = 'ran %.1fpp above target -- take gains back inside the band' % drift_pp
             elif tripped and drift_pp < 0:
-                if above200:
-                    verdict = 'ADD'; trade_usd = (abs(drift_pp)/100.0 - band_pp/100.0*0.5) * nav
-                    why = '%+.1fpp below target and above its 200-day line -- buy the dip in an intact uptrend' % drift_pp
+                crisis_buy = regime_ok and (not above200) and th_status == 'intact' and ((r.get('mom') or 0) <= -10)
+                if th_status != 'intact':
+                    action = 'WAIT'; why = 'below target but thesis under watch -- do not average down until cleared'
+                elif above200 and mom_ok and regime_ok:
+                    action = 'ADD'; amt = edge_gap + band_pp / 200.0 * nav; why = 'below target in an intact uptrend -- cost-average back to the band'
+                elif crisis_buy:
+                    action = 'ADD'; amt = edge_gap + band_pp / 200.0 * nav; why = 'crisis-buy: sharp fall with the economy sound (no early-warning trip) -- buy the panic in tranches'
+                elif not regime_ok:
+                    action = 'WAIT'; why = 'below target but the early-warning check has tripped (%s) -- wait for the 10-month line' % '; '.join(trips)
                 else:
-                    verdict = 'WAIT'; why = '%+.1fpp below target but BELOW its 200-day line -- do not add into a downtrend; re-check when it reclaims' % drift_pp
-            out_rows.append({'ticker': tk, 'theme': theme, 'weight_pct': round(w*100, 1), 'target_pct': round(tgt*100, 1),
-                             'drift_pp': round(drift_pp, 1), 'drift_rel_pct': round(drift_rel, 0), 'band_pp': round(band_pp, 1),
-                             'tripped': tripped, 'above_200d': above200, 'leveraged': is_lev,
-                             'verdict': verdict, 'why': why, 'trade_usd': round(trade_usd, 0)})
-            if verdict in ('TRIM', 'ADD'):
-                actions.append({'ticker': tk, 'verdict': verdict, 'trade_usd': round(trade_usd, 0), 'why': why})
-        cash_w = (cash_usd or 0.0) / nav
+                    action = 'WAIT'; why = 'below target, below its 10-month line, not a panic -- wait for the line to be reclaimed'
+            elif not tripped and score >= 5 and cash_w > cash_floor + 0.03 and above200:
+                action = 'ADD'; amt = min(deployable * 0.34, band_pp / 200.0 * nav); why = 'inside band but every lens favourable and spare cash above the floor -- top up modestly'
+            if action == 'ADD':
+                amt = min(amt, deployable) if deployable > 0 else 0.0
+                if amt <= 0: action, why = 'HOLD', why + ' (no cash above the regime floor)'
+            n_tr = tranches if action == 'ADD' else (1 if abs(amt) < 0.02 * nav else 2)
+            instr = (('%s $%s' % (action, format(int(abs(amt)), ','))) + (' in %d tranche%s (~$%s each)' % (n_tr, 's' if n_tr > 1 else '', format(int(abs(amt) / n_tr), ',')) if amt else '')) if action != 'HOLD' else 'HOLD'
+            out_rows.append({'ticker': tk, 'theme': theme, 'weight_pct': round(w * 100, 1), 'target_pct': round(tgt * 100, 1), 'drift_pp': round(drift_pp, 1), 'band_pp': round(band_pp, 1), 'tripped': tripped,
+                             'above_200d': above200, 'leveraged': is_lev, 'verdict': action.split()[0], 'action': action, 'trade_usd': round(amt, 0), 'tranches': n_tr, 'instruction': instr, 'score': score,
+                             'lenses': {'price': price_txt, 'regime': ('all clear' if regime_ok else 'TRIPPED: ' + '; '.join(trips)), 'thesis': th_status + ' \u2014 ' + '; '.join(th_why), 'consensus': cons_txt, 'positioning': pos_txt, 'cycle': cyc_txt}, 'why': why})
+            if action != 'HOLD': actions.append({'ticker': tk, 'action': action, 'instruction': instr, 'trade_usd': round(amt, 0), 'why': why})
+        # ---- candidates: booming sectors the book lacks, expressed via UCITS funds already recommended ----
+        cands = []
+        try:
+            booming = [s for s in (data.get('sector_booming') or []) if isinstance(s, dict) and str(s.get('band')) in ('Booming', 'Strong')]
+            held_secs = set(_RB_SECTOR.values())
+            for s in booming[:5]:
+                sec = str(s.get('sector') or '')
+                for e in ((data.get('recommended') or {}).get('etfs') or [])[:40]:
+                    nm = str(e.get('name') or ''); nml = nm.lower()
+                    fits = ((sec == 'Energy' and ('energy' in nml or 'oil' in nml)) or (sec == 'Industrials' and 'industr' in nml) or (sec == 'Materials' and ('material' in nml or 'mining' in nml or 'metal' in nml)) or (sec == 'Financials' and ('financ' in nml or 'bank' in nml)) or (sec == 'Health Care' and 'health' in nml))
+                    if fits and str(e.get('estate_status') or '').startswith('SAFE') and len(cands) < 3 and not any(c['name'] == nm for c in cands):
+                        cands.append({'name': nm, 'sector': sec, 'score': s.get('score'), 'ytd_pct': e.get('ytd_pct'), 'ter': e.get('ter'), 'why': '%s sector %s (score %s, decisive: %s) \u2014 a sector this book does not hold; UCITS estate-safe' % (sec, s.get('band'), s.get('score'), s.get('decisive'))})
+        except Exception: pass
         notes = []
-        if lev_w > LEV_CAP_ALL: notes.append('Leveraged 3x products total %.1f%% (cap %.0f%%) -- trim.' % (lev_w*100, LEV_CAP_ALL*100))
+        if lev_w > 0.10: notes.append('3x products total %.1f%% (cap 10%%) -- trim.' % (lev_w * 100))
         for ck, cv in clusters.items():
-            if cv > CLUSTER_CAP: notes.append('%s cluster %.0f%% exceeds %.0f%% cap -- one correlated block, not diversification.' % (ck.replace('_', ' '), cv*100, CLUSTER_CAP*100))
-        if clusters['hedge'] < 0.10: notes.append('Hedge sleeve %.0f%% is below the 10%% floor.' % (clusters['hedge']*100))
-        if cash_w < cash_floor: notes.append('Cash %.1f%% is below the %.0f%% floor for the %s regime.' % (cash_w*100, cash_floor*100, phase))
-        elif cash_w > cash_floor + 0.10: notes.append('Cash %.1f%% is well above the %.0f%% regime floor -- deployable into ADD names above their 200-day line.' % (cash_w*100, cash_floor*100))
-        n_trip = sum(1 for x in out_rows if x['tripped'])
-        headline = ('No band tripped -- hold; next full review at the quarter (threshold policy, not calendar).' if not actions and not notes
-                    else '%d action(s) suggested, %d band(s) tripped; %d structural note(s).' % (len(actions), n_trip, len(notes)))
-        return {'as_of': dt.date.today().isoformat(), 'policy': 'threshold 5/25 + trend gate + leverage/cluster caps + regime cash (annual full review)',
-                'regime_phase': phase, 'cash_floor_pct': round(cash_floor*100, 0), 'cash_pct': round(cash_w*100, 1),
-                'leveraged_pct': round(lev_w*100, 1), 'clusters_pct': {k: round(v*100, 1) for k, v in clusters.items()},
-                'rows': out_rows, 'actions': actions, 'notes': notes, 'headline': headline,
-                'targets_source': 'config targets' if targets_cfg else 'cost-basis weights (what you bought), scaled to the regime cash floor'}
+            if cv > 0.35: notes.append('%s cluster %.0f%% exceeds the 35%% cap -- one correlated bet, not diversification.' % (ck.replace('_', ' '), cv * 100))
+        if clusters['hedge'] < 0.10: notes.append('Hedge sleeve %.0f%% below the 10%% floor.' % (clusters['hedge'] * 100))
+        if cash_w < cash_floor: notes.append('Cash %.1f%% below the %.0f%% floor for %s.' % (cash_w * 100, cash_floor * 100, phase))
+        headline = ('Inside every band \u2014 hold; %s regime, early-warning all clear.' % phase) if not actions else ('%d instruction%s; %s' % (len(actions), 's' if len(actions) > 1 else '', ', '.join(a['ticker'] + ' ' + a['action'].lower() for a in actions)))
+        return {'as_of': today.isoformat(), 'version': 'RB v2 holistic', 'policy': 'six lenses: price / regime / thesis / consensus / positioning / cycle; Daryanani 20% bands; trend gate with crisis-buy override; vol-scaled 3x caps; regime cash floor',
+                'regime_phase': phase, 'regime_ok': regime_ok, 'regime_trips': trips, 'cash_floor_pct': round(cash_floor * 100, 0), 'cash_pct': round(cash_w * 100, 1), 'deployable_usd': round(deployable, 0), 'tranches_default': tranches,
+                'leveraged_pct': round(lev_w * 100, 1), 'clusters_pct': {k: round(v * 100, 1) for k, v in clusters.items()}, 'rows': out_rows, 'actions': actions, 'candidates': cands, 'notes': notes, 'headline': headline,
+                'targets_source': 'config targets' if targets_cfg else 'cost-basis weights scaled to the regime cash floor (3x products vol-scaled)'}
     except Exception as _e:
-        log('  \u00b7 rebalance engine skipped: %s' % _e)
+        log('  \u00b7 rebalance engine v2 skipped: %s' % _e)
         return None
 
 def build_live_investment(data, existing):
