@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.467.0'  # v1.467.0 WAVE RB -- research-based REBALANCING ADVISOR for the live book. live_investment.rebalance: per-holding target (cost-basis weights scaled to the regime cash floor, or config 'targets'), live weight, drift pp/relative, Swedroe 5/25 band, trend gate (ADD only above the 200-day line, else WAIT), leveraged-3x caps (5% each / 10% total), cluster caps (semis/AI, Asia-tech <=35%), hedge floor 10%, regime cash floor from us_diffusion.phase, $ actions to the band destination, headline + structural notes. Threshold policy, not calendar (Vanguard 2022/2024). Index v5.363 renders it on Tab 17.
+SCAN_VERSION = '1.468.0'  # v1.468.0 KEY-COLLISION FIX (owner: 'the rebalancing advisor is empty?'): v1.467 wrote the advisor to live_investment['rebalance'], a key that ALREADY existed -- the look-through tilt/exposure block assigned later in the same dict -- so the older block overwrote the engine's output and the Tab-17 card rendered with no rows. Advisor now lives at live_investment['rebalance_advisor']; the legacy 'rebalance' block is untouched. Engine logic unchanged.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -20899,7 +20899,7 @@ def build_live_investment(data, existing):
         data['live_investment'] = {
             'as_of': today, 'nav_usd': round(nav, 2), 'holdings_usd': round(holdings_usd, 2), 'interest_usd': round(interest_usd, 2),
             'dividends': dividends_cfg,
-            'rebalance': _rebalance_engine(rows, nav, cash_usd, cfg, data),   # v1.467.0 WAVE RB
+            'rebalance_advisor': _rebalance_engine(rows, nav, cash_usd, cfg, data),   # v1.468.0: renamed -- 'rebalance' was ALREADY a live_investment key (the look-through tilt/exposure block written 40 lines later), which silently overwrote the advisor and blanked the Tab-17 card on first deploy
             'cash_usd': round(cash_usd, 2), 'fx': fx, 'n_reuse': n_reuse, 'n_resolved': n_resolve,
             'n_pending': n_pending, 'holdings': rows, 'cash': cash_cfg,
             'inception_date': inception,
