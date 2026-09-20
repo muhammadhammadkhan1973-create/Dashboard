@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.470.0'  # v1.470.0 AUDIT FIXES (first v1.469 run): (1) the rebalance advisor ran BEFORE policy_catalyst/sector_booming/narratives/recommended were built, so in production the thesis lens missed the Section 232 tariff (showed 'intact') and candidates came back empty -- now re-run on the finished payload just before the final serialisation; (2) 3x products are never opportunistically topped up (TSM3 had drawn an ADD); (3) the released-list rate print must be observed ON/AFTER the decision day -- the Fed row had shown actual '3.75%' from the pre-decision FRED observation. Nothing else changed.
+SCAN_VERSION = '1.471.0'  # v1.471.0: the stale Fed print survived v1.470 -- the date guard stopped NEW bad fills, but merge_econ_announced carried the old '3.75%' row forward from the previous payload every run. Now: rate prints carry their FRED observation date (actual_obs); the merge drops any Federal Funds Rate row whose observation is missing or predates the event, so the guarded fill refills it cleanly when FRED posts the post-decision 4.00%. Late-pass advisor and 3x exclusion verified live in the 15:59 run (tariff watch on SMH/ITWN/TSM3, candidates present, TSM3 add gone).
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -14963,6 +14963,7 @@ def _enrich_econ_actuals(cal):
                 c['actual'] = '%dK' % round(vals[-1] / 1000.0)
             elif mode == 'pct_level':
                 c['actual'] = '%.2f%%' % vals[-1]          # v1.466.0: rate-as-percent (Fed funds)
+                c['actual_obs'] = last_obs.isoformat()      # v1.471.0: observation date travels with the print
             else:
                 c['actual'] = '%.1f' % vals[-1]
             c['actual_src'] = 'FRED:' + sid
@@ -14978,6 +14979,19 @@ def _enrich_econ_actuals(cal):
 def merge_econ_announced(data, cal):
     """v1.429.0: persist released events (actual present) with their dates; 14-day window."""
     prev = EXISTING.get('econ_announced') or []
+    # v1.471.0: a carried 'Federal Funds Rate' print is only trusted if its observation date is on/after
+    # the event date; the v1.466-470 rows carried '3.75%' (a pre-decision FRED observation) forward
+    # run after run because the merge never re-validated them. Untrusted prints are DROPPED so the
+    # guarded fill path can refill them cleanly once FRED posts the post-decision level.
+    _kept = []
+    for x in prev:
+        if not isinstance(x, dict): continue
+        if 'Federal Funds Rate' in str(x.get('title', '')):
+            _ao = str(x.get('actual_obs') or '')[:10]; _ed = str(x.get('date') or '')[:10]
+            if not _ao or _ao < _ed:
+                continue
+        _kept.append(x)
+    prev = _kept
     seen = {(x.get('title'), str(x.get('date'))[:16]) for x in prev if isinstance(x, dict)}
     out = [x for x in prev if isinstance(x, dict)]
     for c in (cal or []):
@@ -14992,7 +15006,8 @@ def merge_econ_announced(data, cal):
             surprise = 'above' if a > f else ('below' if a < f else 'inline')
         out.append({'title': c.get('title'), 'date': c.get('date'), 'impact': c.get('impact'),
                     'actual': c.get('actual'), 'forecast': c.get('forecast'),
-                    'previous': c.get('previous'), 'surprise': surprise})
+                    'previous': c.get('previous'), 'surprise': surprise,
+                    'actual_obs': c.get('actual_obs')})
         seen.add(key)
     _cut = (dt.datetime.utcnow() - dt.timedelta(days=14)).date().isoformat()
     out = [x for x in out if str(x.get('date') or '')[:10] >= _cut]
