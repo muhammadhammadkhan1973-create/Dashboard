@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.469.0'  # v1.469.0 WAVE RB v2 HOLISTIC (owner: 'not just hold/buy/sell -- how much to cost-average, opportunities, TipRanks/Zacks, COT, sectors, seasonality, policy changes'). Six lenses per holding (price, regime early-warning, thesis w/ owner notes+policy+news+country LEI, consensus from Zacks/TipRanks on the companies INSIDE the fund, COT positioning, sector-booming + rotation + calendar season) -> dollar-sized tranched instructions (ADD/TRIM/WAIT/REDUCE TARGET/HOLD) with every reason listed; Daryanani 20% bands; trend gate with crisis-buy override when the early-warning check is clear; vol-scaled 3x caps (Harvey 2018); candidates from booming sectors the book lacks via estate-safe UCITS funds. Key: live_investment.rebalance_advisor (unchanged). Index v5.366 renders it.
+SCAN_VERSION = '1.470.0'  # v1.470.0 AUDIT FIXES (first v1.469 run): (1) the rebalance advisor ran BEFORE policy_catalyst/sector_booming/narratives/recommended were built, so in production the thesis lens missed the Section 232 tariff (showed 'intact') and candidates came back empty -- now re-run on the finished payload just before the final serialisation; (2) 3x products are never opportunistically topped up (TSM3 had drawn an ADD); (3) the released-list rate print must be observed ON/AFTER the decision day -- the Fed row had shown actual '3.75%' from the pre-decision FRED observation. Nothing else changed.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -14952,6 +14952,8 @@ def _enrich_econ_actuals(cal):
         max_age = 10 if mode in ('level_k', 'pct_level') else 45
         if (now.date() - last_obs).days > max_age:
             continue                                   # FRED not updated yet -- fill next run
+        if mode == 'pct_level' and last_obs < edt.date():
+            continue                                   # v1.470.0: a rate print must be observed ON/AFTER the decision day (the Fed row had filled '3.75%' from the pre-decision observation)
         try:
             if mode == 'mom_pct':
                 c['actual'] = '%.1f%%' % ((vals[-1] / vals[-2] - 1.0) * 100.0)
@@ -20609,7 +20611,7 @@ def _rebalance_engine(rows, nav, cash_usd, cfg, data):
                     action = 'WAIT'; why = 'below target but the early-warning check has tripped (%s) -- wait for the 10-month line' % '; '.join(trips)
                 else:
                     action = 'WAIT'; why = 'below target, below its 10-month line, not a panic -- wait for the line to be reclaimed'
-            elif not tripped and score >= 5 and cash_w > cash_floor + 0.03 and above200:
+            elif not tripped and score >= 5 and cash_w > cash_floor + 0.03 and above200 and not is_lev:   # v1.470.0: 3x products are never topped up opportunistically
                 action = 'ADD'; amt = min(deployable * 0.34, band_pp / 200.0 * nav); why = 'inside band but every lens favourable and spare cash above the floor -- top up modestly'
             if action == 'ADD':
                 amt = min(amt, deployable) if deployable > 0 else 0.0
@@ -26738,6 +26740,23 @@ def main():
             # breach (with the top-3 largest keys) into meta.warnings -- which by this point is a COPY of
             # WARNINGS (set upstream), so the payload dict is appended directly -- then re-serialize so the
             # warning ships in the same run's data.json. Normal (under-ceiling) runs keep a single pass.
+            # v1.470.0: RE-RUN the rebalance advisor on the FINISHED payload. In v1.469 it ran inside the
+            # live-investment builder, before policy_catalyst / sector_booming / narratives / recommended
+            # existed -- so the thesis lens missed the Section 232 tariff (showed 'intact') and candidates
+            # came back empty, while the sandbox run on the finished payload found both.
+            try:
+                _li = data.get('live_investment') or {}
+                if _li.get('holdings') and _li.get('nav_usd'):
+                    try:
+                        _cfg_l = json.load(open('live_portfolio.json')) if os.path.exists('live_portfolio.json') else {}
+                    except Exception:
+                        _cfg_l = {}
+                    _rb2 = _rebalance_engine(_li['holdings'], _li['nav_usd'], _li.get('cash_usd') or 0.0, _cfg_l, data)
+                    if _rb2:
+                        _li['rebalance_advisor'] = _rb2
+                        log(f"  [rebalance v2] late pass: {_rb2.get('headline')}")
+            except Exception as _e:
+                log(f'  \u00b7 rebalance late pass skipped: {_e}')
             _ser = _round_floats(_json_safe(data))
             _txt = json.dumps(_ser, separators=(',', ':'), default=str, allow_nan=False)
             if len(_txt) > PAYLOAD_SOFT_CEILING_MB * 1e6:
