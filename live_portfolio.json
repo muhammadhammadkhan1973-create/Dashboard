@@ -101,12 +101,13 @@
    "name": "Leverage Shares 3x AMD",
    "theme": "Semiconductors / AI (3x)",
    "world_theme": "US-Tech",
-   "shares": 1642,
+   "shares": 1206.0,
    "cost_price": 6.090746041,
    "cost_ccy": "USD",
    "news_query": "AMD",
    "acquired": "2026-07-21",
-   "last_added": "2026-08-13"
+   "last_added": "2026-08-13",
+   "note_2026_09_21": "sold 436 sh @ ~8.49 (proceeds $3,700.55, realized gain $1,040.98 per IBKR); avg cost of remaining lots unchanged"
   },
   {
    "ticker": "TSM3",
@@ -124,14 +125,19 @@
  "cash": [
   {
    "ccy": "AED",
-   "amount": 108570.84
+   "amount": 108759.64
   },
   {
    "ccy": "USD",
-   "amount": 0.98
+   "amount": 3701.53
   }
  ],
- "reconciled": "2026-07-31 IBKR U21094978 statement | 2026-08-13 AMD3 BUY 1,008 @ 4.9590 (+$4) confirmation | 2026-08-14 IBKR statement: AMD3 1,642 @ 6.0907 ($10,001) confirmed; AMD3 funding leg settled (AED 126,954.92 -> 108,570.84); USD 0.65 -> 0.98; ITWN cost is 15006.9187039 GBX (= GBP 150.069/sh = statement basis GBP 26,862.38/179), paired with scanner v1.441.0 GBX->GBP/100 fix; interest_usd 11.99->26.33 Aug-14 accrual)",
+ "reconciled": {
+  "date": "2026-09-21",
+  "source": "IBKR connector (positions + balances)",
+  "net_liquidation_usd": 270250.39,
+  "note": "all 9 positions match; AMD3 reduced to 1,206"
+ },
  "capital_flows": [
   {
    "date": "2026-07-20",
@@ -201,6 +207,16 @@
    "pay_date": "2026-09-30",
    "source": "IBKR corporate-action notice 2026-09-12",
    "status_note": "gross; actual credit reconciles via IBKR cash on receipt"
+  }
+ ],
+ "realized": [
+  {
+   "date": "2026-09-21",
+   "ticker": "AMD3",
+   "shares_sold": 436,
+   "proceeds_usd": 3700.55,
+   "realized_gain_usd": 1040.98,
+   "source": "IBKR positions+balances pull 2026-09-21"
   }
  ]
 }
