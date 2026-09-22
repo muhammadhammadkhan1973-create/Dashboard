@@ -141,6 +141,25 @@ jobs:
           echo "Scanner skipped — manual re-run with unchanged inputs and a fresh data.json (<90 min). IM3 steps below still run against the existing data.json. Tick force_im3 to override."
           python3 -c "import json,time; j=json.load(open('.run_marks.json')); j['skipped_guard']='manual re-run, inputs unchanged, data.json <90min old -- identical output guaranteed; tick force_im3 to override'; json.dump(j,open('.run_marks.json','w'))" || true
 
+      - name: Inline im3_detail for the scorer (skipped runs)
+        if: steps.inputs_hash.outputs.skip_scanner == 'true'
+        # 2026-09-22 fix: on a guard-skipped run the scanner never merges im3_detail.json back into data.json,
+        # so the IM3 scoring steps below found an empty detail store and full-rescored (207s) then re-inlined it.
+        # Put the detail back BEFORE scoring so the scorer sees exactly what the scanner would have given it.
+        run: |
+          python3 - <<'PY'
+          import json, os
+          p='data.json'
+          if os.path.exists(p) and os.path.exists('im3_detail.json'):
+              d=json.load(open(p))
+              if 'im3_detail' not in d:
+                  d['im3_detail']=json.load(open('im3_detail.json'))
+                  json.dump(d, open(p,'w'), separators=(',',':'), default=str)
+                  print(f"[im3_detail inline] merged {len(d['im3_detail'])} entries back for the scorer")
+              else:
+                  print('[im3_detail inline] already inline')
+          PY
+
       - name: Mark scanner done
         if: always()
         run: python3 -c "import json,time; j=json.load(open('.run_marks.json')); j['marks']['scanner_done']=int(time.time()); json.dump(j,open('.run_marks.json','w'))" || true
@@ -960,7 +979,7 @@ jobs:
         run: python3 -c "import json,time; j=json.load(open('.run_marks.json')); j['marks']['scoring_done']=int(time.time()); json.dump(j,open('.run_marks.json','w'))" || true
 
       - name: Split im3_detail into its own file (after scoring)
-        if: steps.inputs_hash.outputs.skip_scanner != 'true'
+        # runs on EVERY run (idempotent): a skipped run re-inlines the detail for the scorer above, so it must be split back out here
         # v1.476 (owner-approved 'b'): the IM3 scorer needs im3_detail INLINE, so the split runs here, after
         # both scoring steps and before the commit. data.json keeps a pointer; the scanner merges the file
         # back at its next EXISTING load, so every keep-last-good carry is unchanged. Integrity: byte-identical.
