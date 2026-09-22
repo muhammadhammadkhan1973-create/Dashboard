@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.476.0'  # v1.476.0 FIRST v1.475 RUN AUDIT FIXES: (1) the in-scanner im3_detail split is REMOVED -- it ran before IM3 scoring, the scorer's self-heal saw an empty store and full-rescored (216s) then re-inlined it, so data.json carried both; the split now happens in a workflow step AFTER scoring (detail stays inline for the scorer; the EXISTING-load merge still reads the split file). (2) FED ROW GUARANTEE -- the v1.475 live-rate fill only touched rows still in the ForexFactory window, which had rolled past 16 Sep; merge_econ_announced now synthesizes the Fed decision row from the FOMC block + live policy rate when it is missing within 30 days of the decision. Governor, Flex, venue retry, sentinel-250, date normaliser all retained.
+SCAN_VERSION = '1.477.0'  # v1.477.0: (1) SENTINEL ADOPTION MEMORY -- adopted names are remembered in meta.sentinel_adopted (union each run, cap 600) instead of being re-derived from the last blind list, which oscillated 227 -> 21 -> 227 because an adopted name is no longer blind and so was dropped the next run; (2) im3_detail RESTORE shipped alongside as im3_detail.json (232 current + 98 last-good entries the v1.475 pre-scoring split had lost -- 86 still graded, 97 still displayed); the EXISTING-load merge picks the file up and the carry tuple keeps it. No other change.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -82,6 +82,7 @@ TCE_BATCH_HISTORY = True   # v1.111.0: batch the TCE pool's 6mo price-history fe
                            # fallback preserves coverage exactly. Flip False to revert to pure per-name.
 US_SMALL_CAP_MIN  = 300_000_000
 US_SMALL_CAP_MAX  = 2_000_000_000
+_SENTINEL_ADOPTED_MEM = []   # v1.477.0: persisted adoption set (universe self-heal memory)
 _US_UNIVERSE_STASH = set()   # v1.458.0: filled by fetch_us_universe; the sentinel's engine-side source (the v1.457 sentinel read data['us_universe'], A KEY THAT NEVER EXISTED, and stamped zeros)
 FOREIGN_MEGA_US_LISTED = ['ARM','NVO','SAP','TM','AZN','SHEL','SONY','BABA','PDD','MELI',
                           'HSBC','UL','TTE','BHP','RIO','MUFG','SNY','INFY','IBN','SE','NU','SPOT']  # v1.457.0: the foreign-issuer door (Hole A)
@@ -6447,11 +6448,17 @@ def fetch_us_universe_tv():
     # the universe automatically, capped, so the blind list drains itself run over run.
     try:
         _prev_blind = ((EXISTING.get('meta') or {}).get('universe_sentinel') or {}).get('blind') or []
-        _adopt = [t for t in _prev_blind[:250] if isinstance(t, str) and t.isalpha() and len(t) <= 5]
+        # v1.477.0 ADOPTION MEMORY: the blind list is recomputed every run AFTER adoption, so a name adopted
+        # today is 'not blind' tonight and therefore NOT adopted tomorrow -- it falls back out, and the count
+        # oscillated 227 -> 21 -> 227. The adopted set is now REMEMBERED (meta.sentinel_adopted, union each
+        # run, capped 600) so a name that TradingView's scan keeps missing stays in the engines for good.
+        _mem = ((EXISTING.get('meta') or {}).get('sentinel_adopted') or [])
+        _adopt = list(dict.fromkeys([t for t in (list(_mem) + list(_prev_blind)) if isinstance(t, str) and t.isalpha() and len(t) <= 5]))[:600]
         if _adopt:
             cands.update(_adopt)
             _US_UNIVERSE_STASH.update(_adopt)
-            log(f'  [universe] adopted {len(_adopt)} sentinel-blind names into the screen (self-heal)')
+            log(f'  [universe] adopted {len(_adopt)} sentinel-blind names into the screen (self-heal; memory {len(_mem)} + new {len(_prev_blind)})')
+            _SENTINEL_ADOPTED_MEM[:] = list(_adopt)   # v1.477.0: stamped into meta by the governor
     except Exception:
         pass
     out = sorted(cands)
@@ -20749,6 +20756,10 @@ def size_governor(data, existing, log=print):
     ledger['im3_detail'] = {'before': b0, 'after': _sz(det), 'expired': removed[:20], 'n_expired': len(removed),
                             'orphans_aging': sum(1 for t in det if t not in shown and t not in book and t not in held)}
     data.setdefault('meta', {})['gov_last_seen'] = {t: d for t, d in now_seen.items() if t in det}
+    try:
+        data['meta']['sentinel_adopted'] = list(_SENTINEL_ADOPTED_MEM)   # v1.477.0 adoption memory
+    except Exception:
+        pass
     # ---- (2) rolling-series caps ----
     for k, cap in _GOV_SERIES_CAPS.items():
         v = data.get(k)
