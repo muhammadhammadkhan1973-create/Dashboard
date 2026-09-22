@@ -959,6 +959,28 @@ jobs:
         if: always()
         run: python3 -c "import json,time; j=json.load(open('.run_marks.json')); j['marks']['scoring_done']=int(time.time()); json.dump(j,open('.run_marks.json','w'))" || true
 
+      - name: Split im3_detail into its own file (after scoring)
+        if: steps.inputs_hash.outputs.skip_scanner != 'true'
+        # v1.476 (owner-approved 'b'): the IM3 scorer needs im3_detail INLINE, so the split runs here, after
+        # both scoring steps and before the commit. data.json keeps a pointer; the scanner merges the file
+        # back at its next EXISTING load, so every keep-last-good carry is unchanged. Integrity: byte-identical.
+        run: |
+          python3 - <<'PY'
+          import json, os
+          p='data.json'
+          d=json.load(open(p))
+          det=d.get('im3_detail')
+          if isinstance(det, dict) and det:
+              txt=json.dumps(det, separators=(',',':'), default=str)
+              open('im3_detail.json.tmp','w').write(txt); os.replace('im3_detail.json.tmp','im3_detail.json')
+              d['im3_detail_ref']={'file':'im3_detail.json','n':len(det),'bytes':len(txt)}
+              d.pop('im3_detail', None)
+              json.dump(d, open(p,'w'), separators=(',',':'), default=str)
+              print(f'[im3_detail split] {len(det)} entries -> im3_detail.json ({len(txt)/1e6:.2f} MB); data.json now {os.path.getsize(p)/1e6:.2f} MB')
+          else:
+              print('[im3_detail split] nothing to split (detail absent or already split)')
+          PY
+
       - name: Write wall-time into data.json meta
         # TELEMETRY FIX (2026-09-08): on GUARD-SKIPPED runs this step previously rewrote the
         # REAL run's wf_wall_sec/overhead in data.json with the skip's tiny numbers (observed:
@@ -990,9 +1012,25 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data.json .im3_scorer_hash .scanner_inputs_hash
+          [ -f im3_detail.json ] && git add im3_detail.json || true          # v1.475 split detail file
           [ -f .im3_psx_hash ] && git add .im3_psx_hash || true
           [ -f psx_history_cache.json ] && git add psx_history_cache.json || true
           [ -f us_history_cache.json ] && git add us_history_cache.json || true
+          # HISTORY GOVERNOR (owner-approved 'a', 2026-09-22): data files are whole-file regenerated every run and
+          # no consumer reads an OLD payload (last-good lives INSIDE data.json), so keeping every past
+          # data commit only bloats git history (~1-3 MB/commit after delta compression, twice daily,
+          # unbounded). Strategy: if the tip of main is the bot's own "Scan run" commit, SQUASH this
+          # run's data into it (reset --soft to its parent, recommit) and push with --force-with-lease;
+          # owner commits (code deploys) are never touched -- they sit between bot commits and break
+          # the squash chain by design. On any lease failure the loop below re-fetches and retries;
+          # if squashing is impossible it falls back to a plain commit. Data integrity: identical --
+          # only the NUMBER of historical data commits changes, never the current payload.
+          git fetch origin main
+          if [ "$(git log -1 --format=%s origin/main)" = "Scan run" ]; then
+            git reset --soft origin/main~1 2>/dev/null && echo "squashing onto previous Scan run" || git reset --soft origin/main
+          else
+            git reset --soft origin/main
+          fi
           git diff --quiet --cached || git commit -m "Scan run"
           # Concurrent-run hardening. data.json is FULLY regenerated each run, so when two runs
           # overlap (manual + scheduled, or back-to-back forced runs), the loser's push is rejected
@@ -1005,7 +1043,7 @@ jobs:
           export GIT_EDITOR=true GIT_SEQUENCE_EDITOR=true
           pushed=""
           for i in 1 2 3 4 5; do
-            if git push origin HEAD:main; then pushed=1; echo "pushed on attempt $i"; break; fi
+            if git push --force-with-lease=main:origin/main origin HEAD:main || git push origin HEAD:main; then pushed=1; echo "pushed on attempt $i"; break; fi
             echo "push rejected (attempt $i) — rebasing scan commit onto latest main"
             git fetch origin main
             git rebase -X theirs origin/main || { echo "rebase failed; aborting and retrying"; git rebase --abort || true; }
