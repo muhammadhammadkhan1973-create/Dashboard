@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.472.0'  # v1.472.0 WAVE FLEX: IBKR Flex Web Service sync. With IBKR_FLEX_TOKEN + IBKR_FLEX_QUERY_ID in the environment (GitHub secrets), every run pulls the owner's Activity Flex statement (two-step SendRequest/GetStatement on IBKR's 2026 hosts, retry while generating) and overrides live_portfolio.json in memory with broker truth: positions (shares + cost, matched by ISIN then symbol; new positions added, closed ones zeroed), settled cash by currency, dividends (paid from cash transactions, pending from accruals), realized sells from trades, transfers into capital flows, plus a 30-day NAV series and FX rates. Stamp exposed as live_investment.ibkr_flex; any failure logs the reason and leaves the file untouched (keep-last-good). Index v5.369 shows the sync stamp on Tab 17.
+SCAN_VERSION = '1.473.0'  # v1.473.0 FIRST-FLEX-RUN AUDIT FIXES: (1) TV symbol GET retries a None payload on the other US venue (NASDAQ/NYSE/AMEX) -- 32 Trend Ladder fetches were wasted on NASDAQ names prefixed NYSE:; (2) Flex dates normalised yyyyMMdd->yyyy-MM-dd across positions/trades/cash/NAV/accruals/transfers, and dividend duplicates from the format mismatch are collapsed (the ITWN row appeared twice); (3) universe sentinel stores up to 250 blind names (was 20) so the self-heal adopts more per run. Flex sync itself verified working on its first run (9/9 matched, NAV 270,343).
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -1089,6 +1089,22 @@ def fetch_tv_symbol_quote(tvsym, fields=('close',)):
             return None
         j = r.json()
         if not isinstance(j, dict):
+            # v1.473.0: a None payload almost always means the wrong exchange prefix (META/NFLX/ADBE/
+            # KLAC/SNDK/WDC... are NASDAQ, not NYSE). Retry once on the other US venues before giving up --
+            # the 2026-09-22 run wasted 32 of the Trend Ladder's 80-fetch budget on this.
+            if ':' in tvsym and tvsym.split(':')[0] in ('NYSE', 'NASDAQ', 'AMEX'):
+                for alt in ('NASDAQ', 'NYSE', 'AMEX'):
+                    if alt == tvsym.split(':')[0]: continue
+                    try:
+                        r2 = requests.get('https://scanner.tradingview.com/symbol',
+                                          params={'symbol': alt + ':' + tvsym.split(':', 1)[1], 'fields': ','.join(fields),
+                                                  'no_404': 'true', 'label-product': 'symbols-performance'},
+                                          headers={'User-Agent': UA}, timeout=15)
+                        j2 = r2.json() if r2.status_code == 200 else None
+                        if isinstance(j2, dict):
+                            return j2
+                    except Exception:
+                        pass
             warn('[tv symbol] %s: unexpected payload type %s' % (tvsym, type(j).__name__))
             return None
         return j
@@ -19545,7 +19561,11 @@ def _flex_parse(xml_text):
     def _f(v):
         try: return float(v)
         except Exception: return None
-    out = {'account': st.get('accountId'), 'from': st.get('fromDate'), 'to': st.get('toDate'),
+    def _d(v):
+        # v1.473.0: IBKR emits yyyyMMdd (and 'yyyyMMdd;HHmmss'); normalise to yyyy-MM-dd so keys match the file
+        s = (v or '')[:8]
+        return f'{s[:4]}-{s[4:6]}-{s[6:8]}' if len(s) == 8 and s.isdigit() else (v or '')[:10]
+    out = {'account': st.get('accountId'), 'from': _d(st.get('fromDate')), 'to': _d(st.get('toDate')),
            'positions': [], 'cash': {}, 'trades': [], 'cash_tx': [], 'nav': [], 'fx': {}, 'div_accruals': [], 'transfers': []}
     for p in st.findall('.//OpenPosition'):
         if (p.get('levelOfDetail') or 'SUMMARY').upper() not in ('SUMMARY', 'LOT') : continue
@@ -19554,7 +19574,7 @@ def _flex_parse(xml_text):
             'description': p.get('description'), 'position': _f(p.get('position')), 'mark': _f(p.get('markPrice')),
             'value': _f(p.get('positionValue')), 'cost_price': _f(p.get('costBasisPrice')), 'cost_money': _f(p.get('costBasisMoney')),
             'currency': p.get('currency'), 'fx_to_base': _f(p.get('fxRateToBase')), 'unrealized': _f(p.get('fifoPnlUnrealized')),
-            'report_date': p.get('reportDate')})
+            'report_date': _d(p.get('reportDate'))})
     for c in st.findall('.//CashReportCurrency'):
         cur = c.get('currency'); lod = (c.get('levelOfDetail') or '').upper()
         if cur and lod in ('CURRENCY', ''):
@@ -19563,23 +19583,23 @@ def _flex_parse(xml_text):
                                 'interest': _f(c.get('brokerInterest')), 'fees': _f(c.get('otherFees'))}
     for t in st.findall('.//Trade'):
         if (t.get('levelOfDetail') or 'EXECUTION').upper() not in ('EXECUTION', ''): continue
-        out['trades'].append({'symbol': t.get('symbol'), 'isin': t.get('isin'), 'date': t.get('tradeDate'), 'side': t.get('buySell'),
+        out['trades'].append({'symbol': t.get('symbol'), 'isin': t.get('isin'), 'date': _d(t.get('tradeDate')), 'side': t.get('buySell'),
             'qty': _f(t.get('quantity')), 'price': _f(t.get('tradePrice')), 'proceeds': _f(t.get('proceeds')),
             'commission': _f(t.get('ibCommission')), 'realized': _f(t.get('fifoPnlRealized')), 'currency': t.get('currency')})
     for x in st.findall('.//CashTransaction'):
         out['cash_tx'].append({'type': x.get('type'), 'symbol': x.get('symbol'), 'isin': x.get('isin'), 'amount': _f(x.get('amount')),
-            'currency': x.get('currency'), 'date': (x.get('dateTime') or x.get('reportDate') or '')[:10], 'settle': x.get('settleDate'),
+            'currency': x.get('currency'), 'date': _d(x.get('dateTime') or x.get('reportDate')), 'settle': _d(x.get('settleDate')),
             'description': x.get('description')})
     for n in st.findall('.//EquitySummaryByReportDateInBase'):
-        out['nav'].append({'date': n.get('reportDate'), 'total': _f(n.get('total')), 'cash': _f(n.get('cash')), 'stock': _f(n.get('stock'))})
+        out['nav'].append({'date': _d(n.get('reportDate')), 'total': _f(n.get('total')), 'cash': _f(n.get('cash')), 'stock': _f(n.get('stock'))})
     for r in st.findall('.//ConversionRate'):
         if r.get('fromCurrency') and r.get('toCurrency'):
             out['fx'][r.get('fromCurrency') + '/' + r.get('toCurrency')] = _f(r.get('rate'))
     for a in st.findall('.//ChangeInDividendAccrual'):
-        out['div_accruals'].append({'symbol': a.get('symbol'), 'isin': a.get('isin'), 'ex_date': a.get('exDate'), 'pay_date': a.get('payDate'),
+        out['div_accruals'].append({'symbol': a.get('symbol'), 'isin': a.get('isin'), 'ex_date': _d(a.get('exDate')), 'pay_date': _d(a.get('payDate')),
             'qty': _f(a.get('quantity')), 'gross_rate': _f(a.get('grossRate')), 'gross': _f(a.get('grossAmount')), 'net': _f(a.get('netAmount')), 'code': a.get('code')})
     for tr in st.findall('.//Transfer'):
-        out['transfers'].append({'date': tr.get('date') or tr.get('reportDate'), 'type': tr.get('type'), 'direction': tr.get('direction'),
+        out['transfers'].append({'date': _d(tr.get('date') or tr.get('reportDate')), 'type': tr.get('type'), 'direction': tr.get('direction'),
             'amount': _f(tr.get('cashTransfer') or tr.get('positionAmount')), 'currency': tr.get('currency'), 'description': tr.get('description')})
     out['nav'].sort(key=lambda z: z.get('date') or '')
     return out
@@ -19634,6 +19654,14 @@ def apply_ibkr_flex(cfg, data=None, log=print):
     # --- dividends: paid ones from cash transactions, pending from accruals ---
     divs = cfg.setdefault('dividends', [])
     known = {(d.get('ticker'), d.get('pay_date')) for d in divs}
+    # v1.473.0: drop exact duplicates that the yyyyMMdd/yyyy-MM-dd mismatch created on the first sync
+    _seen_keys, _dd = set(), []
+    for d in divs:
+        k = (d.get('ticker'), d.get('pay_date'))
+        if k in _seen_keys:
+            continue
+        _seen_keys.add(k); _dd.append(d)
+    divs[:] = _dd
     for x in fx['cash_tx']:
         if (x.get('type') or '').lower().startswith('dividend') and x.get('amount'):
             key = (x.get('symbol'), x.get('date'))
@@ -26442,7 +26470,7 @@ def main():
                                 and any(_e in _CORE for _e in _enames)):
                             _seen.add(_t)
                     _blind = sorted(_seen - _uni)
-                    data['meta']['universe_sentinel'] = {'engine_universe': len(_uni), 'holdings_names': len(_seen), 'blind': _blind[:20], 'n_blind': len(_blind)}
+                    data['meta']['universe_sentinel'] = {'engine_universe': len(_uni), 'holdings_names': len(_seen), 'blind': _blind[:250], 'n_blind': len(_blind)}   # v1.473.0: was [:20] -- the self-heal adopts from this list, so it drained only 20/run
                     if _blind:
                         log(f"  [universe sentinel] {len(_blind)} holdings-visible names absent from engines: {_blind[:8]}")
                 except Exception as _use:
