@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.471.0'  # v1.471.0: the stale Fed print survived v1.470 -- the date guard stopped NEW bad fills, but merge_econ_announced carried the old '3.75%' row forward from the previous payload every run. Now: rate prints carry their FRED observation date (actual_obs); the merge drops any Federal Funds Rate row whose observation is missing or predates the event, so the guarded fill refills it cleanly when FRED posts the post-decision 4.00%. Late-pass advisor and 3x exclusion verified live in the 15:59 run (tariff watch on SMH/ITWN/TSM3, candidates present, TSM3 add gone).
+SCAN_VERSION = '1.472.0'  # v1.472.0 WAVE FLEX: IBKR Flex Web Service sync. With IBKR_FLEX_TOKEN + IBKR_FLEX_QUERY_ID in the environment (GitHub secrets), every run pulls the owner's Activity Flex statement (two-step SendRequest/GetStatement on IBKR's 2026 hosts, retry while generating) and overrides live_portfolio.json in memory with broker truth: positions (shares + cost, matched by ISIN then symbol; new positions added, closed ones zeroed), settled cash by currency, dividends (paid from cash transactions, pending from accruals), realized sells from trades, transfers into capital flows, plus a 30-day NAV series and FX rates. Stamp exposed as live_investment.ibkr_flex; any failure logs the reason and leaves the file untouched (keep-last-good). Index v5.369 shows the sync stamp on Tab 17.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -19494,6 +19494,184 @@ LIVE_PORTFOLIO_DEFAULT = {
 _AED_PER_USD = 3.6725  # UAE dirham hard USD peg since 1997 (not a fetched rate)
 
 
+# ======================== WAVE FLEX (v1.472.0): IBKR FLEX WEB SERVICE SYNC ========================
+# Pulls the owner's account from IBKR's Flex Web Service every run (token + query id from GitHub
+# secrets; read-only reporting access) and overrides the hand-maintained holdings/cash in
+# live_portfolio.json with broker truth. Two-step API on IBKR's current hosts (moved in 2026):
+#   SendRequest -> ReferenceCode ; GetStatement(ReferenceCode) -> XML (retry while generating).
+# Any failure -> the file is used unchanged (keep-last-good) and the reason is logged.
+_FLEX_SEND = 'https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService/SendRequest'
+_FLEX_GET  = 'https://gdcdyn.interactivebrokers.com/AccountManagement/FlexWebService/GetStatement'
+_FLEX_STATE = {}
+
+def _flex_fetch_xml(token, qid, log=print):
+    import time as _t, xml.etree.ElementTree as _ET
+    try:
+        r = requests.get(_FLEX_SEND, params={'t': token, 'q': qid, 'v': '3'}, timeout=30,
+                         headers={'User-Agent': 'Mozilla/5.0'})
+        root = _ET.fromstring(r.text)
+        if (root.findtext('Status') or '') != 'Success':
+            log(f"  [IBKR Flex] SendRequest failed: {root.findtext('ErrorCode')} {root.findtext('ErrorMessage')}")
+            return None
+        ref = root.findtext('ReferenceCode')
+    except Exception as e:
+        log(f'  [IBKR Flex] SendRequest error: {e}'); return None
+    for attempt in range(8):
+        try:
+            _t.sleep(4 if attempt == 0 else 8)
+            r = requests.get(_FLEX_GET, params={'t': token, 'q': ref, 'v': '3'}, timeout=60,
+                             headers={'User-Agent': 'Mozilla/5.0'})
+            txt = r.text
+            if '<FlexQueryResponse' in txt:
+                return txt
+            root = _ET.fromstring(txt)
+            code = root.findtext('ErrorCode') or ''
+            if code in ('1019', '1018', '1021'):      # generating / try later
+                continue
+            log(f"  [IBKR Flex] GetStatement failed: {code} {root.findtext('ErrorMessage')}")
+            return None
+        except Exception as e:
+            log(f'  [IBKR Flex] GetStatement attempt {attempt+1} error: {e}')
+    log('  [IBKR Flex] statement not ready after retries')
+    return None
+
+def _flex_parse(xml_text):
+    """Tolerant parse of an Activity Flex statement into a plain dict."""
+    import xml.etree.ElementTree as _ET
+    root = _ET.fromstring(xml_text)
+    st = root.find('.//FlexStatement')
+    if st is None:
+        return None
+    def _f(v):
+        try: return float(v)
+        except Exception: return None
+    out = {'account': st.get('accountId'), 'from': st.get('fromDate'), 'to': st.get('toDate'),
+           'positions': [], 'cash': {}, 'trades': [], 'cash_tx': [], 'nav': [], 'fx': {}, 'div_accruals': [], 'transfers': []}
+    for p in st.findall('.//OpenPosition'):
+        if (p.get('levelOfDetail') or 'SUMMARY').upper() not in ('SUMMARY', 'LOT') : continue
+        if (p.get('levelOfDetail') or '').upper() == 'LOT': continue
+        out['positions'].append({'symbol': p.get('symbol'), 'isin': p.get('isin'), 'conid': p.get('conid'),
+            'description': p.get('description'), 'position': _f(p.get('position')), 'mark': _f(p.get('markPrice')),
+            'value': _f(p.get('positionValue')), 'cost_price': _f(p.get('costBasisPrice')), 'cost_money': _f(p.get('costBasisMoney')),
+            'currency': p.get('currency'), 'fx_to_base': _f(p.get('fxRateToBase')), 'unrealized': _f(p.get('fifoPnlUnrealized')),
+            'report_date': p.get('reportDate')})
+    for c in st.findall('.//CashReportCurrency'):
+        cur = c.get('currency'); lod = (c.get('levelOfDetail') or '').upper()
+        if cur and lod in ('CURRENCY', ''):
+            out['cash'][cur] = {'ending': _f(c.get('endingCash')), 'settled': _f(c.get('endingSettledCash')),
+                                'starting': _f(c.get('startingCash')), 'dividends': _f(c.get('dividends')),
+                                'interest': _f(c.get('brokerInterest')), 'fees': _f(c.get('otherFees'))}
+    for t in st.findall('.//Trade'):
+        if (t.get('levelOfDetail') or 'EXECUTION').upper() not in ('EXECUTION', ''): continue
+        out['trades'].append({'symbol': t.get('symbol'), 'isin': t.get('isin'), 'date': t.get('tradeDate'), 'side': t.get('buySell'),
+            'qty': _f(t.get('quantity')), 'price': _f(t.get('tradePrice')), 'proceeds': _f(t.get('proceeds')),
+            'commission': _f(t.get('ibCommission')), 'realized': _f(t.get('fifoPnlRealized')), 'currency': t.get('currency')})
+    for x in st.findall('.//CashTransaction'):
+        out['cash_tx'].append({'type': x.get('type'), 'symbol': x.get('symbol'), 'isin': x.get('isin'), 'amount': _f(x.get('amount')),
+            'currency': x.get('currency'), 'date': (x.get('dateTime') or x.get('reportDate') or '')[:10], 'settle': x.get('settleDate'),
+            'description': x.get('description')})
+    for n in st.findall('.//EquitySummaryByReportDateInBase'):
+        out['nav'].append({'date': n.get('reportDate'), 'total': _f(n.get('total')), 'cash': _f(n.get('cash')), 'stock': _f(n.get('stock'))})
+    for r in st.findall('.//ConversionRate'):
+        if r.get('fromCurrency') and r.get('toCurrency'):
+            out['fx'][r.get('fromCurrency') + '/' + r.get('toCurrency')] = _f(r.get('rate'))
+    for a in st.findall('.//ChangeInDividendAccrual'):
+        out['div_accruals'].append({'symbol': a.get('symbol'), 'isin': a.get('isin'), 'ex_date': a.get('exDate'), 'pay_date': a.get('payDate'),
+            'qty': _f(a.get('quantity')), 'gross_rate': _f(a.get('grossRate')), 'gross': _f(a.get('grossAmount')), 'net': _f(a.get('netAmount')), 'code': a.get('code')})
+    for tr in st.findall('.//Transfer'):
+        out['transfers'].append({'date': tr.get('date') or tr.get('reportDate'), 'type': tr.get('type'), 'direction': tr.get('direction'),
+            'amount': _f(tr.get('cashTransfer') or tr.get('positionAmount')), 'currency': tr.get('currency'), 'description': tr.get('description')})
+    out['nav'].sort(key=lambda z: z.get('date') or '')
+    return out
+
+def apply_ibkr_flex(cfg, data=None, log=print):
+    """Override cfg holdings/cash with broker truth when the Flex pull succeeds. Returns a stamp dict or None."""
+    import os as _os, datetime as _dt
+    token = _os.environ.get('IBKR_FLEX_TOKEN'); qid = _os.environ.get('IBKR_FLEX_QUERY_ID')
+    if not token or not qid:
+        log('  [IBKR Flex] secrets not present -- using live_portfolio.json as-is'); return None
+    xml_text = _flex_fetch_xml(token, qid, log)
+    if not xml_text: return None
+    try:
+        fx = _flex_parse(xml_text)
+    except Exception as e:
+        log(f'  [IBKR Flex] parse error: {e}'); return None
+    if not fx or not fx['positions']:
+        log('  [IBKR Flex] statement had no positions -- keeping file'); return None
+    # --- holdings: match by ISIN first, then symbol; update shares + cost; add unknown positions ---
+    by_isin = {p['isin']: p for p in fx['positions'] if p.get('isin')}
+    by_sym = {p['symbol']: p for p in fx['positions'] if p.get('symbol')}
+    matched, changed = 0, []
+    seen = set()
+    for h in cfg.get('holdings', []):
+        p = by_isin.get(h.get('isin')) or by_sym.get(h.get('ticker'))
+        if not p: continue
+        seen.add(p['symbol']); matched += 1
+        if p.get('position') is not None and abs((h.get('shares') or 0) - p['position']) > 1e-6:
+            changed.append(f"{h['ticker']} shares {h.get('shares')}->{p['position']}"); h['shares'] = p['position']
+        if p.get('cost_price'): h['cost_price'] = p['cost_price']; h['cost_ccy'] = p.get('currency') or h.get('cost_ccy')
+        h['flex_mark'] = p.get('mark'); h['flex_value'] = p.get('value'); h['flex_unrealized'] = p.get('unrealized')
+    for p in fx['positions']:
+        if p['symbol'] not in seen and (p.get('position') or 0) > 0:
+            cfg.setdefault('holdings', []).append({'ticker': p['symbol'], 'isin': p.get('isin'), 'name': p.get('description'),
+                'shares': p['position'], 'theme': 'Unclassified (new via IBKR Flex)', 'world_theme': 'Global-Other',
+                'cost_price': p.get('cost_price'), 'cost_ccy': p.get('currency'), 'acquired': fx.get('to')})
+            changed.append(f"NEW {p['symbol']} {p['position']}")
+    # positions closed at the broker -> zero them (kept in file for history) -- ONLY when the statement is
+    # plausibly complete (>= 80% of the file's live holdings present); a partial/truncated report must
+    # never wipe real positions. Otherwise log and leave untouched.
+    _live_file = [h for h in cfg.get('holdings', []) if (h.get('shares') or 0) > 0]
+    if len(fx['positions']) >= max(1, int(0.8 * len(_live_file))):
+        for h in cfg.get('holdings', []):
+            if h.get('ticker') not in by_sym and h.get('isin') not in by_isin and (h.get('shares') or 0) > 0:
+                changed.append(f"{h['ticker']} CLOSED at broker"); h['shares'] = 0.0
+    else:
+        log(f"  [IBKR Flex] statement lists {len(fx['positions'])} positions vs {len(_live_file)} in file -- partial report? not zeroing anything")
+    # --- cash by currency (settled) ---
+    if fx['cash']:
+        cfg['cash'] = [{'ccy': cur, 'amount': round((v.get('settled') if v.get('settled') is not None else v.get('ending')) or 0.0, 2)}
+                       for cur, v in fx['cash'].items() if cur not in ('BASE_SUMMARY',) and (v.get('settled') or v.get('ending'))]
+    # --- dividends: paid ones from cash transactions, pending from accruals ---
+    divs = cfg.setdefault('dividends', [])
+    known = {(d.get('ticker'), d.get('pay_date')) for d in divs}
+    for x in fx['cash_tx']:
+        if (x.get('type') or '').lower().startswith('dividend') and x.get('amount'):
+            key = (x.get('symbol'), x.get('date'))
+            if key not in known:
+                divs.append({'ticker': x.get('symbol'), 'isin': x.get('isin'), 'type': 'cash_dividend', 'ccy': x.get('currency'),
+                             'gross_usd': x.get('amount'), 'pay_date': x.get('date'), 'status': 'paid', 'source': 'IBKR Flex cash transaction'})
+            else:
+                for d in divs:
+                    if (d.get('ticker'), d.get('pay_date')) == key: d['status'] = 'paid'; d['paid_amount'] = x.get('amount')
+    for a in fx['div_accruals']:
+        if a.get('gross') and (a.get('symbol'), a.get('pay_date')) not in known:
+            divs.append({'ticker': a.get('symbol'), 'isin': a.get('isin'), 'type': 'cash_dividend', 'rate': a.get('gross_rate'),
+                         'shares_at_ex': a.get('qty'), 'gross_usd': a.get('gross'), 'ex_date': a.get('ex_date'), 'pay_date': a.get('pay_date'),
+                         'status': 'pending', 'source': 'IBKR Flex dividend accrual'}); known.add((a.get('symbol'), a.get('pay_date')))
+    # --- realized trades + transfers ---
+    rl = cfg.setdefault('realized', [])
+    rk = {(r.get('date'), r.get('ticker'), r.get('shares_sold')) for r in rl}
+    for t in fx['trades']:
+        if (t.get('side') or '').upper().startswith('SELL') and t.get('qty') is not None:
+            key = (t.get('date'), t.get('symbol'), abs(t['qty']))
+            if key not in rk:
+                rl.append({'date': t.get('date'), 'ticker': t.get('symbol'), 'shares_sold': abs(t['qty']), 'price': t.get('price'),
+                           'proceeds_usd': t.get('proceeds'), 'realized_gain_usd': t.get('realized'), 'commission': t.get('commission'), 'source': 'IBKR Flex trade'})
+    cf = cfg.setdefault('capital_flows', [])
+    ck = {(c.get('date'), round(c.get('amount') or 0, 2)) for c in cf}
+    for tr in fx['transfers']:
+        if tr.get('amount') and (tr.get('date'), round(tr['amount'], 2)) not in ck:
+            cf.append({'date': tr.get('date'), 'ccy': tr.get('currency'), 'amount': tr['amount'], 'note': f"IBKR Flex transfer {tr.get('direction') or ''} {tr.get('type') or ''}".strip()})
+    nav_last = fx['nav'][-1] if fx['nav'] else {}
+    stamp = {'as_of': fx.get('to'), 'account': fx.get('account'), 'n_positions': len(fx['positions']), 'matched': matched,
+             'changes': changed[:12], 'nav_base': nav_last.get('total'), 'nav_date': nav_last.get('date'),
+             'nav_series': fx['nav'][-31:], 'fx': fx['fx'], 'n_trades': len(fx['trades']), 'n_cash_tx': len(fx['cash_tx']),
+             'pulled_utc': _dt.datetime.utcnow().isoformat()[:19] + 'Z'}
+    cfg['_ibkr_flex'] = stamp
+    if data is not None: data['ibkr_flex'] = stamp
+    log(f"  [IBKR Flex] synced {len(fx['positions'])} positions ({matched} matched), cash {list(fx['cash'].keys())}, NAV {nav_last.get('total')} @ {nav_last.get('date')}; changes: {changed[:6] or 'none'}")
+    return stamp
+
 def _li_load_config():
     try:
         import os, json as _j
@@ -19501,6 +19679,10 @@ def _li_load_config():
             with open('live_portfolio.json') as f:
                 cfg = _j.load(f)
             if cfg.get('holdings'):
+                try:
+                    apply_ibkr_flex(cfg, None, log)     # v1.472.0: broker truth overrides the file when the pull succeeds
+                except Exception as _fe:
+                    log(f'  [IBKR Flex] skipped: {_fe}')
                 return cfg
     except Exception as e:
         log(f'  [Live Investment] live_portfolio.json unreadable ({e}) — using in-code default')
@@ -21049,6 +21231,7 @@ def build_live_investment(data, existing):
         data['live_investment'] = {
             'as_of': today, 'nav_usd': round(nav, 2), 'holdings_usd': round(holdings_usd, 2), 'interest_usd': round(interest_usd, 2),
             'dividends': dividends_cfg,
+            'ibkr_flex': cfg.get('_ibkr_flex'),   # v1.472.0: sync stamp (None when the pull did not run/succeed)
             'rebalance_advisor': _rebalance_engine(rows, nav, cash_usd, cfg, data),   # v1.468.0: renamed -- 'rebalance' was ALREADY a live_investment key (the look-through tilt/exposure block written 40 lines later), which silently overwrote the advisor and blanked the Tab-17 card on first deploy
             'cash_usd': round(cash_usd, 2), 'fx': fx, 'n_reuse': n_reuse, 'n_resolved': n_resolve,
             'n_pending': n_pending, 'holdings': rows, 'cash': cash_cfg,
