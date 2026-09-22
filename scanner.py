@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.475.0'  # v1.475.0 CONSOLIDATED (governor v1.474 + this): (1) FED IMMEDIATE -- when FRED's rate series lags a decision, the released-list print is filled from the live policy rate the scanner already holds (TV USINTR), source-tagged, stamped to the event date so the merge trusts it; (2) im3_detail SPLIT -- written to im3_detail.json (pointer in data.json), merged back at EXISTING load so every keep-last-good carry is unchanged; data.json shrinks ~1.3 MB with zero data loss; (3) workflow commits the detail file and squashes consecutive bot data commits so git history stops growing (owner-approved 'a'). Nothing else changed.
+SCAN_VERSION = '1.476.0'  # v1.476.0 FIRST v1.475 RUN AUDIT FIXES: (1) the in-scanner im3_detail split is REMOVED -- it ran before IM3 scoring, the scorer's self-heal saw an empty store and full-rescored (216s) then re-inlined it, so data.json carried both; the split now happens in a workflow step AFTER scoring (detail stays inline for the scorer; the EXISTING-load merge still reads the split file). (2) FED ROW GUARANTEE -- the v1.475 live-rate fill only touched rows still in the ForexFactory window, which had rolled past 16 Sep; merge_econ_announced now synthesizes the Fed decision row from the FOMC block + live policy rate when it is missing within 30 days of the decision. Governor, Flex, venue retry, sentinel-250, date normaliser all retained.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -15016,6 +15016,22 @@ def _enrich_econ_actuals(cal, live_rates=None):
 def merge_econ_announced(data, cal):
     """v1.429.0: persist released events (actual present) with their dates; 14-day window."""
     prev = EXISTING.get('econ_announced') or []
+    # v1.476.0 FED ROW GUARANTEE (owner: 'the Fed decision should be immediate'): the v1.475 live-rate fill
+    # only ran over rows still inside the ForexFactory window, which had already rolled past 16 Sep --
+    # so the purged row could never come back. Now, if the FOMC block knows the last decision date and
+    # the released list has no Fed row within 30 days of it, synthesize one from the live policy rate.
+    try:
+        _fo = ((data.get('macros') or {}).get('us') or {}).get('fomc') or {}
+        _ld = str(_fo.get('last_decision') or '')[:10]; _rate = ((data.get('macros') or {}).get('us') or {}).get('fed_rate')
+        if _ld and _rate is not None and not any('Federal Funds Rate' in str(x.get('title','')) and str(x.get('date',''))[:10] == _ld for x in prev if isinstance(x, dict)):
+            _today = dt.date.today(); _dd = dt.date.fromisoformat(_ld)
+            if 0 <= (_today - _dd).days <= 30:
+                prev = list(prev) + [{'title': 'Federal Funds Rate', 'date': _ld + 'T14:00:00-04:00', 'impact': 'High',
+                                      'actual': '%.2f%%' % float(_rate), 'forecast': _fo.get('forecast'), 'previous': _fo.get('previous'),
+                                      'surprise': None, 'actual_obs': _ld, 'actual_source': 'live policy rate (TV USINTR); synthesized from the FOMC block'}]
+                log(f"  [Econ announced] Fed decision row synthesized for {_ld}: {float(_rate):.2f}% (live policy rate)")
+    except Exception as _e:
+        log(f'  \u00b7 Fed row synthesis skipped: {_e}')
     # v1.471.0: a carried 'Federal Funds Rate' print is only trusted if its observation date is on/after
     # the event date; the v1.466-470 rows carried '3.75%' (a pre-decision FRED observation) forward
     # run after run because the merge never re-validated them. Untrusted prints are DROPPED so the
@@ -27078,20 +27094,10 @@ def main():
                 size_governor(data, EXISTING, log)      # v1.474.0: integrity-first size governor, every run
             except Exception as _e:
                 log(f'  \u00b7 size governor skipped: {_e}')
-            # v1.475.0 (owner: 'go with b'): write im3_detail to its own file and leave a pointer in data.json.
-            # The index fetches im3_detail.json in parallel at boot; the modal reads it exactly as before.
-            try:
-                _det = data.get('im3_detail')
-                if isinstance(_det, dict) and _det:
-                    _dser = _round_floats(_json_safe(_det))
-                    _dtxt = json.dumps(_dser, separators=(',', ':'), default=str, allow_nan=False)
-                    _tmpd = 'im3_detail.json.tmp'
-                    open(_tmpd, 'w').write(_dtxt); os.replace(_tmpd, 'im3_detail.json')
-                    data['im3_detail_ref'] = {'file': 'im3_detail.json', 'n': len(_det), 'bytes': len(_dtxt)}
-                    data.pop('im3_detail', None)
-                    log(f"  [im3_detail split] {len(_det)} entries -> im3_detail.json ({len(_dtxt)/1e6:.2f} MB); data.json keeps a pointer")
-            except Exception as _e:
-                log(f'  \u00b7 im3_detail split skipped ({_e}) -- kept inline')
+            # v1.476.0: the im3_detail SPLIT moved OUT of the scanner into a workflow step AFTER IM3 scoring.
+            # The v1.475 in-scanner split removed im3_detail before the scorer ran; the scorer's self-heal read an
+            # empty store, full-rescored (216s) and re-inlined it -- data.json ended up carrying both. Detail must
+            # stay inline until scoring is done; the EXISTING-load merge (above) still handles the split file.
             _ser = _round_floats(_json_safe(data))
             _txt = json.dumps(_ser, separators=(',', ':'), default=str, allow_nan=False)
             if len(_txt) > PAYLOAD_SOFT_CEILING_MB * 1e6:
