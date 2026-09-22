@@ -128,6 +128,8 @@ jobs:
           ETF_NINJA_KEY: ${{ secrets.ETF_NINJA_KEY }}
           FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
           ETF_FINNHUB_KEY: ${{ secrets.ETF_FINNHUB_KEY }}
+          IBKR_FLEX_TOKEN: ${{ secrets.IBKR_FLEX_TOKEN }}          # WAVE FLEX 2026-09-22: read-only IBKR reporting token
+          IBKR_FLEX_QUERY_ID: ${{ secrets.IBKR_FLEX_QUERY_ID }}    # the dashboard_daily Activity Flex Query
         run: python scanner.py
 
       - name: Scanner skipped (inputs unchanged)
