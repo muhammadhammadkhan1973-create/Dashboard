@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.473.0'  # v1.473.0 FIRST-FLEX-RUN AUDIT FIXES: (1) TV symbol GET retries a None payload on the other US venue (NASDAQ/NYSE/AMEX) -- 32 Trend Ladder fetches were wasted on NASDAQ names prefixed NYSE:; (2) Flex dates normalised yyyyMMdd->yyyy-MM-dd across positions/trades/cash/NAV/accruals/transfers, and dividend duplicates from the format mismatch are collapsed (the ITWN row appeared twice); (3) universe sentinel stores up to 250 blind names (was 20) so the self-heal adopts more per run. Flex sync itself verified working on its first run (9/9 matched, NAV 270,343).
+SCAN_VERSION = '1.475.0'  # v1.475.0 CONSOLIDATED (governor v1.474 + this): (1) FED IMMEDIATE -- when FRED's rate series lags a decision, the released-list print is filled from the live policy rate the scanner already holds (TV USINTR), source-tagged, stamped to the event date so the merge trusts it; (2) im3_detail SPLIT -- written to im3_detail.json (pointer in data.json), merged back at EXISTING load so every keep-last-good carry is unchanged; data.json shrinks ~1.3 MB with zero data loss; (3) workflow commits the detail file and squashes consecutive bot data commits so git history stops growing (owner-approved 'a'). Nothing else changed.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -223,6 +223,14 @@ def load_existing():
             d = json.loads(raw)
             EXISTING_LOAD['ok'] = True
             EXISTING_LOAD['keys'] = len(d)
+            # v1.475.0: im3_detail lives in its own file (im3_detail.json) so data.json stays lean; merge it
+            # back here so every keep-last-good carry (incl. the v1.449 tuple) sees exactly what it always did.
+            try:
+                if 'im3_detail' not in d and os.path.exists('im3_detail.json'):
+                    d['im3_detail'] = json.load(open('im3_detail.json'))
+                    print(f"  [existing] merged im3_detail.json ({len(d['im3_detail'])} entries)", flush=True)
+            except Exception as _e:
+                print(f'  [existing] im3_detail.json merge failed ({_e}) -- carry will rebuild', flush=True)
             print(f"  [existing] loaded {len(raw):,} bytes / {len(d)} top-level keys", flush=True)
             return d
         print('  [existing] NO data.json IN WORKSPACE -> DEFAULT (every carry-forward will be empty: '
@@ -14940,7 +14948,7 @@ def stamp_policy_tickers(data):
     log('  [policy px] %s' % pc['px_note'])
 
 
-def _enrich_econ_actuals(cal):
+def _enrich_econ_actuals(cal, live_rates=None):
     """Fill c['actual'] for RELEASED, mapped, still-blank US events. Mutates rows in place."""
     if not FRED_KEY or not isinstance(cal, list):
         return cal
@@ -14969,7 +14977,20 @@ def _enrich_econ_actuals(cal):
         if (now.date() - last_obs).days > max_age:
             continue                                   # FRED not updated yet -- fill next run
         if mode == 'pct_level' and last_obs < edt.date():
-            continue                                   # v1.470.0: a rate print must be observed ON/AFTER the decision day (the Fed row had filled '3.75%' from the pre-decision observation)
+            # v1.475.0 FED IMMEDIATE (owner: 'the Fed decision should be immediate'): FRED's series can lag
+            # the decision by days. If the event time has passed and the scanner already holds the live
+            # policy rate (TradingView USINTR, same-day), print THAT as the actual -- source-tagged -- and
+            # stamp actual_obs = event date so the merge trusts it. FRED never needs to overwrite it:
+            # the level is the level.
+            _lv = (live_rates or {}).get(c.get('title'))
+            if _lv is not None and now >= edt:
+                try:
+                    c['actual'] = '%.2f%%' % float(_lv); c['actual_obs'] = edt.date().isoformat()
+                    c['actual_source'] = 'live policy rate (TV USINTR); FRED series pending'
+                    filled += 1
+                except Exception:
+                    pass
+            continue
         try:
             if mode == 'mom_pct':
                 c['actual'] = '%.1f%%' % ((vals[-1] / vals[-2] - 1.0) * 100.0)
@@ -20664,6 +20685,76 @@ def fetch_tic_japan():
     return {}
 
 
+# ======================== WAVE GOV (v1.474.0): DATA.JSON SIZE GOVERNOR ========================
+# Runs every scan just before the final write. INTEGRITY RULES (owner-mandated): it never removes
+# anything a tab renders or a decision reads. It only (1) expires im3_detail entries for tickers that
+# appear in NO displayed block, hold no grade, are not held, and have been absent 60+ days;
+# (2) caps unbounded rolling series to a window far longer than any chart shows; (3) writes a
+# per-block size ledger + trend into meta so growth is visible; (4) warns loudly above a hard ceiling.
+# Float precision is already compacted at the write boundary (v1.301) -- not touched here.
+_GOV_DISPLAY_BLOCKS = ('explosive_us', 'tce_us', 'zacks_radar', 'recommended', 'm1_buylist', 'm2_universe', 'm2_watch',
+                       'multibagger_us', 'whale_13f', 'moat', 'foundation_universe', 'shortlist_tracking', 'world_stocks',
+                       'tce_predictions', 'quarterly_acceleration', 'live_investment', 'catalyst_calendar')
+_GOV_SERIES_CAPS = {'history': 400, 'psx_history': 400}          # days -- charts show <= 1y
+_GOV_HARD_CEILING_MB = 9.0
+_GOV_ORPHAN_DAYS = 60
+
+def size_governor(data, existing, log=print):
+    import json as _j, datetime as _dt
+    def _sz(o):
+        try: return len(_j.dumps(o, separators=(',', ':'), default=str))
+        except Exception: return 0
+    today = _dt.date.today()
+    before_total = _sz(data)
+    ledger = {}
+    # ---- (1) im3_detail orphan expiry ----
+    det = data.get('im3_detail') or {}
+    shown = set()
+    for blk in _GOV_DISPLAY_BLOCKS:
+        try: shown |= set(_j.dumps(data.get(blk) or {}, default=str).split('"'))
+        except Exception: pass
+    book = set((data.get('im3_grade_book') or {}).keys())
+    held = {h.get('ticker') for h in ((data.get('live_investment') or {}).get('holdings') or [])}
+    seen_log = (existing.get('meta') or {}).get('gov_last_seen') or {}
+    now_seen = {}
+    removed = []
+    for t in list(det.keys()):
+        if t in shown or t in book or t in held:
+            now_seen[t] = today.isoformat()
+        else:
+            last = seen_log.get(t) or today.isoformat()
+            try: age = (today - _dt.date.fromisoformat(last)).days
+            except Exception: age = 0
+            now_seen[t] = last
+            if age >= _GOV_ORPHAN_DAYS:
+                removed.append(t)
+    b0 = _sz(det)
+    for t in removed: det.pop(t, None)
+    ledger['im3_detail'] = {'before': b0, 'after': _sz(det), 'expired': removed[:20], 'n_expired': len(removed),
+                            'orphans_aging': sum(1 for t in det if t not in shown and t not in book and t not in held)}
+    data.setdefault('meta', {})['gov_last_seen'] = {t: d for t, d in now_seen.items() if t in det}
+    # ---- (2) rolling-series caps ----
+    for k, cap in _GOV_SERIES_CAPS.items():
+        v = data.get(k)
+        if isinstance(v, list) and len(v) > cap:
+            b = _sz(v); data[k] = v[-cap:]
+            ledger[k] = {'before': b, 'after': _sz(data[k]), 'trimmed_to': cap}
+    # ---- (3) size ledger + trend ----
+    blocks = sorted(((k, _sz(v)) for k, v in data.items()), key=lambda x: -x[1])[:12]
+    prev = (existing.get('meta') or {}).get('size_governor') or {}
+    prev_total = prev.get('after_total')
+    after_total = _sz(data)
+    stamp = {'as_of': today.isoformat(), 'before_total': before_total, 'after_total': after_total,
+             'saved': before_total - after_total, 'top_blocks': [{'block': k, 'kb': round(s / 1024)} for k, s in blocks],
+             'ledger': ledger, 'growth_vs_prev_kb': (round((after_total - prev_total) / 1024) if prev_total else None),
+             'hard_ceiling_mb': _GOV_HARD_CEILING_MB, 'ceiling_breached': after_total > _GOV_HARD_CEILING_MB * 1024 * 1024,
+             'integrity': 'expiry limited to im3_detail orphans absent >= %dd from every displayed block, the grade book and holdings; series caps far beyond chart windows; no rendered field touched' % _GOV_ORPHAN_DAYS}
+    data['meta']['size_governor'] = stamp
+    log(f"  [size governor] {after_total/1e6:.2f} MB (saved {stamp['saved']/1024:.0f} KB; im3_detail expired {len(removed)}, aging orphans {ledger['im3_detail']['orphans_aging']}; growth vs prev {stamp['growth_vs_prev_kb']} KB)")
+    if stamp['ceiling_breached']:
+        warn(f"data.json {after_total/1e6:.2f} MB exceeds the {_GOV_HARD_CEILING_MB} MB HARD ceiling -- governor cannot prune live data; a repo-side history trim or block redesign is required")
+    return stamp
+
 # ======================== WAVE RB v2 (v1.469.0): HOLISTIC REBALANCING ADVISOR ========================
 # Six lenses per holding -> a dollar-sized, tranched instruction with the reasons listed.
 #   price      drift vs target (Daryanani 20%-relative band, 5pp absolute ceiling) + 10-month line + 12m momentum
@@ -25365,7 +25456,7 @@ def main():
         data['recession'] = _stage('recession', fetch_recession)
         try:
             _cal429 = (data.get('recession') or {}).get('calendar') or []
-            _enrich_econ_actuals(_cal429)              # v1.430.0: FRED actuals, in place
+            _enrich_econ_actuals(_cal429, {'Federal Funds Rate': ((data.get('macros') or {}).get('us') or {}).get('fed_rate')})   # v1.430.0 FRED actuals; v1.475.0 live-rate fallback for the Fed print
             merge_econ_announced(data, _cal429)        # v1.429.0
         except Exception as _eae:
             log('  [Econ announced] merge skipped: %s' % type(_eae).__name__)
@@ -26983,6 +27074,24 @@ def main():
                         log(f"  [rebalance v2] late pass: {_rb2.get('headline')}")
             except Exception as _e:
                 log(f'  \u00b7 rebalance late pass skipped: {_e}')
+            try:
+                size_governor(data, EXISTING, log)      # v1.474.0: integrity-first size governor, every run
+            except Exception as _e:
+                log(f'  \u00b7 size governor skipped: {_e}')
+            # v1.475.0 (owner: 'go with b'): write im3_detail to its own file and leave a pointer in data.json.
+            # The index fetches im3_detail.json in parallel at boot; the modal reads it exactly as before.
+            try:
+                _det = data.get('im3_detail')
+                if isinstance(_det, dict) and _det:
+                    _dser = _round_floats(_json_safe(_det))
+                    _dtxt = json.dumps(_dser, separators=(',', ':'), default=str, allow_nan=False)
+                    _tmpd = 'im3_detail.json.tmp'
+                    open(_tmpd, 'w').write(_dtxt); os.replace(_tmpd, 'im3_detail.json')
+                    data['im3_detail_ref'] = {'file': 'im3_detail.json', 'n': len(_det), 'bytes': len(_dtxt)}
+                    data.pop('im3_detail', None)
+                    log(f"  [im3_detail split] {len(_det)} entries -> im3_detail.json ({len(_dtxt)/1e6:.2f} MB); data.json keeps a pointer")
+            except Exception as _e:
+                log(f'  \u00b7 im3_detail split skipped ({_e}) -- kept inline')
             _ser = _round_floats(_json_safe(data))
             _txt = json.dumps(_ser, separators=(',', ':'), default=str, allow_nan=False)
             if len(_txt) > PAYLOAD_SOFT_CEILING_MB * 1e6:
