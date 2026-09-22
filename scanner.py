@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.478.0'  # v1.478.0 (owner: build 1-5 in one go): (1) ACTIVITY LEDGER -- Flex trades now carry settleDateTarget; live_investment.activity passes trades, settled-vs-pending cash by currency, dividend accruals, cash transactions and transfers to Tab 17; realized log passed through; (2) ONE NAV -- live_investment.nav_broker/_date expose the statement NAV so the tab reconciles live valuation to broker truth in one line; (3) dividend dedupe MERGES Flex status/paid_amount onto the manual row instead of dropping them; (4) TCE maturity scorecard already exists on Tab 9 (renderTcePredictions) -- verified, no change; (5) sentinel-adopted names join the TV batch fundamentals fetch instead of the Yahoo per-name fallback. Index v5.371 renders (1)+(2).
+SCAN_VERSION = '1.479.0'  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -227,11 +227,17 @@ def load_existing():
             # v1.475.0: im3_detail lives in its own file (im3_detail.json) so data.json stays lean; merge it
             # back here so every keep-last-good carry (incl. the v1.449 tuple) sees exactly what it always did.
             try:
-                if 'im3_detail' not in d and os.path.exists('im3_detail.json'):
-                    d['im3_detail'] = json.load(open('im3_detail.json'))
-                    print(f"  [existing] merged im3_detail.json ({len(d['im3_detail'])} entries)", flush=True)
+                # v1.479.0 SUPERSET RULE: im3_detail.json is the union of every entry ever scored; the inline store can be
+                # pruned by any IM3 full rescore (it rebuilds to its current universe -- this dropped 98 entries twice). So the
+                # file is ALWAYS unioned into the store at load (inline values win where both exist) and the split step
+                # writes the union back. Retirement of genuinely dead names is the governor's job (60-day aging), not the scorer's.
+                if os.path.exists('im3_detail.json'):
+                    _fd = json.load(open('im3_detail.json'))
+                    _inl = d.get('im3_detail') or {}
+                    _n0 = len(_inl); _u = dict(_fd); _u.update(_inl); d['im3_detail'] = _u
+                    print(f"  [existing] im3_detail: inline {_n0} + file {len(_fd)} -> union {len(_u)} entries", flush=True)
             except Exception as _e:
-                print(f'  [existing] im3_detail.json merge failed ({_e}) -- carry will rebuild', flush=True)
+                print(f'  [existing] im3_detail.json merge failed ({_e}) -- carry keeps the inline store', flush=True)
             print(f"  [existing] loaded {len(raw):,} bytes / {len(d)} top-level keys", flush=True)
             return d
         print('  [existing] NO data.json IN WORKSPACE -> DEFAULT (every carry-forward will be empty: '
