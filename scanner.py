@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.477.0'  # v1.477.0: (1) SENTINEL ADOPTION MEMORY -- adopted names are remembered in meta.sentinel_adopted (union each run, cap 600) instead of being re-derived from the last blind list, which oscillated 227 -> 21 -> 227 because an adopted name is no longer blind and so was dropped the next run; (2) im3_detail RESTORE shipped alongside as im3_detail.json (232 current + 98 last-good entries the v1.475 pre-scoring split had lost -- 86 still graded, 97 still displayed); the EXISTING-load merge picks the file up and the carry tuple keeps it. No other change.
+SCAN_VERSION = '1.478.0'  # v1.478.0 (owner: build 1-5 in one go): (1) ACTIVITY LEDGER -- Flex trades now carry settleDateTarget; live_investment.activity passes trades, settled-vs-pending cash by currency, dividend accruals, cash transactions and transfers to Tab 17; realized log passed through; (2) ONE NAV -- live_investment.nav_broker/_date expose the statement NAV so the tab reconciles live valuation to broker truth in one line; (3) dividend dedupe MERGES Flex status/paid_amount onto the manual row instead of dropping them; (4) TCE maturity scorecard already exists on Tab 9 (renderTcePredictions) -- verified, no change; (5) sentinel-adopted names join the TV batch fundamentals fetch instead of the Yahoo per-name fallback. Index v5.371 renders (1)+(2).
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -7398,7 +7398,7 @@ def screen_us_universe():
     # fallback: if the prefilter handed back the full Yahoo universe (band_map empty), every name
     # takes the Yahoo path = exactly the pre-L1 behaviour (minus the insider gate).
     large = us_large_cap_set()
-    large_map = fetch_us_large_fundamentals([t for t in tickers if t in large])
+    large_map = fetch_us_large_fundamentals([t for t in tickers if t in large or t in _SENTINEL_ADOPTED_MEM])   # v1.478.0: sentinel-adopted names take the TV batch lane too (they were costing ~60s/run on the Yahoo per-name fallback)
     fund_map = dict(band_map); fund_map.update(large_map)
     log(f'  Building screen from TV fundamentals ({len(fund_map)} recs) + Yahoo fallback for gaps...')
     start = time.time()
@@ -19627,7 +19627,7 @@ def _flex_parse(xml_text):
                                 'interest': _f(c.get('brokerInterest')), 'fees': _f(c.get('otherFees'))}
     for t in st.findall('.//Trade'):
         if (t.get('levelOfDetail') or 'EXECUTION').upper() not in ('EXECUTION', ''): continue
-        out['trades'].append({'symbol': t.get('symbol'), 'isin': t.get('isin'), 'date': _d(t.get('tradeDate')), 'side': t.get('buySell'),
+        out['trades'].append({'symbol': t.get('symbol'), 'isin': t.get('isin'), 'date': _d(t.get('tradeDate')), 'side': t.get('buySell'), 'settle': _d(t.get('settleDateTarget')), 'description': t.get('description'),
             'qty': _f(t.get('quantity')), 'price': _f(t.get('tradePrice')), 'proceeds': _f(t.get('proceeds')),
             'commission': _f(t.get('ibCommission')), 'realized': _f(t.get('fifoPnlRealized')), 'currency': t.get('currency')})
     for x in st.findall('.//CashTransaction'):
@@ -19699,12 +19699,17 @@ def apply_ibkr_flex(cfg, data=None, log=print):
     divs = cfg.setdefault('dividends', [])
     known = {(d.get('ticker'), d.get('pay_date')) for d in divs}
     # v1.473.0: drop exact duplicates that the yyyyMMdd/yyyy-MM-dd mismatch created on the first sync
-    _seen_keys, _dd = set(), []
+    _seen_keys, _dd, _idx = set(), [], {}
     for d in divs:
         k = (d.get('ticker'), d.get('pay_date'))
         if k in _seen_keys:
+            # v1.478.0: merge the Flex-sourced fields (status, paid_amount, rate, shares_at_ex, ex_date) onto the kept row
+            _kept = _dd[_idx[k]]
+            for _f in ('status', 'paid_amount', 'rate', 'shares_at_ex', 'ex_date', 'isin'):
+                if d.get(_f) is not None and _kept.get(_f) is None: _kept[_f] = d[_f]
+            if d.get('status') == 'paid': _kept['status'] = 'paid'
             continue
-        _seen_keys.add(k); _dd.append(d)
+        _seen_keys.add(k); _idx[k] = len(_dd); _dd.append(d)
     divs[:] = _dd
     for x in fx['cash_tx']:
         if (x.get('type') or '').lower().startswith('dividend') and x.get('amount'):
@@ -19716,6 +19721,12 @@ def apply_ibkr_flex(cfg, data=None, log=print):
                 for d in divs:
                     if (d.get('ticker'), d.get('pay_date')) == key: d['status'] = 'paid'; d['paid_amount'] = x.get('amount')
     for a in fx['div_accruals']:
+        if a.get('gross') and (a.get('symbol'), a.get('pay_date')) in known:
+            # v1.478.0: a manual row already covers this accrual -> stamp its status instead of skipping silently
+            for d in divs:
+                if (d.get('ticker'), d.get('pay_date')) == (a.get('symbol'), a.get('pay_date')) and d.get('status') != 'paid':
+                    d['status'] = 'pending'; d.setdefault('source_flex', 'IBKR Flex dividend accrual')
+            continue
         if a.get('gross') and (a.get('symbol'), a.get('pay_date')) not in known:
             divs.append({'ticker': a.get('symbol'), 'isin': a.get('isin'), 'type': 'cash_dividend', 'rate': a.get('gross_rate'),
                          'shares_at_ex': a.get('qty'), 'gross_usd': a.get('gross'), 'ex_date': a.get('ex_date'), 'pay_date': a.get('pay_date'),
@@ -19735,6 +19746,11 @@ def apply_ibkr_flex(cfg, data=None, log=print):
         if tr.get('amount') and (tr.get('date'), round(tr['amount'], 2)) not in ck:
             cf.append({'date': tr.get('date'), 'ccy': tr.get('currency'), 'amount': tr['amount'], 'note': f"IBKR Flex transfer {tr.get('direction') or ''} {tr.get('type') or ''}".strip()})
     nav_last = fx['nav'][-1] if fx['nav'] else {}
+    # v1.478.0 ACTIVITY LEDGER (owner: 'Tab 17 should tell me what trade I did yesterday, its cash impact and
+    # when the cash settles'): everything the statement already carries, passed through for the tab.
+    cfg['_ibkr_activity'] = {'as_of': fx.get('to'), 'trades': sorted(fx['trades'], key=lambda z: z.get('date') or '')[-30:],
+                             'cash': fx['cash'], 'div_accruals': fx['div_accruals'], 'transfers': fx['transfers'][-20:],
+                             'cash_tx': [x for x in fx['cash_tx'] if (x.get('type') or '').lower().startswith(('dividend', 'withholding', 'broker interest', 'deposit', 'withdraw'))][-30:]}
     stamp = {'as_of': fx.get('to'), 'account': fx.get('account'), 'n_positions': len(fx['positions']), 'matched': matched,
              'changes': changed[:12], 'nav_base': nav_last.get('total'), 'nav_date': nav_last.get('date'),
              'nav_series': fx['nav'][-31:], 'fx': fx['fx'], 'n_trades': len(fx['trades']), 'n_cash_tx': len(fx['cash_tx']),
@@ -21378,6 +21394,10 @@ def build_live_investment(data, existing):
             'as_of': today, 'nav_usd': round(nav, 2), 'holdings_usd': round(holdings_usd, 2), 'interest_usd': round(interest_usd, 2),
             'dividends': dividends_cfg,
             'ibkr_flex': cfg.get('_ibkr_flex'),   # v1.472.0: sync stamp (None when the pull did not run/succeed)
+            'activity': cfg.get('_ibkr_activity'),   # v1.478.0: trades (with settlement), cash settled/pending, accruals, transfers
+            'realized': cfg.get('realized') or [],   # v1.478.0: realized log (Flex sells + manual entries)
+            'nav_broker': (cfg.get('_ibkr_flex') or {}).get('nav_base'),        # v1.478.0: ONE NAV -- broker statement NAV
+            'nav_broker_date': (cfg.get('_ibkr_flex') or {}).get('nav_date'),
             'rebalance_advisor': _rebalance_engine(rows, nav, cash_usd, cfg, data),   # v1.468.0: renamed -- 'rebalance' was ALREADY a live_investment key (the look-through tilt/exposure block written 40 lines later), which silently overwrote the advisor and blanked the Tab-17 card on first deploy
             'cash_usd': round(cash_usd, 2), 'fx': fx, 'n_reuse': n_reuse, 'n_resolved': n_resolve,
             'n_pending': n_pending, 'holdings': rows, 'cash': cash_cfg,
