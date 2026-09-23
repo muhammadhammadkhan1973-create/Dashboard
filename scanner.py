@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.479.0'  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
+SCAN_VERSION = '1.480.0'  # v1.480.0 NETBENEFITS AUG-31 REFRESH + CORE CASH: _NB_FACTS statement marks advanced from the 30-Jun to the 31-Aug Fidelity statement (px 309.46, MV 257,470.72, unrealized +20,593.02; 2026 flows row now YTD-through-Aug: dividends 4,682.29, withholding -1,350.34, plan value 267,365.64). NEW core_cash block: the FYIXX sweep account (9,894.92 @ 31-Aug, 3.44% 7-day yield) with a dated accumulation LEDGER traced from the Apr/Jun/Aug statements -- opening 7,664.80 (1-Apr), each APD net-dividend sweep (+1,054.14 = 1,505.92 gross - 30% wh) and each monthly FYIXX interest reinvestment, closing 9,894.92. build_netbenefits stamps account_total_live (APD live MV + cash) and account_total_statement (257,470.72 + 9,894.92 = 267,365.64 = the statement's own total) so Tab 17 ties to the paper. Monthly true-up: balance/as_of/ledger tail + statement marks. No other change.  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -20365,9 +20365,28 @@ def build_li_statements(li, existing=None):
 
 # ============================== v1.418.0 NETBENEFITS (Tab 17) ==============================
 _NB_FACTS = {
-    'as_of_statement': '2026-06-30', 'zacks_report_date': '2026-08-10',
-    'position': {'shares': 832.0, 'cost_basis': 236877.70, 'statement_px': 293.18,
-                 'statement_mv': 243925.76, 'statement_unrealized': 7048.06},
+    'as_of_statement': '2026-08-31', 'zacks_report_date': '2026-08-10',
+    'position': {'shares': 832.0, 'cost_basis': 236877.70, 'statement_px': 309.46,
+                 'statement_mv': 257470.72, 'statement_unrealized': 20593.02},
+    # v1.480.0: the Fidelity CORE ACCOUNT (FYIXX Treasury-only MMF) -- the sweep destination for APD
+    # net dividends. Statement-fact ledger from the Apr-May / Jun / Jul-Aug 2026 statements; the opening
+    # balance accumulated from 2021-Mar 2026 sweeps + interest (prior statements not on file, stated so).
+    # Monthly true-up: balance, as_of, and append new ledger rows; amounts are NET of the 30% withholding.
+    'core_cash': {
+        'fund': 'FYIXX', 'name': 'Fid Treasury Only MMkt Fund Cl OUS', 'yield_7day_pct': 3.44,
+        'balance': 9894.92, 'as_of': '2026-08-31',
+        'ledger': [
+            {'date': '2026-04-01', 'source': 'Opening balance -- accumulated from 2021-Mar 2026 dividend sweeps + fund interest (prior statements not on file)', 'amount': None, 'balance': 7664.80},
+            {'date': '2026-04-30', 'source': 'FYIXX monthly interest, reinvested', 'amount': 20.93, 'balance': 7685.73},
+            {'date': '2026-05-11', 'source': 'APD dividend swept in NET (gross $1,505.92 - 30% US withholding $451.78)', 'amount': 1054.14, 'balance': 8739.87},
+            {'date': '2026-05-29', 'source': 'FYIXX monthly interest, reinvested', 'amount': 23.78, 'balance': 8763.65},
+            {'date': '2026-06-30', 'source': 'FYIXX monthly interest, reinvested', 'amount': 24.02, 'balance': 8787.67},
+            {'date': '2026-07-31', 'source': 'FYIXX monthly interest, reinvested', 'amount': 25.30, 'balance': 8812.97},
+            {'date': '2026-08-10', 'source': 'APD dividend swept in NET (gross $1,505.92 - 30% US withholding $451.78)', 'amount': 1054.14, 'balance': 9867.11},
+            {'date': '2026-08-31', 'source': 'FYIXX monthly interest, reinvested', 'amount': 27.81, 'balance': 9894.92},
+        ],
+        'next': 'Unchanged since 31 Aug (nothing lands between statements). Next: ~$28 FYIXX interest ~30 Sep; next APD sweep ~$1,054 net ~10 Nov.',
+    },
     'flows': [
         {'year': '2021', 'granted': 'RSU 702u + PSU 144 target', 'vested_units': 0, 'dividends': 0.0, 'taxes': 0.0, 'plan_value_eoy': 257403.96},
         {'year': '2022', 'granted': 'RSU +118u + PSU +177 target', 'vested_units': 0, 'dividends': 0.0, 'taxes': 0.0, 'plan_value_eoy': 351724.66},
@@ -20376,7 +20395,8 @@ _NB_FACTS = {
          'note': 'all remaining RSUs vested; PFSHR22 expired 0/144 achieved'},
         {'year': '2025', 'granted': '', 'vested_units': 59, 'dividends': 5695.47, 'taxes': -1651.21, 'plan_value_eoy': 240575.49,
          'note': 'PFSHR23 delivered 59 sh @ $261.28 (12/2025)'},
-        {'year': '2026 H1', 'granted': '', 'vested_units': 0, 'dividends': 3123.26, 'taxes': 0.0, 'plan_value_eoy': 240575.49},
+        {'year': '2026 YTD', 'granted': '', 'vested_units': 0, 'dividends': 4682.29, 'taxes': -1350.34, 'plan_value_eoy': 267365.64,
+         'note': 'through the 31-Aug statement; withholding = Feb 446.78 + May 451.78 + Aug 451.78'},
     ],
     'psu_outcomes': [{'grant': 'PFSHR22 (144 target, ended 09/2024)', 'result': '0 achieved'},
                      {'grant': 'PFSHR23 (177 target, ended 09/2025)', 'result': '59 shares delivered @ $261.28'}],
@@ -20680,6 +20700,15 @@ def build_netbenefits(data):
     sh = nb['position']['shares']
     nb['live']['mv'] = round(sh * px, 2)
     nb['live']['unrealized'] = round(sh * px - nb['position']['cost_basis'], 2)
+    # v1.480.0: whole-account tie-out -- APD position + FYIXX core cash = the statement's own total.
+    _cc = nb.get('core_cash') or {}
+    try:
+        _ccbal = float(_cc.get('balance') or 0)
+    except Exception:
+        _ccbal = 0.0
+    if _ccbal:
+        nb['account_total_live'] = round(nb['live']['mv'] + _ccbal, 2)
+        nb['account_total_statement'] = round(nb['position']['statement_mv'] + _ccbal, 2)
     _cum = sum((f.get('dividends') or 0) for f in nb['flows'])
     nb['dividends'] = {'cumulative': round(_cum, 2),
                        'per_share_fwd': z['div_per_share'],
