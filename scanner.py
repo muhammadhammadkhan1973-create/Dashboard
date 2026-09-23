@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.480.0'  # v1.480.0 NETBENEFITS AUG-31 REFRESH + CORE CASH: _NB_FACTS statement marks advanced from the 30-Jun to the 31-Aug Fidelity statement (px 309.46, MV 257,470.72, unrealized +20,593.02; 2026 flows row now YTD-through-Aug: dividends 4,682.29, withholding -1,350.34, plan value 267,365.64). NEW core_cash block: the FYIXX sweep account (9,894.92 @ 31-Aug, 3.44% 7-day yield) with a dated accumulation LEDGER traced from the Apr/Jun/Aug statements -- opening 7,664.80 (1-Apr), each APD net-dividend sweep (+1,054.14 = 1,505.92 gross - 30% wh) and each monthly FYIXX interest reinvestment, closing 9,894.92. build_netbenefits stamps account_total_live (APD live MV + cash) and account_total_statement (257,470.72 + 9,894.92 = 267,365.64 = the statement's own total) so Tab 17 ties to the paper. Monthly true-up: balance/as_of/ledger tail + statement marks. No other change.  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
+SCAN_VERSION = '1.481.0'  # v1.481.0 GOVERNOR WAVE 2 -- SCANNER-STATE LEAVES THE PAYLOAD (owner-approved; soft-ceiling breach 7.89 MB). Four blocks that no renderer and no workflow step read move to committed side files on the us/psx_history_cache.json precedent: explosive_stmt_cache.json (~88 KB), sigt_quarterly_cache.json (~58 KB), ma_lines.json (~42 KB), and foundation_cache.json (the FULL 20-field 1,860-row foundation universe, ~833 KB). data.json keeps a SLIM foundation_universe of exactly the three fields the index reads -- ticker/name/sector, proven by grep of both reader functions (_secTickers, _tdNameCache) -- so every tab renders byte-identically. Loaders read side-file-first with an EXISTING fallback (one-run migration path; crash-carry and TV-scan-failure fallback now restore the FULL rows from foundation_cache.json). _split_side_state() runs immediately before the size governor; a failed side write keeps the block inline (state is never lost). daily.yml commit step gains the four files. Net data.json ~6.6 -> ~5.7 MB. No display field, engine input or scoring path touched.  # v1.480.0 NETBENEFITS AUG-31 REFRESH + CORE CASH: _NB_FACTS statement marks advanced from the 30-Jun to the 31-Aug Fidelity statement (px 309.46, MV 257,470.72, unrealized +20,593.02; 2026 flows row now YTD-through-Aug: dividends 4,682.29, withholding -1,350.34, plan value 267,365.64). NEW core_cash block: the FYIXX sweep account (9,894.92 @ 31-Aug, 3.44% 7-day yield) with a dated accumulation LEDGER traced from the Apr/Jun/Aug statements -- opening 7,664.80 (1-Apr), each APD net-dividend sweep (+1,054.14 = 1,505.92 gross - 30% wh) and each monthly FYIXX interest reinvestment, closing 9,894.92. build_netbenefits stamps account_total_live (APD live MV + cash) and account_total_statement (257,470.72 + 9,894.92 = 267,365.64 = the statement's own total) so Tab 17 ties to the paper. Monthly true-up: balance/as_of/ledger tail + statement marks. No other change.  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -12812,7 +12812,7 @@ def _seed_sigt_cache(existing):
     stockanalysis for every name every run (the ~80s explosive_us regression). Quarterly financials
     change only 4x/year, so a carried cache is safe; a new quarter simply re-populates on first miss."""
     global _SAT_Q_CACHE, _SAT_Q_CACHE_OUT
-    prior = (existing or {}).get('sigt_quarterly_cache') if isinstance(existing, dict) else None
+    prior = _side_load('sigt_quarterly_cache.json') or ((existing or {}).get('sigt_quarterly_cache') if isinstance(existing, dict) else None)   # v1.481.0 side-file first
     if isinstance(prior, dict):
         _SAT_Q_CACHE = {k: v for k, v in prior.items() if isinstance(v, list)}
     _SAT_Q_CACHE_OUT = _SAT_Q_CACHE
@@ -13203,10 +13203,22 @@ def _swallow(where, exc=None, elapsed=None):
 # workflow) instead of a side file GitHub Actions never commits — so the cross-run cache actually
 # survives and the ~113s Explosive-screen win lands from the SECOND run on (the SAME persist-via-the-
 # existing-commit mechanism Wave-T history + shortlist tracking already use; no daily.yml change).
-_EXPLOSIVE_CACHE_OUT = {}   # handed back to main() to store in data['explosive_stmt_cache']
+def _side_load(fname):
+    """v1.481.0: read a committed scanner-state side file; None when absent/unreadable (caller falls back to EXISTING)."""
+    try:
+        import os as _os, json as _json
+        if _os.path.exists(fname):
+            with open(fname) as _f:
+                return _json.load(_f)
+    except Exception:
+        pass
+    return None
+
+
+_EXPLOSIVE_CACHE_OUT = {}   # handed back to main() to store in data['explosive_stmt_cache'] (v1.481.0: split to side file at write)
 def _load_explosive_cache():
     try:
-        prior = EXISTING.get('explosive_stmt_cache') if isinstance(EXISTING, dict) else None
+        prior = _side_load('explosive_stmt_cache.json') or (EXISTING.get('explosive_stmt_cache') if isinstance(EXISTING, dict) else None)   # v1.481.0 side-file first
         cache = dict(prior) if isinstance(prior, dict) else {}
     except Exception:
         cache = {}
@@ -20438,7 +20450,7 @@ _NB_FACTS = {
 def _ma_lines_store(data):
     st = data.get('ma_lines')
     if not isinstance(st, dict):
-        st = dict((EXISTING.get('ma_lines') or {}))
+        st = dict(_side_load('ma_lines.json') or EXISTING.get('ma_lines') or {})   # v1.481.0 side-file first
         data['ma_lines'] = st
     return st
 
@@ -20772,6 +20784,43 @@ _GOV_DISPLAY_BLOCKS = ('explosive_us', 'tce_us', 'zacks_radar', 'recommended', '
 _GOV_SERIES_CAPS = {'history': 400, 'psx_history': 400}          # days -- charts show <= 1y
 _GOV_HARD_CEILING_MB = 9.0
 _GOV_ORPHAN_DAYS = 60
+
+def _split_side_state(data, log=print):
+    """v1.481.0 GOVERNOR WAVE 2: move pure scanner-state out of the consumer payload into committed
+    side files (us/psx_history_cache.json precedent). INTEGRITY RULES: (1) runs after every builder,
+    immediately before the size governor, so nothing reads these keys later in the run; (2) a failed
+    side write keeps the block inline -- state is never lost; (3) foundation_universe keeps a slim
+    display copy of exactly the fields the index reads (ticker/name/sector -- _secTickers,
+    _tdNameCache), while the FULL rows persist in foundation_cache.json for the fallback paths."""
+    import json as _j
+    moved = []
+    for _key, _fname in (('explosive_stmt_cache', 'explosive_stmt_cache.json'),
+                         ('sigt_quarterly_cache', 'sigt_quarterly_cache.json'),
+                         ('ma_lines', 'ma_lines.json')):
+        _v = data.pop(_key, None)
+        if _v is None:
+            continue
+        try:
+            with open(_fname, 'w') as _f:
+                _j.dump(_v, _f, separators=(',', ':'), default=str)
+            moved.append(_fname)
+        except Exception as _e:
+            data[_key] = _v   # never lose state
+            log(f'  [side-state] WRITE FAILED {_fname}: {_e} -- kept inline')
+    _fu = data.get('foundation_universe')
+    if isinstance(_fu, list) and _fu:
+        try:
+            with open('foundation_cache.json', 'w') as _f:
+                _j.dump(_fu, _f, separators=(',', ':'), default=str)
+            _keep = ('ticker', 'name', 'sector')
+            data['foundation_universe'] = [{k: r.get(k) for k in _keep if isinstance(r, dict) and k in r} for r in _fu]
+            data.setdefault('meta', {})['foundation_universe_basis'] = 'display-slim (ticker/name/sector); full 20-field rows in foundation_cache.json -- v1.481.0'
+            moved.append('foundation_cache.json (full) + slim inline')
+        except Exception as _e:
+            log(f'  [side-state] foundation_cache.json write failed: {_e} -- full rows kept inline')
+    if moved:
+        log(f'  [side-state] split to side files: {moved}')
+
 
 def size_governor(data, existing, log=print):
     import json as _j, datetime as _dt
@@ -25032,11 +25081,11 @@ def main():
                 f'coverage); added top {len(_adds)} accelerating large/mid-caps to Explosive pool '
                 f'({len(us_all_survivors)} -> {len(us_explosive_pool)})')
         else:
-            data['foundation_universe'] = EXISTING.get('foundation_universe', [])
+            data['foundation_universe'] = _side_load('foundation_cache.json') or EXISTING.get('foundation_universe', [])   # v1.481.0: full rows live in the side file
             log('  [Foundation Universe] empty/unreachable -> Explosive pool unchanged (prior behaviour)')
     except Exception as e:
         log(f'  [Foundation Universe] failed: {e} -- Explosive pool unchanged')
-        data['foundation_universe'] = EXISTING.get('foundation_universe', [])
+        data['foundation_universe'] = _side_load('foundation_cache.json') or EXISTING.get('foundation_universe', [])   # v1.481.0
         us_explosive_pool = us_all_survivors
 
     # M1/M2 shared keystone (Layer 1): score the Foundation Universe + emit the 61% split.
@@ -25495,7 +25544,7 @@ def main():
         log(f'US explosive crashed: {e}')
         data['meta']['errors'].append(f'us_explosive: {e}')
         data['explosive_us'] = EXISTING.get('explosive_us', [])
-        data['explosive_stmt_cache'] = EXISTING.get('explosive_stmt_cache', {})   # v1.112.1: carry the cache forward on crash (don't wipe it)
+        data['explosive_stmt_cache'] = _side_load('explosive_stmt_cache.json') or EXISTING.get('explosive_stmt_cache', {})   # v1.112.1 + v1.481.0: carry the cache forward on crash (don't wipe it)
 
     try:
         data['explosive_psx'] = _stage('explosive_psx', run_explosive, data['psx_candidates'], market='psx')
@@ -27157,6 +27206,7 @@ def main():
             except Exception as _e:
                 log(f'  \u00b7 rebalance late pass skipped: {_e}')
             try:
+                _split_side_state(data, log)            # v1.481.0: scanner-state -> side files, before the governor measures
                 size_governor(data, EXISTING, log)      # v1.474.0: integrity-first size governor, every run
             except Exception as _e:
                 log(f'  \u00b7 size governor skipped: {_e}')
