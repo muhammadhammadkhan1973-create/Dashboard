@@ -1035,6 +1035,10 @@ jobs:
           [ -f .im3_psx_hash ] && git add .im3_psx_hash || true
           [ -f psx_history_cache.json ] && git add psx_history_cache.json || true
           [ -f us_history_cache.json ] && git add us_history_cache.json || true
+          [ -f explosive_stmt_cache.json ] && git add explosive_stmt_cache.json || true   # v1.481 side-state
+          [ -f sigt_quarterly_cache.json ] && git add sigt_quarterly_cache.json || true     # v1.481 side-state
+          [ -f ma_lines.json ] && git add ma_lines.json || true                             # v1.481 side-state
+          [ -f foundation_cache.json ] && git add foundation_cache.json || true             # v1.481 full foundation rows
           # HISTORY GOVERNOR (owner-approved 'a', 2026-09-22): data files are whole-file regenerated every run and
           # no consumer reads an OLD payload (last-good lives INSIDE data.json), so keeping every past
           # data commit only bloats git history (~1-3 MB/commit after delta compression, twice daily,
