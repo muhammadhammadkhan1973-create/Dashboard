@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.490.0'  # v1.490.0 OIL TREND AUTHORITY + POST-EXPORT TIMING (owner-approved). (1) The dashboard's OWN daily history of Brent/WTI futures closes is now the SOLE authority for the oil trend fields (wow/mom/qoq): the roll-free spot is a displayed level with a divergence stamp and is never used to re-base trends again -- on 25-Sep the spot series still carried last week's poisoned prints and printed WTI wow -9.9% while the dashboard's own history said -3.4%. Spans without enough history are blanked honestly (Brent accrues from 25-Sep) and the basis says so. _apply_rollfree_oil_trends is retired (kept, unused). (2) TIMING: meta.timings_ms was exported BEFORE the recommended list, entry timing, Wave Z, MOAT cover, ETF holdings index, MOAT universe, side-file split, governor and the final writes -- ~273s of a 605s workflow wall was invisible (runtime_sec 332). Those stages are now wrapped in _stage('post.*') and a second block, meta.timings_post_ms plus timing_accounting.post_export_sec, is written right before the governor so every second of the run is attributable.  # v1.489.0 ENTRY-TIMING CORRECTIONS + OIL TRENDS REPOPULATED (owner-approved after the first live audit of v1.488.0). (1) volume: TradingView's column is lower-case 'volume' -- 'Volume' returned nothing, so every card showed a blank volume-vs-30-day cell. (2) Trend filter tightened -- 51 of 111 names read BUY, including AMAT, which sat above its 200-day but BELOW its 50-day with the 20-day under the 50-day and 36% under its all-time high, while the trend chip beside it said falling knife: an uptrend with price below the 50-day or the 20-day below the 50-day is now 'WAIT (trend damaged)', and no BUY is issued more than 20% below the 52-week high or 25% below the all-time high ('WAIT (deep retracement)') -- the first cohort's -13.5% came from exactly those setups. Simulated on the live rows: BUY 51 -> 26, NVDA/VLO stay BUY. (3) Oil trend tiles had stayed blank since the v1.485.0 quarantine because the wow/mom/qoq fields were only ever written by the spot re-base path -- there was no independent futures-based trend calculation. _fill_oil_trends_from_history() now derives them from the dashboard's OWN daily history of Brent/WTI futures closes whenever a span is blank, stamped 'futures (dashboard daily history)'. Index unchanged (verdict names unchanged; reasons carry the detail).  # v1.488.0 ENTRY-TIMING LAYER for the recommended list (owner: technical analysis tracked daily -- all-time high, retracement, earnings dates, EMAs, RSI -- and a daily buy-or-not verdict per recommended stock). New build_entry_timing(data): ONE batched TradingView /america/scan for every Tab-19 name (EMA20/50/200, RSI14, all-time high, 52-week high/low, last + next earnings dates, 30-day average volume) plus Yahoo daily closes (6 months) for the top 40 so the tab can draw the chart; keep-last-good per name from EXISTING. _entry_timing_verdict() is a PURE, unit-tested rule set built from the entry-timing evidence: (1) trend filter first -- price above the 200-day with the 50-day above it (Faber 2007 / Antonacci: trend-following cuts drawdowns); no BUY ever below the 200-day; (2) earnings blackout -- no new money inside 5 trading days of a report (the print is a coin-flip; post-earnings drift favours buying AFTER a good reaction, Bernard-Thomas); (3) the highest-probability entry = a PULLBACK in an uptrend to the 20/50-day with RSI 35-60 (Connors pullback work), invalidated by a close below the 50-day; (4) breakout near the 52-week high with RSI < 70 is buyable (George-Hwang 2004: stocks near their 52-week high keep outperforming); (5) RSI >= 70 or > 8% above the 20-day = WAIT FOR DIP; (6) > 25% below the all-time high in a downtrend = falling knife, AVOID. Verdicts: BUY / WAIT FOR DIP / WAIT / HOLD OFF / AVOID, each with a plain-language why, the buy zone and the stop reference. Feeds data['entry_timing']; index v5.378 renders.  # v1.487.0 SCORECARD ROBUSTNESS (priority-1 of the 25-Sep engine grade). The TCE summary was mean-only: one lottery-ticket name (ABTC +1,250%) turned an IGNORE tier whose MEDIAN was -7% into a '+41%' tier, and every downstream judgement read that number. Each tier now also carries median_fwd_pct, wins_fwd_pct (10/90 winsorized mean), median_alpha_pct, exit_gap_pp (avg peak minus avg realized -- the money the exit rule left on the table; the first cohort peaked +18% and closed -13.5%), and lift_median_pp (tier median minus IGNORE median, in points -- the ratio lift is undefined when the base hit-rate is 0). Existing fields unchanged so nothing downstream breaks. Index v5.377 renders the robust read.  # v1.486.0 POSITION JOURNEYS PASSTHROUGH (owner: the AMD3 buy/sell levels must display graphically on Tab 17). live_portfolio.json gains a position_journeys[] seed (per closed position: dated BUY/SELL events with price, shares, per-sale FIFO P&L, invested/proceeds/profit totals -- AMD3 first: 3 buys Jul-Aug, 4 sells incl the 23-Sep trailing-stop close, +$3,855 / +25.7%); build_live_investment passes it through beside realized[] exactly like every other cfg key, index v5.375 renders the chart. realized[] in the same file is rebuilt to ONE convention (statement FIFO) fixing the mixed-basis entry flagged in the settlement audit. No other change.  # v1.485.0 P1 FOLLOW-UP PAIR (same-turn audit of the v1.484.0 run). (1) SPOT-GUARD QUARANTINE: the guard fired correctly (basis honest, suspect stamped, no NEW poisoning) but keep-last-good had already carried PRIOR spot-based trend values (brent_wow 23.26 under a 'futures' label). When the guard fires, each span whose current value EXACTLY equals the spot value is provably poisoned: restore {k}_{span}_futures when it differs, else DELETE the value and its _dir (an honest blank beats a poisoned number) and note 'carried spot-based value quarantined' in the basis. (2) E&P LANE ORDER-PROOF GATE: the lane never fired because ep_signal is BUILT AFTER psx_topdown in the run order -- at decision time the key does not exist. Gate now reads data, then EXISTING (carry), then recomputes inline from macros already fetched (Arab Light proxy = Brent - 2.00 > 60 threshold), so it cannot be starved by ordering. No other change.  # v1.484.0 P1 ENGINE-INTEGRITY PAIR (owner-approved audit fixes). (1) OIL SPOT DIVERGENCE GUARD: the FRED roll-free spot has been printing impossible levels (Brent 'spot' 130.80 vs futures 99.26, +32%; WTI 107.02 vs 89.79) and re-basing every oil trend field onto them. The re-base now runs ONLY when |spot/futures - 1| <= 10%; beyond that the trends KEEP the futures basis, the spot level is stamped {k}_spot_suspect {spot, futures, div_pct}, trend_basis says so honestly, and a warning logs. Arab Light proxy unaffected (Brent-2 on futures). (2) PSX E&P CASH-UNVERIFIED LANE: the E&P trigger fired while the topdown buy list stayed 100% banks, because PSX non-financials have NO CFO statement feed and cash_gate='no-data' was treated as exclusion -- data absence scored as failure. Gate is the TRIGGER ITSELF (data['ep_signal'] fired -- the offline validation caught that 'favored' can be [] while the trigger fires, so favored is NOT the gate): up to 3 Energy-Minerals names with grade A/B and no cash data join the buys, cash_gate='cash-unverified', an honest note on each, capped at 10 total buys, gate_counts extended. Banks lane, ordering and every verified-pass rule unchanged. No other change.  # v1.483.0 HEADLINE CASH = TOTAL BALANCE (owner: settlement must be reported truthfully). cfg['cash'] preferred the Flex statement's endingSettledCash, which is frozen at statement date -- after the two AMD3 sales it put USD $0.98 on Tab 17's headline against a real $7,166.53 balance. Headline now carries the TOTAL ending balance per currency (settled preferred only when ending is absent); withdrawable-vs-pending is the Activity card's job, which index v5.374 computes from each sale's settle date AT VIEW TIME so it flips on the correct day without a scan. No other change.  # v1.482.0 CORE-CASH LEDGER BACK-EXTENSION (owner: 'the tab shows ~$7,000 with no breakdown'). The blind 1-Apr-2026 opening row is replaced by the full provenance chain reconciled from the four year-end statements (2021/2023/2024/2025): 2021-22 no cash account (all RSU/PSU unvested, zero dividends); 2023 account opens -- first APD net dividends 847.70 + 11.04 FDRXX interest = 858.74 (ties exactly); 2024 +2,951.85 in (net sweeps + interest) less ~1,291.88 unitemized core outflow (year-end format omits the monthly activity ledger; owner to confirm withdrawal) = 2,518.71; 2025 core fund switched FDRXX->FYIXX, +4,044.26 (net sweeps 3,868.01 + fund interest 176.23) = 6,562.97 (ties to 2 cents); 2026 Q1 Feb net sweep 1,042.49 + ~59.34 interest = 7,664.80 on 1 Apr -- the figure that previously showed as an unexplained opening. Whole 5-yr chain closes to 2 cents against the live 9,894.92. Seed-only change; the ledger renderer is generic, index untouched at v5.373. No other change.  # v1.481.0 GOVERNOR WAVE 2 -- SCANNER-STATE LEAVES THE PAYLOAD (owner-approved; soft-ceiling breach 7.89 MB). Four blocks that no renderer and no workflow step read move to committed side files on the us/psx_history_cache.json precedent: explosive_stmt_cache.json (~88 KB), sigt_quarterly_cache.json (~58 KB), ma_lines.json (~42 KB), and foundation_cache.json (the FULL 20-field 1,860-row foundation universe, ~833 KB). data.json keeps a SLIM foundation_universe of exactly the three fields the index reads -- ticker/name/sector, proven by grep of both reader functions (_secTickers, _tdNameCache) -- so every tab renders byte-identically. Loaders read side-file-first with an EXISTING fallback (one-run migration path; crash-carry and TV-scan-failure fallback now restore the FULL rows from foundation_cache.json). _split_side_state() runs immediately before the size governor; a failed side write keeps the block inline (state is never lost). daily.yml commit step gains the four files. Net data.json ~6.6 -> ~5.7 MB. No display field, engine input or scoring path touched.  # v1.480.0 NETBENEFITS AUG-31 REFRESH + CORE CASH: _NB_FACTS statement marks advanced from the 30-Jun to the 31-Aug Fidelity statement (px 309.46, MV 257,470.72, unrealized +20,593.02; 2026 flows row now YTD-through-Aug: dividends 4,682.29, withholding -1,350.34, plan value 267,365.64). NEW core_cash block: the FYIXX sweep account (9,894.92 @ 31-Aug, 3.44% 7-day yield) with a dated accumulation LEDGER traced from the Apr/Jun/Aug statements -- opening 7,664.80 (1-Apr), each APD net-dividend sweep (+1,054.14 = 1,505.92 gross - 30% wh) and each monthly FYIXX interest reinvestment, closing 9,894.92. build_netbenefits stamps account_total_live (APD live MV + cash) and account_total_statement (257,470.72 + 9,894.92 = 267,365.64 = the statement's own total) so Tab 17 ties to the paper. Monthly true-up: balance/as_of/ledger tail + statement marks. No other change.  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
+SCAN_VERSION = '1.491.0'  # v1.491.0 YAHOO -> TRADINGVIEW CUT (owner: 'cut Yahoo and replace it with TV'). Daily Yahoo traffic that TradingView can serve is gone: (1) US-screen gap fallback -- the names the TV prefilter missed no longer go to per-name Yahoo (21 dead-symbol 404s every run); they get a SECOND TradingView pass through fetch_us_large_fundamentals(), the same record format, then _candidate_from_tv; whatever TV still cannot supply is dropped and counted honestly. (2) EPS gap-fill -- SEC EDGAR stays first; the Yahoo income_stmt loop (crumb cooldowns, retries) is replaced by ONE TradingView batch of earnings_per_share_diluted_yoy_growth_ttm/_fq (96% coverage per the L1 diag). (3) USD/PKR -- Yahoo history was pulled every run even when TV served the level; the week/month/quarter trend now comes from the dashboard's own daily history and Yahoo is a true fallback only when TV misses. (4) Entry-timing charts -- 40 per-name Yahoo chart calls become ONE batched yf.download (TradingView has no OHLC-history endpoint; this is the irreducible Yahoo use, along with the frozen TCE engine's 6-month batch and income statements for non-SEC filers, all of which stay). Also retires the misleading 'oil trends left on the futures basis' log line (v1.490.0 made history the authority).  # v1.490.0 OIL TREND AUTHORITY + POST-EXPORT TIMING (owner-approved). (1) The dashboard's OWN daily history of Brent/WTI futures closes is now the SOLE authority for the oil trend fields (wow/mom/qoq): the roll-free spot is a displayed level with a divergence stamp and is never used to re-base trends again -- on 25-Sep the spot series still carried last week's poisoned prints and printed WTI wow -9.9% while the dashboard's own history said -3.4%. Spans without enough history are blanked honestly (Brent accrues from 25-Sep) and the basis says so. _apply_rollfree_oil_trends is retired (kept, unused). (2) TIMING: meta.timings_ms was exported BEFORE the recommended list, entry timing, Wave Z, MOAT cover, ETF holdings index, MOAT universe, side-file split, governor and the final writes -- ~273s of a 605s workflow wall was invisible (runtime_sec 332). Those stages are now wrapped in _stage('post.*') and a second block, meta.timings_post_ms plus timing_accounting.post_export_sec, is written right before the governor so every second of the run is attributable.  # v1.489.0 ENTRY-TIMING CORRECTIONS + OIL TRENDS REPOPULATED (owner-approved after the first live audit of v1.488.0). (1) volume: TradingView's column is lower-case 'volume' -- 'Volume' returned nothing, so every card showed a blank volume-vs-30-day cell. (2) Trend filter tightened -- 51 of 111 names read BUY, including AMAT, which sat above its 200-day but BELOW its 50-day with the 20-day under the 50-day and 36% under its all-time high, while the trend chip beside it said falling knife: an uptrend with price below the 50-day or the 20-day below the 50-day is now 'WAIT (trend damaged)', and no BUY is issued more than 20% below the 52-week high or 25% below the all-time high ('WAIT (deep retracement)') -- the first cohort's -13.5% came from exactly those setups. Simulated on the live rows: BUY 51 -> 26, NVDA/VLO stay BUY. (3) Oil trend tiles had stayed blank since the v1.485.0 quarantine because the wow/mom/qoq fields were only ever written by the spot re-base path -- there was no independent futures-based trend calculation. _fill_oil_trends_from_history() now derives them from the dashboard's OWN daily history of Brent/WTI futures closes whenever a span is blank, stamped 'futures (dashboard daily history)'. Index unchanged (verdict names unchanged; reasons carry the detail).  # v1.488.0 ENTRY-TIMING LAYER for the recommended list (owner: technical analysis tracked daily -- all-time high, retracement, earnings dates, EMAs, RSI -- and a daily buy-or-not verdict per recommended stock). New build_entry_timing(data): ONE batched TradingView /america/scan for every Tab-19 name (EMA20/50/200, RSI14, all-time high, 52-week high/low, last + next earnings dates, 30-day average volume) plus Yahoo daily closes (6 months) for the top 40 so the tab can draw the chart; keep-last-good per name from EXISTING. _entry_timing_verdict() is a PURE, unit-tested rule set built from the entry-timing evidence: (1) trend filter first -- price above the 200-day with the 50-day above it (Faber 2007 / Antonacci: trend-following cuts drawdowns); no BUY ever below the 200-day; (2) earnings blackout -- no new money inside 5 trading days of a report (the print is a coin-flip; post-earnings drift favours buying AFTER a good reaction, Bernard-Thomas); (3) the highest-probability entry = a PULLBACK in an uptrend to the 20/50-day with RSI 35-60 (Connors pullback work), invalidated by a close below the 50-day; (4) breakout near the 52-week high with RSI < 70 is buyable (George-Hwang 2004: stocks near their 52-week high keep outperforming); (5) RSI >= 70 or > 8% above the 20-day = WAIT FOR DIP; (6) > 25% below the all-time high in a downtrend = falling knife, AVOID. Verdicts: BUY / WAIT FOR DIP / WAIT / HOLD OFF / AVOID, each with a plain-language why, the buy zone and the stop reference. Feeds data['entry_timing']; index v5.378 renders.  # v1.487.0 SCORECARD ROBUSTNESS (priority-1 of the 25-Sep engine grade). The TCE summary was mean-only: one lottery-ticket name (ABTC +1,250%) turned an IGNORE tier whose MEDIAN was -7% into a '+41%' tier, and every downstream judgement read that number. Each tier now also carries median_fwd_pct, wins_fwd_pct (10/90 winsorized mean), median_alpha_pct, exit_gap_pp (avg peak minus avg realized -- the money the exit rule left on the table; the first cohort peaked +18% and closed -13.5%), and lift_median_pp (tier median minus IGNORE median, in points -- the ratio lift is undefined when the base hit-rate is 0). Existing fields unchanged so nothing downstream breaks. Index v5.377 renders the robust read.  # v1.486.0 POSITION JOURNEYS PASSTHROUGH (owner: the AMD3 buy/sell levels must display graphically on Tab 17). live_portfolio.json gains a position_journeys[] seed (per closed position: dated BUY/SELL events with price, shares, per-sale FIFO P&L, invested/proceeds/profit totals -- AMD3 first: 3 buys Jul-Aug, 4 sells incl the 23-Sep trailing-stop close, +$3,855 / +25.7%); build_live_investment passes it through beside realized[] exactly like every other cfg key, index v5.375 renders the chart. realized[] in the same file is rebuilt to ONE convention (statement FIFO) fixing the mixed-basis entry flagged in the settlement audit. No other change.  # v1.485.0 P1 FOLLOW-UP PAIR (same-turn audit of the v1.484.0 run). (1) SPOT-GUARD QUARANTINE: the guard fired correctly (basis honest, suspect stamped, no NEW poisoning) but keep-last-good had already carried PRIOR spot-based trend values (brent_wow 23.26 under a 'futures' label). When the guard fires, each span whose current value EXACTLY equals the spot value is provably poisoned: restore {k}_{span}_futures when it differs, else DELETE the value and its _dir (an honest blank beats a poisoned number) and note 'carried spot-based value quarantined' in the basis. (2) E&P LANE ORDER-PROOF GATE: the lane never fired because ep_signal is BUILT AFTER psx_topdown in the run order -- at decision time the key does not exist. Gate now reads data, then EXISTING (carry), then recomputes inline from macros already fetched (Arab Light proxy = Brent - 2.00 > 60 threshold), so it cannot be starved by ordering. No other change.  # v1.484.0 P1 ENGINE-INTEGRITY PAIR (owner-approved audit fixes). (1) OIL SPOT DIVERGENCE GUARD: the FRED roll-free spot has been printing impossible levels (Brent 'spot' 130.80 vs futures 99.26, +32%; WTI 107.02 vs 89.79) and re-basing every oil trend field onto them. The re-base now runs ONLY when |spot/futures - 1| <= 10%; beyond that the trends KEEP the futures basis, the spot level is stamped {k}_spot_suspect {spot, futures, div_pct}, trend_basis says so honestly, and a warning logs. Arab Light proxy unaffected (Brent-2 on futures). (2) PSX E&P CASH-UNVERIFIED LANE: the E&P trigger fired while the topdown buy list stayed 100% banks, because PSX non-financials have NO CFO statement feed and cash_gate='no-data' was treated as exclusion -- data absence scored as failure. Gate is the TRIGGER ITSELF (data['ep_signal'] fired -- the offline validation caught that 'favored' can be [] while the trigger fires, so favored is NOT the gate): up to 3 Energy-Minerals names with grade A/B and no cash data join the buys, cash_gate='cash-unverified', an honest note on each, capped at 10 total buys, gate_counts extended. Banks lane, ordering and every verified-pass rule unchanged. No other change.  # v1.483.0 HEADLINE CASH = TOTAL BALANCE (owner: settlement must be reported truthfully). cfg['cash'] preferred the Flex statement's endingSettledCash, which is frozen at statement date -- after the two AMD3 sales it put USD $0.98 on Tab 17's headline against a real $7,166.53 balance. Headline now carries the TOTAL ending balance per currency (settled preferred only when ending is absent); withdrawable-vs-pending is the Activity card's job, which index v5.374 computes from each sale's settle date AT VIEW TIME so it flips on the correct day without a scan. No other change.  # v1.482.0 CORE-CASH LEDGER BACK-EXTENSION (owner: 'the tab shows ~$7,000 with no breakdown'). The blind 1-Apr-2026 opening row is replaced by the full provenance chain reconciled from the four year-end statements (2021/2023/2024/2025): 2021-22 no cash account (all RSU/PSU unvested, zero dividends); 2023 account opens -- first APD net dividends 847.70 + 11.04 FDRXX interest = 858.74 (ties exactly); 2024 +2,951.85 in (net sweeps + interest) less ~1,291.88 unitemized core outflow (year-end format omits the monthly activity ledger; owner to confirm withdrawal) = 2,518.71; 2025 core fund switched FDRXX->FYIXX, +4,044.26 (net sweeps 3,868.01 + fund interest 176.23) = 6,562.97 (ties to 2 cents); 2026 Q1 Feb net sweep 1,042.49 + ~59.34 interest = 7,664.80 on 1 Apr -- the figure that previously showed as an unexplained opening. Whole 5-yr chain closes to 2 cents against the live 9,894.92. Seed-only change; the ledger renderer is generic, index untouched at v5.373. No other change.  # v1.481.0 GOVERNOR WAVE 2 -- SCANNER-STATE LEAVES THE PAYLOAD (owner-approved; soft-ceiling breach 7.89 MB). Four blocks that no renderer and no workflow step read move to committed side files on the us/psx_history_cache.json precedent: explosive_stmt_cache.json (~88 KB), sigt_quarterly_cache.json (~58 KB), ma_lines.json (~42 KB), and foundation_cache.json (the FULL 20-field 1,860-row foundation universe, ~833 KB). data.json keeps a SLIM foundation_universe of exactly the three fields the index reads -- ticker/name/sector, proven by grep of both reader functions (_secTickers, _tdNameCache) -- so every tab renders byte-identically. Loaders read side-file-first with an EXISTING fallback (one-run migration path; crash-carry and TV-scan-failure fallback now restore the FULL rows from foundation_cache.json). _split_side_state() runs immediately before the size governor; a failed side write keeps the block inline (state is never lost). daily.yml commit step gains the four files. Net data.json ~6.6 -> ~5.7 MB. No display field, engine input or scoring path touched.  # v1.480.0 NETBENEFITS AUG-31 REFRESH + CORE CASH: _NB_FACTS statement marks advanced from the 30-Jun to the 31-Aug Fidelity statement (px 309.46, MV 257,470.72, unrealized +20,593.02; 2026 flows row now YTD-through-Aug: dividends 4,682.29, withholding -1,350.34, plan value 267,365.64). NEW core_cash block: the FYIXX sweep account (9,894.92 @ 31-Aug, 3.44% 7-day yield) with a dated accumulation LEDGER traced from the Apr/Jun/Aug statements -- opening 7,664.80 (1-Apr), each APD net-dividend sweep (+1,054.14 = 1,505.92 gross - 30% wh) and each monthly FYIXX interest reinvestment, closing 9,894.92. build_netbenefits stamps account_total_live (APD live MV + cash) and account_total_statement (257,470.72 + 9,894.92 = 267,365.64 = the statement's own total) so Tab 17 ties to the paper. Monthly true-up: balance/as_of/ledger tail + statement marks. No other change.  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -2210,7 +2210,7 @@ def fetch_us_macros():
                 _n_rb = 0   # v1.490.0: spot re-base retired -- history is the sole trend authority
                 _fill_oil_trends_from_history(out, force=True)   # v1.490.0: own daily history overrides every span; blanks the rest
                 if not _n_rb:
-                    log('  · oil trends left on the futures basis (no roll-free spot series this run)')
+                    pass   # v1.491.0: history is the authority (v1.490.0); the old 'left on futures basis' line retired
             except Exception:
                 pass
         except Exception:
@@ -2577,14 +2577,23 @@ def fetch_psx_macros():
     except Exception as e:
         log(f'  · USD/PKR TV miss (Yahoo fallback): {str(e)[:60]}')
     try:
-        import yfinance as yf
-        h = yf.Ticker('USDPKR=X').history(period='6mo')
-        if len(h) > 0:
-            if _pk_tv is None:
+        # v1.491.0: trends from the dashboard's own daily history (usd_pkr recorded every run); Yahoo only if TV missed the level
+        _hv = [float(h.get('usd_pkr')) for h in ((EXISTING.get('history') if isinstance(EXISTING, dict) else None) or [])
+               if isinstance(h, dict) and isinstance(h.get('usd_pkr'), (int, float)) and not isinstance(h.get('usd_pkr'), bool)]
+        if _pk_tv is not None:
+            _hv.append(float(_pk_tv))
+        if len(_hv) >= 6:
+            for _tk, _tv in _series_trend([round(x, 2) for x in _hv[-64:]], w=(5, 21, 63)).items():
+                out['usd_pkr_' + _tk] = _tv
+        if _pk_tv is None:
+            import yfinance as yf
+            h = yf.Ticker('USDPKR=X').history(period='6mo')
+            if len(h) > 0:
                 out['usd_pkr'] = round(float(h['Close'].iloc[-1]), 2)
                 log(f'  ✓ USD/PKR (Yahoo fallback): {out["usd_pkr"]}')
-            for _tk,_tv in _series_trend([round(float(x),2) for x in h['Close'].values[-64:]], w=(5,21,63)).items():
-                out['usd_pkr_'+_tk] = _tv
+                if len(_hv) < 6:
+                    for _tk, _tv in _series_trend([round(float(x), 2) for x in h['Close'].values[-64:]], w=(5, 21, 63)).items():
+                        out['usd_pkr_' + _tk] = _tv
     except Exception as e:
         if _pk_tv is None:
             warn(f'USD/PKR failed: {e}')
@@ -4974,20 +4983,23 @@ def build_entry_timing(data):
         out['rows'][t] = row
     out['n'] = len(out['rows'])
     hist = {}
-    for t in tickers[:40]:
-        try:
-            r = requests.get(f'https://query1.finance.yahoo.com/v8/finance/chart/{t}',
-                             params={'range': '6mo', 'interval': '1d'}, headers={'User-Agent': UA}, timeout=12)
-            if r.status_code == 200:
-                res = ((r.json().get('chart') or {}).get('result') or [])
-                if res:
-                    cl = (((res[0].get('indicators') or {}).get('quote') or [{}])[0].get('close') or [])
-                    ts = res[0].get('timestamp') or []
-                    pts = [[str(dt.date.fromtimestamp(a)), round(float(b), 2)] for a, b in zip(ts, cl) if isinstance(b, (int, float))]
+    _top = tickers[:40]
+    try:   # v1.491.0: ONE batched download for all chart names (was 40 per-name chart calls)
+        import yfinance as yf
+        df = yf.download(_top, period='6mo', interval='1d', group_by='ticker', progress=False, threads=True)
+        if df is not None and not df.empty:
+            for t in _top:
+                try:
+                    ser = df[t]['Close'] if len(_top) > 1 else df['Close']
+                    ser = ser.dropna()
+                    pts = [[str(ix.date()), round(float(v), 2)] for ix, v in ser.items()]
                     if len(pts) >= 30:
                         hist[t] = pts[-130:]
-        except Exception:
-            pass
+                except Exception:
+                    pass
+    except Exception as _ye:
+        warn(f'[entry timing] chart batch failed: {_ye}')
+    for t in _top:
         if t not in hist:
             prev = safe_get(EXISTING, 'entry_timing', 'history', t)
             if prev:
@@ -7622,6 +7634,33 @@ def _candidate_from_tv(ticker, rec, large_set):
     }
 
 
+
+def _tv_eps_growth_batch(tickers):
+    """v1.491.0. ONE TradingView batch: diluted EPS YoY growth (TTM, else FQ) in PERCENT for the given
+    tickers -> {ticker: pct}. Replaces the per-name Yahoo income_stmt loop. Never raises."""
+    out = {}
+    try:
+        cols = ['earnings_per_share_diluted_yoy_growth_ttm', 'earnings_per_share_diluted_yoy_growth_fq']
+        cands = []
+        for t in tickers:
+            cands += ['NASDAQ:%s' % t, 'NYSE:%s' % t, 'AMEX:%s' % t]
+        for i in range(0, len(cands), 150):
+            r = requests.post('https://scanner.tradingview.com/america/scan',
+                              json={'symbols': {'tickers': cands[i:i + 150]}, 'columns': cols},
+                              headers={'User-Agent': UA}, timeout=30)
+            if r.status_code != 200:
+                continue
+            for row in (r.json().get('data') or []):
+                t = str(row.get('s') or '').split(':')[-1]; d_ = row.get('d') or []
+                if not t or t in out:
+                    continue
+                v = next((x for x in d_ if isinstance(x, (int, float)) and not isinstance(x, bool)), None)
+                if v is not None:
+                    out[t] = round(float(v), 1)
+    except Exception as e:
+        warn(f'[TV eps batch] failed: {e}')
+    return out
+
 def screen_us_universe():
     log('=== US screening ===')
     probe_us_tv_coverage()   # Wave O L1 instrumentation (isolated; logs TV column coverage/units)
@@ -7648,7 +7687,7 @@ def screen_us_universe():
     large = us_large_cap_set()
     large_map = fetch_us_large_fundamentals([t for t in tickers if t in large or t in _SENTINEL_ADOPTED_MEM])   # v1.478.0: sentinel-adopted names take the TV batch lane too (they were costing ~60s/run on the Yahoo per-name fallback)
     fund_map = dict(band_map); fund_map.update(large_map)
-    log(f'  Building screen from TV fundamentals ({len(fund_map)} recs) + Yahoo fallback for gaps...')
+    log(f'  Building screen from TV fundamentals ({len(fund_map)} recs) + TV second pass for gaps (v1.491.0: no Yahoo)...')
     start = time.time()
 
     tv_sourced = 0
@@ -7663,34 +7702,26 @@ def screen_us_universe():
         else:
             yf_fallback_names.append(tk)           # missing TV data -> Yahoo per-name screen
 
-    # Per-name Yahoo fallback ONLY for the names TV couldn't supply (parallelized, as the old screen was).
-    yf_fallback = 0
+    # v1.491.0: names the TV prefilter missed get a SECOND TradingView pass (same record format via
+    # fetch_us_large_fundamentals) instead of per-name Yahoo; what TV still cannot supply is dropped and counted.
+    yf_fallback = 0; tv_gap_filled = 0; tv_gap_dropped = 0
     if yf_fallback_names:
-        from concurrent.futures import ThreadPoolExecutor, as_completed
-        import random as _rand
-        def _scan_one(tk):
-            if US_SCAN_WORKERS > 1:
-                time.sleep(_rand.uniform(0.2, 0.5))   # throttle only when parallel
-            try:
-                return screen_us_stock(tk, yf)
-            except Exception:
-                return None
-        ex = ThreadPoolExecutor(max_workers=US_SCAN_WORKERS)
         try:
-            futures = [ex.submit(_scan_one, tk) for tk in yf_fallback_names]
-            for fut in as_completed(futures):
-                result = fut.result()
-                if result is not None:
-                    candidates.append(result); yf_fallback += 1
-                if time.time() - start > 2400:
-                    warn('US scan TIME CAP hit in Yahoo fallback, stopping early')
-                    break
-        finally:
-            ex.shutdown(wait=False, cancel_futures=True)
+            gap_map = fetch_us_large_fundamentals(yf_fallback_names) or {}
+        except Exception as _ge:
+            warn(f'[US screen] TV gap pass failed: {_ge}'); gap_map = {}
+        for tk in yf_fallback_names:
+            rec = gap_map.get(tk)
+            res = _candidate_from_tv(tk, rec, large) if rec else None
+            if isinstance(res, dict):
+                candidates.append(res); tv_gap_filled += 1
+            elif res != 'DROP':
+                tv_gap_dropped += 1
+        log(f'  [US screen] TV gap pass: {len(yf_fallback_names)} names -> {tv_gap_filled} filled, {tv_gap_dropped} unavailable on TV (no Yahoo)')
 
     elapsed = time.time() - start
     log(f'  US scan (L1 TV-first): {elapsed:.0f}s, {len(candidates)} candidates — '
-        f'{tv_sourced} TV-sourced + {yf_fallback} Yahoo-fallback (of {len(yf_fallback_names)} gaps); '
+        f'{tv_sourced} TV-sourced + {tv_gap_filled} TV-gap-pass (of {len(yf_fallback_names)} gaps; {tv_gap_dropped} unavailable); '
         f'insider gate DROPPED (s3_insider EDGAR Form-4 stream unaffected)')
 
     survived = len(candidates)
@@ -7804,40 +7835,17 @@ def screen_us_universe():
             log('    [FMP EPS] FMP gap-fill disabled (premium-gated for small-caps) — Yahoo income_stmt only'
                 if FMP_KEY else '    [FMP EPS] FMP_API_KEY not set — using Yahoo income_stmt only')
 
-        # --- Yahoo income_stmt FALLBACK (unchanged logic) for whatever FMP could not fill ---
+        # --- v1.491.0: TradingView batch replaces the Yahoo income_stmt loop for whatever SEC could not fill ---
+        tv_hits = 0
         if still_missing:
-            # The parallel screen can poison Yahoo's shared crumb, making every income_stmt call
-            # fail. Recover: cooldown to let the throttle decay, then a fresh session + one retry.
-            # v1.159.0: SEC now fills most names, so only a handful reach Yahoo. The full 20s crumb
-            # cooldown is only needed under heavy Yahoo load — scale it to the remainder (≤3 -> 5s).
-            if US_SCAN_WORKERS > 1:
-                time.sleep(20 if len(still_missing) > 3 else 5)
-            try:
-                import requests as _rq
-                _sess = _rq.Session(); _sess.headers.update({'User-Agent': UA})
-            except Exception:
-                _sess = None
+            _tvm = _tv_eps_growth_batch([c['ticker'] for c in still_missing])
             for c in still_missing:
-                for _att in range(2):
-                    try:
-                        tk = yf.Ticker(c['ticker'], session=_sess) if _sess is not None else yf.Ticker(c['ticker'])
-                        stmt = tk.income_stmt
-                        if stmt is not None and not stmt.empty and stmt.shape[1] >= 2:
-                            for label in ['Diluted EPS', 'Basic EPS']:
-                                if label in stmt.index:
-                                    row = stmt.loc[label].dropna()
-                                    if len(row) >= 2:
-                                        curr, prev = float(row.iloc[0]), float(row.iloc[1])
-                                        if prev != 0:
-                                            c['eps_growth'] = round((curr - prev) / abs(prev) * 100, 1)
-                                            c['growth_source'] = 'yf_stmt'
-                                            yf_hits += 1; eps_hits += 1
-                                    break
-                            break   # got a statement (with or without EPS row) — don't retry
-                    except Exception:
-                        time.sleep(3)   # backoff, then one retry
-                time.sleep(YF_DELAY)
-        log(f'  EPS enriched {eps_hits}/{_eps_total} previously-None survivors (SEC {sec_hits}, FMP {fmp_hits}, Yahoo {yf_hits})')
+                v = _tvm.get(c['ticker'])
+                if v is not None:
+                    c['eps_growth'] = v; c['growth_source'] = 'tv_eps_yoy'
+                    tv_hits += 1; eps_hits += 1
+        yf_hits = 0
+        log(f'  EPS enriched {eps_hits}/{_eps_total} previously-None survivors (SEC {sec_hits}, FMP {fmp_hits}, TV batch {tv_hits}; Yahoo retired v1.491.0)')
     else:
         log('  All survivors already have EPS growth from Yahoo info')
 
