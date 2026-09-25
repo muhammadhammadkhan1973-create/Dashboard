@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.491.0'  # v1.491.0 YAHOO -> TRADINGVIEW CUT (owner: 'cut Yahoo and replace it with TV'). Daily Yahoo traffic that TradingView can serve is gone: (1) US-screen gap fallback -- the names the TV prefilter missed no longer go to per-name Yahoo (21 dead-symbol 404s every run); they get a SECOND TradingView pass through fetch_us_large_fundamentals(), the same record format, then _candidate_from_tv; whatever TV still cannot supply is dropped and counted honestly. (2) EPS gap-fill -- SEC EDGAR stays first; the Yahoo income_stmt loop (crumb cooldowns, retries) is replaced by ONE TradingView batch of earnings_per_share_diluted_yoy_growth_ttm/_fq (96% coverage per the L1 diag). (3) USD/PKR -- Yahoo history was pulled every run even when TV served the level; the week/month/quarter trend now comes from the dashboard's own daily history and Yahoo is a true fallback only when TV misses. (4) Entry-timing charts -- 40 per-name Yahoo chart calls become ONE batched yf.download (TradingView has no OHLC-history endpoint; this is the irreducible Yahoo use, along with the frozen TCE engine's 6-month batch and income statements for non-SEC filers, all of which stay). Also retires the misleading 'oil trends left on the futures basis' log line (v1.490.0 made history the authority).  # v1.490.0 OIL TREND AUTHORITY + POST-EXPORT TIMING (owner-approved). (1) The dashboard's OWN daily history of Brent/WTI futures closes is now the SOLE authority for the oil trend fields (wow/mom/qoq): the roll-free spot is a displayed level with a divergence stamp and is never used to re-base trends again -- on 25-Sep the spot series still carried last week's poisoned prints and printed WTI wow -9.9% while the dashboard's own history said -3.4%. Spans without enough history are blanked honestly (Brent accrues from 25-Sep) and the basis says so. _apply_rollfree_oil_trends is retired (kept, unused). (2) TIMING: meta.timings_ms was exported BEFORE the recommended list, entry timing, Wave Z, MOAT cover, ETF holdings index, MOAT universe, side-file split, governor and the final writes -- ~273s of a 605s workflow wall was invisible (runtime_sec 332). Those stages are now wrapped in _stage('post.*') and a second block, meta.timings_post_ms plus timing_accounting.post_export_sec, is written right before the governor so every second of the run is attributable.  # v1.489.0 ENTRY-TIMING CORRECTIONS + OIL TRENDS REPOPULATED (owner-approved after the first live audit of v1.488.0). (1) volume: TradingView's column is lower-case 'volume' -- 'Volume' returned nothing, so every card showed a blank volume-vs-30-day cell. (2) Trend filter tightened -- 51 of 111 names read BUY, including AMAT, which sat above its 200-day but BELOW its 50-day with the 20-day under the 50-day and 36% under its all-time high, while the trend chip beside it said falling knife: an uptrend with price below the 50-day or the 20-day below the 50-day is now 'WAIT (trend damaged)', and no BUY is issued more than 20% below the 52-week high or 25% below the all-time high ('WAIT (deep retracement)') -- the first cohort's -13.5% came from exactly those setups. Simulated on the live rows: BUY 51 -> 26, NVDA/VLO stay BUY. (3) Oil trend tiles had stayed blank since the v1.485.0 quarantine because the wow/mom/qoq fields were only ever written by the spot re-base path -- there was no independent futures-based trend calculation. _fill_oil_trends_from_history() now derives them from the dashboard's OWN daily history of Brent/WTI futures closes whenever a span is blank, stamped 'futures (dashboard daily history)'. Index unchanged (verdict names unchanged; reasons carry the detail).  # v1.488.0 ENTRY-TIMING LAYER for the recommended list (owner: technical analysis tracked daily -- all-time high, retracement, earnings dates, EMAs, RSI -- and a daily buy-or-not verdict per recommended stock). New build_entry_timing(data): ONE batched TradingView /america/scan for every Tab-19 name (EMA20/50/200, RSI14, all-time high, 52-week high/low, last + next earnings dates, 30-day average volume) plus Yahoo daily closes (6 months) for the top 40 so the tab can draw the chart; keep-last-good per name from EXISTING. _entry_timing_verdict() is a PURE, unit-tested rule set built from the entry-timing evidence: (1) trend filter first -- price above the 200-day with the 50-day above it (Faber 2007 / Antonacci: trend-following cuts drawdowns); no BUY ever below the 200-day; (2) earnings blackout -- no new money inside 5 trading days of a report (the print is a coin-flip; post-earnings drift favours buying AFTER a good reaction, Bernard-Thomas); (3) the highest-probability entry = a PULLBACK in an uptrend to the 20/50-day with RSI 35-60 (Connors pullback work), invalidated by a close below the 50-day; (4) breakout near the 52-week high with RSI < 70 is buyable (George-Hwang 2004: stocks near their 52-week high keep outperforming); (5) RSI >= 70 or > 8% above the 20-day = WAIT FOR DIP; (6) > 25% below the all-time high in a downtrend = falling knife, AVOID. Verdicts: BUY / WAIT FOR DIP / WAIT / HOLD OFF / AVOID, each with a plain-language why, the buy zone and the stop reference. Feeds data['entry_timing']; index v5.378 renders.  # v1.487.0 SCORECARD ROBUSTNESS (priority-1 of the 25-Sep engine grade). The TCE summary was mean-only: one lottery-ticket name (ABTC +1,250%) turned an IGNORE tier whose MEDIAN was -7% into a '+41%' tier, and every downstream judgement read that number. Each tier now also carries median_fwd_pct, wins_fwd_pct (10/90 winsorized mean), median_alpha_pct, exit_gap_pp (avg peak minus avg realized -- the money the exit rule left on the table; the first cohort peaked +18% and closed -13.5%), and lift_median_pp (tier median minus IGNORE median, in points -- the ratio lift is undefined when the base hit-rate is 0). Existing fields unchanged so nothing downstream breaks. Index v5.377 renders the robust read.  # v1.486.0 POSITION JOURNEYS PASSTHROUGH (owner: the AMD3 buy/sell levels must display graphically on Tab 17). live_portfolio.json gains a position_journeys[] seed (per closed position: dated BUY/SELL events with price, shares, per-sale FIFO P&L, invested/proceeds/profit totals -- AMD3 first: 3 buys Jul-Aug, 4 sells incl the 23-Sep trailing-stop close, +$3,855 / +25.7%); build_live_investment passes it through beside realized[] exactly like every other cfg key, index v5.375 renders the chart. realized[] in the same file is rebuilt to ONE convention (statement FIFO) fixing the mixed-basis entry flagged in the settlement audit. No other change.  # v1.485.0 P1 FOLLOW-UP PAIR (same-turn audit of the v1.484.0 run). (1) SPOT-GUARD QUARANTINE: the guard fired correctly (basis honest, suspect stamped, no NEW poisoning) but keep-last-good had already carried PRIOR spot-based trend values (brent_wow 23.26 under a 'futures' label). When the guard fires, each span whose current value EXACTLY equals the spot value is provably poisoned: restore {k}_{span}_futures when it differs, else DELETE the value and its _dir (an honest blank beats a poisoned number) and note 'carried spot-based value quarantined' in the basis. (2) E&P LANE ORDER-PROOF GATE: the lane never fired because ep_signal is BUILT AFTER psx_topdown in the run order -- at decision time the key does not exist. Gate now reads data, then EXISTING (carry), then recomputes inline from macros already fetched (Arab Light proxy = Brent - 2.00 > 60 threshold), so it cannot be starved by ordering. No other change.  # v1.484.0 P1 ENGINE-INTEGRITY PAIR (owner-approved audit fixes). (1) OIL SPOT DIVERGENCE GUARD: the FRED roll-free spot has been printing impossible levels (Brent 'spot' 130.80 vs futures 99.26, +32%; WTI 107.02 vs 89.79) and re-basing every oil trend field onto them. The re-base now runs ONLY when |spot/futures - 1| <= 10%; beyond that the trends KEEP the futures basis, the spot level is stamped {k}_spot_suspect {spot, futures, div_pct}, trend_basis says so honestly, and a warning logs. Arab Light proxy unaffected (Brent-2 on futures). (2) PSX E&P CASH-UNVERIFIED LANE: the E&P trigger fired while the topdown buy list stayed 100% banks, because PSX non-financials have NO CFO statement feed and cash_gate='no-data' was treated as exclusion -- data absence scored as failure. Gate is the TRIGGER ITSELF (data['ep_signal'] fired -- the offline validation caught that 'favored' can be [] while the trigger fires, so favored is NOT the gate): up to 3 Energy-Minerals names with grade A/B and no cash data join the buys, cash_gate='cash-unverified', an honest note on each, capped at 10 total buys, gate_counts extended. Banks lane, ordering and every verified-pass rule unchanged. No other change.  # v1.483.0 HEADLINE CASH = TOTAL BALANCE (owner: settlement must be reported truthfully). cfg['cash'] preferred the Flex statement's endingSettledCash, which is frozen at statement date -- after the two AMD3 sales it put USD $0.98 on Tab 17's headline against a real $7,166.53 balance. Headline now carries the TOTAL ending balance per currency (settled preferred only when ending is absent); withdrawable-vs-pending is the Activity card's job, which index v5.374 computes from each sale's settle date AT VIEW TIME so it flips on the correct day without a scan. No other change.  # v1.482.0 CORE-CASH LEDGER BACK-EXTENSION (owner: 'the tab shows ~$7,000 with no breakdown'). The blind 1-Apr-2026 opening row is replaced by the full provenance chain reconciled from the four year-end statements (2021/2023/2024/2025): 2021-22 no cash account (all RSU/PSU unvested, zero dividends); 2023 account opens -- first APD net dividends 847.70 + 11.04 FDRXX interest = 858.74 (ties exactly); 2024 +2,951.85 in (net sweeps + interest) less ~1,291.88 unitemized core outflow (year-end format omits the monthly activity ledger; owner to confirm withdrawal) = 2,518.71; 2025 core fund switched FDRXX->FYIXX, +4,044.26 (net sweeps 3,868.01 + fund interest 176.23) = 6,562.97 (ties to 2 cents); 2026 Q1 Feb net sweep 1,042.49 + ~59.34 interest = 7,664.80 on 1 Apr -- the figure that previously showed as an unexplained opening. Whole 5-yr chain closes to 2 cents against the live 9,894.92. Seed-only change; the ledger renderer is generic, index untouched at v5.373. No other change.  # v1.481.0 GOVERNOR WAVE 2 -- SCANNER-STATE LEAVES THE PAYLOAD (owner-approved; soft-ceiling breach 7.89 MB). Four blocks that no renderer and no workflow step read move to committed side files on the us/psx_history_cache.json precedent: explosive_stmt_cache.json (~88 KB), sigt_quarterly_cache.json (~58 KB), ma_lines.json (~42 KB), and foundation_cache.json (the FULL 20-field 1,860-row foundation universe, ~833 KB). data.json keeps a SLIM foundation_universe of exactly the three fields the index reads -- ticker/name/sector, proven by grep of both reader functions (_secTickers, _tdNameCache) -- so every tab renders byte-identically. Loaders read side-file-first with an EXISTING fallback (one-run migration path; crash-carry and TV-scan-failure fallback now restore the FULL rows from foundation_cache.json). _split_side_state() runs immediately before the size governor; a failed side write keeps the block inline (state is never lost). daily.yml commit step gains the four files. Net data.json ~6.6 -> ~5.7 MB. No display field, engine input or scoring path touched.  # v1.480.0 NETBENEFITS AUG-31 REFRESH + CORE CASH: _NB_FACTS statement marks advanced from the 30-Jun to the 31-Aug Fidelity statement (px 309.46, MV 257,470.72, unrealized +20,593.02; 2026 flows row now YTD-through-Aug: dividends 4,682.29, withholding -1,350.34, plan value 267,365.64). NEW core_cash block: the FYIXX sweep account (9,894.92 @ 31-Aug, 3.44% 7-day yield) with a dated accumulation LEDGER traced from the Apr/Jun/Aug statements -- opening 7,664.80 (1-Apr), each APD net-dividend sweep (+1,054.14 = 1,505.92 gross - 30% wh) and each monthly FYIXX interest reinvestment, closing 9,894.92. build_netbenefits stamps account_total_live (APD live MV + cash) and account_total_statement (257,470.72 + 9,894.92 = 267,365.64 = the statement's own total) so Tab 17 ties to the paper. Monthly true-up: balance/as_of/ledger tail + statement marks. No other change.  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
+SCAN_VERSION = '1.492.0'  # v1.492.0 OBJECTIVITY + EFFICIENCY + DECISION WAVE (owner: go 4+8+1 and all remaining). (1) SCANNER-SIDE ARBITRATION in build_recommended -- the same rules the screen already applied now move the RANK itself, order-proof via EXISTING: falling knife (previous trend_state) -1.0, timing AVOID -1.0 / WAIT-damaged -0.5 (previous entry_timing), CEO/CFO cluster selling -0.75 (previous paper-book insider stamps); a demoted name can never rank #1; rank_score_raw kept; index reads s.arbitrated and skips its own pass. (2) CALIBRATION LOOP v1 -- an engine vote is discounted by its own realized scorecard: while the TCE HIGH tier shows a matured cohort with 0% hit-rate and negative alpha, a TCE-HIGH vote costs -0.5 rank and the discount is published in recommended.engine_calibration. (3) PAPER BOOK obeys the same rules: _mom_mult returns x0.6 for names timing-AVOID / trend-damaged / insider-cluster-sell (previous run), so the tracked model portfolio matches the screen. (4) MOAT COVER: 7-day TTL (was 5) and funds that returned zero deep holdings for 2+ runs are skipped, retried every 7th run (the 139-second stage). (5) FMR diagnostics probes run weekly, not daily. (6) Off-pool prediction re-pricing: TradingView batch close FIRST, Yahoo only for the remainder (189/315 -> ~all). (7) fetch_etf_meta: TradingView expense_ratio + Perf.3Y first, Yahoo fallback. (8) Bullion intl leg retired honestly -- info log, no daily warning. (9) Tab-11 bank sector block warns when its as_of exceeds 400 days. (10) Universe sentinel normalises BRK.B/BRK-B. (11) ~20 more pipeline stages wrapped in _stage (tail.* inside the tail window) so the 67s unattributed shrinks. Index v5.379 renders the decision strip, the concentration line and the paid-input trigger.  # v1.491.0 YAHOO -> TRADINGVIEW CUT (owner: 'cut Yahoo and replace it with TV'). Daily Yahoo traffic that TradingView can serve is gone: (1) US-screen gap fallback -- the names the TV prefilter missed no longer go to per-name Yahoo (21 dead-symbol 404s every run); they get a SECOND TradingView pass through fetch_us_large_fundamentals(), the same record format, then _candidate_from_tv; whatever TV still cannot supply is dropped and counted honestly. (2) EPS gap-fill -- SEC EDGAR stays first; the Yahoo income_stmt loop (crumb cooldowns, retries) is replaced by ONE TradingView batch of earnings_per_share_diluted_yoy_growth_ttm/_fq (96% coverage per the L1 diag). (3) USD/PKR -- Yahoo history was pulled every run even when TV served the level; the week/month/quarter trend now comes from the dashboard's own daily history and Yahoo is a true fallback only when TV misses. (4) Entry-timing charts -- 40 per-name Yahoo chart calls become ONE batched yf.download (TradingView has no OHLC-history endpoint; this is the irreducible Yahoo use, along with the frozen TCE engine's 6-month batch and income statements for non-SEC filers, all of which stay). Also retires the misleading 'oil trends left on the futures basis' log line (v1.490.0 made history the authority).  # v1.490.0 OIL TREND AUTHORITY + POST-EXPORT TIMING (owner-approved). (1) The dashboard's OWN daily history of Brent/WTI futures closes is now the SOLE authority for the oil trend fields (wow/mom/qoq): the roll-free spot is a displayed level with a divergence stamp and is never used to re-base trends again -- on 25-Sep the spot series still carried last week's poisoned prints and printed WTI wow -9.9% while the dashboard's own history said -3.4%. Spans without enough history are blanked honestly (Brent accrues from 25-Sep) and the basis says so. _apply_rollfree_oil_trends is retired (kept, unused). (2) TIMING: meta.timings_ms was exported BEFORE the recommended list, entry timing, Wave Z, MOAT cover, ETF holdings index, MOAT universe, side-file split, governor and the final writes -- ~273s of a 605s workflow wall was invisible (runtime_sec 332). Those stages are now wrapped in _stage('post.*') and a second block, meta.timings_post_ms plus timing_accounting.post_export_sec, is written right before the governor so every second of the run is attributable.  # v1.489.0 ENTRY-TIMING CORRECTIONS + OIL TRENDS REPOPULATED (owner-approved after the first live audit of v1.488.0). (1) volume: TradingView's column is lower-case 'volume' -- 'Volume' returned nothing, so every card showed a blank volume-vs-30-day cell. (2) Trend filter tightened -- 51 of 111 names read BUY, including AMAT, which sat above its 200-day but BELOW its 50-day with the 20-day under the 50-day and 36% under its all-time high, while the trend chip beside it said falling knife: an uptrend with price below the 50-day or the 20-day below the 50-day is now 'WAIT (trend damaged)', and no BUY is issued more than 20% below the 52-week high or 25% below the all-time high ('WAIT (deep retracement)') -- the first cohort's -13.5% came from exactly those setups. Simulated on the live rows: BUY 51 -> 26, NVDA/VLO stay BUY. (3) Oil trend tiles had stayed blank since the v1.485.0 quarantine because the wow/mom/qoq fields were only ever written by the spot re-base path -- there was no independent futures-based trend calculation. _fill_oil_trends_from_history() now derives them from the dashboard's OWN daily history of Brent/WTI futures closes whenever a span is blank, stamped 'futures (dashboard daily history)'. Index unchanged (verdict names unchanged; reasons carry the detail).  # v1.488.0 ENTRY-TIMING LAYER for the recommended list (owner: technical analysis tracked daily -- all-time high, retracement, earnings dates, EMAs, RSI -- and a daily buy-or-not verdict per recommended stock). New build_entry_timing(data): ONE batched TradingView /america/scan for every Tab-19 name (EMA20/50/200, RSI14, all-time high, 52-week high/low, last + next earnings dates, 30-day average volume) plus Yahoo daily closes (6 months) for the top 40 so the tab can draw the chart; keep-last-good per name from EXISTING. _entry_timing_verdict() is a PURE, unit-tested rule set built from the entry-timing evidence: (1) trend filter first -- price above the 200-day with the 50-day above it (Faber 2007 / Antonacci: trend-following cuts drawdowns); no BUY ever below the 200-day; (2) earnings blackout -- no new money inside 5 trading days of a report (the print is a coin-flip; post-earnings drift favours buying AFTER a good reaction, Bernard-Thomas); (3) the highest-probability entry = a PULLBACK in an uptrend to the 20/50-day with RSI 35-60 (Connors pullback work), invalidated by a close below the 50-day; (4) breakout near the 52-week high with RSI < 70 is buyable (George-Hwang 2004: stocks near their 52-week high keep outperforming); (5) RSI >= 70 or > 8% above the 20-day = WAIT FOR DIP; (6) > 25% below the all-time high in a downtrend = falling knife, AVOID. Verdicts: BUY / WAIT FOR DIP / WAIT / HOLD OFF / AVOID, each with a plain-language why, the buy zone and the stop reference. Feeds data['entry_timing']; index v5.378 renders.  # v1.487.0 SCORECARD ROBUSTNESS (priority-1 of the 25-Sep engine grade). The TCE summary was mean-only: one lottery-ticket name (ABTC +1,250%) turned an IGNORE tier whose MEDIAN was -7% into a '+41%' tier, and every downstream judgement read that number. Each tier now also carries median_fwd_pct, wins_fwd_pct (10/90 winsorized mean), median_alpha_pct, exit_gap_pp (avg peak minus avg realized -- the money the exit rule left on the table; the first cohort peaked +18% and closed -13.5%), and lift_median_pp (tier median minus IGNORE median, in points -- the ratio lift is undefined when the base hit-rate is 0). Existing fields unchanged so nothing downstream breaks. Index v5.377 renders the robust read.  # v1.486.0 POSITION JOURNEYS PASSTHROUGH (owner: the AMD3 buy/sell levels must display graphically on Tab 17). live_portfolio.json gains a position_journeys[] seed (per closed position: dated BUY/SELL events with price, shares, per-sale FIFO P&L, invested/proceeds/profit totals -- AMD3 first: 3 buys Jul-Aug, 4 sells incl the 23-Sep trailing-stop close, +$3,855 / +25.7%); build_live_investment passes it through beside realized[] exactly like every other cfg key, index v5.375 renders the chart. realized[] in the same file is rebuilt to ONE convention (statement FIFO) fixing the mixed-basis entry flagged in the settlement audit. No other change.  # v1.485.0 P1 FOLLOW-UP PAIR (same-turn audit of the v1.484.0 run). (1) SPOT-GUARD QUARANTINE: the guard fired correctly (basis honest, suspect stamped, no NEW poisoning) but keep-last-good had already carried PRIOR spot-based trend values (brent_wow 23.26 under a 'futures' label). When the guard fires, each span whose current value EXACTLY equals the spot value is provably poisoned: restore {k}_{span}_futures when it differs, else DELETE the value and its _dir (an honest blank beats a poisoned number) and note 'carried spot-based value quarantined' in the basis. (2) E&P LANE ORDER-PROOF GATE: the lane never fired because ep_signal is BUILT AFTER psx_topdown in the run order -- at decision time the key does not exist. Gate now reads data, then EXISTING (carry), then recomputes inline from macros already fetched (Arab Light proxy = Brent - 2.00 > 60 threshold), so it cannot be starved by ordering. No other change.  # v1.484.0 P1 ENGINE-INTEGRITY PAIR (owner-approved audit fixes). (1) OIL SPOT DIVERGENCE GUARD: the FRED roll-free spot has been printing impossible levels (Brent 'spot' 130.80 vs futures 99.26, +32%; WTI 107.02 vs 89.79) and re-basing every oil trend field onto them. The re-base now runs ONLY when |spot/futures - 1| <= 10%; beyond that the trends KEEP the futures basis, the spot level is stamped {k}_spot_suspect {spot, futures, div_pct}, trend_basis says so honestly, and a warning logs. Arab Light proxy unaffected (Brent-2 on futures). (2) PSX E&P CASH-UNVERIFIED LANE: the E&P trigger fired while the topdown buy list stayed 100% banks, because PSX non-financials have NO CFO statement feed and cash_gate='no-data' was treated as exclusion -- data absence scored as failure. Gate is the TRIGGER ITSELF (data['ep_signal'] fired -- the offline validation caught that 'favored' can be [] while the trigger fires, so favored is NOT the gate): up to 3 Energy-Minerals names with grade A/B and no cash data join the buys, cash_gate='cash-unverified', an honest note on each, capped at 10 total buys, gate_counts extended. Banks lane, ordering and every verified-pass rule unchanged. No other change.  # v1.483.0 HEADLINE CASH = TOTAL BALANCE (owner: settlement must be reported truthfully). cfg['cash'] preferred the Flex statement's endingSettledCash, which is frozen at statement date -- after the two AMD3 sales it put USD $0.98 on Tab 17's headline against a real $7,166.53 balance. Headline now carries the TOTAL ending balance per currency (settled preferred only when ending is absent); withdrawable-vs-pending is the Activity card's job, which index v5.374 computes from each sale's settle date AT VIEW TIME so it flips on the correct day without a scan. No other change.  # v1.482.0 CORE-CASH LEDGER BACK-EXTENSION (owner: 'the tab shows ~$7,000 with no breakdown'). The blind 1-Apr-2026 opening row is replaced by the full provenance chain reconciled from the four year-end statements (2021/2023/2024/2025): 2021-22 no cash account (all RSU/PSU unvested, zero dividends); 2023 account opens -- first APD net dividends 847.70 + 11.04 FDRXX interest = 858.74 (ties exactly); 2024 +2,951.85 in (net sweeps + interest) less ~1,291.88 unitemized core outflow (year-end format omits the monthly activity ledger; owner to confirm withdrawal) = 2,518.71; 2025 core fund switched FDRXX->FYIXX, +4,044.26 (net sweeps 3,868.01 + fund interest 176.23) = 6,562.97 (ties to 2 cents); 2026 Q1 Feb net sweep 1,042.49 + ~59.34 interest = 7,664.80 on 1 Apr -- the figure that previously showed as an unexplained opening. Whole 5-yr chain closes to 2 cents against the live 9,894.92. Seed-only change; the ledger renderer is generic, index untouched at v5.373. No other change.  # v1.481.0 GOVERNOR WAVE 2 -- SCANNER-STATE LEAVES THE PAYLOAD (owner-approved; soft-ceiling breach 7.89 MB). Four blocks that no renderer and no workflow step read move to committed side files on the us/psx_history_cache.json precedent: explosive_stmt_cache.json (~88 KB), sigt_quarterly_cache.json (~58 KB), ma_lines.json (~42 KB), and foundation_cache.json (the FULL 20-field 1,860-row foundation universe, ~833 KB). data.json keeps a SLIM foundation_universe of exactly the three fields the index reads -- ticker/name/sector, proven by grep of both reader functions (_secTickers, _tdNameCache) -- so every tab renders byte-identically. Loaders read side-file-first with an EXISTING fallback (one-run migration path; crash-carry and TV-scan-failure fallback now restore the FULL rows from foundation_cache.json). _split_side_state() runs immediately before the size governor; a failed side write keeps the block inline (state is never lost). daily.yml commit step gains the four files. Net data.json ~6.6 -> ~5.7 MB. No display field, engine input or scoring path touched.  # v1.480.0 NETBENEFITS AUG-31 REFRESH + CORE CASH: _NB_FACTS statement marks advanced from the 30-Jun to the 31-Aug Fidelity statement (px 309.46, MV 257,470.72, unrealized +20,593.02; 2026 flows row now YTD-through-Aug: dividends 4,682.29, withholding -1,350.34, plan value 267,365.64). NEW core_cash block: the FYIXX sweep account (9,894.92 @ 31-Aug, 3.44% 7-day yield) with a dated accumulation LEDGER traced from the Apr/Jun/Aug statements -- opening 7,664.80 (1-Apr), each APD net-dividend sweep (+1,054.14 = 1,505.92 gross - 30% wh) and each monthly FYIXX interest reinvestment, closing 9,894.92. build_netbenefits stamps account_total_live (APD live MV + cash) and account_total_statement (257,470.72 + 9,894.92 = 267,365.64 = the statement's own total) so Tab 17 ties to the paper. Monthly true-up: balance/as_of/ledger tail + statement marks. No other change.  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -3374,6 +3374,21 @@ ETF_META = {
 def fetch_etf_meta(etf):
     """3Y return + expense ratio for an ETF via Yahoo. Guarded; returns {y3, expense} (None if missing)."""
     out = {'y3': None, 'expense': None}
+    try:   # v1.492.0: TradingView first (expense_ratio + Perf.3Y), Yahoo only for gaps
+        r = requests.post('https://scanner.tradingview.com/america/scan',
+                          json={'symbols': {'tickers': ['AMEX:%s' % etf, 'NASDAQ:%s' % etf, 'NYSE:%s' % etf]}, 'columns': ['expense_ratio', 'Perf.3Y']},
+                          headers={'User-Agent': UA}, timeout=20)
+        if r.status_code == 200:
+            for row in (r.json().get('data') or []):
+                d_ = row.get('d') or []
+                if len(d_) >= 2:
+                    if isinstance(d_[0], (int, float)) and not isinstance(d_[0], bool): out['expense'] = round(float(d_[0]), 3)
+                    if isinstance(d_[1], (int, float)) and not isinstance(d_[1], bool): out['y3'] = round(float(d_[1]), 1)
+                    break
+        if out['y3'] is not None and out['expense'] is not None:
+            return out
+    except Exception:
+        pass
     try:
         import yfinance as _yf
         t = _yf.Ticker(etf)
@@ -4268,7 +4283,7 @@ def build_moat_cover(existing=None):
     fresh = False
     try:
         if stamp:
-            fresh = (dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(str(stamp).replace('Z', '+00:00'))).total_seconds() < 5 * 86400
+            fresh = (dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(str(stamp).replace('Z', '+00:00'))).total_seconds() < 7 * 86400   # v1.492.0: 7-day TTL
     except Exception:
         fresh = False
     # v1.366.0: a pre-deep-holdings cache (no deep_diag) must refresh once so the broad CSV runs.
@@ -4304,8 +4319,15 @@ def build_moat_cover(existing=None):
                   'KBE', 'XLV', 'XBI', 'IBB', 'IHI', 'XLI', 'PPA', 'ITA', 'XLB', 'XLP', 'XLY', 'XLU',
                   'XLRE', 'VNQ', 'IWM', 'SCHD', 'MTUM', 'QUAL', 'EWY', 'EWT')
     deep_diag = {}
+    _zskip = _moat_zero_skip(prev)   # v1.492.0
+    if _zskip:
+        log('  [MOAT cover] skipping %d zero-holding fund(s) this run: %s' % (len(_zskip), sorted(_zskip)))
     for _bt in _DEEP_ETFS:
         _tks, _info = [], {}
+        if _bt in _zskip:
+            _pv = dict((_pdd.get(_bt) or {})); _pv['zero_runs'] = int(_pv.get('zero_runs') or 0) + 1; _pv['skipped'] = True
+            deep_diag[_bt] = _pv
+            continue
         try:
             _tks, _info = fetch_edgar_nport_holdings(_bt)   # v1.396.0: edgartools first
         except Exception as _ee:
@@ -4326,6 +4348,8 @@ def build_moat_cover(existing=None):
                 _nt, _ni = fetch_ninja_etf_holdings(_bt)
                 if len(_nt) > len(_tks): _tks, _info = _nt, _ni
             except Exception: pass
+        _info = dict(_info or {})
+        _info['zero_runs'] = (int(((_pdd.get(_bt) or {}).get('zero_runs')) or 0) + 1) if (_info.get('n', 0) or 0) == 0 else 0   # v1.492.0
         deep_diag[_bt] = _info
         if _tks and len(_tks) > len(cache.get(_bt) or []):   # v1.405.0: monotonic -- never worse over better
             cache[_bt] = _tks
@@ -5011,6 +5035,111 @@ def build_entry_timing(data):
         vc[r_.get('verdict')] = vc.get(r_.get('verdict'), 0) + 1
     log(f"  [entry timing] {out['n']}/{len(tickers)} names scored; verdicts {vc}; charts {len(hist)}")
 
+
+class _FmrSkip(Exception):
+    pass
+
+
+def _arbitrate_and_calibrate(stocks, existing):
+    """v1.492.0. Pure-ish (reads only `existing`): applies rank penalties for falling-knife / timing AVOID or
+    damaged / CEO-CFO cluster selling, and discounts a TCE-HIGH vote while its own scorecard says 0% hit-rate
+    with negative alpha. Mutates stocks in place; returns the calibration dict for publication."""
+    ex = existing if isinstance(existing, dict) else {}
+    et = ((ex.get('entry_timing') or {}).get('rows') or {})
+    prev_ts = {r.get('ticker'): (r.get('trend_state') or {}) for r in (((ex.get('recommended') or {}).get('stocks') or []))}
+    ins = {}
+    for mk in ('us', 'psx'):
+        for r in ((((ex.get('pb') or {}).get(mk) or {}).get('rows')) or []):
+            si = r.get('sec_insider_sell') or {}
+            if si.get('ceo_cfo_sell') and (si.get('cluster_sellers') or 0) >= 2:
+                ins[r.get('ticker')] = si
+    hs = (((ex.get('tce_predictions') or {}).get('summary') or {}).get('HIGH') or {})
+    tce_fail = bool((hs.get('matured') or 0) >= 10 and (hs.get('hit_rate') or 0) == 0 and (hs.get('avg_alpha_pct') is not None) and hs['avg_alpha_pct'] < 0)
+    cal = {'TCE-HIGH': {'weight': (0.5 if tce_fail else 1.0),
+                        'basis': (f"matured {hs.get('matured')} · hit-rate {hs.get('hit_rate')} · alpha {hs.get('avg_alpha_pct')}% -> vote discounted -0.5" if tce_fail else 'no matured evidence against; full vote')}}
+    for s_ in stocks:
+        pen, why = 0.0, []
+        tk = s_.get('ticker')
+        ts = prev_ts.get(tk) or {}
+        lab = f"{ts.get('label', '')} {ts.get('zone', '')}"
+        if re.search(r'reset|prove-it|falling', lab, re.I):
+            pen += 1.0; why.append('falling knife (trend engine)')
+        row = et.get(tk) or {}
+        v = row.get('verdict')
+        if v == 'AVOID':
+            pen += 1.0; why.append('timing AVOID (downtrend)')
+        elif v == 'WAIT' and 'trend damaged' in str(row.get('why', '')):
+            pen += 0.5; why.append('timing WAIT (trend damaged)')
+        if tk in ins:
+            pen += 0.75; why.append('CEO/CFO cluster selling')
+        if tce_fail and 'TCE-HIGH' in (s_.get('agree') or []):
+            pen += 0.5; why.append('TCE-HIGH vote discounted (0% hit-rate cohort)')
+        if pen:
+            s_['rank_score_raw'] = s_.get('rank_score')
+            s_['rank_score'] = round((s_.get('rank_score') or s_.get('conviction') or 0) - pen, 2)
+            s_['demoted'] = [w for w in why if not w.startswith('TCE-HIGH')] or None
+            if s_['demoted'] is None: s_.pop('demoted', None)
+            s_['modifiers'] = list(s_.get('modifiers') or []) + ['DEMOTED: ' + w if not w.startswith('TCE-HIGH') else w for w in why]
+            s_['arbitrated'] = True
+        else:
+            s_['arbitrated'] = True
+    return cal
+
+
+def _pb_arbitration_mult(existing, tk):
+    """v1.492.0. Paper book obeys the screen's rules: x0.6 for names the previous run marked timing AVOID,
+    trend-damaged WAIT, or CEO/CFO cluster selling. Returns (mult, reason) or (None, None)."""
+    try:
+        ex = existing if isinstance(existing, dict) else {}
+        row = (((ex.get('entry_timing') or {}).get('rows') or {}).get(tk)) or {}
+        v = row.get('verdict')
+        if v == 'AVOID':
+            return 0.6, 'arbitration: timing AVOID (downtrend)'
+        if v == 'WAIT' and 'trend damaged' in str(row.get('why', '')):
+            return 0.6, 'arbitration: trend damaged'
+        for mk in ('us', 'psx'):
+            for r in ((((ex.get('pb') or {}).get(mk) or {}).get('rows')) or []):
+                if r.get('ticker') == tk:
+                    si = r.get('sec_insider_sell') or {}
+                    if si.get('ceo_cfo_sell') and (si.get('cluster_sellers') or 0) >= 2:
+                        return 0.6, 'arbitration: CEO/CFO cluster selling'
+    except Exception:
+        pass
+    return None, None
+
+
+def _moat_zero_skip(prev):
+    """v1.492.0. Funds whose deep holdings came back 0 for 2+ consecutive runs are skipped (retried every 7th run)."""
+    pdd = (prev or {}).get('deep_diag') or {}
+    skip = set()
+    for k, v in pdd.items():
+        if not isinstance(v, dict): continue
+        z = int(v.get('zero_runs') or 0)
+        if (v.get('n', 0) or 0) == 0 and z >= 2 and (z % 7) != 0:
+            skip.add(k)
+    return skip
+
+
+def _tv_close_batch(tickers):
+    """v1.492.0. ONE TradingView batch: last close for US tickers -> {ticker: close}. Never raises."""
+    out = {}
+    try:
+        cands = []
+        for t in tickers:
+            cands += ['NASDAQ:%s' % t, 'NYSE:%s' % t, 'AMEX:%s' % t]
+        for i in range(0, len(cands), 150):
+            r = requests.post('https://scanner.tradingview.com/america/scan',
+                              json={'symbols': {'tickers': cands[i:i + 150]}, 'columns': ['close']},
+                              headers={'User-Agent': UA}, timeout=30)
+            if r.status_code != 200: continue
+            for row in (r.json().get('data') or []):
+                t = str(row.get('s') or '').split(':')[-1]; d_ = row.get('d') or []
+                if t and t not in out and d_ and isinstance(d_[0], (int, float)) and not isinstance(d_[0], bool):
+                    out[t] = round(float(d_[0]), 4)
+    except Exception as e:
+        warn(f'[TV close batch] failed: {e}')
+    return out
+
 def build_recommended(data):
     """Component D (v1.323.0) -- the dashboard UNANIMOUS verdict: stocks and ETFs its OWN engines agree on.
     Pure consolidation, no fetch. conviction = how many independent engines surface a name; only names >=2
@@ -5129,7 +5258,7 @@ def build_recommended(data):
                 if _checks and any(x < 0 for x in _checks):
                     continue  # underperforms at least one available benchmark -- drop from consensus
         stocks.append({'ticker': tk, 'name': e.get('name') or f.get('name') or xr.get('name') or tk,
-                       'sector': _sec,
+                       'engine_calibration': _arb_cal, 'sector': _sec,
                        'conviction': len(e['agree']), 'agree': e['agree'],
                        'ytd_pct': _ytd,
                        'ret_1y': (xr.get('perf_1y') if xr.get('perf_1y') is not None else f.get('perf_1y')),
@@ -5156,8 +5285,14 @@ def build_recommended(data):
             _mods.append('live narrative')
         s['modifiers'] = _mods
         s['rank_score'] = round(s['conviction'] + _bonus, 2)
+    # v1.492.0: scanner-side ARBITRATION + CALIBRATION (order-proof: previous run's stamps via EXISTING)
+    _arb_cal = _arbitrate_and_calibrate(stocks, EXISTING)
     stocks.sort(key=lambda x: (-x.get('rank_score', x.get('conviction', 0)),
                                -(x.get('ret_1y') if isinstance(x.get('ret_1y'), (int, float)) else -1e9)))
+    if len(stocks) > 1 and stocks[0].get('demoted'):
+        _k = next((i for i, x in enumerate(stocks) if not x.get('demoted')), None)
+        if _k:
+            stocks.insert(0, stocks.pop(_k))
     etf = {}
     def _adde(isin, label, row):
         if not isin: return
@@ -10716,7 +10851,7 @@ def fetch_br_bullion():
             if intl is not None:
                 break
     if intl is None and local is not None:
-        warn(f'[BR bullion intl diag] local live but intl leg unparsed; trail: {" | ".join(_itrail)[:160]}; head: {_intl_head[:200]}')
+        log('  [BR bullion] intl leg unavailable from Business Recorder -- gold premium retired as a metric (v1.492.0); local leg live')
     return local, local_name, intl, as_of, _head, (local_ozf if local is not None else None)
 
 
@@ -12258,6 +12393,11 @@ def _reprice_us(tickers):
     run it (blocked); confirms on the GitHub runner. Loud (warn) on failure, never raises."""
     out = {}
     tickers = [t for t in tickers if t]
+    if not tickers:
+        return out
+    _tvc = _tv_close_batch(tickers)   # v1.492.0: TradingView first
+    out.update(_tvc)
+    tickers = [t for t in tickers if t not in out]
     if not tickers:
         return out
     try:
@@ -16042,6 +16182,9 @@ def build_pb_portfolio(data, existing):
         mom = ((data.get('momentum') or {}).get('rsi_ma') or {})
 
         def _mom_mult(mk, tk):
+            _am, _aw = _pb_arbitration_mult(existing, tk)   # v1.492.0: the paper book obeys the screen's rules
+            if _am is not None:
+                return _am, _aw
             for r in (mom.get(mk) or []):
                 if r.get('ticker') == tk:
                     if r.get('signal') == 'BEARISH CROSS':
@@ -25400,7 +25543,7 @@ def main():
     # v1.209.0: the estimate-revision clock -- snapshot forward consensus daily; compute revision
     # signals once 30/90-day history accrues. Additive/freeze-safe; carries last-good.
     try:
-        build_estimate_history(data, EXISTING)
+        _stage('estimate_history', build_estimate_history, data, EXISTING)
     except Exception as e:
         log(f'  [Estimate clock] failed: {e}')
 
@@ -25488,7 +25631,7 @@ def main():
         _bl = (data.get('psx_bullion') or EXISTING.get('psx_bullion') or {})
         _psx_m['_kerb_premium'] = _kb.get('premium_pct')
         _psx_m['_gold_premium'] = _bl.get('implied_premium_pct')
-        data['psx_devaluation'] = compute_psx_devaluation(_psx_m)
+        data['psx_devaluation'] = _stage('psx_devaluation', compute_psx_devaluation, _psx_m)
         _pkd = data['psx_devaluation']
         log(f'  [Wave PK-D] devaluation: {str(_pkd.get("level", "?")).upper()} '
             f'(score {_pkd.get("score")}/{_pkd.get("max_score")}) -> '
@@ -25561,11 +25704,19 @@ def main():
         try:
             _bank_syms = sorted({c.get('ticker') for c in data['psx_candidates']
                                  if c.get('ticker') and _is_true_bank(c.get('sector'), c.get('name'), c.get('ticker'))})
-            data['bank_snapshot'] = fetch_bank_snapshot(_bank_syms)
+            data['bank_snapshot'] = _stage('bank_snapshot', fetch_bank_snapshot, _bank_syms)
         except Exception as _e:
             log(f'  [Wave Q snapshot] error ({_e})'); data['bank_snapshot'] = EXISTING.get('bank_snapshot', {})
         try:
             data['bank_sector'] = fetch_bank_sector_kpmg()
+            try:   # v1.492.0: a two-year-old sector block must say so
+                _bsa = (data.get('bank_sector') or {}).get('as_of')
+                _bsd = (dt.date.today() - dt.date.fromisoformat(str(_bsa)[:10])).days if _bsa else None
+                if _bsd is not None and _bsd > 400:
+                    warn(f'[bank sector] KPMG block is {_bsd} days old (as_of {_bsa}) -- Tab 11 sector context is stale; needs a newer survey or retirement')
+                    data['bank_sector']['stale_days'] = _bsd
+            except Exception:
+                pass
         except Exception as _e:
             log(f'  [Wave Q sector] error ({_e})'); data['bank_sector'] = EXISTING.get('bank_sector', {})
         # A (SCS -> IG2 fallback): write roe/adr/roa-trend overrides for partial banks (fill-missing only downstream)
@@ -25693,13 +25844,13 @@ def main():
         log(f'  [BR kerb] builder error ({e}) -> carry')
         data['psx_kerb'] = EXISTING.get('psx_kerb', {'available': False, 'note': 'builder error'})
     try:
-        data['psx_flows'] = build_psx_flows()
+        data['psx_flows'] = _stage('psx_flows', build_psx_flows)
     except Exception as e:
         log(f'  [BR flows] builder error ({e}) -> carry')
         data['psx_flows'] = EXISTING.get('psx_flows', {'available': False, 'note': 'builder error'})
     # v1.314.26 Phase 3: KIBOR (Tab 2 defensive trigger) + official FX (Tab 4) + bullion (Tab 4/12)
     try:
-        data['psx_kibor'] = build_psx_kibor()
+        data['psx_kibor'] = _stage('psx_kibor', build_psx_kibor)
     except Exception as e:
         log(f'  [BR kibor] builder error ({e}) -> carry')
         data['psx_kibor'] = EXISTING.get('psx_kibor', {'available': False, 'note': 'builder error'})
@@ -25709,7 +25860,7 @@ def main():
         log(f'  [BR fx] builder error ({e}) -> carry')
         data['psx_official_fx'] = EXISTING.get('psx_official_fx', {'available': False, 'note': 'builder error'})
     try:
-        data['psx_bullion'] = build_psx_bullion(data)
+        data['psx_bullion'] = _stage('psx_bullion', build_psx_bullion, data)
     except Exception as e:
         log(f'  [BR bullion] builder error ({e}) -> carry')
         data['psx_bullion'] = EXISTING.get('psx_bullion', {'available': False, 'note': 'builder error'})
@@ -26167,7 +26318,7 @@ def main():
     # carries (zero fetch), then probe justETF for the still-uncovered funds so the next version wires exact
     # holdings for the rest (Korea/Taiwan/semis leaders that aren't in any curated list).
     try:
-        _attach_discovery_holdings(data, EXISTING)
+        _stage('discovery_holdings', _attach_discovery_holdings, data, EXISTING)
     except Exception as _e:
         log(f'  [discovery holdings] pass crashed: {type(_e).__name__}: {str(_e)[:60]}')
     # v1.137.0: Pakistan UCITS proxy as its own top-level field, sourced from the existing
@@ -26392,7 +26543,7 @@ def main():
     build_recommended_etf_trackers(data)
     try:
         _stage('live_investment', build_live_investment, data, EXISTING)  # v1.211.0: owner's live IBKR ETF portfolio
-        build_live_lookthrough(data, EXISTING)  # v1.213.0: top-10 holdings + Asian analyst overlay + news + coverage probe
+        _stage('live_lookthrough', build_live_lookthrough, data, EXISTING)
     except Exception as _e:
         log(f'  [Live Investment] call failed: {_e} — carrying last-good')
         if EXISTING.get('live_investment'): data['live_investment']=EXISTING['live_investment']
@@ -26665,7 +26816,7 @@ def main():
     # (the v1.274.0 call-site at ~18103 ran ~412 lines BEFORE the im3 carry-forward here, so every
     # top-scorer read grade=None -> 0 shortlisted. Pipeline-order rule: verify against runtime order.)
     try:
-        data['etf_explosive_verified'] = build_explosive_etf_verified(data, EXISTING)
+        data['etf_explosive_verified'] = _stage('etf_explosive_verified', build_explosive_etf_verified, data, EXISTING)
         if not (data['etf_explosive_verified'].get('etfs')) and (EXISTING.get('etf_explosive_verified') or {}).get('etfs'):
             data['etf_explosive_verified'] = EXISTING['etf_explosive_verified']
     except Exception as _e:
@@ -26687,7 +26838,7 @@ def main():
     # tail region entirely, so there was never anything for it to capture. Honest labels only.
     # v1.278.0 Zacks Strong-Buy Radar (uses the existing weekly zacks_ranks; zero new fetching)
     try:
-        data['zacks_radar'] = build_zacks_radar(data, existing=EXISTING)
+        data['zacks_radar'] = _stage('tail.zacks_radar', build_zacks_radar, data, existing=EXISTING)
     except Exception as _e:
         log(f'  [Zacks radar] crashed: {type(_e).__name__}: {str(_e)[:60]}')
         data['zacks_radar'] = EXISTING.get('zacks_radar', {}) or {}
@@ -26710,7 +26861,7 @@ def main():
     # v1.188.0: M1 Step 4 -- the real-scored final buy list (additive, freeze-safe, carries last-good).
     try:
         _stage('m1_buylist', build_m1_buylist, data, EXISTING)
-        build_psx_topdown(data, EXISTING)
+        _stage('tail.psx_topdown', build_psx_topdown, data, EXISTING)
         _stage('m2_watch', build_m2_watch, data, EXISTING)
         build_psx_m2_watch(data, EXISTING)  # v1.210.0: PSX turnaround watch, same process as US
         # v1.251.0 WAVE PSXD-A RETIRED -- the free path is a COVERAGE gap, proven not assumed.
@@ -26731,15 +26882,15 @@ def main():
         # order differs from file order (the [PB] log fired 6 lines BEFORE [M1 buylist]/[PSX topdown],
         # so both books composed empty). Inside the same try: if the buy lists fail, PB carries
         # last-good via its own wrapper.
-        build_pb_portfolio(data, EXISTING)
+        _stage('tail.pb_portfolio', build_pb_portfolio, data, EXISTING)
         # v1.238.0 FIX (pipeline order): Wave SEC now runs LAST -- it consumes M2/Multibagger/Explosive
         # (all built above) AND stamps the adverse sentinel onto the PB book, which is built one line up.
         # In v1.237.0 SEC ran BEFORE PB, so the sentinel stamped a book that didn't exist yet -> 0 flags.
         _tail_mark('radar_m1_m2')
         data['narratives'] = _stage('narratives', build_narratives, data, EXISTING)
-        data['ep_signal'] = build_ep_signal(data)   # v1.302.0: the oil rule finally acts
+        data['ep_signal'] = _stage('tail.ep_signal', build_ep_signal, data)
         _tail_mark('narratives')
-        data['metals_drivers'] = build_metals_drivers(data)   # v1.303.0: what moves metals
+        data['metals_drivers'] = _stage('tail.metals_drivers', build_metals_drivers, data)
         # v1.299.0 NARRATIVE PROPAGATION (cross-tab rule): a stock sitting inside a live news
         # theme showed nothing on the Explosive / TCE / M2 / pink rows. Stamp the theme titles
         # onto every consuming record so each tab can badge it. Display-only, no scoring change.
@@ -26791,7 +26942,7 @@ def main():
         # signal it pairs with (incl. r['narr']) already exists -- verified against main()'s real
         # order, the pipeline-order rule. Isolated fetch: cannot regress any other engine.
         try:
-            data['catalyst_calendar'] = build_catalyst_calendar(data)
+            data['catalyst_calendar'] = _stage('tail.catalyst_calendar', build_catalyst_calendar, data)
         except Exception as _ce:
             data['catalyst_calendar'] = {'status': f'skipped: {type(_ce).__name__}', 'rows': [],
                                          'n_dated': 0, 'n_window': 0}
@@ -26892,24 +27043,24 @@ def main():
     # buy list + live YTD/1Y/3Y/5Y. Call-site here (after im3 carry-forward, m1_buylist,
     # narratives, sec_filings) so every engine flag is present. Wrapped; carries last-good.
     try:
-        build_recommended_tab(data, EXISTING)
+        _stage('tail.recommended_tab', build_recommended_tab, data, EXISTING)
     except Exception as e:
         log(f'  [Recommended tab] call failed: {e} — carrying last-good')
         data['recommended_tab'] = EXISTING.get('recommended_tab', {})
 
     # v1.313.0 GLOBAL DISCOVERY PACKAGE — all additive, wrapped, carry last-good.
     try:
-        build_world_stocks(data, EXISTING)
+        _stage('tail.world_stocks', build_world_stocks, data, EXISTING)
     except Exception as e:
         log(f'  [World stocks] call failed: {e}')
         data['world_stocks'] = EXISTING.get('world_stocks', {})
     try:
-        build_factor_fund_lines(data, EXISTING)
+        _stage('tail.factor_fund_lines', build_factor_fund_lines, data, EXISTING)
     except Exception as e:
         log(f'  [Factor fund-lines] call failed: {e}')
         data['factor_fund_lines'] = EXISTING.get('factor_fund_lines', {})
     try:
-        build_policy_catalyst(data, EXISTING)
+        _stage('tail.policy_catalyst', build_policy_catalyst, data, EXISTING)
     except Exception as e:
         log(f'  [Policy catalyst] call failed: {e}')
         data['policy_catalyst'] = EXISTING.get('policy_catalyst', {})
@@ -26922,12 +27073,12 @@ def main():
     except Exception as e:
         warn('[policy px] %s: %s' % (type(e).__name__, str(e)[:80]))
     try:
-        build_global_discovery(data, EXISTING)
+        _stage('tail.global_discovery', build_global_discovery, data, EXISTING)
     except Exception as e:
         log(f'  [Global discovery] call failed: {e}')
         data['global_discovery'] = EXISTING.get('global_discovery', {})
     try:
-        build_quarterly_acceleration(data, EXISTING)
+        _stage('tail.quarterly_accel', build_quarterly_acceleration, data, EXISTING)
     except Exception as e:
         log(f'  [Quarterly accel] call failed: {e}')
         data['quarterly_acceleration'] = EXISTING.get('quarterly_acceleration', {})
@@ -26992,7 +27143,8 @@ def main():
                         if (_t and _t.replace('.','').isalpha() and len(_t) <= 5
                                 and any(_e in _CORE for _e in _enames)):
                             _seen.add(_t)
-                    _blind = sorted(_seen - _uni)
+                    _unin = set(_uni) | {u.replace('-', '.') for u in _uni} | {u.replace('.', '-') for u in _uni}   # v1.492.0 BRK.B/BRK-B
+                    _blind = sorted(_seen - _unin)
                     data['meta']['universe_sentinel'] = {'engine_universe': len(_uni), 'holdings_names': len(_seen), 'blind': _blind[:250], 'n_blind': len(_blind)}   # v1.473.0: was [:20] -- the self-heal adopts from this list, so it drained only 20/run
                     if _blind:
                         log(f"  [universe sentinel] {len(_blind)} holdings-visible names absent from engines: {_blind[:8]}")
@@ -27244,6 +27396,16 @@ def main():
                         ('cand_nbpfunds',      'https://nbpfunds.com/downloads/fund-manager-report/'),
                         ('mcb_perfund_pdf',    'https://www.mcbfunds.com/download/latest_fmrs_for_website/shariah_funds/Alhamra-Islamic-Money-Market-Fund.pdf'),
                     ]
+                    _fp_prev = ((EXISTING.get('meta') or {}).get('fmr_probe') or {}) if isinstance(EXISTING, dict) else {}
+                    _fp_age = 99
+                    try:
+                        _fp_age = (dt.date.today() - dt.date.fromisoformat(str(_fp_prev.get('as_of')))).days
+                    except Exception:
+                        pass
+                    if _fp_age < 7:   # v1.492.0: diagnostics weekly, not daily
+                        data['meta']['fmr_probe'] = _fp_prev
+                        log('  [FMR probe] carried (probed %sd ago, weekly)' % _fp_age)
+                        raise _FmrSkip()
                     _fp = {}
                     for _nm, _u in _targets:
                         _r = {'url': _u, 'status': None, 'bytes': 0, 'ctype': None, 'pdf_links': None, 'sample': None}
@@ -27268,6 +27430,8 @@ def main():
                         log(f"  [FMR probe] {_nm}: status={_r['status']} bytes={_r['bytes']} pdfs={_r['pdf_links']} {(_r['sample'] or '')[:60]}")
                     _fp['as_of'] = dt.date.today().isoformat()
                     data['meta']['fmr_probe'] = _fp
+                except _FmrSkip:
+                    pass
                 except Exception as _fpe:
                     log(f'  [FMR probe] skipped: {_fpe}')
                 # v1.310.0 TIMING HIERARCHY FIX. _STAGE_MS mixed THREE levels in one flat dict:
