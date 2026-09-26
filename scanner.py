@@ -66,7 +66,7 @@ FRED_KEY = os.environ.get('FRED_API_KEY', '')
 FMP_KEY  = os.environ.get('FMP_API_KEY', '')
 OUTPUT_PATH  = Path(__file__).parent / 'data.json'
 PAYLOAD_SOFT_CEILING_MB = 7.5   # v1.431.0: soft ceiling; breach recorded into meta.warnings at the write site
-SCAN_VERSION = '1.496.0'  # v1.496.0 VERDICT-ON-COMPLETED-BAR + STABLE DEMOTION FLAG (from the two-run audit: DVN's rank moved 2.25->2.75 on a one-cent intraday tick with no new trading day, and LB flipped BUY->WAIT and back within one 2h14m gap -- both traced to _entry_timing_verdict() reading the LIVE intraday close, the one function the v1.494.0 completed-bar fix missed). (1) Once the completed-bar batch lands, the verdict/trend/why/buy_zone/stop_ref/off_ath/off_52w/ext20/ext50 fields are RECOMPUTED on the completed bar's close (EMAs/RSI/ATH/52w kept from the same-day TV read, which the completed bar cannot supply) -- the intraday read is kept as 'verdict_intraday' for comparison, never used for the gate. (2) The arbitration penalty for 'trend damaged' no longer substring-matches the why-text (DVN's exact bug: a 1-cent tick changed which WAIT-reason fired, silently toggling the penalty) -- _entry_timing_verdict now stamps a stable 'wait_reason' code ('earnings'|'downtrend'|'mixed'|'trend_damaged'|'deep_retracement'|'stretched'|None) and the penalty reads that flag. # v1.495.0 FIX: v1.494.0's _rearbitrate_recommended(data) ran 24 lines before data['entry_timing']=out was actually assigned, so it re-ranked against an EMPTY entry_timing every run -- the insider-selling penalty (reads data['pb'], unaffected) kept firing but the timing-AVOID/WAIT penalty (reads data['entry_timing']) never did; the 16:08 run confirmed 13 AVOID names sitting un-demoted at #1-ranked-eligible. Call moved to after the true assignment. # v1.494.0 TRIGGER CORRECTNESS (from the 15:46 audit: every one of 112 names read 0.1-0.3x volume because the scan runs mid-session -- TV 'volume' is intraday-to-date against a full-day 30-day average, and 'close' was the live tick, so conditions 2 and 3 could never be true). The three conditions are now judged on the LAST COMPLETED DAILY BAR (Yahoo 7-day batch: that bar's close, high, low, volume against the prior bar's high; partial today's bar excluded while the session is open), and the live tick is shown separately as 'now (intraday)'. Pullback zone tolerance +2% above the 20-day. cash_basis states how many positions the deployable cash covers at the plan size. RE-ARBITRATION: after entry timing is built, the recommended list is re-ranked on THIS run's verdicts (rank restored from rank_score_raw, penalties re-applied) -- closes the one-day lag that left 15 AVOID names un-demoted. # v1.493.0 REGRESSION FIX + ENTRY-TRIGGER LAYER. (0) FIX: v1.492.0 inserted the engine_calibration key at a stale offset -- into the per-stock dict (before _arb_cal existed) instead of the recommended dict -- so build_recommended died on a NameError in 3 ms and the 14:15 run shipped with NO recommended list and NO entry timing (Tab 19 blank). Key moved to the correct dict; _stage now writes a visible warning when any stage raises so a silent death like this can never hide again. (1) ENTRY TRIGGER (owner's three conditions): per recommended name, two entry zones (pullback = 50-day to 20-day band; breakout = within 3% of the 52-week high), (a) price inside one zone, (b) daily close above the PRIOR day's high, (c) volume on that day above the 30-day average -- all three -> TRIGGERED, else the missing conditions are named. Previous close, the open and the gap, the prior day's high/low, today's volume vs average are stamped per row (TV batch + one 7-day Yahoo batch). (2) SIZED PLAN from the cash the dashboard already knows (Tab 17 live_investment: NAV, cash, deployable above the 5% floor): budget = min(1/3 of deployable, 10% of NAV, risk-based size where 1% of NAV is at risk to the stop); shares, limit, stop, two tranches, and an open-day rule (buy at the open only if it gaps no more than 2% above the trigger). v1.492.0 note follows. # v1.492.0 OBJECTIVITY + EFFICIENCY + DECISION WAVE (owner: go 4+8+1 and all remaining). (1) SCANNER-SIDE ARBITRATION in build_recommended -- the same rules the screen already applied now move the RANK itself, order-proof via EXISTING: falling knife (previous trend_state) -1.0, timing AVOID -1.0 / WAIT-damaged -0.5 (previous entry_timing), CEO/CFO cluster selling -0.75 (previous paper-book insider stamps); a demoted name can never rank #1; rank_score_raw kept; index reads s.arbitrated and skips its own pass. (2) CALIBRATION LOOP v1 -- an engine vote is discounted by its own realized scorecard: while the TCE HIGH tier shows a matured cohort with 0% hit-rate and negative alpha, a TCE-HIGH vote costs -0.5 rank and the discount is published in recommended.engine_calibration. (3) PAPER BOOK obeys the same rules: _mom_mult returns x0.6 for names timing-AVOID / trend-damaged / insider-cluster-sell (previous run), so the tracked model portfolio matches the screen. (4) MOAT COVER: 7-day TTL (was 5) and funds that returned zero deep holdings for 2+ runs are skipped, retried every 7th run (the 139-second stage). (5) FMR diagnostics probes run weekly, not daily. (6) Off-pool prediction re-pricing: TradingView batch close FIRST, Yahoo only for the remainder (189/315 -> ~all). (7) fetch_etf_meta: TradingView expense_ratio + Perf.3Y first, Yahoo fallback. (8) Bullion intl leg retired honestly -- info log, no daily warning. (9) Tab-11 bank sector block warns when its as_of exceeds 400 days. (10) Universe sentinel normalises BRK.B/BRK-B. (11) ~20 more pipeline stages wrapped in _stage (tail.* inside the tail window) so the 67s unattributed shrinks. Index v5.379 renders the decision strip, the concentration line and the paid-input trigger.  # v1.491.0 YAHOO -> TRADINGVIEW CUT (owner: 'cut Yahoo and replace it with TV'). Daily Yahoo traffic that TradingView can serve is gone: (1) US-screen gap fallback -- the names the TV prefilter missed no longer go to per-name Yahoo (21 dead-symbol 404s every run); they get a SECOND TradingView pass through fetch_us_large_fundamentals(), the same record format, then _candidate_from_tv; whatever TV still cannot supply is dropped and counted honestly. (2) EPS gap-fill -- SEC EDGAR stays first; the Yahoo income_stmt loop (crumb cooldowns, retries) is replaced by ONE TradingView batch of earnings_per_share_diluted_yoy_growth_ttm/_fq (96% coverage per the L1 diag). (3) USD/PKR -- Yahoo history was pulled every run even when TV served the level; the week/month/quarter trend now comes from the dashboard's own daily history and Yahoo is a true fallback only when TV misses. (4) Entry-timing charts -- 40 per-name Yahoo chart calls become ONE batched yf.download (TradingView has no OHLC-history endpoint; this is the irreducible Yahoo use, along with the frozen TCE engine's 6-month batch and income statements for non-SEC filers, all of which stay). Also retires the misleading 'oil trends left on the futures basis' log line (v1.490.0 made history the authority).  # v1.490.0 OIL TREND AUTHORITY + POST-EXPORT TIMING (owner-approved). (1) The dashboard's OWN daily history of Brent/WTI futures closes is now the SOLE authority for the oil trend fields (wow/mom/qoq): the roll-free spot is a displayed level with a divergence stamp and is never used to re-base trends again -- on 25-Sep the spot series still carried last week's poisoned prints and printed WTI wow -9.9% while the dashboard's own history said -3.4%. Spans without enough history are blanked honestly (Brent accrues from 25-Sep) and the basis says so. _apply_rollfree_oil_trends is retired (kept, unused). (2) TIMING: meta.timings_ms was exported BEFORE the recommended list, entry timing, Wave Z, MOAT cover, ETF holdings index, MOAT universe, side-file split, governor and the final writes -- ~273s of a 605s workflow wall was invisible (runtime_sec 332). Those stages are now wrapped in _stage('post.*') and a second block, meta.timings_post_ms plus timing_accounting.post_export_sec, is written right before the governor so every second of the run is attributable.  # v1.489.0 ENTRY-TIMING CORRECTIONS + OIL TRENDS REPOPULATED (owner-approved after the first live audit of v1.488.0). (1) volume: TradingView's column is lower-case 'volume' -- 'Volume' returned nothing, so every card showed a blank volume-vs-30-day cell. (2) Trend filter tightened -- 51 of 111 names read BUY, including AMAT, which sat above its 200-day but BELOW its 50-day with the 20-day under the 50-day and 36% under its all-time high, while the trend chip beside it said falling knife: an uptrend with price below the 50-day or the 20-day below the 50-day is now 'WAIT (trend damaged)', and no BUY is issued more than 20% below the 52-week high or 25% below the all-time high ('WAIT (deep retracement)') -- the first cohort's -13.5% came from exactly those setups. Simulated on the live rows: BUY 51 -> 26, NVDA/VLO stay BUY. (3) Oil trend tiles had stayed blank since the v1.485.0 quarantine because the wow/mom/qoq fields were only ever written by the spot re-base path -- there was no independent futures-based trend calculation. _fill_oil_trends_from_history() now derives them from the dashboard's OWN daily history of Brent/WTI futures closes whenever a span is blank, stamped 'futures (dashboard daily history)'. Index unchanged (verdict names unchanged; reasons carry the detail).  # v1.488.0 ENTRY-TIMING LAYER for the recommended list (owner: technical analysis tracked daily -- all-time high, retracement, earnings dates, EMAs, RSI -- and a daily buy-or-not verdict per recommended stock). New build_entry_timing(data): ONE batched TradingView /america/scan for every Tab-19 name (EMA20/50/200, RSI14, all-time high, 52-week high/low, last + next earnings dates, 30-day average volume) plus Yahoo daily closes (6 months) for the top 40 so the tab can draw the chart; keep-last-good per name from EXISTING. _entry_timing_verdict() is a PURE, unit-tested rule set built from the entry-timing evidence: (1) trend filter first -- price above the 200-day with the 50-day above it (Faber 2007 / Antonacci: trend-following cuts drawdowns); no BUY ever below the 200-day; (2) earnings blackout -- no new money inside 5 trading days of a report (the print is a coin-flip; post-earnings drift favours buying AFTER a good reaction, Bernard-Thomas); (3) the highest-probability entry = a PULLBACK in an uptrend to the 20/50-day with RSI 35-60 (Connors pullback work), invalidated by a close below the 50-day; (4) breakout near the 52-week high with RSI < 70 is buyable (George-Hwang 2004: stocks near their 52-week high keep outperforming); (5) RSI >= 70 or > 8% above the 20-day = WAIT FOR DIP; (6) > 25% below the all-time high in a downtrend = falling knife, AVOID. Verdicts: BUY / WAIT FOR DIP / WAIT / HOLD OFF / AVOID, each with a plain-language why, the buy zone and the stop reference. Feeds data['entry_timing']; index v5.378 renders.  # v1.487.0 SCORECARD ROBUSTNESS (priority-1 of the 25-Sep engine grade). The TCE summary was mean-only: one lottery-ticket name (ABTC +1,250%) turned an IGNORE tier whose MEDIAN was -7% into a '+41%' tier, and every downstream judgement read that number. Each tier now also carries median_fwd_pct, wins_fwd_pct (10/90 winsorized mean), median_alpha_pct, exit_gap_pp (avg peak minus avg realized -- the money the exit rule left on the table; the first cohort peaked +18% and closed -13.5%), and lift_median_pp (tier median minus IGNORE median, in points -- the ratio lift is undefined when the base hit-rate is 0). Existing fields unchanged so nothing downstream breaks. Index v5.377 renders the robust read.  # v1.486.0 POSITION JOURNEYS PASSTHROUGH (owner: the AMD3 buy/sell levels must display graphically on Tab 17). live_portfolio.json gains a position_journeys[] seed (per closed position: dated BUY/SELL events with price, shares, per-sale FIFO P&L, invested/proceeds/profit totals -- AMD3 first: 3 buys Jul-Aug, 4 sells incl the 23-Sep trailing-stop close, +$3,855 / +25.7%); build_live_investment passes it through beside realized[] exactly like every other cfg key, index v5.375 renders the chart. realized[] in the same file is rebuilt to ONE convention (statement FIFO) fixing the mixed-basis entry flagged in the settlement audit. No other change.  # v1.485.0 P1 FOLLOW-UP PAIR (same-turn audit of the v1.484.0 run). (1) SPOT-GUARD QUARANTINE: the guard fired correctly (basis honest, suspect stamped, no NEW poisoning) but keep-last-good had already carried PRIOR spot-based trend values (brent_wow 23.26 under a 'futures' label). When the guard fires, each span whose current value EXACTLY equals the spot value is provably poisoned: restore {k}_{span}_futures when it differs, else DELETE the value and its _dir (an honest blank beats a poisoned number) and note 'carried spot-based value quarantined' in the basis. (2) E&P LANE ORDER-PROOF GATE: the lane never fired because ep_signal is BUILT AFTER psx_topdown in the run order -- at decision time the key does not exist. Gate now reads data, then EXISTING (carry), then recomputes inline from macros already fetched (Arab Light proxy = Brent - 2.00 > 60 threshold), so it cannot be starved by ordering. No other change.  # v1.484.0 P1 ENGINE-INTEGRITY PAIR (owner-approved audit fixes). (1) OIL SPOT DIVERGENCE GUARD: the FRED roll-free spot has been printing impossible levels (Brent 'spot' 130.80 vs futures 99.26, +32%; WTI 107.02 vs 89.79) and re-basing every oil trend field onto them. The re-base now runs ONLY when |spot/futures - 1| <= 10%; beyond that the trends KEEP the futures basis, the spot level is stamped {k}_spot_suspect {spot, futures, div_pct}, trend_basis says so honestly, and a warning logs. Arab Light proxy unaffected (Brent-2 on futures). (2) PSX E&P CASH-UNVERIFIED LANE: the E&P trigger fired while the topdown buy list stayed 100% banks, because PSX non-financials have NO CFO statement feed and cash_gate='no-data' was treated as exclusion -- data absence scored as failure. Gate is the TRIGGER ITSELF (data['ep_signal'] fired -- the offline validation caught that 'favored' can be [] while the trigger fires, so favored is NOT the gate): up to 3 Energy-Minerals names with grade A/B and no cash data join the buys, cash_gate='cash-unverified', an honest note on each, capped at 10 total buys, gate_counts extended. Banks lane, ordering and every verified-pass rule unchanged. No other change.  # v1.483.0 HEADLINE CASH = TOTAL BALANCE (owner: settlement must be reported truthfully). cfg['cash'] preferred the Flex statement's endingSettledCash, which is frozen at statement date -- after the two AMD3 sales it put USD $0.98 on Tab 17's headline against a real $7,166.53 balance. Headline now carries the TOTAL ending balance per currency (settled preferred only when ending is absent); withdrawable-vs-pending is the Activity card's job, which index v5.374 computes from each sale's settle date AT VIEW TIME so it flips on the correct day without a scan. No other change.  # v1.482.0 CORE-CASH LEDGER BACK-EXTENSION (owner: 'the tab shows ~$7,000 with no breakdown'). The blind 1-Apr-2026 opening row is replaced by the full provenance chain reconciled from the four year-end statements (2021/2023/2024/2025): 2021-22 no cash account (all RSU/PSU unvested, zero dividends); 2023 account opens -- first APD net dividends 847.70 + 11.04 FDRXX interest = 858.74 (ties exactly); 2024 +2,951.85 in (net sweeps + interest) less ~1,291.88 unitemized core outflow (year-end format omits the monthly activity ledger; owner to confirm withdrawal) = 2,518.71; 2025 core fund switched FDRXX->FYIXX, +4,044.26 (net sweeps 3,868.01 + fund interest 176.23) = 6,562.97 (ties to 2 cents); 2026 Q1 Feb net sweep 1,042.49 + ~59.34 interest = 7,664.80 on 1 Apr -- the figure that previously showed as an unexplained opening. Whole 5-yr chain closes to 2 cents against the live 9,894.92. Seed-only change; the ledger renderer is generic, index untouched at v5.373. No other change.  # v1.481.0 GOVERNOR WAVE 2 -- SCANNER-STATE LEAVES THE PAYLOAD (owner-approved; soft-ceiling breach 7.89 MB). Four blocks that no renderer and no workflow step read move to committed side files on the us/psx_history_cache.json precedent: explosive_stmt_cache.json (~88 KB), sigt_quarterly_cache.json (~58 KB), ma_lines.json (~42 KB), and foundation_cache.json (the FULL 20-field 1,860-row foundation universe, ~833 KB). data.json keeps a SLIM foundation_universe of exactly the three fields the index reads -- ticker/name/sector, proven by grep of both reader functions (_secTickers, _tdNameCache) -- so every tab renders byte-identically. Loaders read side-file-first with an EXISTING fallback (one-run migration path; crash-carry and TV-scan-failure fallback now restore the FULL rows from foundation_cache.json). _split_side_state() runs immediately before the size governor; a failed side write keeps the block inline (state is never lost). daily.yml commit step gains the four files. Net data.json ~6.6 -> ~5.7 MB. No display field, engine input or scoring path touched.  # v1.480.0 NETBENEFITS AUG-31 REFRESH + CORE CASH: _NB_FACTS statement marks advanced from the 30-Jun to the 31-Aug Fidelity statement (px 309.46, MV 257,470.72, unrealized +20,593.02; 2026 flows row now YTD-through-Aug: dividends 4,682.29, withholding -1,350.34, plan value 267,365.64). NEW core_cash block: the FYIXX sweep account (9,894.92 @ 31-Aug, 3.44% 7-day yield) with a dated accumulation LEDGER traced from the Apr/Jun/Aug statements -- opening 7,664.80 (1-Apr), each APD net-dividend sweep (+1,054.14 = 1,505.92 gross - 30% wh) and each monthly FYIXX interest reinvestment, closing 9,894.92. build_netbenefits stamps account_total_live (APD live MV + cash) and account_total_statement (257,470.72 + 9,894.92 = 267,365.64 = the statement's own total) so Tab 17 ties to the paper. Monthly true-up: balance/as_of/ledger tail + statement marks. No other change.  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
+SCAN_VERSION = '1.497.0'  # v1.497.0 FOUR-ITEM WAVE (owner-approved audit backlog) + BREAKOUT-LABEL FIX (owner asked directly: why no breakout ever shows). (1) TIMING-ACCOUNTING REWRITE: 'tail_builders' was two INDEPENDENT wall-clock timers (v1.287.0's whole-window timer B, stopped at one point; the tail.* checkpoint chain, stopped at another) measuring overlapping-but-not-identical spans of the same region -- never true concurrency, a measurement misalignment -- so their sum could exceed runtime and unattributed_sec went negative (-7.6s, confirmed on the 04:38 run). _compute_timing_accounting() now drops the parent 'tail_builders' bucket entirely in favour of the sum of its own tail.* children (the finer, self-consistent measurement), generically excludes any OTHER flat stage whose value matches a tail.* child (generalizes the old sec_filings-only special case), floors unattributed_sec at 0 so it can never be negative, and -- when a residual overlap still remains after every known duplicate is excluded -- names it explicitly as overlap_residual_sec with a warning rather than hiding it inside a wrong number. (2) sec_filings TTL investigated, NOT changed: on reading build_sec_filings, the 137s cost swing is the EXISTING, owner-approved SEC_FULL_CRAWL_DAYS=7 weekly heal (v1.270.0, built after the EOSE incident where removing this exact mechanism let a stale insider-sale record rot forever) -- 6 of 7 runs already cost near-zero via the SEC daily-index filter; the 7th run's ~139s is the deliberate price of self-healing. Lengthening the TTL would reopen the EOSE-class bug it was built to close. No code change; the earlier audit note was wrong on this point once the code was actually read. (3) SECTOR CAP: _apply_sector_cap() flags the 4th+ actionable-shaped name (>=3 engines, IM3 A/B, timing BUY, not demoted) in the SAME sector as sector_capped, in rank order, after _rearbitrate_recommended -- does not touch rank_score, only adds the flag + a plain reason so the 'Actionable today' strip stops piling into one theme. (4) EXIT RULE (designed two turns ago, owner said go): build_exit_rules() -- ATR(14) trailing stop at 2x below the highest COMPLETED-bar close since entry (ratchets up only, never down), plus an overbought partial-profit trigger (unrealized gain >=25% AND RSI>=70 -> suggest trimming a third). Applies at three levels of data quality, each labelled honestly: FULL (ATR+RSI) on the 8 US paper-book names via one small yfinance OHLC batch; COARSE (price vs the 50-day average, gain-only trim, RSI not available) on the 8 Tab-17 UCITS ETF holdings from data already on each row; NO DATA on the 10 PSX paper-book names (no confirmed OHLC source for PSX yet, an honest gap beats a guessed one). Entry price/date: live holdings use IBKR's real cost_price/acquired; paper-book names have none on file, so entry is seeded on first sighting via EXISTING carry (same pattern as shortlist_tracking's own first_price/first_date) and never re-seeded after. (5) BREAKOUT LABEL FIX: TXG/IOVA/ADPT (all within 2% of their 52-week high right now) were being told 'deep retracement... repairing' purely because a MUCH OLDER all-time high sits 58-93% above -- a legacy peak from a different market regime, irrelevant to a name freshly re-testing its OWN 52-week high. The all-time-high leg of the veto now only fires when the stock is ALSO more than 5% off its own 52-week high; a name within 5% of a fresh 52-week high skips straight to the RSI check. Direct answer to 'why no breakout': a real breakout (GRAL, in-zone, mechanically TRIGGERED) exists in today's data, but every name within 3%% of its 52-week high today also carries RSI 71-87 -- overbought by the same rule that classifies a pullback as buyable at RSI 35-60. That is today's market state, not a bug; the mislabeling on stocks like TXG that were never actually falling knives is the bug, and it is fixed here. # v1.496.0 VERDICT-ON-COMPLETED-BAR + STABLE DEMOTION FLAG (from the two-run audit: DVN's rank moved 2.25->2.75 on a one-cent intraday tick with no new trading day, and LB flipped BUY->WAIT and back within one 2h14m gap -- both traced to _entry_timing_verdict() reading the LIVE intraday close, the one function the v1.494.0 completed-bar fix missed). (1) Once the completed-bar batch lands, the verdict/trend/why/buy_zone/stop_ref/off_ath/off_52w/ext20/ext50 fields are RECOMPUTED on the completed bar's close (EMAs/RSI/ATH/52w kept from the same-day TV read, which the completed bar cannot supply) -- the intraday read is kept as 'verdict_intraday' for comparison, never used for the gate. (2) The arbitration penalty for 'trend damaged' no longer substring-matches the why-text (DVN's exact bug: a 1-cent tick changed which WAIT-reason fired, silently toggling the penalty) -- _entry_timing_verdict now stamps a stable 'wait_reason' code ('earnings'|'downtrend'|'mixed'|'trend_damaged'|'deep_retracement'|'stretched'|None) and the penalty reads that flag. # v1.495.0 FIX: v1.494.0's _rearbitrate_recommended(data) ran 24 lines before data['entry_timing']=out was actually assigned, so it re-ranked against an EMPTY entry_timing every run -- the insider-selling penalty (reads data['pb'], unaffected) kept firing but the timing-AVOID/WAIT penalty (reads data['entry_timing']) never did; the 16:08 run confirmed 13 AVOID names sitting un-demoted at #1-ranked-eligible. Call moved to after the true assignment. # v1.494.0 TRIGGER CORRECTNESS (from the 15:46 audit: every one of 112 names read 0.1-0.3x volume because the scan runs mid-session -- TV 'volume' is intraday-to-date against a full-day 30-day average, and 'close' was the live tick, so conditions 2 and 3 could never be true). The three conditions are now judged on the LAST COMPLETED DAILY BAR (Yahoo 7-day batch: that bar's close, high, low, volume against the prior bar's high; partial today's bar excluded while the session is open), and the live tick is shown separately as 'now (intraday)'. Pullback zone tolerance +2% above the 20-day. cash_basis states how many positions the deployable cash covers at the plan size. RE-ARBITRATION: after entry timing is built, the recommended list is re-ranked on THIS run's verdicts (rank restored from rank_score_raw, penalties re-applied) -- closes the one-day lag that left 15 AVOID names un-demoted. # v1.493.0 REGRESSION FIX + ENTRY-TRIGGER LAYER. (0) FIX: v1.492.0 inserted the engine_calibration key at a stale offset -- into the per-stock dict (before _arb_cal existed) instead of the recommended dict -- so build_recommended died on a NameError in 3 ms and the 14:15 run shipped with NO recommended list and NO entry timing (Tab 19 blank). Key moved to the correct dict; _stage now writes a visible warning when any stage raises so a silent death like this can never hide again. (1) ENTRY TRIGGER (owner's three conditions): per recommended name, two entry zones (pullback = 50-day to 20-day band; breakout = within 3% of the 52-week high), (a) price inside one zone, (b) daily close above the PRIOR day's high, (c) volume on that day above the 30-day average -- all three -> TRIGGERED, else the missing conditions are named. Previous close, the open and the gap, the prior day's high/low, today's volume vs average are stamped per row (TV batch + one 7-day Yahoo batch). (2) SIZED PLAN from the cash the dashboard already knows (Tab 17 live_investment: NAV, cash, deployable above the 5% floor): budget = min(1/3 of deployable, 10% of NAV, risk-based size where 1% of NAV is at risk to the stop); shares, limit, stop, two tranches, and an open-day rule (buy at the open only if it gaps no more than 2% above the trigger). v1.492.0 note follows. # v1.492.0 OBJECTIVITY + EFFICIENCY + DECISION WAVE (owner: go 4+8+1 and all remaining). (1) SCANNER-SIDE ARBITRATION in build_recommended -- the same rules the screen already applied now move the RANK itself, order-proof via EXISTING: falling knife (previous trend_state) -1.0, timing AVOID -1.0 / WAIT-damaged -0.5 (previous entry_timing), CEO/CFO cluster selling -0.75 (previous paper-book insider stamps); a demoted name can never rank #1; rank_score_raw kept; index reads s.arbitrated and skips its own pass. (2) CALIBRATION LOOP v1 -- an engine vote is discounted by its own realized scorecard: while the TCE HIGH tier shows a matured cohort with 0% hit-rate and negative alpha, a TCE-HIGH vote costs -0.5 rank and the discount is published in recommended.engine_calibration. (3) PAPER BOOK obeys the same rules: _mom_mult returns x0.6 for names timing-AVOID / trend-damaged / insider-cluster-sell (previous run), so the tracked model portfolio matches the screen. (4) MOAT COVER: 7-day TTL (was 5) and funds that returned zero deep holdings for 2+ runs are skipped, retried every 7th run (the 139-second stage). (5) FMR diagnostics probes run weekly, not daily. (6) Off-pool prediction re-pricing: TradingView batch close FIRST, Yahoo only for the remainder (189/315 -> ~all). (7) fetch_etf_meta: TradingView expense_ratio + Perf.3Y first, Yahoo fallback. (8) Bullion intl leg retired honestly -- info log, no daily warning. (9) Tab-11 bank sector block warns when its as_of exceeds 400 days. (10) Universe sentinel normalises BRK.B/BRK-B. (11) ~20 more pipeline stages wrapped in _stage (tail.* inside the tail window) so the 67s unattributed shrinks. Index v5.379 renders the decision strip, the concentration line and the paid-input trigger.  # v1.491.0 YAHOO -> TRADINGVIEW CUT (owner: 'cut Yahoo and replace it with TV'). Daily Yahoo traffic that TradingView can serve is gone: (1) US-screen gap fallback -- the names the TV prefilter missed no longer go to per-name Yahoo (21 dead-symbol 404s every run); they get a SECOND TradingView pass through fetch_us_large_fundamentals(), the same record format, then _candidate_from_tv; whatever TV still cannot supply is dropped and counted honestly. (2) EPS gap-fill -- SEC EDGAR stays first; the Yahoo income_stmt loop (crumb cooldowns, retries) is replaced by ONE TradingView batch of earnings_per_share_diluted_yoy_growth_ttm/_fq (96% coverage per the L1 diag). (3) USD/PKR -- Yahoo history was pulled every run even when TV served the level; the week/month/quarter trend now comes from the dashboard's own daily history and Yahoo is a true fallback only when TV misses. (4) Entry-timing charts -- 40 per-name Yahoo chart calls become ONE batched yf.download (TradingView has no OHLC-history endpoint; this is the irreducible Yahoo use, along with the frozen TCE engine's 6-month batch and income statements for non-SEC filers, all of which stay). Also retires the misleading 'oil trends left on the futures basis' log line (v1.490.0 made history the authority).  # v1.490.0 OIL TREND AUTHORITY + POST-EXPORT TIMING (owner-approved). (1) The dashboard's OWN daily history of Brent/WTI futures closes is now the SOLE authority for the oil trend fields (wow/mom/qoq): the roll-free spot is a displayed level with a divergence stamp and is never used to re-base trends again -- on 25-Sep the spot series still carried last week's poisoned prints and printed WTI wow -9.9% while the dashboard's own history said -3.4%. Spans without enough history are blanked honestly (Brent accrues from 25-Sep) and the basis says so. _apply_rollfree_oil_trends is retired (kept, unused). (2) TIMING: meta.timings_ms was exported BEFORE the recommended list, entry timing, Wave Z, MOAT cover, ETF holdings index, MOAT universe, side-file split, governor and the final writes -- ~273s of a 605s workflow wall was invisible (runtime_sec 332). Those stages are now wrapped in _stage('post.*') and a second block, meta.timings_post_ms plus timing_accounting.post_export_sec, is written right before the governor so every second of the run is attributable.  # v1.489.0 ENTRY-TIMING CORRECTIONS + OIL TRENDS REPOPULATED (owner-approved after the first live audit of v1.488.0). (1) volume: TradingView's column is lower-case 'volume' -- 'Volume' returned nothing, so every card showed a blank volume-vs-30-day cell. (2) Trend filter tightened -- 51 of 111 names read BUY, including AMAT, which sat above its 200-day but BELOW its 50-day with the 20-day under the 50-day and 36% under its all-time high, while the trend chip beside it said falling knife: an uptrend with price below the 50-day or the 20-day below the 50-day is now 'WAIT (trend damaged)', and no BUY is issued more than 20% below the 52-week high or 25% below the all-time high ('WAIT (deep retracement)') -- the first cohort's -13.5% came from exactly those setups. Simulated on the live rows: BUY 51 -> 26, NVDA/VLO stay BUY. (3) Oil trend tiles had stayed blank since the v1.485.0 quarantine because the wow/mom/qoq fields were only ever written by the spot re-base path -- there was no independent futures-based trend calculation. _fill_oil_trends_from_history() now derives them from the dashboard's OWN daily history of Brent/WTI futures closes whenever a span is blank, stamped 'futures (dashboard daily history)'. Index unchanged (verdict names unchanged; reasons carry the detail).  # v1.488.0 ENTRY-TIMING LAYER for the recommended list (owner: technical analysis tracked daily -- all-time high, retracement, earnings dates, EMAs, RSI -- and a daily buy-or-not verdict per recommended stock). New build_entry_timing(data): ONE batched TradingView /america/scan for every Tab-19 name (EMA20/50/200, RSI14, all-time high, 52-week high/low, last + next earnings dates, 30-day average volume) plus Yahoo daily closes (6 months) for the top 40 so the tab can draw the chart; keep-last-good per name from EXISTING. _entry_timing_verdict() is a PURE, unit-tested rule set built from the entry-timing evidence: (1) trend filter first -- price above the 200-day with the 50-day above it (Faber 2007 / Antonacci: trend-following cuts drawdowns); no BUY ever below the 200-day; (2) earnings blackout -- no new money inside 5 trading days of a report (the print is a coin-flip; post-earnings drift favours buying AFTER a good reaction, Bernard-Thomas); (3) the highest-probability entry = a PULLBACK in an uptrend to the 20/50-day with RSI 35-60 (Connors pullback work), invalidated by a close below the 50-day; (4) breakout near the 52-week high with RSI < 70 is buyable (George-Hwang 2004: stocks near their 52-week high keep outperforming); (5) RSI >= 70 or > 8% above the 20-day = WAIT FOR DIP; (6) > 25% below the all-time high in a downtrend = falling knife, AVOID. Verdicts: BUY / WAIT FOR DIP / WAIT / HOLD OFF / AVOID, each with a plain-language why, the buy zone and the stop reference. Feeds data['entry_timing']; index v5.378 renders.  # v1.487.0 SCORECARD ROBUSTNESS (priority-1 of the 25-Sep engine grade). The TCE summary was mean-only: one lottery-ticket name (ABTC +1,250%) turned an IGNORE tier whose MEDIAN was -7% into a '+41%' tier, and every downstream judgement read that number. Each tier now also carries median_fwd_pct, wins_fwd_pct (10/90 winsorized mean), median_alpha_pct, exit_gap_pp (avg peak minus avg realized -- the money the exit rule left on the table; the first cohort peaked +18% and closed -13.5%), and lift_median_pp (tier median minus IGNORE median, in points -- the ratio lift is undefined when the base hit-rate is 0). Existing fields unchanged so nothing downstream breaks. Index v5.377 renders the robust read.  # v1.486.0 POSITION JOURNEYS PASSTHROUGH (owner: the AMD3 buy/sell levels must display graphically on Tab 17). live_portfolio.json gains a position_journeys[] seed (per closed position: dated BUY/SELL events with price, shares, per-sale FIFO P&L, invested/proceeds/profit totals -- AMD3 first: 3 buys Jul-Aug, 4 sells incl the 23-Sep trailing-stop close, +$3,855 / +25.7%); build_live_investment passes it through beside realized[] exactly like every other cfg key, index v5.375 renders the chart. realized[] in the same file is rebuilt to ONE convention (statement FIFO) fixing the mixed-basis entry flagged in the settlement audit. No other change.  # v1.485.0 P1 FOLLOW-UP PAIR (same-turn audit of the v1.484.0 run). (1) SPOT-GUARD QUARANTINE: the guard fired correctly (basis honest, suspect stamped, no NEW poisoning) but keep-last-good had already carried PRIOR spot-based trend values (brent_wow 23.26 under a 'futures' label). When the guard fires, each span whose current value EXACTLY equals the spot value is provably poisoned: restore {k}_{span}_futures when it differs, else DELETE the value and its _dir (an honest blank beats a poisoned number) and note 'carried spot-based value quarantined' in the basis. (2) E&P LANE ORDER-PROOF GATE: the lane never fired because ep_signal is BUILT AFTER psx_topdown in the run order -- at decision time the key does not exist. Gate now reads data, then EXISTING (carry), then recomputes inline from macros already fetched (Arab Light proxy = Brent - 2.00 > 60 threshold), so it cannot be starved by ordering. No other change.  # v1.484.0 P1 ENGINE-INTEGRITY PAIR (owner-approved audit fixes). (1) OIL SPOT DIVERGENCE GUARD: the FRED roll-free spot has been printing impossible levels (Brent 'spot' 130.80 vs futures 99.26, +32%; WTI 107.02 vs 89.79) and re-basing every oil trend field onto them. The re-base now runs ONLY when |spot/futures - 1| <= 10%; beyond that the trends KEEP the futures basis, the spot level is stamped {k}_spot_suspect {spot, futures, div_pct}, trend_basis says so honestly, and a warning logs. Arab Light proxy unaffected (Brent-2 on futures). (2) PSX E&P CASH-UNVERIFIED LANE: the E&P trigger fired while the topdown buy list stayed 100% banks, because PSX non-financials have NO CFO statement feed and cash_gate='no-data' was treated as exclusion -- data absence scored as failure. Gate is the TRIGGER ITSELF (data['ep_signal'] fired -- the offline validation caught that 'favored' can be [] while the trigger fires, so favored is NOT the gate): up to 3 Energy-Minerals names with grade A/B and no cash data join the buys, cash_gate='cash-unverified', an honest note on each, capped at 10 total buys, gate_counts extended. Banks lane, ordering and every verified-pass rule unchanged. No other change.  # v1.483.0 HEADLINE CASH = TOTAL BALANCE (owner: settlement must be reported truthfully). cfg['cash'] preferred the Flex statement's endingSettledCash, which is frozen at statement date -- after the two AMD3 sales it put USD $0.98 on Tab 17's headline against a real $7,166.53 balance. Headline now carries the TOTAL ending balance per currency (settled preferred only when ending is absent); withdrawable-vs-pending is the Activity card's job, which index v5.374 computes from each sale's settle date AT VIEW TIME so it flips on the correct day without a scan. No other change.  # v1.482.0 CORE-CASH LEDGER BACK-EXTENSION (owner: 'the tab shows ~$7,000 with no breakdown'). The blind 1-Apr-2026 opening row is replaced by the full provenance chain reconciled from the four year-end statements (2021/2023/2024/2025): 2021-22 no cash account (all RSU/PSU unvested, zero dividends); 2023 account opens -- first APD net dividends 847.70 + 11.04 FDRXX interest = 858.74 (ties exactly); 2024 +2,951.85 in (net sweeps + interest) less ~1,291.88 unitemized core outflow (year-end format omits the monthly activity ledger; owner to confirm withdrawal) = 2,518.71; 2025 core fund switched FDRXX->FYIXX, +4,044.26 (net sweeps 3,868.01 + fund interest 176.23) = 6,562.97 (ties to 2 cents); 2026 Q1 Feb net sweep 1,042.49 + ~59.34 interest = 7,664.80 on 1 Apr -- the figure that previously showed as an unexplained opening. Whole 5-yr chain closes to 2 cents against the live 9,894.92. Seed-only change; the ledger renderer is generic, index untouched at v5.373. No other change.  # v1.481.0 GOVERNOR WAVE 2 -- SCANNER-STATE LEAVES THE PAYLOAD (owner-approved; soft-ceiling breach 7.89 MB). Four blocks that no renderer and no workflow step read move to committed side files on the us/psx_history_cache.json precedent: explosive_stmt_cache.json (~88 KB), sigt_quarterly_cache.json (~58 KB), ma_lines.json (~42 KB), and foundation_cache.json (the FULL 20-field 1,860-row foundation universe, ~833 KB). data.json keeps a SLIM foundation_universe of exactly the three fields the index reads -- ticker/name/sector, proven by grep of both reader functions (_secTickers, _tdNameCache) -- so every tab renders byte-identically. Loaders read side-file-first with an EXISTING fallback (one-run migration path; crash-carry and TV-scan-failure fallback now restore the FULL rows from foundation_cache.json). _split_side_state() runs immediately before the size governor; a failed side write keeps the block inline (state is never lost). daily.yml commit step gains the four files. Net data.json ~6.6 -> ~5.7 MB. No display field, engine input or scoring path touched.  # v1.480.0 NETBENEFITS AUG-31 REFRESH + CORE CASH: _NB_FACTS statement marks advanced from the 30-Jun to the 31-Aug Fidelity statement (px 309.46, MV 257,470.72, unrealized +20,593.02; 2026 flows row now YTD-through-Aug: dividends 4,682.29, withholding -1,350.34, plan value 267,365.64). NEW core_cash block: the FYIXX sweep account (9,894.92 @ 31-Aug, 3.44% 7-day yield) with a dated accumulation LEDGER traced from the Apr/Jun/Aug statements -- opening 7,664.80 (1-Apr), each APD net-dividend sweep (+1,054.14 = 1,505.92 gross - 30% wh) and each monthly FYIXX interest reinvestment, closing 9,894.92. build_netbenefits stamps account_total_live (APD live MV + cash) and account_total_statement (257,470.72 + 9,894.92 = 267,365.64 = the statement's own total) so Tab 17 ties to the paper. Monthly true-up: balance/as_of/ledger tail + statement marks. No other change.  # v1.479.0 IM3 DETAIL SUPERSET RULE: the 98-entry detail loss recurred -- a guard-skipped run's IM3 full rescore rebuilt the inline store to its current 232-name universe and committed it, and the next real run's fill-if-absent merge never fired, so the split overwrote the 330-entry file. im3_detail.json is now treated as the superset and UNIONED into the store at every EXISTING load (inline values win on overlap); the split writes the union back; only the governor's 60-day aging may retire an entry. No other change.
 IM3_SCAN_REV = 3   # v1.215.14 Wave A semantics (adaptive max + trend-window NA); scoring-semantics revision: bump when _score_standard's meaning changes; ALL carried im3 grades (buy list + explosive/TCE records) re-score on mismatch
 
 # v1.19.0  TradingView futures fallback for live oil (WTI/Brent) — slots between Yahoo and stale-FRED
@@ -4921,7 +4921,9 @@ def _entry_timing_verdict(q):
                        f'(price ${round(c,2)} vs 50-day ${round(e50,2)}) -- the short-term trend is down inside the long-term uptrend; wait for a close back above the 50-day with the 20-day turning up')
         return out
     # v1.489.0: deep retracement is a falling knife even above the 200-day -- the first cohort lost 13.5% buying these
-    if (off_52 is not None and off_52 < -20) or (off_ath is not None and off_ath < -25):
+    # v1.497.0: the all-time-high leg only fires when the stock is ALSO >5% off its OWN 52-week high -- a name
+    # freshly re-testing its 52-week high is not a falling knife just because a much older, higher peak exists.
+    if (off_52 is not None and off_52 < -20) or (off_ath is not None and off_ath < -25 and (off_52 is None or off_52 < -5)):
         out.update(verdict='WAIT', color='#B45309', wait_reason='deep_retracement',
                    why=f'deep retracement: {off_52}% below the 52-week high and {off_ath}% below the all-time high -- a stock this far under its highs is repairing, not trending; wait until it is within 20% of the 52-week high')
         return out
@@ -4991,6 +4993,233 @@ def _rearbitrate_recommended(data):
             stocks.insert(0, stocks.pop(_k))
     R['rearbitrated_on'] = 'this run (entry timing + trend state)'
     log('  [recommended] re-arbitrated on this run: %d demoted' % sum(1 for x in stocks if x.get('demoted')))
+
+
+def _apply_sector_cap(stocks, gb, rows, cap=3):
+    """v1.497.0. PURE. After ranking (post _rearbitrate_recommended), walk the already-sorted
+    recommended list in rank order and flag the (cap+1)-th+ name in the SAME sector that would
+    otherwise clear every 'Actionable today' gate (>=3 engines, IM3 A/B, timing BUY, not demoted)
+    as sector_capped -- so a rally in one theme (semis, refiners) can't fill the whole actionable
+    strip. Never touches rank_score or the main ranked table; only adds a boolean + a plain reason
+    the renderer can use as a 5th gate. Never raises."""
+    if not stocks:
+        return stocks
+    gb = gb or {}
+    rows = rows or {}
+    seen_per_sector = {}
+    for s_ in stocks:
+        s_.pop('sector_capped', None)
+        s_.pop('sector_cap_note', None)
+        tk = s_.get('ticker')
+        sector = s_.get('sector') or 'Unclassified'
+        is_actionable_shape = (
+            len(s_.get('agree') or []) >= 3
+            and (gb.get(tk) or {}).get('grade') in ('A', 'B')
+            and (rows.get(tk) or {}).get('verdict') == 'BUY'
+            and not s_.get('demoted')
+        )
+        if not is_actionable_shape:
+            continue
+        n = seen_per_sector.get(sector, 0)
+        if n >= cap:
+            s_['sector_capped'] = True
+            s_['sector_cap_note'] = (f'{sector} already has {cap} actionable name(s) ranked higher -- '
+                                      f'capped to avoid over-concentration in one theme')
+        seen_per_sector[sector] = n + 1
+    return stocks
+
+
+def _atr14(bars):
+    """v1.497.0. PURE. bars: ascending daily {'high','low','close'} dicts, oldest first. Wilder-style
+    simple average True Range over the last 14 bars. Returns None with <15 bars (need 14 TRs, each
+    TR needs the PRIOR bar's close). Never raises."""
+    if not bars or len(bars) < 15:
+        return None
+    trs = []
+    for i in range(1, len(bars)):
+        try:
+            h, l, pc = bars[i]['high'], bars[i]['low'], bars[i - 1]['close']
+            trs.append(max(h - l, abs(h - pc), abs(l - pc)))
+        except Exception:
+            return None
+    if len(trs) < 14:
+        return None
+    return sum(trs[-14:]) / 14.0
+
+
+def _rsi14_from_closes(closes):
+    """v1.497.0. PURE. Wilder-style RSI(14) from an ascending list of closes. None with <15 closes.
+    Never raises."""
+    if not closes or len(closes) < 15:
+        return None
+    gains, losses = [], []
+    for i in range(1, len(closes)):
+        d = closes[i] - closes[i - 1]
+        gains.append(max(d, 0.0)); losses.append(max(-d, 0.0))
+    if len(gains) < 14:
+        return None
+    avg_gain = sum(gains[-14:]) / 14.0
+    avg_loss = sum(losses[-14:]) / 14.0
+    if avg_loss == 0:
+        return 100.0
+    return round(100.0 - 100.0 / (1.0 + avg_gain / avg_loss), 1)
+
+
+def _exit_rule_eval(entry_price, entry_date, bars, prev_peak_close):
+    """v1.497.0. PURE, FULL (ATR-based) exit evaluation for one position. bars: ascending daily
+    {'date','high','low','close'} dicts (>=15 for ATR/RSI). prev_peak_close: the EXISTING-carried
+    ratchet high, or None on first sighting (seeded at entry_price). Judged on the LAST bar in
+    `bars` -- caller is responsible for passing only COMPLETED bars. Never raises.
+    Rule: trailing stop = 2x ATR(14) below the highest completed-bar close since entry, ratchets
+    UP only; a close below it -> EXIT. Else, unrealized gain >=25% AND RSI>=70 -> TRIM (a third).
+    Else HOLD."""
+    out = {'exit_basis': 'full (ATR trailing stop + RSI)', 'status': 'NO DATA',
+           'why': 'no price history available', 'peak_close': None, 'atr14': None, 'stop': None,
+           'rsi': None, 'unrealized_pct': None, 'bar_date': None, 'bar_close': None,
+           'entry_price': entry_price, 'entry_date': entry_date}
+    if not bars or entry_price is None:
+        return out
+    last = bars[-1]
+    close = last.get('close')
+    if close is None:
+        return out
+    atr = _atr14(bars)
+    rsi = _rsi14_from_closes([b['close'] for b in bars if b.get('close') is not None])
+    peak = max(prev_peak_close if prev_peak_close is not None else entry_price, close)
+    stop = round(peak - 2.0 * atr, 2) if atr else None
+    unrealized_pct = round((close / entry_price - 1.0) * 100.0, 1) if entry_price else None
+    out.update(peak_close=round(peak, 2), atr14=(round(atr, 2) if atr else None), stop=stop, rsi=rsi,
+               unrealized_pct=unrealized_pct, bar_date=last.get('date'), bar_close=close)
+    if stop is not None and close < stop:
+        out.update(status='EXIT',
+                    why=f'closed ${close} below the trailing stop of ${stop} (2x ATR from the ${out["peak_close"]} peak since entry) -- exit the position')
+        return out
+    if unrealized_pct is not None and unrealized_pct >= 25.0 and rsi is not None and rsi >= 70.0:
+        out.update(status='TRIM',
+                    why=f'up {unrealized_pct}% since entry and RSI {rsi} (overbought) -- consider trimming a third to lock in gain; the trailing stop (${stop}) still protects the rest')
+        return out
+    if stop is not None:
+        out.update(status='HOLD', why=f'holding: ${close} is above the trailing stop of ${stop}')
+    else:
+        out.update(status='HOLD', why='holding: not enough price history yet for a trailing stop (needs 15 daily bars)')
+    return out
+
+
+def _exit_rule_coarse(entry_price, price, sma50, pnl_pct):
+    """v1.497.0. PURE. COARSE exit evaluation when only a snapshot (no daily OHLC) is available --
+    used for the Tab-17 UCITS ETF holdings, which have price/sma50/pnl_pct on the row already and
+    no confirmed OHLC source. EXIT when price closes below its own 50-day average (a plain
+    trend-following exit, no ATR); TRIM (gain-only, RSI not available for these) at unrealized
+    gain >=25%; else HOLD. Never raises."""
+    out = {'exit_basis': 'coarse (price vs 50-day average; RSI not available for this holding type)',
+           'status': 'NO DATA', 'why': 'insufficient data', 'entry_price': entry_price}
+    if price is None:
+        return out
+    if sma50 is not None and price < sma50:
+        out.update(status='EXIT', why=f'price ${price} has closed below its own 50-day average (${sma50}) -- the trend has broken')
+        return out
+    if pnl_pct is not None and pnl_pct >= 25.0:
+        out.update(status='TRIM', why=f'up {pnl_pct}% since entry -- consider trimming a third to lock in gain (RSI not available for this holding, so this is gain-only, not overbought-confirmed)')
+        return out
+    out.update(status='HOLD', why=(f'holding: ${price} is above its 50-day average (${sma50})' if sma50 is not None
+                                    else 'holding: no 50-day average on file yet'))
+    return out
+
+
+def build_exit_rules(data):
+    """v1.497.0 (owner-approved, designed two turns prior). The exit side of the trade -- the TCE
+    scorecard's own finding was that HIGH-tier picks peaked +18% and closed -13.5%; the alpha was
+    in the exit, not the entry. Three data-quality tiers, each labelled honestly rather than guessed:
+      FULL   -- the 8 US paper-book names: ATR(14) trailing stop + RSI overbought trim, from ONE
+                small yfinance daily-OHLC batch (this is a genuine, confirmed US-ticker source,
+                separate from the entry-timing chart batch to avoid touching that code path).
+      COARSE -- the 8 Tab-17 UCITS ETF holdings: price-vs-50-day-average + gain-only trim, from
+                fields already on each holding row (sma50, pnl_pct) -- no new fetch, no risk of a
+                wrong price series for an LSE-listed UCITS twin of a US ticker.
+      NO DATA -- the 10 PSX paper-book names: no confirmed OHLC source for PSX exists yet; an
+                honest gap is stamped rather than a guessed one (same convention as everywhere
+                else in this codebase that a data gap is stated, not papered over).
+    Entry price/date: live holdings use IBKR's real cost_price/acquired; paper-book names have none
+    on file, so entry is seeded on FIRST SIGHTING via EXISTING carry (identical pattern to
+    shortlist_tracking's own first_price/first_date) and never re-seeded once set. Peak-close
+    ratchets UP only via the same EXISTING carry. Wrapped -> never breaks the run; carries last-good
+    on any failure."""
+    today = dt.date.today().isoformat()
+    prev = ((EXISTING or {}).get('exit_rules') or {}).get('positions') or {}
+    positions = {}
+    try:
+        pb = data.get('pb') or {}
+        us_rows = (pb.get('us') or {}).get('rows') or []
+        psx_rows = (pb.get('psx') or {}).get('rows') or []
+        us_tickers = [r.get('ticker') for r in us_rows if r.get('ticker')]
+
+        # ---- FULL tier: one small yfinance daily-OHLC batch for the US paper-book names ----
+        bars_by_ticker = {}
+        if us_tickers:
+            try:
+                import yfinance as yf
+                df = yf.download(us_tickers, period='4mo', interval='1d', group_by='ticker',
+                                  progress=False, threads=True)
+                if df is not None and not df.empty:
+                    for t in us_tickers:
+                        try:
+                            sub = df[t] if len(us_tickers) > 1 else df
+                            sub = sub.dropna(subset=['Close'])
+                            bars = [{'date': str(ix.date()), 'high': float(r['High']), 'low': float(r['Low']),
+                                     'close': float(r['Close'])} for ix, r in sub.iterrows()]
+                            if len(bars) >= 15:
+                                bars_by_ticker[t] = bars
+                        except Exception:
+                            pass
+            except Exception as _ye:
+                warn(f'[exit rules] US OHLC batch failed: {_ye}')
+
+        for r in us_rows:
+            t = r.get('ticker')
+            if not t:
+                continue
+            prev_pos = prev.get(t) or {}
+            entry_price = prev_pos.get('entry_price')
+            entry_date = prev_pos.get('entry_date')
+            if entry_price is None:
+                entry_price, entry_date = r.get('price'), today   # first sighting -> seed entry now
+            ev = _exit_rule_eval(entry_price, entry_date, bars_by_ticker.get(t), prev_pos.get('peak_close'))
+            positions[t] = ev
+            r['exit'] = ev
+
+        # ---- NO DATA tier: PSX paper-book names, honest gap ----
+        for r in psx_rows:
+            t = r.get('ticker')
+            if not t:
+                continue
+            ev = {'exit_basis': 'no data (no confirmed PSX daily-OHLC source yet)', 'status': 'NO DATA',
+                  'why': 'PSX exit tracking is not built yet -- an honest gap, not a guess',
+                  'entry_price': (prev.get(t) or {}).get('entry_price')}
+            positions[t] = ev
+            r['exit'] = ev
+
+        # ---- COARSE tier: Tab-17 UCITS ETF holdings, from fields already on the row ----
+        for h in ((data.get('live_investment') or {}).get('holdings') or []):
+            t = h.get('ticker')
+            if not t:
+                continue
+            ev = _exit_rule_coarse(h.get('cost_price'), h.get('price'), h.get('sma50'), h.get('pnl_pct'))
+            ev['entry_price'] = h.get('cost_price')
+            ev['entry_date'] = h.get('acquired')
+            positions[t] = ev
+            h['exit'] = ev
+
+        data['exit_rules'] = {'as_of': today, 'positions': positions,
+                               'basis_note': 'FULL = ATR(14) trailing stop + RSI trim (US paper-book); '
+                                             'COARSE = price vs 50-day average, gain-only trim (Tab-17 ETF holdings); '
+                                             'NO DATA = no confirmed OHLC source yet (PSX paper-book)'}
+        n_exit = sum(1 for p in positions.values() if p.get('status') == 'EXIT')
+        n_trim = sum(1 for p in positions.values() if p.get('status') == 'TRIM')
+        log(f'  [Exit rules] {len(positions)} positions: {n_exit} EXIT, {n_trim} TRIM')
+    except Exception as _ee:
+        log(f'  [Exit rules] build failed ({type(_ee).__name__}: {_ee}) -- carrying last-good')
+        if (EXISTING or {}).get('exit_rules'):
+            data['exit_rules'] = EXISTING['exit_rules']
 
 def _entry_cash_basis(data):
     """v1.493.0. What the dashboard knows about the owner's cash (Tab 17): NAV, cash, deployable above the floor."""
@@ -5202,6 +5431,11 @@ def build_entry_timing(data):
     out['history'] = hist
     data['entry_timing'] = out
     _rearbitrate_recommended(data)   # v1.495.0: now runs AFTER entry_timing is actually on data
+    try:   # v1.497.0: sector concentration cap on the rank-ordered actionable candidates
+        _apply_sector_cap((data.get('recommended') or {}).get('stocks') or [],
+                          data.get('im3_grade_book'), (data.get('entry_timing') or {}).get('rows'))
+    except Exception as _sce:
+        warn(f'[sector cap] failed: {_sce}')
     vc = {}
     for r_ in out['rows'].values():
         vc[r_.get('verdict')] = vc.get(r_.get('verdict'), 0) + 1
@@ -24899,6 +25133,45 @@ def build_m1_buylist(data, existing):
 _STAGE_MS = {}
 
 
+
+def _compute_timing_accounting(stage_ms, runtime_sec):
+    """v1.497.0. PURE, never raises. Replaces the old hardcoded-sec_filings special case.
+    'tail_builders' is TWO INDEPENDENT wall-clock timers over an overlapping-but-not-identical
+    span (v1.287.0's own whole-window timer B, stopped separately from the tail.* checkpoint
+    chain) -- not real concurrency, a measurement misalignment -- so it is dropped in favour of
+    the sum of its own tail.* children, the finer, self-consistent measurement. Any OTHER flat
+    stage whose recorded value exactly matches a tail.* child's value is the same event logged
+    twice (generalizes the old 'sec_filings' name-only exclusion) and is counted once. unattributed
+    is floored at 0 -- it can never be reported negative; if a residual overlap still remains after
+    excluding every known duplicate, it is named explicitly rather than hidden inside a wrong number."""
+    tail_children = {k: v for k, v in (stage_ms or {}).items() if k.startswith('tail.')}
+    flat = {k: v for k, v in (stage_ms or {}).items() if not k.startswith('tail.')}
+    tail_sum = sum(tail_children.values())
+    flat_no_parent = {k: v for k, v in flat.items() if k != 'tail_builders'}
+    child_values = set(tail_children.values())
+    duplicates = sorted(k for k, v in flat_no_parent.items() if v > 0 and v in child_values)
+    accounted_ms = sum(v for k, v in flat_no_parent.items() if k not in duplicates) + tail_sum
+    accounted_sec = round(accounted_ms / 1000.0, 1)
+    raw_unattributed = round((runtime_sec or 0.0) - accounted_sec, 1)
+    out = {
+        'runtime_sec': runtime_sec,
+        'accounted_sec': accounted_sec,
+        'unattributed_sec': max(0.0, raw_unattributed),
+        'note': ("timings_ms is flat; the 'tail_builders' parent bucket is replaced by the sum of "
+                 "its own tail.* children (the finer measurement, since the parent and child timers "
+                 "run independently over an overlapping span); any flat stage whose time exactly "
+                 "matches a tail.* child is the same event logged twice and counted once; "
+                 "unattributed_sec is floored at 0 -- it can never be reported negative"),
+        'duplicates_excluded': duplicates,
+    }
+    if raw_unattributed < 0:
+        out['overlap_residual_sec'] = round(-raw_unattributed, 1)
+        out['overlap_note'] = (f'{round(-raw_unattributed, 1)}s of stage time could not be reconciled '
+                                'with runtime after excluding every known duplicate -- a residual '
+                                'measurement overlap remains somewhere in the tail region; investigate '
+                                'before trusting accounted_sec down to the second')
+    return out
+
 def _stage(name, fn, *a, **kw):
     _t = time.time()
     try:
@@ -27626,18 +27899,8 @@ def main():
                 if _tail_children:
                     data['meta']['timings_tail_ms'] = dict(sorted(
                         _tail_children.items(), key=lambda kv: -kv[1]))
-                # sec_filings runs INSIDE the tail window, so it is already inside
-                # tail_builders; exclude it when accounting for time, and report honestly.
-                _accounted = sum(v for k, v in _flat.items() if k != 'sec_filings') / 1000.0
-                data['meta']['timing_accounting'] = {
-                    'runtime_sec': _tot,
-                    'accounted_sec': round(_accounted, 1),
-                    'unattributed_sec': round(_tot - _accounted, 1),
-                    'note': ('timings_ms is flat and non-overlapping; timings_tail_ms breaks '
-                             'tail_builders down and must NOT be added to the total; '
-                             'sec_filings runs inside tail_builders and is excluded from '
-                             'accounted_sec to avoid double counting'),
-                }
+                # v1.497.0: generic, never-negative timing accounting -- see _compute_timing_accounting.
+                data['meta']['timing_accounting'] = _compute_timing_accounting(_STAGE_MS, _tot)
                 # v1.287.0: swallow detail rides meta (was print-only in the 403-walled log)
                 if _SWALLOW_DETAIL:
                     data['meta']['swallowed'] = {k: dict(v) for k, v in _SWALLOW_DETAIL.items()}
@@ -27718,6 +27981,10 @@ def main():
                     _stage('post.entry_timing', build_entry_timing, data)   # v1.488.0 entry-timing layer
                 except Exception as _ete:
                     warn(f'[entry timing] skipped: {_ete}')
+                try:
+                    _stage('post.exit_rules', build_exit_rules, data)   # v1.497.0 exit rule (ATR trailing stop + overbought trim)
+                except Exception as _exe:
+                    warn(f'[exit rules] skipped: {_exe}')
                 _stamp_rebalance_top_picks(data)  # v1.334.0: pipeline-order-safe, runs after recommended exists
             except Exception as _rce:
                 log('[Recommended] pass skipped: %s' % _rce)
