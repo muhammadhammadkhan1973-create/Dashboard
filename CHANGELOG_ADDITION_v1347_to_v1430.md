@@ -1,3 +1,74 @@
+## scanner v1.502.0 + index v5.389 — 2026-09-28 — Pattern + market-pulse layer (owner: "emas, volumes, rsis,
+buy zones, sell zones... also identifying breakouts and retracements, market top and reversals" — Tab 19 + M1 + M2)
+
+**Scanner v1.502.0** (both additive, display-only, stamped in the same pass as the v1.501.0 candle):
+1. Pure `_pattern_status(row)` → entry_timing.rows[t].pattern: BREAKOUT / PULLBACK (RETRACEMENT) /
+   RETRACING / STRETCHED—TOP RISK (red-day nuance in the note) / POSSIBLE REVERSAL / REVERSAL UNDERWAY /
+   DEEP RETRACEMENT / NO CLEAR PATTERN, each with a plain-language note. 10-scenario unit suite passes.
+2. `build_market_pulse(data)` → data['market_pulse']: ONE market-wide top/reversal verdict from the timing
+   universe + gauges on file (shares overbought/oversold/broken-below-200d, breadth deceleration, positive
+   sectors) → HEALTHY / TOPPING RISK / ROLLING OVER / WASHED OUT—BASING, note names the numbers. All four
+   regimes unit-tested on synthetic universes; on today's REAL data it reads HEALTHY (6% ob, 24% <200d).
+
+**Index v5.389:**
+- `_techStripRow`: compact chip strip on every Tab-19 card and every M1/M2 board row — pattern chip first,
+  RSI thermometer (oversold/calm/warm/overbought), price-vs-20/50/200-day checks (20d✓ 50d✓ 200d✗), the
+  two BUY ZONES as price bands (active one highlighted), the SELL LINE ("if it CLOSES below this, the idea
+  is wrong — exit"), volume-vs-30-day-average. Every chip self-explains on hover.
+- `_pulseBanner`: the market top/reversal gauge as a color-coded banner in three places — Tab 19 under the
+  Actionable legend, and atop both the M1 and M2 boards.
+Verified: py_compile + full unit suites; node --check; jsdom boot (Tab-19 card carries pattern+RSI+EMAs+
+zones+sell line+vol+candle; pulse banner on all three surfaces; absent-pulse silent; renderTopDown
+regression); rendered in chromium and eyeballed; live-data screenshot shipped. Chips appear after the first
+v1.502.0 run stamps the payload.
+
+## scanner v1.501.0 + index v5.388 — 2026-09-28 — Confirmation-candle layer + verdict-first M1/M2 boards
+
+Owner: the Tab-19 technical layer, and specifically the candle rule in his own words ("No confirmation
+candle. Today is a big red day. The rule is a daily close above the previous day's high. That can't happen
+before Tuesday at the earliest"), must appear in Tab 19 AND in M1/M2 — on the approved verdict-first design.
+
+**Scanner v1.501.0:**
+1. Pure `_candle_status(row)` — states the candle rule per stock in plain words from settled-bar fields the
+   timing engine already computes: confirmed / forming ("only counts if it HOLDS to the close") / waiting,
+   and on a red day names the earliest possible print day, weekend-aware ("cannot happen before Tuesday's
+   close at the earliest"). Stamped as entry_timing.rows[t].candle; display-only, arbitration untouched.
+   Unit-tested on the owner's exact red-Monday scenario, weekend skip, all five states, missing-data safety.
+2. Timing universe extended: + top-60 of each M2 watch list + the M1 buys (deduped, ~103→~190), so Tabs 6/8b
+   carry the SAME verdict + candle as Tab 19 instead of pretending timing stops at Tab 19.
+
+**Index v5.388:**
+- Tab 19: every card's trigger block ends with a color-coded CANDLE CHECK sentence.
+- Tabs 6/8b rebuilt to the approved mockup: question headlines, auto-written TODAY'S BOTTOM LINE (including
+  which names read BUY on timing — or plainly that none do: "quality alone is not an entry"), the M1 funnel,
+  ENGINE'S OWN PICKS vs YOUR OVERRIDES split with 80–100-zoomed score bars, per-row timing pill
+  (click-through to the Tab-19 chart card) + candle chip + full candle sentence; M2's one-bar market-health
+  split + TOP-FLAGGED mini-boards (top 5 quality + top 5 turnaround by signal count) with the same TA per
+  row; "no timing data" stated honestly where the scan can't serve a name.
+- Bug fix: Tab-8b explainer showed literal escape text (\u25b2/\u26a0) instead of ▲/⚠ — now HTML entities.
+
+Verified: py_compile + candle unit tests on the real extracted function; node --check; jsdom boot of the
+real page + real payload (boards, Tab-19 candle line via _etTrigLine, renderTopDown regression, pending
+states); rendered in real chromium and eyeballed; live-data screenshot shipped. Note: candle chips/sentences
+appear after the FIRST v1.501.0 scanner run stamps the payload; until then rows show the timing pill only.
+
+## index v5.387 — 2026-09-28 — M1/M2 hero boards (owner: "this should also be in m1 and m2 as per their results")
+
+Display-only; scanner stays v1.500.0. The v5.386 visual language extended to both sleeve engines, each in
+its established tab colour (M1 teal, M2 orange — the v5.209 convention):
+- **Tab 6 (M1):** teal banner "DISCIPLINED SLEEVE · THE STEADY 70%", five KPI cards from m1_buylist
+  (macro regime, favored sectors w/ list on hover, eligible pool, buy-list count, quality-gate mark), and
+  THIS RUN'S BUY LIST as a ranked leaders board — rank circles, deep-quality gradient bars, grade, amber
+  "off-regime" chips for override entries, peer-position pill + data chip per row.
+- **Tab 8b (M2):** orange banner "SPECULATIVE SLEEVE · THE 30% ENGINE", four KPI cards (whole market
+  scored, disciplined ≥ gate, speculative < gate, flagged-for-review from m2_watch), and a NEW
+  score-distribution column chart of m2_universe.dist — direct count labels, green at/above the gate,
+  dashed gate line, plain-language read on breadth of market quality.
+Verified: node --check; jsdom boot on the real page + real payload (both boards assert-pass incl. TSM row
+and 11 histogram columns; absent-feed pending lines); rendered in real chromium and eyeballed — live
+screenshot shipped. Live render surfaced a real insight immediately: 6 of 8 M1 buys are off-regime
+overrides, now visible at a glance.
+
 ## index v5.386 — 2026-09-28 — Decision-board graphics rebuild (owner: "the graphics are pathetic, take inspiration from the pictures I attached")
 
 Display-only; scanner stays v1.500.0. The four v5.385 panels rebuilt to the DeepAnalytics visual standard:
