@@ -1,3 +1,22 @@
+## index v5.386 — 2026-09-28 — Decision-board graphics rebuild (owner: "the graphics are pathetic, take inspiration from the pictures I attached")
+
+Display-only; scanner stays v1.500.0. The four v5.385 panels rebuilt to the DeepAnalytics visual standard:
+- **Cycle maps (Tabs 2/3):** navy gradient banner, real SVG speedometer gauge (four colored arc segments,
+  active phase enlarged, needle driven continuously by the same Economy Clock angle — still one gauge, one
+  answer), phase table with phase-colored NOW column header, zebra rows.
+- **Sector board (Tab 15):** navy banner + eyebrow, five KPI cards with tinted icon badges, NEW diverging
+  YTD bar chart (zero baseline, rounded data-ends, dashed navy S&P reference line, fixed value column),
+  heat table with zebra + bold YTD, TOP/BOTTOM-5 boards with gradient headers + numbered rank circles,
+  auto KEY TAKEAWAYS box (leader / laggard / breadth-narrowness in plain words).
+- **Gauge check (Tab 2):** green pill w/ check icon on agree; bold amber banner w/ icon on disagree.
+- **Peer pills (Tabs 19/6):** solid percentile-colored score chip (#1/58 white-on-gradient) + track bar +
+  "N% data" chip.
+Phase palette (#16A34A/#0EA5E9/#F59E0B/#DC2626) machine-validated CVD-safe; low-contrast segments carry
+text labels per the relief rule. Verified: node --check, jsdom boot on the REAL page + REAL live payload
+(all panels assert-pass, renderTopDown regression, absent-feed honesty), then RENDERED IN REAL CHROMIUM and
+eyeballed — two visual defects caught and fixed before delivery (gauge edge labels clipped; a positive
+laggard value printed red). Screenshot of the live-data render shipped alongside.
+
 ## scanner v1.500.0 + index v5.385 — 2026-09-28 — Decision-board wave (owner: "consolidated scanner covering all above builds with stunning graphics")
 
 The DeepAnalytics-comparison items, built as one consolidated pair.
