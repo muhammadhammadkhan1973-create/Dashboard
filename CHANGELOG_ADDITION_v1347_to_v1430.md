@@ -1,3 +1,75 @@
+## scanner v1.500.0 + index v5.385 — 2026-09-28 — Decision-board wave (owner: "consolidated scanner covering all above builds with stunning graphics")
+
+The DeepAnalytics-comparison items, built as one consolidated pair.
+
+**Scanner v1.500.0** (all additive — no existing engine, score, rank or display field changed):
+1. **Sector peer-position + coverage** — build_m2_universe stamps every scored name (FULL pre-cap
+   universe ~1,873; the shipped top-250 alone cannot know "#4 of 619") with sector_rank/sector_n/
+   global_rank + coverage_pct (share of the 13 keystone inputs present), and ships a compact
+   `sector_positions` per-ticker lookup (~35KB). `_apply_sector_positions` copies the stamps onto
+   Tab 19 recommended rows and Tab 6 M1 buys — runs in the post block AFTER recommended exists
+   (order-proof by reading `data`; the v1.484/1.494 lesson applied at design time).
+2. **Sector returns board** — `fetch_sector_returns`: one TradingView batch over the 11 SPDR sector
+   ETFs + SPY (proven request shape) → `sector_returns` {Today/1M/3M/YTD/1Y rows, S&P yardstick,
+   top/bottom-5, positive-breadth}; <6 sectors = failure; failure carries last-good.
+3. **Gauge-coherence guard** — pure `_cycle_coherence` compares the breadth gauge (us_diffusion)
+   against the Economy Clock's growth needle every run → `cycle_coherence.us`; meta warning on
+   disagreement. Silent agreement, loud disagreement — the DeepAnalytics two-tabs-two-verdicts
+   failure made impossible here.
+
+**Index v5.385:**
+- Peer-position pills ("#4 of 619" + gradient percentile bar + "data N%" coverage chip) on Tab 19
+  Actionable cards and Tab 6 M1 rows, plain-language hovers throughout.
+- Cycle-phase maps on Tab 2 (US) and Tab 3 (PSX): sector-by-phase leadership grid with the CURRENT
+  column highlighted from the clock's own needle angle — one gauge, one answer.
+- Sector returns board on Tab 15: hero stat chips, heat-colored returns table with S&P row, TOP/
+  BOTTOM-5 signed gradient bars; honest "live feed pending" until v1.500.0 has run once.
+- Coherence line atop Tab 2: quiet green when gauges agree, loud amber banner when they disagree.
+- All renderers: own local esc, errors surfaced INTO the container, honest pending lines.
+
+**Tests:** scanner — py_compile clean; unit tests on real extracted functions (sector returns parse on
+synthetic TV payload incl. leader/laggard/breadth; coherence agree/disagree/missing-safe; position
+stamping incl. case-insensitive + unknown-ticker untouched; ranking math). Index — node --check on the
+full script; REAL page booted in jsdom against the REAL live data.json + synthesized v1.500.0 keys:
+all four renderers assert-verified (US phase "Mid cycle" and PSX "Late cycle" derive correctly from the
+live clock angles), agree + disagree + all absent-feed pending states, pill output, and regression on
+renderTopDown (487KB output, pill present) + _etActionStrip (31KB, badges intact).
+
+## scanner v1.499.2 — 2026-09-28 — KPMG anchor-gap diagnostic (owner: yes)
+
+The 09:02 run proved the 2026 edition landed (as_of 2025-12-31, 22 banks, assets +19.4%, KSE 174,054) but only
+3 of 8 fields parsed — the report's real wording for profit/deposits/NPL differs from the second-hand wording
+the anchors were built against, and neither the PDF (sandbox egress blocked) nor the Actions log (HTTP 403) is
+readable from the build side. Two additive, self-limiting changes:
+
+1. **Payload diagnostic:** when an accepted parse still leaves profit/deposit null, the pure
+   `_bank_sector_diag` ships ±160-char windows around each anchor keyword from the real report text into
+   `bank_sector._diag_snippets` (~3KB cap) — data.json is pullable, so the exact sentences can be read and the
+   anchors fixed against them next version. Renderer reads named keys only; never displays.
+2. **Re-probe cadence:** while core fields are missing, the fetch throttle drops from 30 days to 18 HOURS
+   (hours, not whole days — a 24h-cadence run lands at ~23.x elapsed hours, which a whole-days `<1` check
+   would skip forever). Returns to 30 days the moment profit+deposit parse; the diag key stops being written.
+
+Tests (real extracted functions, stubbed network/PDF): diag windows capped and keyword-bearing; partial cache
+at 20h → re-probe fires; same-day rerun → 18h floor holds (no hammering); complete cache → 30d throttle back;
+old-edition bypass regression intact; end-to-end accepted-partial parse ships snippets in payload. py_compile
+clean. Index unchanged at v5.384.
+
+## scanner v1.499.1 — 2026-09-28 — Throttle-order fix (caught by the post-deploy audit of the 08:48 run)
+
+Payload ground truth from the first v1.499.0 run: `bank_sector._fetched_utc` unchanged at 25-Sep — the fetch
+never ran. The 30-day throttle sat AHEAD of the new candidate-URL list, and the cache's stamp was only 3 days
+old (from the old code re-fetching the OLD edition), so the run skipped straight past the 2026 URL and would
+have kept skipping until ~25 Oct. The throttle now applies ONLY when the cache is already on the newest
+candidate's as_of; an older-edition cache bypasses it with an explicit log line and fetches immediately.
+
+Verified by executing the REAL function with stubbed EXISTING/requests: old-edition cache + fresh stamp →
+fetch attempted (2026 first); newest-edition cache + fresh stamp → throttled, zero fetches; newest-edition
+cache + 40-day stamp → re-fetch; failure path → last-good carried. py_compile clean.
+
+Also confirmed on the live 08:48 run: the v1.499.0 valmatrix staleness stamp is WORKING (stale_days=88 on the
+payload, warning present in meta.warnings). Index unchanged at v5.384.
+
 ## scanner v1.499.0 — 2026-09-28 — Stale-source pair (owner: "fix it", from the 27-Sep all-tabs audit)
 
 **Item 1 — Tab 11 bank sector (was 635 days stale).** Root cause: the KPMG fetcher was hardcoded to the
