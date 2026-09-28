@@ -1,3 +1,29 @@
+## scanner v1.499.0 — 2026-09-28 — Stale-source pair (owner: "fix it", from the 27-Sep all-tabs audit)
+
+**Item 1 — Tab 11 bank sector (was 635 days stale).** Root cause: the KPMG fetcher was hardcoded to the
+2025 edition (FY2024 data) and re-fetched that same PDF every 30 days forever — `_fetched_utc` stayed fresh
+while `as_of` sat at 2024-12-31. Fix: `fetch_bank_sector_kpmg` now tries the newest edition first
+(Pakistan-Banking-Perspective-**2026**, CY2025 data, 22 banks — URL confirmed live before build) with 2025 as
+fallback; each candidate stamps its own `as_of`/`source`. Parsing extracted to the pure `_bank_sector_parse`
+with anchors covering BOTH editions' wording (2026 changes verified against the real report summary: profits
+as PKR levels → % computed, "total assets increased by approximately X%", NPL as a ratio move → additive
+`npl_ratio_pct`/`npl_ratio_prev_pct`, "closing 2025 at N points"). ≥2-fields acceptance gate kept per
+candidate — a wording miss can only carry last-good, never poison. No index change needed (null tiles hide;
+FY label and bank count derive from the payload).
+
+**Item 2 — PSX valuation matrix (frozen at "July 2, 2026" for 88 days).** Root cause: the broker (SCS)
+stopped updating the weekly PDF — the fetch kept succeeding (HTTP 200, 162 tickers, last_fetch 23-Sep), so
+nothing flagged it. Fix: new pure `_vm_stale_days` parses the printed as-of; the call site stamps
+`psx_valuation_matrix.stale_days` every run and raises a meta warning when a weekly product is >30 days old
+(same honest-staleness pattern as the bank-sector 400-day stamp). The broker resuming publication is the only
+true cure; until then the dashboard says so instead of silently showing July numbers.
+
+Tests: py_compile clean; unit tests on the real extracted functions — 2025 wording regression (8 fields,
+identical result set), 2026 wording (7 fields incl. computed profit +8.4%), garbage rejection (<2 fields →
+last-good), stale-days parse (88 today) + None/empty/garbage/abbreviated-month edges. Live KPMG fetch could
+not be exercised from the build sandbox (egress blocked); the runner proves it next run — worst case is
+carry-last-good by construction. Index unchanged at v5.384.
+
 # Dashboard Changelog
 
 Format: newest first.
