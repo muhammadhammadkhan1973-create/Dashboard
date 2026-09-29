@@ -1,15 +1,3 @@
-## scanner v1.502.1 — 2026-09-29 — KPMG anchors from the report's real wording (diagnostic loop closed)
-
-The v1.499.2 payload diagnostic delivered on the 06:16 run: the report's actual sentences arrived in
-bank_sector._diag_snippets and revealed why the prose anchors could never parse — the summary numbers live
-in a STATS ROW ("Net Profit Deposits Gross ADR" … "8.3% 25.2% 40.3%"), deposits are never stated as a % in
-any sentence, and the NPL line reads "(NPL) ratio declining to around 5.7%" with no from-clause.
-`_bank_sector_parse` gains two anchors written verbatim against the captured text: the stats-row triple
-(profit 8.3 / deposits 25.2 / gross ADR 40.3 — filling only still-null fields) and the declining-to-around
-NPL variant. Once profit+deposit parse, the fast re-probe and the diagnostic both stop by themselves.
-Unit-tested on the exact captured snippet (7 fields) + 2025-wording regression. Index untouched at v5.389.
-Expected next-run result: Tab 11 strip shows profit +8.3%, deposits +25.2%, assets +19.4%, FY2025 · 22 banks.
-
 ## scanner v1.502.0 + index v5.389 — 2026-09-28 — Pattern + market-pulse layer (owner: "emas, volumes, rsis,
 buy zones, sell zones... also identifying breakouts and retracements, market top and reversals" — Tab 19 + M1 + M2)
 
