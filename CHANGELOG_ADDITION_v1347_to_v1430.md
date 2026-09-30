@@ -1,3 +1,101 @@
+## v1.506.0 + index v5.393 — 2026-09-30 — ONE-CALL WAIT-OR-BUY VERDICT, BIG PRICE, TCE + EXPLOSIVE COVERAGE
+
+**Owner (verbatim):** "also explosive tab and all other engines like tce needs this. all factors identified but the thing missing in morning scan is the price which should be displayed in large font for reader to know and all factors calculated whats the analysis technically to wait or to buy it?"
+
+**Scanner v1.506.0**
+- PURE `_tech_call(row)`: reads EVERY factor already stamped on a timing row (entry verdict, 3-condition trigger, confirmation candle, candle-QUALITY grade, breakout/reversal pattern, chart structure) and synthesizes ONE call: **BUY NOW** (verdict BUY + trigger TRIGGERED + quality not weak/rejection), **BUY ON TRIGGER** (setup right; the why names exactly what is missing), **WAIT** (rejection candle / stretched / damaged trend, dip zone priced), **AVOID** (downtrend or reversal underway), **NO DATA**. Stamped as `row.tech_call {call,color,why}` after all other stamps. The owner's rejection-candle rule gates BUY NOW: a fired trigger on a rejection candle is a WAIT.
+- Timing universe extended: TCE tier HIGH+WATCH (~28) and Explosive Signal A+B survivors (cap 40). ~18 net-new rows on live data (127 → ~145); TV-unserved names degrade to NO DATA as usual.
+- Tests: py_compile; 16 branch unit tests on the AST-extracted real `_tech_call` incl. garbage-subfield hardening; live sweep over all 127 real rows (calls: 87 WAIT / 25 BUY ON TRIGGER / 12 AVOID / 3 NO DATA — no BUY NOW on a red day, correct).
+
+**Index v5.393**
+- `_bigPx(t)`: last SETTLED daily close in large bold mono (24–26px) + small live tick and day-change — on every Tab-19 actionable card and the technical card header.
+- `_callChip(t)`: the tech_call as a solid color pill, hover = the one-sentence plain-language why, click = full technical card. Absent tech_call (older payload) → honest "call lands next scan" chip.
+- `_pxCall(t)` (bold price + call pill) prepended to every M1 board row and M2 mini-board row.
+- `_taMini(t)` (price + call + candle chips) spliced under the ticker cell of every TCE (Tab 9) and Explosive (Tab 10) row that has timing data; rows without render exactly as before.
+- Tests: node --check; jsdom boot of the real page with live data.json + synthetic tech_call stamps (TCE 15 / Explosive 87 / M1 8 / M2 10 TA lines confirmed, action-strip big price confirmed, modal big price + call confirmed); Playwright screenshots of the action strip, TCE table, M1 and M2 boards eyeballed (one ternary-paren syntax bug and one pill-wrap defect caught and fixed before delivery).
+
+## scanner v1.505.0 + index v5.392 — 2026-09-30 — Classic pattern library (owner: "research on other
+chart patterns as well not just cup and handle and identify them")
+
+Seven conservative detectors added to `_chart_structure`, on the same swing points, returning up to two as
+`structure.patterns` (confirmed > testing > forming): DOUBLE BOTTOM / DOUBLE TOP (matched extremes within
+3%, ≥12 bars apart, neckline from the swing between; confirmed only on the close-through), HEAD & SHOULDERS
+TOP and INVERSE H&S (head beats both shoulders ≥3%, shoulders within 5%; the forming-stage note explicitly
+warns never to front-run the neckline), ASCENDING and DESCENDING TRIANGLES (flat line within 2% + trending
+opposite swings), BULL FLAG (≥15% pole in ≤15 bars, then a 2–10-bar drift retracing ≤40% of the pole;
+target = pole above the flag top). Every hover note prices the trigger line, carries the widely-cited odds
+from the standard historical pattern studies (Bulkowski), and repeats the discipline: a pattern means
+nothing until its line breaks. Index: ⚑ pattern chips (bias+stage colored) on Tab 19 and every M1/M2 row;
+the technical card's chart draws the primary pattern's trigger line in purple dashes.
+
+Tests: synthetic suites for all seven (double bottom/top confirmed, H&S top confirmed w/ neckline, ascending
+triangle forming, bull flag forming after the pole-base fix caught by the tests, cap-at-2, safety); LIVE
+sweep on today's 40 charts found 12 real patterns — MU & ADPT double bottoms CONFIRMED, NVDA/VOXR ascending
+triangles, VLO/MU/ADPT/ATRC/CVI/CAI bull flags, ERO an H&S-top warning, PBF a descending triangle. jsdom:
+chips + chart line + board regressions. Supersedes today's v1.504.0/v5.391 staging; deploy this pair.
+
+## scanner v1.504.0 + index v5.391 — 2026-09-30 — Chart-structure engine (owner: cup-and-handle and other
+patterns, consolidation, higher-highs/lower-highs, and each chart's support & resistance with
+broken-or-still-tested status — full technical confidence, all explained on cursor hover)
+
+**Scanner v1.504.0:** pure `_chart_structure(closes, price)` on the same 6-month series the technical card
+draws — swing points (3-bar fractal), market structure (HH·HL uptrend / LH·LL downtrend / coiling triangle /
+widening), SUPPORT & RESISTANCE as clustered swing levels each stamped holding / TESTED (within 2%) /
+BROKEN (violated in the last 5 sessions, with the floor-becomes-ceiling note) or cleared, CONSOLIDATION
+(longest 10–30-session window inside a ≤6% band, with dollar bounds), and a conservative CUP-AND-HANDLE
+detector (12–40% rounded dip, right side ≥93% recovered, 2–12% handle → right_side / rim / handle stages
+with the BUY LINE priced). Every element carries its own plain-language hover note. Names without the chart
+series get `_coarse_levels` (nearest MA/52-week level each way, labelled coarse). Stamped as
+entry_timing.rows[t].structure alongside candle/quality/pattern.
+
+**Index v5.391:** structure chips in the tech strip on Tab 19 + every M1/M2 row (trend shape, S/R with
+status colors, base band, ☕ cup&handle with rim price); the technical card's chart now DRAWS the support
+(green dashes) and resistance (orange dashes) lines with (testing)/(BROKEN) tags; legend extended.
+
+**Tests:** synthetic uptrend/downtrend/consolidation/cup-and-handle/broken-cleared/coarse/safety suites
+pass; real-data sweep: 40/40 charted names structured, live cup-and-handle hits found (XOM, CVX, ERO,
+IDYA, CVI, CAI, TGTX in handle stage; GRAL, TWST at the rim). jsdom: chips, coarse chips, chart lines,
+legend, boards + unstamped-row regressions. Built on the staged v1.503.0/v5.390 pair (candle quality) —
+deploy this pair and everything from today ships together.
+
+## scanner v1.503.0 + index v5.390 — 2026-09-30 — Candle-QUALITY rule (owner, verbatim: "a green daily
+close above the midpoint of the prior day's range, and the close must be in the upper third of its own
+range... That's a rejection candle, not a reversal, even if the close had been $2 higher" — all engines
+incl. Tab 19)
+
+**Scanner v1.503.0:**
+1. The settled-bar pipeline now carries the bar's OPEN (yf batch already had it; bars + _completed_bars
+   keep it as bar_open, guarded; green falls back to close-vs-prior-close on the first run).
+2. Pure `_candle_quality(row)` grades the LAST COMPLETED bar: STRONG (green + close above the PRIOR day's
+   range midpoint + close in the upper third of its OWN range), MIXED, WEAK (bottom third), REJECTION
+   (bottom 10% of its own range regardless of level — the note carries the owner's exact reasoning and a
+   ✓/✗ checklist with the % mark where it closed). Stamped per row beside candle/pattern.
+3. Integration: a candle that clears close-above-prior-high but grades rejection/weak gets
+   candle.quality_flag + its note extended ("HOWEVER the candle QUALITY fails your rule… treat the
+   confirmation as unconvincing") — a level-only confirmation can never masquerade as conviction.
+
+**Index v5.390:** Tab 19 cards gain a second colored line — "Candle quality — STRONG/MIXED/WEAK/REJECTION"
+with the full note; M1/M2 rows gain a quality chip (★ strong / ▽ weak / ✖ REJECTION; mixed chipless), and a
+quality-flagged confirmation flips the candle chip itself to "✖ rejection candle" so a rejection can never
+wear a green check. Unstamped (pre-v1.503.0) rows render exactly as before.
+
+**Tests:** the owner's exact Tuesday scenario (close above prior high BUT 9% of own range → REJECTION +
+downgraded confirmation), strong/mixed/weak grades, open-fallback, legacy-bars safety, bar_open plumbing;
+index — syntax, Tab-19 quality lines (REJECTION + STRONG), board chips, rejection override, unstamped-row
+and board regressions. py_compile clean. Quality stamps appear from the first v1.503.0 run.
+
+## scanner v1.502.1 — 2026-09-29 — KPMG anchors from the report's real wording (diagnostic loop closed)
+
+The v1.499.2 payload diagnostic delivered on the 06:16 run: the report's actual sentences arrived in
+bank_sector._diag_snippets and revealed why the prose anchors could never parse — the summary numbers live
+in a STATS ROW ("Net Profit Deposits Gross ADR" … "8.3% 25.2% 40.3%"), deposits are never stated as a % in
+any sentence, and the NPL line reads "(NPL) ratio declining to around 5.7%" with no from-clause.
+`_bank_sector_parse` gains two anchors written verbatim against the captured text: the stats-row triple
+(profit 8.3 / deposits 25.2 / gross ADR 40.3 — filling only still-null fields) and the declining-to-around
+NPL variant. Once profit+deposit parse, the fast re-probe and the diagnostic both stop by themselves.
+Unit-tested on the exact captured snippet (7 fields) + 2025-wording regression. Index untouched at v5.389.
+Expected next-run result: Tab 11 strip shows profit +8.3%, deposits +25.2%, assets +19.4%, FY2025 · 22 banks.
+
 ## scanner v1.502.0 + index v5.389 — 2026-09-28 — Pattern + market-pulse layer (owner: "emas, volumes, rsis,
 buy zones, sell zones... also identifying breakouts and retracements, market top and reversals" — Tab 19 + M1 + M2)
 
