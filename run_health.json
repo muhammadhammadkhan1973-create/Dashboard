@@ -1,38 +1,32 @@
 {
- "t0": 1790741681,
+ "t0": 1790751677,
  "marks": {
-  "setup_done": 1790741707,
-  "scanner_done": 1790742425,
-  "scoring_done": 1790742458
+  "setup_done": 1790751698,
+  "scanner_done": 1790752064,
+  "scoring_done": 1790752087
  },
  "check_verdict": {
-  "book_at_check": 390,
+  "book_at_check": 400,
   "universe": 221,
-  "missing_im3": 10,
-  "missing_sample": [
-   "CBRE",
-   "ECL",
-   "EQIX",
-   "GE",
-   "HSY"
-  ],
+  "missing_im3": 0,
+  "missing_sample": [],
   "full_rescore": false,
   "scorer_changed": false,
   "stale": false,
   "last_scored_seen": "2026-09-22T09:38:32"
  },
  "scoring_entry": {
-  "score_list": 10,
+  "score_list": 0,
   "full": false,
-  "sel": 10
+  "sel": 0
  },
- "t_end": 1790742462,
+ "t_end": 1790752091,
  "status": "success",
- "wall_sec": 781,
+ "wall_sec": 414,
  "segments_sec": {
-  "setup": 26,
-  "scanner": 718,
-  "scoring": 33,
+  "setup": 21,
+  "scanner": 366,
+  "scoring": 23,
   "commit_tail": 4
  }
 }
