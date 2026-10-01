@@ -1,3 +1,33 @@
+## v1.508.0 — 2026-10-01 — SEC WEEKLY-HEAL STAMP CARRY + HONEST PAYLOAD SENTINEL (index unchanged at v5.394)
+
+**Owner:** "Go fix it" (the two queued fixes from the morning audit).
+
+**Fix 1 — the daily 138s SEC crawl (root cause proven from the payload chain).** The weekly full-crawl heal fired every cold morning because the <20h carry path copied the SEC events but NOT `sec_last_full_utc` — every skipped run shipped a payload without the stamp, so next morning's EXISTING said "never healed" and all 210 names were re-crawled (138.2s / 137.7s on consecutive cold runs, names_checked 210 daily; the carried 07:01/19:27 payloads shipped the stamp as None while the 04:15 payload had it). Fix: the stamp is seeded from EXISTING at the top of the SEC section so every path (carry / index-narrowed crawl / crash-carry) preserves it; a genuine weekly heal still overwrites it. Expected: the ~54s daily-index narrow path serves 6 mornings of 7; the 138s full crawl returns to weekly — ~85s off most cold runs.
+
+**Fix 2 — honest payload sentinel.** The 7.5MB ceiling warning measured the PRE-split serialization, but the workflow's post-scoring step already splits im3_detail (1.47MB, 374 entries) into im3_detail.json — the published data.json was 6.59MB while the scanner cried 8.01MB every run, a false alarm that would have masked real growth. The sentinel now warns on the SHIPPED size (total minus im3_detail), names both numbers, and logs both sizes quietly when under the ceiling. (Audit note: the queued "im3_detail split" build was discovered already live — workflow step + index v5.370 lazy fetch + v1.479 superset union all working; only the measurement was wrong.)
+
+**Tests:** py_compile; stamp-carry simulated across the four-run chain (survives two carries; next cold morning takes the index path); sentinel math verified; key-function regression sweep (breakout/tech_call/pattern/candle all present, untouched).
+
+**Verification next cold morning (04:23 UTC run):** log should show "[SEC index] N of 210 names filed recently" instead of "FULL CRAWL (weekly heal)", sec_filings stage ~54s not ~138s, and `sec_last_full_utc` present in every payload including carried runs.
+
+## v1.507.0 + index v5.394 — 2026-10-01 — UNIVERSAL BREAKOUT RULE
+
+**Owner (verbatim):** "The breakout calculation throughout the dashboard in all tabs is inconsistent, it should be consistent and should be calculated in a universal bonified manner and with a pill on hovering it should explain how it has been calculated."
+
+**Audit finding — five different things rendered as "breakout":** (a) the entry ZONE (within 3% of the 52-week high); (b) the BUY verdict's "breaking out at its 52-week high" wording, which fired while price was still BELOW the high; (c) the pattern chip BREAKOUT, which fired on merely being in the zone; (d) the structure engine's resistance cleared/broken close-through; (e) Tab 9's RSI-cross "▲ BREAKOUT", a momentum signal with no price level at all.
+
+**Scanner v1.507.0**
+- PURE `_breakout_state(row)` is the single authority: **a breakout = a DAILY CLOSE above the stock's ceiling (the nearest lid overhead — 6-month swing resistance or the 52-week high), confirmed by volume above the 30-day average.** Statuses: confirmed / unconfirmed (close-through without volume — the classic trap, said so on hover) / breaking (intraday, counts only if it holds to the close) / approaching (3% zone = preparation, never a breakout) / none. Stamped `row.breakout {line, basis, status, vol_x, note}` — note carries the full how-calculated text for the hover.
+- Structure now stamps BEFORE pattern; `_pattern_status(row, bk)` only labels BREAKOUT when the rule fired, else new code `breakout_zone` → "AT THE CEILING (breakout zone)".
+- BUY-verdict wording: "in the breakout ZONE at its 52-week high", pointing at the pill. Logic unchanged.
+- Paper-book momentum weight note "fresh breakout" → "momentum surge (RSI cross)".
+- Tests: py_compile; 12 branch tests on AST-extracted `_breakout_state` + reconciliation tests on `_pattern_status`; live sweep over all 147 rows (19 approaching, 3 breaking — TXG/TWST/PBF, 0 settled confirmations, 0 label contradictions).
+
+**Index v5.394**
+- `_breakoutPill(r)`: solid green BREAKOUT ✓ confirmed / amber BREAKOUT · volume missing / blue breaking ↑ intraday · line $x / teal outline breakout zone · ceiling $x / nothing when not near. Hover = the scanner-written universal rule + this stock's numbers. On every tech strip (Tab 19 cards, every M1/M2 row), TCE/Explosive mini lines, and the technical card header. Old payloads without the stamp render as before.
+- The word "breakout" is now RESERVED for the pill: the hi52 entry-zone chip renamed "52w-high zone" everywhere (strip chip, trigger panel, legends); Tab 9 RSI-cross chips renamed "▲ MOMENTUM SURGE / ▼ MOMENTUM FADE" with a hover stating they are an energy-gauge signal, not a price breakout.
+- Tests: node --check; jsdom (all five pill states + strip/mini injection + all four board renderers boot on live data); Playwright screenshot eyeballed — caught and fixed a dual "breakout zone" naming collision before delivery.
+
 ## v1.506.0 + index v5.393 — 2026-09-30 — ONE-CALL WAIT-OR-BUY VERDICT, BIG PRICE, TCE + EXPLOSIVE COVERAGE
 
 **Owner (verbatim):** "also explosive tab and all other engines like tce needs this. all factors identified but the thing missing in morning scan is the price which should be displayed in large font for reader to know and all factors calculated whats the analysis technically to wait or to buy it?"
