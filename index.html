@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.395 (pairs with scanner v1.509.0; owner: "make it automatic - future all seeds"). The Tab-17 NetBenefits cash ledger no longer sits frozen between Fidelity statements. Scanner v1.509.0 projects the account forward from the last CONFIRMED statement (inferring the APD dividend cadence, pay-day and net per-share amount, and the FYIXX monthly interest rate, from the owner's own confirmed rows), and this renders those projected rows BENEATH the confirmed ones inside a visually separated amber band -- dashed rule, "PROJECTED" chip on every line, a header stating what is confirmed versus projected, and the projected closing balance with the plain-language basis on hover. Confirmed statement rows are rendered exactly as before, unchanged and unmixed. A dividend-rate divergence flag (APD changed its dividend) surfaces as an amber note. No projection in the payload -> the section renders exactly as it did before. -->
 <!-- index.html v5.394 (pairs with scanner v1.507.0; owner: "the breakout calculation throughout the dashboard in all tabs is inconsistent, it should be consistent and should be calculated in a universal bonified manner and with a pill on hovering it should explain how it has been calculated"). THE ONE BREAKOUT RULE now renders identically on every tab: _breakoutPill(r) reads scanner v1.507.0 row.breakout -- a breakout is a DAILY CLOSE above the stock ceiling (nearest lid overhead: 6-month swing resistance or the 52-week high) CONFIRMED by above-average volume -- and shows ONE pill: solid green "BREAKOUT CONFIRMED", amber "BREAKOUT - volume missing" (the classic trap, said so on hover), blue "breaking intraday - must hold to the close", outline teal "breakout zone" (within 3% below the ceiling = preparation only), nothing when not near. The hover carries the scanner-written note: the universal rule plus this stock's own numbers -- the pill explains exactly how it was calculated. Placed on every tech strip (Tab 19 cards + every M1 and M2 board row), the TCE/Explosive mini TA lines, and the technical card header. HARMONIZED WORDING so only the one rule uses the word: the "breakout zone" chips and the trigger-panel zone tips now say a ZONE is preparation and point at the pill; the pattern chip can now read AT THE CEILING (breakout zone) (new code breakout_zone, teal) and only says BREAKOUT when the rule fired; Tab 9 RSI-cross chips renamed MOMENTUM SURGE / MOMENTUM FADE with a hover stating they are an energy-gauge signal, not a price breakout. Old payloads without row.breakout render exactly as before (pill absent, no guess). -->
 <!-- index.html v5.393 (pairs with scanner v1.506.0; owner: "also explosive tab and all other engines like tce needs this. all factors identified but the thing missing in morning scan is the price which should be displayed in large font for reader to know and all factors calculated whats the analysis technically to wait or to buy it?"). THREE changes. (1) BIG PRICE: _bigPx(t) prints the last SETTLED daily close in large bold type (the price every rule is judged on) with the live intraday tick and day-change small beside it -- on every Tab-19 actionable card and at the top of the technical card; _pxCall(t) is the compact row version (bold mono price + call pill) prepended to every M1 board row and M2 mini-board row. (2) ONE-CALL PILL: _callChip(t) renders scanner v1.506.0 row.tech_call -- the single synthesized wait-or-buy answer (BUY NOW / BUY ON TRIGGER / WAIT / AVOID / NO DATA) computed from ALL factors (verdict + 3-condition trigger + confirmation candle + candle quality + reversal pattern + chart structure) -- as a solid color-coded pill whose hover is the one-sentence plain-language why; click opens the full technical card. Absent tech_call (older payload) renders an honest "call lands on the next scan" chip, never a guess. (3) TCE + EXPLOSIVE COVERAGE: _taMini(t) -- price + call pill + candle chips -- is spliced under the ticker cell of every row of the TCE table (Tab 9) and the Explosive table (Tab 10) that has timing data (scanner now scans TCE HIGH/WATCH + Explosive A+B survivors); rows without timing data render exactly as before. -->
 <!-- index.html v5.392 (pairs with scanner v1.505.0; owner: "research on other chart patterns as well not just cup and handle and identify them"). The classic-pattern library rendered: every detected pattern (double bottom, double top, head & shoulders top, inverse H&S, ascending triangle, descending triangle, bull flag — up to two per name, from structure.patterns) appears as a ⚑ chip in the tech strip on Tab 19 and every M1/M2 board row — colored by bias and stage (bullish-confirmed green, bearish-confirmed red, testing amber, forming teal/amber), with the trigger LINE priced right on the chip and the full researched plain-language note on hover (what the shape means, the widely-cited odds from the standard historical pattern studies, and the discipline that the pattern means NOTHING until its line breaks). The technical card's chart additionally DRAWS the primary pattern's trigger line (purple dashes, "(broken)" tag when confirmed) beside the support/resistance lines. Unstamped rows render exactly as before. -->
@@ -994,7 +995,40 @@ function renderNetBenefits(){
        +'<span style="font-family:var(--font-mono);font-weight:700;color:#0F172A;min-width:88px;text-align:right;">$'+fm2(r.balance)+'</span></div>';
     });
     h+='<div style="display:flex;gap:9px;font-size:9px;color:#94A3B8;padding-top:4px;"><span style="min-width:76px;">&nbsp;</span><span style="flex:1;">&nbsp;</span><span>added</span><span style="min-width:88px;text-align:right;">running balance</span></div>';
-    if(CC.next) h+='<div style="font-size:10px;color:#B45309;margin-top:5px;">\u23F3 '+String(CC.next).replace(/</g,'&lt;')+'</div>';
+    // ===== v5.395 AUTO-SEED: projected rows (scanner v1.509.0 nb.projection) =====
+    (function(){try{
+      var PJ=nb.projection; if(!PJ||!(PJ.rows||[]).length) return;
+      var esc=function(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
+      var B=PJ.basis||{};
+      var tip='HOW THESE ARE WORKED OUT (no Fidelity feed exists -- the account has no API): the engine reads your own '
+        +'confirmed statement rows and copies their pattern forward. '
+        +(B.per_share_net!=null?('APD dividend = '+(B.shares||0)+' shares x $'+B.per_share_net+' net per share -- the exact net your last confirmed sweep paid, after the 30% US withholding. '):'')
+        +(B.dividend_day?('Paid around day '+B.dividend_day+' of '+((B.dividend_months||[]).join(', '))+' (your own confirmed pay-days; the real date can differ by a day or two). '):'')
+        +(B.monthly_rate_pct!=null?('FYIXX interest = '+B.monthly_rate_pct+'% a month, the rate your own confirmed interest rows actually earned. '):'')
+        +'Nothing here is a Fidelity fact yet -- every line is replaced by the real number the moment you seed the next statement.';
+      h+='<div style="margin-top:8px;padding-top:8px;border-top:2px dashed #FCD34D;">'
+       +'<div title="'+esc(tip)+'" style="cursor:help;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px;">'
+       +'<span style="font-size:9.5px;font-weight:900;letter-spacing:0.5px;color:#92400E;background:#FEF3C7;border:1px solid #F59E0B;border-radius:5px;padding:2px 7px;">PROJECTED — NOT YET ON A STATEMENT</span>'
+       +'<span style="font-size:10px;color:#92400E;">Confirmed through <b>'+esc(PJ.from_date||'')+'</b> · carried forward to <b>'+esc(PJ.to_date||'')+'</b> from your own ledger pattern</span></div>';
+      (PJ.rows||[]).forEach(function(r){
+        var isDiv=(r.kind==='dividend');
+        h+='<div style="display:flex;gap:9px;align-items:baseline;font-size:11px;color:#78350F;padding:3px 0;border-bottom:1px dashed #FDE68A;background:#FFFBEB;">'
+         +'<span style="font-family:var(--font-mono);color:#B45309;min-width:76px;">~'+esc(r.date||'')+'</span>'
+         +'<span style="flex:1;line-height:1.4;">'+esc(r.source||'')+'</span>'
+         +'<span style="font-family:var(--font-mono);font-weight:800;color:'+(isDiv?'#B45309':'#A16207')+';">+$'+fm2(r.amount)+'</span>'
+         +'<span style="font-family:var(--font-mono);font-weight:700;color:#78350F;min-width:88px;text-align:right;">$'+fm2(r.balance)+'</span></div>';
+      });
+      h+='<div style="display:flex;gap:9px;align-items:baseline;font-size:11px;padding-top:5px;">'
+       +'<span style="min-width:76px;">&nbsp;</span>'
+       +'<span style="flex:1;font-weight:800;color:#92400E;">Projected cash balance today</span>'
+       +'<span style="font-family:var(--font-mono);font-weight:900;color:#92400E;min-width:88px;text-align:right;">$'+fm2(PJ.balance)+'</span></div>';
+      if(B.rate_flag) h+='<div style="margin-top:5px;font-size:10px;line-height:1.45;color:#9A3412;background:#FFF7ED;border:1px solid #FDBA74;border-radius:6px;padding:6px 8px;">⚠ '+esc(B.rate_flag)+'</div>';
+      h+='</div>';
+    }catch(_pe){ h+='<div style="font-size:10px;color:#B91C1C;margin-top:6px;">Projection error: '+String(_pe&&_pe.message)+'</div>'; }})();
+    // v5.395: the hand-written 'next' note said "unchanged since the statement -- nothing lands between
+    // statements". With the projection engine live that is now FALSE on screen (the band above shows those
+    // very events), so it is suppressed whenever a projection is rendering -- one surface, one answer.
+    if(CC.next && !(nb.projection && (nb.projection.rows||[]).length)) h+='<div style="font-size:10px;color:#B45309;margin-top:5px;">\u23F3 '+String(CC.next).replace(/</g,'&lt;')+'</div>';
     h+='</div>';
   }
   var fl=nb.flows||[];
