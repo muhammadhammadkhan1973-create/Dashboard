@@ -1,3 +1,43 @@
+## v1.510.0 + index v5.396 — 2026-10-07 — CAPITAL-FLOW LEDGER AUTO-HARVEST + HONEST TRUE-PROFIT
+
+**Owner found it:** the dashboard reported the live book at **−1.1%** when the real time-weighted return was **+2.1%**.
+
+**Root cause.** `capital_flows` was a hand-maintained list in live_portfolio.json holding only the 20-Jul −$5,000 withdrawal. The broker's own activity feed carried a **22-Sep −AED 26,000 (−$7,080)** and a **29-Sep +AED 14,460 (+$3,937)** that nothing ever read — so two real cash movements were being counted as investment performance, understating every return figure on Tab 17 by ~3 points. Separately `true_pnl_pct` divided by NET flow and printed **−5,506%**.
+
+**Scanner v1.510.0**
+- PURE `_merge_capital_flows()` unions three sources: the hand-seeded config flows (history), every flow harvested on **previous** runs (carried in EXISTING — the broker's activity window is a rolling ~2 weeks, so one read can never hold the history), and this run's Deposits/Withdrawals rows. Deduped on date+USD+currency so it is **idempotent**; non-USD converted at the run's own fx table. The ledger now builds itself and never loses an entry.
+- PURE `_capital_block()` replaces the inline lambda. The percentage is measured on money actually **put in**, not net flow. Crucially it applies a **plausibility gate**: recorded deposits must be ≥50% of NAV before any profit figure is published — because a small transfer *in* (the 29-Sep return of funds) otherwise made an incomplete ledger look complete and produced **+7,072%**, as absurd as the −5,506% it replaced (caught in testing). When the gate fails, both figures return None with a plain-language note naming exactly what is missing. Adds `capital.complete` and `capital.n_auto`.
+- Tests: py_compile; 11 assertions on the AST-extracted real functions — merge correctness on live data (3 flows from 1 config + 2 harvested), idempotency, history preservation when the broker window moves on, new-movement harvest, unknown-currency and bad-amount guards, incomplete-ledger honesty, and the complete path. **Cross-validation: with the opening funding seeded the engine returns +2.15%, independently matching the +2.10% time-weighted return computed from the NAV series.**
+
+**Index v5.396**
+- The money-flow waterfall and the "what it is worth right now" sentence are both gated on `capital.complete`; in their place an amber panel states what is missing and how to fix it. Figures that remain trustworthy (deposits, withdrawals, money at work, today/week/month scoreboard) render exactly as before.
+- Tests: node --check; both ledger states exercised against the **extracted real renderers** (`_liMoneyViz`, `_liMoneyStory`) — incomplete shows panel+note with the waterfall suppressed and no `$null`/`NaN` anywhere; complete restores the waterfall and the "2 cents gained" sentence.
+
+**One manual step remains.** The account's **opening funding (~$272,532 on 2 July)** has never been entered in any ledger and is outside the broker's activity window, so it cannot be auto-harvested. Add it to `capital_flows` in live_portfolio.json and the true-profit figure fills in by itself; until then the dashboard honestly declines to state one.
+
+## v1.509.0 + index v5.395 — 2026-10-07 — NETBENEFITS AUTO-SEED (no more frozen Fidelity section)
+
+**Owner (verbatim):** "make it automatic- future all seeds"
+
+**The problem.** Fidelity Stock Plan Services has no API (data is locked to the Akoya channel), so the Tab-17 NetBenefits block sat frozen at the last hand-seeded statement — 31 Aug. The 30 Sep FYIXX interest and the 9 Nov APD dividend sweep would both have been invisible until a manual true-up.
+
+**Scanner v1.509.0 — `_nb_project(nb, today)` (PURE, never raises)**
+- Projects the account forward from the last CONFIRMED statement using the owner's **own ledger as the model**. It infers, from the confirmed rows themselves: the APD dividend cadence (quarterly month-set from the last confirmed sweep), the pay-day (median of confirmed sweep days), the NET per-share amount (last sweep ÷ shares, withholding already embedded), and the FYIXX monthly interest rate (median of what the confirmed interest rows actually earned).
+- **No new feed, no scraping, no credential, no added runtime** — and the model self-corrects at every true-up, because the inference re-reads the newly confirmed rows. (Design note: Yahoo and TradingView are both unreachable from the build sandbox, so an unverifiable external dividend feed was rejected in favour of inference that can be fully tested offline.)
+- Cross-checks the inferred per-share rate against the Zacks forward estimate; raises a plain-language flag when they diverge >2% (i.e. APD changed its dividend).
+- Every synthesized row carries `projected: True` and a note saying it confirms on the next statement. **The confirmed ledger is never mutated.**
+- Attached as `nb.projection {rows, balance, basis, note}` + `nb.core_cash_projected` + `nb.account_total_live_projected`.
+- **Validated on the live ledger:** Sep-30 interest projects **$27.12** against the block's own hand-written "~$28"; the November sweep projects **$1,054.14**, matching the hand calculation (832 sh × $1.81 × 0.70) exactly; a 12-month run produces exactly 4 sweeps in Nov/Feb/May/Aug.
+- Tests: py_compile; 14 assertions on the AST-extracted real function (live case, forward case, full-year cadence, all guard paths, dividend-raise divergence flag); spliced-function identity + wiring order verified.
+
+**Index v5.395**
+- Projected rows render **beneath** the confirmed ledger in a visually separated amber band: dashed rule, "PROJECTED — NOT YET ON A STATEMENT" chip, `~` prefix on every approximate date, per-row explanation, projected closing balance, and the full how-it-was-calculated basis on hover.
+- **Contradiction removed:** the hand-written `core_cash.next` line ("unchanged since 31 Aug — nothing lands between statements") is suppressed whenever a projection renders, since the band above now shows those very events. One surface, one answer.
+- Payload without `projection` renders exactly as before (verified).
+- Tests: node --check; jsdom (projected rows present, confirmed rows intact, row counts, absent-projection fallback clean); Playwright screenshot eyeballed — which is how the contradictory line was caught.
+
+**Still manual (unchanged):** the statement true-up itself remains the authority — real balances, withdrawals, new grants, PSU outcomes and share-count changes still come from the statement. The projection is the bridge between statements, not a replacement for them. `_MOAT_SEED` is a separate manual block, untouched by this wave.
+
 ## v1.508.0 — 2026-10-01 — SEC WEEKLY-HEAL STAMP CARRY + HONEST PAYLOAD SENTINEL (index unchanged at v5.394)
 
 **Owner:** "Go fix it" (the two queued fixes from the morning audit).
