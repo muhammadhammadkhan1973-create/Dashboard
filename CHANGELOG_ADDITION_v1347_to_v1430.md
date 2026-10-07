@@ -1,11 +1,3 @@
-## v1.510.1 — 2026-10-07 — FX-DRIFT DEDUPE FIX (caught by the post-deploy audit, before it did damage)
-
-v1.510.0's `_merge_capital_flows` deduped on (date, **converted USD**, currency). That USD figure is recomputed from each run's own fx table, so the moment the AED rate moved one basis point (0.2723 → 0.2722) the **same** broker transfer produced a different key and was harvested again. A simulated next run turned the 3-flow ledger into 5 — carrying both −$7,079.65 and −$7,077.20 for the single 22-Sep transfer — and it would have compounded every day, silently corrupting every return figure the ledger feeds.
-
-**Fix:** the key is now the SOURCE identity — date + currency + **native amount** — which no fx move can perturb. Converted USD remains only as the fallback for a flow carrying no native amount. The live 3-flow ledger is unaffected and stays correct; index v5.396 pairs unchanged.
-
-**Tests:** five consecutive simulated runs with the AED rate drifting each time (0.2722 / 0.2725 / 0.2719 / 0.2731 / 0.2723) — ledger holds at 3 flows with 0 phantom harvests; first-harvest still produces 1 config + 2 broker = 3; a genuinely new movement is still picked up; two distinct same-day movements stay separate; capital block unchanged.
-
 ## v1.510.0 + index v5.396 — 2026-10-07 — CAPITAL-FLOW LEDGER AUTO-HARVEST + HONEST TRUE-PROFIT
 
 **Owner found it:** the dashboard reported the live book at **−1.1%** when the real time-weighted return was **+2.1%**.
