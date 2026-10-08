@@ -1,3 +1,33 @@
+## v1.511.0 + index v5.397 + live_portfolio.json — 2026-10-08 — BOTH OPEN ITEMS CLOSED
+
+**Owner:** close the two items left open by yesterday's audit.
+
+### 1. Opening funding backfilled (live_portfolio.json)
+`capital_flows` gains the transfer that funded the account: **2026-07-02, $272,260.00**. Derived from the broker's own NAV step — IBKR net liquidation went from **$272.26 on 1 Jul to $272,532.26 on 2 Jul**, a difference of exactly $272,260.00 with no positions held that could move in price. It comprises the AED leg (AED 801,249.98 sold for $218,079.00 after spread) plus the GBP leg (~$54,181). This is a one-time historical backfill: the transfer predates the broker's rolling activity window, so v1.510.x cannot auto-harvest it; every movement from 22 Sep onward already is.
+
+**Effect:** `capital.complete` flips to true and Tab 17's money story comes back to life — ledger of 4 flows, **$276,197 in, $12,080 out, true profit $3,056.50 = +1.11% of money put in**. (That is the money-weighted figure, which counts when cash arrived; the +2.10% time-weighted figure answers a different question — how the picks performed irrespective of flow timing. Both are correct.)
+
+### 2. Valuation Matrix — the evidence says neither "second source" nor "quarterly"
+The SCS "weekly" PDF has been frozen at **July 2, 2026 for 97 days** while every fetch returns HTTP 200 — and it has now missed a **quarterly** refresh window too, so reclassifying it as quarterly is not available either. The source is abandoned, not merely slow. Two defects followed from treating it as a single-threshold problem:
+- v1.499.0's watchdog emitted the **same >30d warning for 97 consecutive days** — a line that stops being read.
+- Worse, **neither Pakistan-tab renderer showed the age at all**, so July's P/E, ROE and dividend-yield screens were presented as current decision context.
+
+**Scanner v1.511.0** — PURE `_vm_staleness()` grades the printed as-of into **fresh (<14d) / aging (14–45d) / stale (45–90d) / frozen (>90d)**, each carrying its own plain-language note stating what the reader may and may not conclude. Stamped as `psx_valuation_matrix.staleness {days,tier,frozen,label,note}` plus a top-level `.frozen`. Aging logs; stale and frozen warn in the tier's own words. The data is still carried — history is useful — only the claim that it is current is withdrawn.
+
+**Index v5.397** — `_vmStaleBanner()` renders the tier as a colour-coded banner (grey current / amber aging / orange STALE / red FROZEN) prepended to **both** `renderScsSuggest()` and `renderPsxValQuality()`, including their empty states. Payloads without the stamp render exactly as before.
+
+**Tests:** py_compile; 9 tier-boundary assertions + guard cases on the AST-extracted real `_vm_staleness`; live payload recomputes to `frozen` at 98 days; capital ledger re-tested with the backfill (4 flows, complete=true, sane percentage). Index: node --check; all four tiers plus absent-stamp fallback on the extracted real `_vmStaleBanner`; `renderScsSuggest` verified to carry the banner in both its empty state and its table (banner precedes data, rows intact) and to render unchanged without the stamp; Playwright screenshot of all three warning tiers eyeballed.
+
+**Open decision, not a defect:** a replacement PSX valuation source still has to be chosen — that needs your broker relationships, not code. Until then the dashboard is honest about what it is showing.
+
+## v1.510.1 — 2026-10-07 — FX-DRIFT DEDUPE FIX (caught by the post-deploy audit, before it did damage)
+
+v1.510.0's `_merge_capital_flows` deduped on (date, **converted USD**, currency). That USD figure is recomputed from each run's own fx table, so the moment the AED rate moved one basis point (0.2723 → 0.2722) the **same** broker transfer produced a different key and was harvested again. A simulated next run turned the 3-flow ledger into 5 — carrying both −$7,079.65 and −$7,077.20 for the single 22-Sep transfer — and it would have compounded every day, silently corrupting every return figure the ledger feeds.
+
+**Fix:** the key is now the SOURCE identity — date + currency + **native amount** — which no fx move can perturb. Converted USD remains only as the fallback for a flow carrying no native amount. The live 3-flow ledger is unaffected and stays correct; index v5.396 pairs unchanged.
+
+**Tests:** five consecutive simulated runs with the AED rate drifting each time (0.2722 / 0.2725 / 0.2719 / 0.2731 / 0.2723) — ledger holds at 3 flows with 0 phantom harvests; first-harvest still produces 1 config + 2 broker = 3; a genuinely new movement is still picked up; two distinct same-day movements stay separate; capital block unchanged.
+
 ## v1.510.0 + index v5.396 — 2026-10-07 — CAPITAL-FLOW LEDGER AUTO-HARVEST + HONEST TRUE-PROFIT
 
 **Owner found it:** the dashboard reported the live book at **−1.1%** when the real time-weighted return was **+2.1%**.
