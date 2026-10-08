@@ -1,317 +1,310 @@
 {
- "inception_date": "2026-07-06",
- "history_seed": [
-  {
-   "date": "2026-07-06",
-   "nav": 273379
-  },
-  {
-   "date": "2026-07-07",
-   "nav": 263744
-  }
- ],
- "holdings": [
-  {
-   "ticker": "SMH",
-   "isin": "IE00BMC38736",
-   "name": "VanEck Semiconductor UCITS ETF",
-   "shares": 295.3954,
-   "theme": "Semiconductors / AI",
-   "world_theme": "Asia-Tech",
-   "cost_price": 116.250934205,
-   "cost_ccy": "USD",
-   "news_query": "VanEck Semiconductor ETF",
-   "acquired": "2026-07-06"
-  },
-  {
-   "ticker": "ITWN",
-   "isin": "IE00B0M63623",
-   "name": "iShares MSCI Taiwan UCITS ETF",
-   "shares": 179,
-   "theme": "Asia-Tech (Taiwan)",
-   "world_theme": "Asia-Tech",
-   "cost_price": 15006.9187039,
-   "cost_ccy": "GBX",
-   "news_query": "Taiwan stock market TSMC MSCI Taiwan ETF",
-   "acquired": "2026-07-06"
-  },
-  {
-   "ticker": "KSTR",
-   "isin": "IE00BKPJY434",
-   "name": "KraneShares ICBCCS SSE STAR Market 50 UCITS ETF",
-   "shares": 872,
-   "theme": "China Tech (STAR 50)",
-   "world_theme": "Emerging",
-   "cost_price": 30.35517,
-   "cost_ccy": "USD",
-   "news_query": "China STAR Market 50 KraneShares KSTR ETF",
-   "acquired": "2026-07-06"
-  },
-  {
-   "ticker": "AINF",
-   "isin": "IE000X59ZHE2",
-   "name": "iShares AI Infrastructure UCITS ETF",
-   "shares": 2905.0029,
-   "theme": "AI Infrastructure",
-   "world_theme": "Asia-Tech",
-   "cost_price": 8.419508873,
-   "cost_ccy": "GBP",
-   "news_query": "iShares AI Infrastructure ETF",
-   "acquired": "2026-07-06"
-  },
-  {
-   "ticker": "STOR",
-   "isin": "IE000DR59CI3",
-   "name": "iShares Energy Storage & Hydrogen UCITS ETF",
-   "shares": 1623.275,
-   "theme": "Energy Storage / Hydrogen",
-   "world_theme": "Thematic-Clean",
-   "cost_price": 12.047839834,
-   "cost_ccy": "USD",
-   "news_query": "energy storage hydrogen ETF Plug Power",
-   "acquired": "2026-07-06"
-  },
-  {
-   "ticker": "FLXK",
-   "isin": "IE00BHZRR030",
-   "name": "Franklin FTSE Korea UCITS ETF",
-   "shares": 345.595,
-   "theme": "Asia-Tech (Korea)",
-   "world_theme": "Asia-Tech",
-   "cost_price": 105.910340995,
-   "cost_ccy": "USD",
-   "news_query": "Korea stock market KOSPI Samsung SK Hynix ETF",
-   "acquired": "2026-07-06"
-  },
-  {
-   "ticker": "PHPM",
-   "isin": "JE00B1VS3W29",
-   "name": "WisdomTree Physical Precious Metals",
-   "shares": 125,
-   "theme": "Precious Metals (hedge)",
-   "world_theme": "Commodity-Bloc",
-   "cost_price": 260.88461712,
-   "cost_ccy": "USD",
-   "news_query": "gold silver precious metals price outlook",
-   "acquired": "2026-07-06"
-  },
-  {
-   "ticker": "TSM3",
-   "isin": "XS2399365043",
-   "name": "Leverage Shares 3x Long TSM",
-   "theme": "Semiconductors / AI (3x)",
-   "world_theme": "Asia-Tech",
-   "shares": 580,
-   "cost_price": 17.245689655,
-   "cost_ccy": "USD",
-   "news_query": "TSMC",
-   "acquired": "2026-07-23"
-  }
- ],
- "cash": [
-  {
-   "ccy": "AED",
-   "amount": 82744.94
-  },
-  {
-   "ccy": "USD",
-   "amount": 13858.38
-  }
- ],
- "reconciled": {
-  "date": "2026-09-24",
-  "source": "IBKR live balances+trades pull (connector)",
-  "note": "AMD3 fully closed 23-Sep (trailing stop, 806 sh, proceeds 6,695.85 settle Fri 26... 25-Sep); TSM3 verified STILL HELD -- the 24-Sep payload 7-holding/AED-126,955 state was the scanner in-code fallback after live_portfolio.json was overwritten with scanner.py content during deploy, NOT real trades. AED 82,744.94 unchanged; USD 13,858.38 total (7,162.53 settled + 6,695.85 settling 25-Sep)."
- },
- "capital_flows": [
-  {
-   "date": "2026-07-02",
-   "ccy": "USD",
-   "amount": 272260.0,
-   "usd": 272260.0,
-   "note": "Opening transfer(s) that funded the account. Derived from the broker's own NAV step: IBKR net liquidation went from $272.26 on 1 Jul to $272,532.26 on 2 Jul, a difference of exactly $272,260.00, with no positions held to move in price. Comprises the AED leg (AED 801,249.98 sold for $218,079.00 after spread) plus the GBP leg (~$54,181). One-time historical backfill: it predates the broker activity window, so scanner v1.510.x cannot auto-harvest it; every cash movement from 22 Sep onward is harvested automatically.",
-   "source": "derived from IBKR NAV step 2026-07-01 -> 2026-07-02"
-  },
-  {
-   "date": "2026-07-20",
-   "ccy": "AED",
-   "amount": -18364,
-   "usd": -4999.97,
-   "note": "Disbursement initiated by owner"
-  }
- ],
- "broker_costs": {
-  "source": "IBKR Activity Statement U21094978, 1\u201317 Jul 2026",
-  "commissions_usd": [
-   {
-    "ticker": "SMH",
-    "usd": 21.01
-   },
-   {
-    "ticker": "AINF",
-    "usd": 18.34
-   },
-   {
-    "ticker": "FLXK",
-    "usd": 18.29
-   },
-   {
-    "ticker": "ITWN",
-    "usd": 17.98
-   },
-   {
-    "ticker": "PHPM",
-    "usd": 16.3
-   },
-   {
-    "ticker": "KSTR",
-    "usd": 13.23
-   },
-   {
-    "ticker": "STOR",
-    "usd": 12.96
-   }
-  ],
-  "commissions_total_usd": 118.11,
-  "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units \u2014 worth about 2 pence. IBKR's minimum fee (\u00a31.00) applied to that crumb like any order: a \u00a31 fee on a 2p purchase.",
-  "fx_spread": {
-   "aed_sold": 801249.98,
-   "usd_received": 218079.0,
-   "peg": 3.6725,
-   "note": "AED 801,249.98 \u00f7 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
-  },
-  "interest_accrued_usd": 163.22,
-  "forex_realized_usd": 151.57,
-  "fx_translation_usd": 1.98,
-  "withdrawal_fee_usd": 0.0
- },
- "interest_usd": 26.33,
- "dividends": [
-  {
-   "ticker": "ITWN",
-   "isin": "IE00B0M63623",
-   "name": "iShares MSCI Taiwan UCITS ETF",
-   "type": "cash_dividend",
-   "rate": 1.5178,
-   "ccy": "USD",
-   "shares_at_ex": 179,
-   "gross_usd": 271.69,
-   "ex_date": "2026-09-17",
-   "pay_date": "2026-09-30",
-   "source": "IBKR corporate-action notice 2026-09-12",
-   "status_note": "gross; actual credit reconciles via IBKR cash on receipt"
-  }
- ],
- "realized": [
-  {
-   "date": "2026-07-22",
-   "ticker": "AMD3",
-   "shares_sold": 717,
-   "proceeds_usd": 4988.53,
-   "realized_gain_usd": -16.96,
-   "basis": "FIFO per statement",
-   "source": "IBKR YTD trades pull 2026-09-23",
-   "note": "stop-loss exit, day after entry"
-  },
-  {
-   "date": "2026-09-21",
-   "ticker": "AMD3",
-   "shares_sold": 436,
-   "proceeds_usd": 3700.55,
-   "realized_gain_usd": 259.21,
-   "basis": "FIFO per statement",
-   "source": "IBKR YTD trades pull 2026-09-23"
-  },
-  {
-   "date": "2026-09-22",
-   "ticker": "AMD3",
-   "shares_sold": 400,
-   "proceeds_usd": 3465.0,
-   "realized_gain_usd": 897.49,
-   "basis": "FIFO per statement",
-   "source": "IBKR YTD trades pull 2026-09-23"
-  },
-  {
-   "date": "2026-09-23",
-   "ticker": "AMD3",
-   "shares_sold": 806,
-   "proceeds_usd": 6695.85,
-   "realized_gain_usd": 2691.69,
-   "basis": "FIFO per statement",
-   "source": "IBKR YTD trades pull 2026-09-23",
-   "note": "trailing stop fired -- position closed"
-  }
- ],
- "position_journeys": [
-  {
-   "ticker": "AMD3",
-   "name": "LS 3X AMD (Leverage Shares 3x)",
-   "status": "CLOSED",
-   "opened": "2026-07-21",
-   "closed": "2026-09-23",
-   "invested_usd": 14994.5,
-   "proceeds_usd": 18849.93,
-   "profit_usd": 3855.43,
-   "profit_pct": 25.7,
-   "avg_cost": 6.36,
-   "source": "IBKR YTD trades pull 2026-09-23; per-sale P&L = statement FIFO",
-   "events": [
+  "inception_date": "2026-07-06",
+  "history_seed": [
     {
-     "date": "2026-07-21",
-     "type": "BUY",
-     "shares": 717,
-     "price": 6.97
+      "date": "2026-07-06",
+      "nav": 273379
     },
     {
-     "date": "2026-07-22",
-     "type": "SELL",
-     "shares": 717,
-     "price": 6.9575,
-     "pnl": -16.96,
-     "note": "stop"
-    },
-    {
-     "date": "2026-07-23",
-     "type": "BUY",
-     "shares": 634,
-     "price": 7.8775
-    },
-    {
-     "date": "2026-08-13",
-     "type": "BUY",
-     "shares": 1008,
-     "price": 4.959
-    },
-    {
-     "date": "2026-09-21",
-     "type": "SELL",
-     "shares": 436,
-     "price": 8.4875,
-     "pnl": 259.21
-    },
-    {
-     "date": "2026-09-22",
-     "type": "SELL",
-     "shares": 400,
-     "price": 8.6625,
-     "pnl": 897.49
-    },
-    {
-     "date": "2026-09-23",
-     "type": "SELL",
-     "shares": 806,
-     "price": 8.3075,
-     "pnl": 2691.69,
-     "note": "trailing stop -- closed"
+      "date": "2026-07-07",
+      "nav": 263744
     }
-   {
-  "date": "2026-07-02",
-  "ccy": "USD",
-  "amount": 272260.00,
-  "usd": 272260.00,
-  "note": "Opening transfer(s) that funded the account...",
-  "source": "derived from IBKR NAV step 2026-07-01 -> 2026-07-02"
-}
-  }
- ]
+  ],
+  "holdings": [
+    {
+      "ticker": "SMH",
+      "isin": "IE00BMC38736",
+      "name": "VanEck Semiconductor UCITS ETF",
+      "shares": 295.3954,
+      "theme": "Semiconductors / AI",
+      "world_theme": "Asia-Tech",
+      "cost_price": 116.250934205,
+      "cost_ccy": "USD",
+      "news_query": "VanEck Semiconductor ETF",
+      "acquired": "2026-07-06"
+    },
+    {
+      "ticker": "ITWN",
+      "isin": "IE00B0M63623",
+      "name": "iShares MSCI Taiwan UCITS ETF",
+      "shares": 179,
+      "theme": "Asia-Tech (Taiwan)",
+      "world_theme": "Asia-Tech",
+      "cost_price": 15006.9187039,
+      "cost_ccy": "GBX",
+      "news_query": "Taiwan stock market TSMC MSCI Taiwan ETF",
+      "acquired": "2026-07-06"
+    },
+    {
+      "ticker": "KSTR",
+      "isin": "IE00BKPJY434",
+      "name": "KraneShares ICBCCS SSE STAR Market 50 UCITS ETF",
+      "shares": 872,
+      "theme": "China Tech (STAR 50)",
+      "world_theme": "Emerging",
+      "cost_price": 30.35517,
+      "cost_ccy": "USD",
+      "news_query": "China STAR Market 50 KraneShares KSTR ETF",
+      "acquired": "2026-07-06"
+    },
+    {
+      "ticker": "AINF",
+      "isin": "IE000X59ZHE2",
+      "name": "iShares AI Infrastructure UCITS ETF",
+      "shares": 2905.0029,
+      "theme": "AI Infrastructure",
+      "world_theme": "Asia-Tech",
+      "cost_price": 8.419508873,
+      "cost_ccy": "GBP",
+      "news_query": "iShares AI Infrastructure ETF",
+      "acquired": "2026-07-06"
+    },
+    {
+      "ticker": "STOR",
+      "isin": "IE000DR59CI3",
+      "name": "iShares Energy Storage & Hydrogen UCITS ETF",
+      "shares": 1623.275,
+      "theme": "Energy Storage / Hydrogen",
+      "world_theme": "Thematic-Clean",
+      "cost_price": 12.047839834,
+      "cost_ccy": "USD",
+      "news_query": "energy storage hydrogen ETF Plug Power",
+      "acquired": "2026-07-06"
+    },
+    {
+      "ticker": "FLXK",
+      "isin": "IE00BHZRR030",
+      "name": "Franklin FTSE Korea UCITS ETF",
+      "shares": 345.595,
+      "theme": "Asia-Tech (Korea)",
+      "world_theme": "Asia-Tech",
+      "cost_price": 105.910340995,
+      "cost_ccy": "USD",
+      "news_query": "Korea stock market KOSPI Samsung SK Hynix ETF",
+      "acquired": "2026-07-06"
+    },
+    {
+      "ticker": "PHPM",
+      "isin": "JE00B1VS3W29",
+      "name": "WisdomTree Physical Precious Metals",
+      "shares": 125,
+      "theme": "Precious Metals (hedge)",
+      "world_theme": "Commodity-Bloc",
+      "cost_price": 260.88461712,
+      "cost_ccy": "USD",
+      "news_query": "gold silver precious metals price outlook",
+      "acquired": "2026-07-06"
+    },
+    {
+      "ticker": "TSM3",
+      "isin": "XS2399365043",
+      "name": "Leverage Shares 3x Long TSM",
+      "theme": "Semiconductors / AI (3x)",
+      "world_theme": "Asia-Tech",
+      "shares": 580,
+      "cost_price": 17.245689655,
+      "cost_ccy": "USD",
+      "news_query": "TSMC",
+      "acquired": "2026-07-23"
+    }
+  ],
+  "cash": [
+    {
+      "ccy": "AED",
+      "amount": 82744.94
+    },
+    {
+      "ccy": "USD",
+      "amount": 13858.38
+    }
+  ],
+  "reconciled": {
+    "date": "2026-09-24",
+    "source": "IBKR live balances+trades pull (connector)",
+    "note": "AMD3 fully closed 23-Sep (trailing stop, 806 sh, proceeds 6,695.85 settle Fri 26... 25-Sep); TSM3 verified STILL HELD -- the 24-Sep payload 7-holding/AED-126,955 state was the scanner in-code fallback after live_portfolio.json was overwritten with scanner.py content during deploy, NOT real trades. AED 82,744.94 unchanged; USD 13,858.38 total (7,162.53 settled + 6,695.85 settling 25-Sep)."
+  },
+  "capital_flows": [
+    {
+      "date": "2026-07-02",
+      "ccy": "USD",
+      "amount": 272260.0,
+      "usd": 272260.0,
+      "note": "Opening transfer(s) that funded the account. Derived from the broker's own NAV step: IBKR net liquidation went from $272.26 on 1 Jul to $272,532.26 on 2 Jul, a difference of exactly $272,260.00, with no positions held to move in price. Comprises the AED leg (AED 801,249.98 sold for $218,079.00 after spread) plus the GBP leg (~$54,181). One-time historical backfill: it predates the broker activity window, so scanner v1.510.x cannot auto-harvest it; every cash movement from 22 Sep onward is harvested automatically.",
+      "source": "derived from IBKR NAV step 2026-07-01 -> 2026-07-02"
+    },
+    {
+      "date": "2026-07-20",
+      "ccy": "AED",
+      "amount": -18364,
+      "usd": -4999.97,
+      "note": "Disbursement initiated by owner"
+    }
+  ],
+  "broker_costs": {
+    "source": "IBKR Activity Statement U21094978, 1–17 Jul 2026",
+    "commissions_usd": [
+      {
+        "ticker": "SMH",
+        "usd": 21.01
+      },
+      {
+        "ticker": "AINF",
+        "usd": 18.34
+      },
+      {
+        "ticker": "FLXK",
+        "usd": 18.29
+      },
+      {
+        "ticker": "ITWN",
+        "usd": 17.98
+      },
+      {
+        "ticker": "PHPM",
+        "usd": 16.3
+      },
+      {
+        "ticker": "KSTR",
+        "usd": 13.23
+      },
+      {
+        "ticker": "STOR",
+        "usd": 12.96
+      }
+    ],
+    "commissions_total_usd": 118.11,
+    "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units — worth about 2 pence. IBKR's minimum fee (£1.00) applied to that crumb like any order: a £1 fee on a 2p purchase.",
+    "fx_spread": {
+      "aed_sold": 801249.98,
+      "usd_received": 218079.0,
+      "peg": 3.6725,
+      "note": "AED 801,249.98 ÷ 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
+    },
+    "interest_accrued_usd": 163.22,
+    "forex_realized_usd": 151.57,
+    "fx_translation_usd": 1.98,
+    "withdrawal_fee_usd": 0.0
+  },
+  "interest_usd": 26.33,
+  "dividends": [
+    {
+      "ticker": "ITWN",
+      "isin": "IE00B0M63623",
+      "name": "iShares MSCI Taiwan UCITS ETF",
+      "type": "cash_dividend",
+      "rate": 1.5178,
+      "ccy": "USD",
+      "shares_at_ex": 179,
+      "gross_usd": 271.69,
+      "ex_date": "2026-09-17",
+      "pay_date": "2026-09-30",
+      "source": "IBKR corporate-action notice 2026-09-12",
+      "status_note": "gross; actual credit reconciles via IBKR cash on receipt"
+    }
+  ],
+  "realized": [
+    {
+      "date": "2026-07-22",
+      "ticker": "AMD3",
+      "shares_sold": 717,
+      "proceeds_usd": 4988.53,
+      "realized_gain_usd": -16.96,
+      "basis": "FIFO per statement",
+      "source": "IBKR YTD trades pull 2026-09-23",
+      "note": "stop-loss exit, day after entry"
+    },
+    {
+      "date": "2026-09-21",
+      "ticker": "AMD3",
+      "shares_sold": 436,
+      "proceeds_usd": 3700.55,
+      "realized_gain_usd": 259.21,
+      "basis": "FIFO per statement",
+      "source": "IBKR YTD trades pull 2026-09-23"
+    },
+    {
+      "date": "2026-09-22",
+      "ticker": "AMD3",
+      "shares_sold": 400,
+      "proceeds_usd": 3465.0,
+      "realized_gain_usd": 897.49,
+      "basis": "FIFO per statement",
+      "source": "IBKR YTD trades pull 2026-09-23"
+    },
+    {
+      "date": "2026-09-23",
+      "ticker": "AMD3",
+      "shares_sold": 806,
+      "proceeds_usd": 6695.85,
+      "realized_gain_usd": 2691.69,
+      "basis": "FIFO per statement",
+      "source": "IBKR YTD trades pull 2026-09-23",
+      "note": "trailing stop fired -- position closed"
+    }
+  ],
+  "position_journeys": [
+    {
+      "ticker": "AMD3",
+      "name": "LS 3X AMD (Leverage Shares 3x)",
+      "status": "CLOSED",
+      "opened": "2026-07-21",
+      "closed": "2026-09-23",
+      "invested_usd": 14994.5,
+      "proceeds_usd": 18849.93,
+      "profit_usd": 3855.43,
+      "profit_pct": 25.7,
+      "avg_cost": 6.36,
+      "source": "IBKR YTD trades pull 2026-09-23; per-sale P&L = statement FIFO",
+      "events": [
+        {
+          "date": "2026-07-21",
+          "type": "BUY",
+          "shares": 717,
+          "price": 6.97
+        },
+        {
+          "date": "2026-07-22",
+          "type": "SELL",
+          "shares": 717,
+          "price": 6.9575,
+          "pnl": -16.96,
+          "note": "stop"
+        },
+        {
+          "date": "2026-07-23",
+          "type": "BUY",
+          "shares": 634,
+          "price": 7.8775
+        },
+        {
+          "date": "2026-08-13",
+          "type": "BUY",
+          "shares": 1008,
+          "price": 4.959
+        },
+        {
+          "date": "2026-09-21",
+          "type": "SELL",
+          "shares": 436,
+          "price": 8.4875,
+          "pnl": 259.21
+        },
+        {
+          "date": "2026-09-22",
+          "type": "SELL",
+          "shares": 400,
+          "price": 8.6625,
+          "pnl": 897.49
+        },
+        {
+          "date": "2026-09-23",
+          "type": "SELL",
+          "shares": 806,
+          "price": 8.3075,
+          "pnl": 2691.69,
+          "note": "trailing stop -- closed"
+        }
+      ]
+    }
+  ]
 }
