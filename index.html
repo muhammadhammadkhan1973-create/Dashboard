@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.398 (pairs with scanner v1.510.0+): two defects in the Tab-17 "where each dollar went" donut, both exposed the moment the capital ledger became complete. (1) The centre label read a HARDCODED "7 funds" -- wrong since TSM3 was bought on 23 July; it is now derived from the holdings count. (2) "Cash kept" was computed as money-in minus fund cost, IGNORING withdrawals -- with the ledger complete that overstated cash by the $12,080 taken out ($48,872 shown against ~$36,791 actually unspent). Withdrawals now get their own amber slice ("Taken back out") and cash kept is money-in minus spent minus withdrawn, so the ring closes honestly. Both are display-only. -->
 <!-- index.html v5.397 (pairs with scanner v1.511.0): the Pakistan Valuation-Matrix surfaces can no longer present frozen data as current. The SCS "weekly" PDF has been stuck at July 2, 2026 for 97 days while every fetch succeeds, and NEITHER renderer showed its age -- so July P/E, ROE and dividend-yield screens were being read as today's. _vmStaleBanner() renders scanner v1.511.0's psx_valuation_matrix.staleness as a tier-coloured banner (grey current / amber aging / orange STALE / red FROZEN) carrying the tier's own plain-language note, and is prepended to BOTH renderScsSuggest() and renderPsxValQuality(). Payloads without the staleness stamp render exactly as before. -->
 <!-- index.html v5.396 (pairs with scanner v1.510.0): the Tab-17 money-story honours the capital ledger's new honesty flag. Scanner v1.510.0 auto-harvests every cash movement from the broker feed and, when the ledger cannot explain where the money came from (the opening funding was never entered, so recorded deposits are a fraction of NAV), returns true_pnl_usd/pct as null with capital.complete=false and a plain-language note. This renders that state instead of printing "$null" or "0 cents on every dollar": the money-flow waterfall and the "what it is worth right now" sentence are both gated on capital.complete, and in its place an amber panel states what is missing and how to fix it, while the figures that ARE trustworthy (deposits, withdrawals, money at work, today/week/month scoreboard) keep rendering exactly as before. -->
 <!-- index.html v5.395 (pairs with scanner v1.509.0; owner: "make it automatic - future all seeds"). The Tab-17 NetBenefits cash ledger no longer sits frozen between Fidelity statements. Scanner v1.509.0 projects the account forward from the last CONFIRMED statement (inferring the APD dividend cadence, pay-day and net per-share amount, and the FYIXX monthly interest rate, from the owner's own confirmed rows), and this renders those projected rows BENEATH the confirmed ones inside a visually separated amber band -- dashed rule, "PROJECTED" chip on every line, a header stating what is confirmed versus projected, and the projected closing balance with the plain-language basis on hover. Confirmed statement rows are rendered exactly as before, unchanged and unmixed. A dividend-rate divergence flag (APD changed its dividend) surfaces as an amber note. No projection in the payload -> the section renders exactly as it did before. -->
@@ -3316,9 +3317,13 @@ function calcMbUs(){
     // ---- spend donut ----
     var spent=0; hs.forEach(function(x){spent+=(x.cost_usd||0);});
     if(cap&&cap.in_usd){
-      var kept=cap.in_usd-spent, total=cap.in_usd, a0=-Math.PI/2, cx=95,cy=95,r=88,ri=52, dsvg='', leg='';
+      // v5.398: money OUT is part of where the dollars went -- ignoring it overstated "cash kept"
+      // by the full withdrawal ($48,872 shown against ~$36,791 actually unspent).
+      var tookOut=Math.abs(cap.out_usd||0);
+      var kept=cap.in_usd-spent-tookOut, total=cap.in_usd, a0=-Math.PI/2, cx=95,cy=95,r=88,ri=52, dsvg='', leg='';
       var slices=hs.map(function(x,i){return {n:(x.ticker),f:(x.cost_usd||0)/total,c:PAL[i%PAL.length],v:x.cost_usd||0};});
       slices.push({n:'Cash kept',f:kept/total,c:'#94A3B8',v:kept});
+      if(tookOut>0) slices.push({n:'Taken back out',f:tookOut/total,c:'#F59E0B',v:tookOut});
       slices.forEach(function(sl){ var a1=a0+sl.f*2*Math.PI;
         var x0=cx+r*Math.cos(a0),y0=cy+r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1);
         var xi1=cx+ri*Math.cos(a1),yi1=cy+ri*Math.sin(a1),xi0=cx+ri*Math.cos(a0),yi0=cy+ri*Math.sin(a0);
@@ -3329,7 +3334,7 @@ function calcMbUs(){
         a0=a1; });
       row+='<div style="flex:0 0 auto;"><div style="font-size:11px;font-weight:800;color:#065F46;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">How your '+K(cap.in_usd)+' was spent</div>'
         +'<div style="display:flex;gap:10px;align-items:center;"><svg viewBox="0 0 190 190" style="width:150px;height:150px;">'+dsvg
-        +'<text x="95" y="90" text-anchor="middle" style="font-size:13px;font-weight:800;fill:#0F172A;">7 funds</text>'
+        +'<text x="95" y="90" text-anchor="middle" style="font-size:13px;font-weight:800;fill:#0F172A;">'+hs.length+' fund'+(hs.length===1?'':'s')+'</text>'
         +'<text x="95" y="106" text-anchor="middle" style="font-size:11px;fill:#64748B;">+ cash</text></svg>'
         +'<div>'+leg+'</div></div></div>';
     }
