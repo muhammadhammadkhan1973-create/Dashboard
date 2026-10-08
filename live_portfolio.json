@@ -125,14 +125,6 @@
  },
  "capital_flows": [
   {
-   "date": "2026-07-02",
-   "ccy": "USD",
-   "amount": 272260.0,
-   "usd": 272260.0,
-   "note": "Opening transfer(s) that funded the account. Derived from the broker's own NAV step: IBKR net liquidation went from $272.26 on 1 Jul to $272,532.26 on 2 Jul, a difference of exactly $272,260.00, with no positions held to move in price. Comprises the AED leg (AED 801,249.98 sold for $218,079.00 after spread) plus the GBP leg (~$54,181). One-time historical backfill: it predates the broker activity window, so scanner v1.510.x cannot auto-harvest it; every cash movement from 22 Sep onward is harvested automatically.",
-   "source": "derived from IBKR NAV step 2026-07-01 -> 2026-07-02"
-  },
-  {
    "date": "2026-07-20",
    "ccy": "AED",
    "amount": -18364,
