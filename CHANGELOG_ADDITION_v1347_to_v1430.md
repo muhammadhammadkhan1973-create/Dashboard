@@ -1,3 +1,31 @@
+## live_portfolio.json — 2026-10-08 — AMD3 RE-ENTERED (round 2)
+
+**Owner:** update the dashboard with the latest AMD3 trade.
+
+Pulled live from IBKR (trades + positions + balances, 15:19 UTC):
+- **BUY 523 AMD3 @ $9.4425** on 8 Oct 14:34 UTC, LSEETF, order 1667856399, commission **$4.00**, net **$4,942.43**. IBKR `average_price` 9.45014818 includes the commission, so that is the recorded `cost_price` (same convention as every other holding).
+- ISIN **XS2337090422**, confirmed from the September AMD3 trade records in the payload rather than assumed — pricing is keyed by ISIN, so a wrong one would have left the position unpriced.
+- `world_theme` **US-Tech** (AMD is a US company; TSM3 is Asia-Tech because TSMC is Taiwanese). Theme reuses the existing "Semiconductors / AI (3x)".
+- **Holdings 8 → 9.** All nine share counts reconciled against the broker, tickers match exactly.
+- **Cash updated:** AED 97,372.56, USD 9,189.83. USD fell $4,668.55 = the $4,942.43 purchase less the $271.69 ITWN dividend and credit interest. Cash in USD totals $35,700, matching the broker's BASE cash to the dollar; stock $227,614 + cash $35,700 = $263,314 against broker NAV $263,325 (the $11 is intraday FX/mark drift).
+- The first AMD3 round is **renamed** "LS 3X AMD — round 1 (closed 23 Sep)" with a note, so the completed +$3,855.43 journey can never be read as the live position now that AMD3 is open again.
+- The **$4.00 commission is deliberately NOT added** to `broker_costs`, which is scoped to the 1–17 Jul statement; noted in `reconciled` instead.
+
+**Why file this by hand rather than wait:** the scanner's Flex sync does auto-add unknown positions, but it would have landed AMD3 as *"Unclassified (new via IBKR Flex)"* / `Global-Other` with no name or news query, and only after the T+1 statement. Entering it properly now gives correct classification immediately; Flex will simply confirm the share count and cost on its next sync.
+
+No scanner or index change.
+
+## index v5.398 — 2026-10-08 — TAB-17 DONUT: HARDCODED FUND COUNT + CASH-KEPT ARITHMETIC
+
+Two display defects in the "where each dollar went" donut, both exposed the moment the capital ledger became complete (scanner v1.510.x + the live_portfolio.json backfill).
+
+1. **The centre label was a hardcoded `"7 funds"`** — wrong since TSM3 was bought on 23 July. Now derived from `holdings.length` (currently 8, singular/plural handled).
+2. **"Cash kept" ignored withdrawals.** It was money-in minus fund cost, so with the ledger complete it would have shown **$48,872** against **~$36,792** actually unspent — overstating cash by the full $12,080 taken out. Withdrawals now get their own amber slice ("Taken back out") and cash kept is money-in − spent − withdrawn, so the ring closes: 227,326 + 12,080 + 36,792 = 276,197 = money in.
+
+Display-only; no scanner change (pairs with v1.510.0+). Tests: node --check; extracted real `_liMoneyViz` run against the live payload — slices sum to money-in to the dollar, fund count matches holdings, withdrawal slice present, and correctly absent when `out_usd` is 0; no nulls.
+
+**Context:** the user reported "SINCE YOU STARTED" showing a dash. That was a stale browser page — the 11:19 scan had already written `complete: true`, `in_usd $276,197`, `true_pnl $3,056.50`. A reload fixes the dash; this wave fixes what the reload would otherwise have revealed.
+
 ## v1.511.0 + index v5.397 + live_portfolio.json — 2026-10-08 — BOTH OPEN ITEMS CLOSED
 
 **Owner:** close the two items left open by yesterday's audit.
