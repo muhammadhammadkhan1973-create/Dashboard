@@ -106,22 +106,34 @@
       "cost_ccy": "USD",
       "news_query": "TSMC",
       "acquired": "2026-07-23"
+    },
+    {
+      "ticker": "AMD3",
+      "isin": "XS2337090422",
+      "name": "Leverage Shares 3x Long AMD",
+      "shares": 523,
+      "theme": "Semiconductors / AI (3x)",
+      "world_theme": "US-Tech",
+      "cost_price": 9.45014818,
+      "cost_ccy": "USD",
+      "news_query": "AMD Advanced Micro Devices",
+      "acquired": "2026-10-08"
     }
   ],
   "cash": [
     {
       "ccy": "AED",
-      "amount": 82744.94
+      "amount": 97372.56
     },
     {
       "ccy": "USD",
-      "amount": 13858.38
+      "amount": 9189.83
     }
   ],
   "reconciled": {
-    "date": "2026-09-24",
-    "source": "IBKR live balances+trades pull (connector)",
-    "note": "AMD3 fully closed 23-Sep (trailing stop, 806 sh, proceeds 6,695.85 settle Fri 26... 25-Sep); TSM3 verified STILL HELD -- the 24-Sep payload 7-holding/AED-126,955 state was the scanner in-code fallback after live_portfolio.json was overwritten with scanner.py content during deploy, NOT real trades. AED 82,744.94 unchanged; USD 13,858.38 total (7,162.53 settled + 6,695.85 settling 25-Sep)."
+    "date": "2026-10-08",
+    "source": "IBKR live trades + positions + balances pull (connector), 2026-10-08 15:19 UTC",
+    "note": "AMD3 RE-ENTERED: BUY 523 sh @ $9.4425 on 8 Oct 14:34 UTC (LSEETF, order 1667856399), commission $4.00, net $4,942.43; IBKR average_price 9.45014818 includes the commission. Position count 8 -> 9. Cash after the buy: AED 97,372.56, USD 9,189.83 (USD fell $4,668.55 = the $4,942.43 purchase less the $271.69 ITWN dividend and credit interest). Broker NAV $263,324.99. The first AMD3 round (21 Jul - 23 Sep, +$3,855.43) stays in position_journeys as history. The $4.00 commission is NOT added to broker_costs, which is scoped to the 1-17 Jul statement."
   },
   "capital_flows": [
     {
@@ -245,7 +257,7 @@
   "position_journeys": [
     {
       "ticker": "AMD3",
-      "name": "LS 3X AMD (Leverage Shares 3x)",
+      "name": "LS 3X AMD — round 1 (closed 23 Sep)",
       "status": "CLOSED",
       "opened": "2026-07-21",
       "closed": "2026-09-23",
@@ -304,7 +316,8 @@
           "pnl": 2691.69,
           "note": "trailing stop -- closed"
         }
-      ]
+      ],
+      "note": "First AMD3 round: opened 21 Jul, closed 23 Sep on the trailing stop for +$3,855.43 (+25.7%). A SECOND round was opened on 8 Oct (523 sh @ $9.4425) and is a live holding -- this journey is the completed first round only."
     }
   ]
 }
