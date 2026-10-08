@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.397 (pairs with scanner v1.511.0): the Pakistan Valuation-Matrix surfaces can no longer present frozen data as current. The SCS "weekly" PDF has been stuck at July 2, 2026 for 97 days while every fetch succeeds, and NEITHER renderer showed its age -- so July P/E, ROE and dividend-yield screens were being read as today's. _vmStaleBanner() renders scanner v1.511.0's psx_valuation_matrix.staleness as a tier-coloured banner (grey current / amber aging / orange STALE / red FROZEN) carrying the tier's own plain-language note, and is prepended to BOTH renderScsSuggest() and renderPsxValQuality(). Payloads without the staleness stamp render exactly as before. -->
 <!-- index.html v5.396 (pairs with scanner v1.510.0): the Tab-17 money-story honours the capital ledger's new honesty flag. Scanner v1.510.0 auto-harvests every cash movement from the broker feed and, when the ledger cannot explain where the money came from (the opening funding was never entered, so recorded deposits are a fraction of NAV), returns true_pnl_usd/pct as null with capital.complete=false and a plain-language note. This renders that state instead of printing "$null" or "0 cents on every dollar": the money-flow waterfall and the "what it is worth right now" sentence are both gated on capital.complete, and in its place an amber panel states what is missing and how to fix it, while the figures that ARE trustworthy (deposits, withdrawals, money at work, today/week/month scoreboard) keep rendering exactly as before. -->
 <!-- index.html v5.395 (pairs with scanner v1.509.0; owner: "make it automatic - future all seeds"). The Tab-17 NetBenefits cash ledger no longer sits frozen between Fidelity statements. Scanner v1.509.0 projects the account forward from the last CONFIRMED statement (inferring the APD dividend cadence, pay-day and net per-share amount, and the FYIXX monthly interest rate, from the owner's own confirmed rows), and this renders those projected rows BENEATH the confirmed ones inside a visually separated amber band -- dashed rule, "PROJECTED" chip on every line, a header stating what is confirmed versus projected, and the projected closing balance with the plain-language basis on hover. Confirmed statement rows are rendered exactly as before, unchanged and unmixed. A dividend-rate divergence flag (APD changed its dividend) surfaces as an amber note. No projection in the payload -> the section renders exactly as it did before. -->
 <!-- index.html v5.394 (pairs with scanner v1.507.0; owner: "the breakout calculation throughout the dashboard in all tabs is inconsistent, it should be consistent and should be calculated in a universal bonified manner and with a pill on hovering it should explain how it has been calculated"). THE ONE BREAKOUT RULE now renders identically on every tab: _breakoutPill(r) reads scanner v1.507.0 row.breakout -- a breakout is a DAILY CLOSE above the stock ceiling (nearest lid overhead: 6-month swing resistance or the 52-week high) CONFIRMED by above-average volume -- and shows ONE pill: solid green "BREAKOUT CONFIRMED", amber "BREAKOUT - volume missing" (the classic trap, said so on hover), blue "breaking intraday - must hold to the close", outline teal "breakout zone" (within 3% below the ceiling = preparation only), nothing when not near. The hover carries the scanner-written note: the universal rule plus this stock's own numbers -- the pill explains exactly how it was calculated. Placed on every tech strip (Tab 19 cards + every M1 and M2 board row), the TCE/Explosive mini TA lines, and the technical card header. HARMONIZED WORDING so only the one rule uses the word: the "breakout zone" chips and the trigger-panel zone tips now say a ZONE is preparation and point at the pill; the pattern chip can now read AT THE CEILING (breakout zone) (new code breakout_zone, teal) and only says BREAKOUT when the rule fired; Tab 9 RSI-cross chips renamed MOMENTUM SURGE / MOMENTUM FADE with a hover stating they are an energy-gauge signal, not a price breakout. Old payloads without row.breakout render exactly as before (pill absent, no guess). -->
@@ -2908,13 +2909,27 @@ function renderDecisionMatrix(mbScore, igScore, market, zacks, finalRank) {
   return html;
 }
 
+function _vmStaleBanner(vm){try{
+  var st=vm&&vm.staleness; if(!st||!st.tier) return '';
+  var esc=function(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;');};
+  var m={fresh:['#15803D','#F0FDF4','✓','CURRENT'],
+         aging:['#B45309','#FFFBEB','◔','AGING'],
+         stale:['#C2410C','#FFF7ED','⚠','STALE'],
+         frozen:['#B91C1C','#FEF2F2','✖','FROZEN — NOT CURRENT']}[st.tier];
+  if(!m) return '';
+  if(st.tier==='fresh') return '<div style="font-size:10.5px;color:#15803D;margin:0 0 6px;">✓ Valuation Matrix current · '+esc(vm.as_of)+'</div>';
+  return '<div style="margin:0 0 9px;padding:9px 12px;border-radius:9px;background:'+m[1]+';border:1px solid '+m[0]+'66;border-left:4px solid '+m[0]+';">'
+    +'<div style="font-size:10px;font-weight:900;letter-spacing:.06em;color:'+m[0]+';margin-bottom:3px;">'+m[2]+' VALUATION MATRIX '+m[3]+' · '+st.days+' DAYS OLD</div>'
+    +'<div style="font-size:11.5px;line-height:1.55;color:#334155;">'+esc(st.note)+'</div></div>';
+}catch(e){return '';}}
 function renderScsSuggest(){
   var vm=(typeof LIVE!=='undefined'&&LIVE&&LIVE.psx_valuation_matrix)?LIVE.psx_valuation_matrix:null;
   var sug=(vm&&Array.isArray(vm.suggested))?vm.suggested:[];
-  if(!sug.length) return '<p style="font-size:12px;color:var(--grey-d);">No SCS suggestions yet &mdash; the Valuation Matrix overlay populates on the next scan.</p>';
+  var _vmb=_vmStaleBanner(vm);   // v5.397: age first -- these ratios may be months old
+  if(!sug.length) return _vmb+'<p style="font-size:12px;color:var(--grey-d);">No SCS suggestions yet &mdash; the Valuation Matrix overlay populates on the next scan.</p>';
   var lbl={high_roe:'ROE',high_roa:'ROA',high_ebitda_margin:'EBITDA-margin',high_dy:'Div-Yield'};
   var f1=function(v){return (v===null||v===undefined)?'\u2014':(+v).toFixed(1);};
-  var h='<table style="font-size:12px;"><thead><tr><th>#</th><th>Ticker</th><th title="how many of the 4 SCS quality screens it appears in">Quality screens</th><th>P/E</th><th>Exp P/E</th><th>Div Yield</th><th>ROE</th><th>Mkt Cap (PKR bn)</th><th>On watchlist?</th></tr></thead><tbody>';
+  var h=_vmb+'<table style="font-size:12px;"><thead><tr><th>#</th><th>Ticker</th><th title="how many of the 4 SCS quality screens it appears in">Quality screens</th><th>P/E</th><th>Exp P/E</th><th>Div Yield</th><th>ROE</th><th>Mkt Cap (PKR bn)</th><th>On watchlist?</th></tr></thead><tbody>';
   sug.forEach(function(s,i){
     var badges=(s.quality_screens||[]).map(function(q){return '<span style="background:#1e3a5f;color:#cfe;border-radius:3px;padding:1px 5px;margin-right:3px;font-size:10px;">'+(lbl[q]||q)+'</span>';}).join('');
     var onwl=s.on_watchlist?'<b style="color:#3fbf6f;">\u2713 yes</b>':'<span style="color:var(--grey-d);">review to add</span>';
@@ -6776,13 +6791,14 @@ function renderPsxValQuality(){
   var el=document.getElementById('psx_valquality_box'); if(!el) return;
   var vm=(typeof LIVE!=='undefined'&&LIVE&&LIVE.psx_valuation_matrix)?LIVE.psx_valuation_matrix:null;
   if(!vm||!vm.sections||!vm.by_ticker){el.innerHTML='<p style="color:var(--grey-d);font-size:12px;">No Valuation Matrix data yet \u2014 populates from the SCS overlay on the next scan.</p>';return;}
+  var _vmb=_vmStaleBanner(vm);   // v5.397
   var bt=vm.by_ticker, sec=vm.sections;
   function mini(tag,title,field,pct){
     var list=(sec[tag]||[]).slice(0,8); if(!list.length) return '';
     var rows=list.map(function(tk){var o=bt[tk]||{};var v=o[field];var vs=(v==null)?'\u2014':(+v).toFixed(field==='pb'?2:1)+(pct?'%':'');return '<tr><td><b>'+tk+'</b></td><td style="text-align:right;">'+vs+'</td></tr>';}).join('');
     return '<div style="flex:1 1 190px;min-width:170px;"><div style="font-weight:700;font-size:12px;margin-bottom:4px;color:var(--navy);">'+title+'</div><table style="font-size:11px;width:100%;"><tbody>'+rows+'</tbody></table></div>';
   }
-  var value='<div style="display:flex;flex-wrap:wrap;gap:16px;">'+mini('low_pe','Cheapest \u2014 lowest Price-to-Earnings (P/E)','latest_pe',false)+mini('high_dy','Best dividend yield','div_yield',true)+mini('low_ev_ebitda','Lowest Enterprise Value to EBITDA (EV/EBITDA)','ev_ebitda',false)+mini('low_pb','Lowest Price-to-Book (P/B)','pb',false)+'</div>';
+  var value=_vmb+'<div style="display:flex;flex-wrap:wrap;gap:16px;">'+mini('low_pe','Cheapest \u2014 lowest Price-to-Earnings (P/E)','latest_pe',false)+mini('high_dy','Best dividend yield','div_yield',true)+mini('low_ev_ebitda','Lowest Enterprise Value to EBITDA (EV/EBITDA)','ev_ebitda',false)+mini('low_pb','Lowest Price-to-Book (P/B)','pb',false)+'</div>';
   var quality='<div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:6px;">'+mini('high_roe','Highest Return on Equity (ROE)','roe',true)+mini('high_roa','Highest Return on Assets (ROA)','roa',true)+mini('high_ebitda_margin','Highest EBITDA margin','ebitda_margin',true)+'</div>';
   var asof=vm.as_of||'\u2014';
   el.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px;">Value screens (cheap)</div>'+value+'<div style="font-size:12px;font-weight:700;color:var(--navy);margin:12px 0 4px;">Quality screens (strong business)</div>'+quality+'<p style="margin-top:10px;font-size:11px;color:var(--grey-d);">From SCS\u2019s weekly Valuation Matrix (as of '+asof+'). The standout names in each screen \u2014 a starting point for finding cheap or high-quality stocks. Context only: nothing here changes a stock\u2019s grade or whether it\u2019s screened.</p>';
