@@ -1,3 +1,84 @@
+## v1.513.0 / index v5.399 — 2026-10-13 — THE LEVERAGED-SIZING FAIL-OPEN
+
+**Owner:** "go" — approved from the 13-Oct post-deploy audit.
+
+### What the engine was telling him
+
+The 13-Oct 08:16 run said **TRIM TSM3** (+2.7%, making money) and **HOLD AMD3** (−18%, in free-fall). Two 3x holdings, near-identical cost bases ($10,002.49 vs $10,003.59), same theme family, both flagged `leveraged: true`, opposite verdicts.
+
+| | weight | target the engine set | over the 2.5% storm cap? | verdict |
+|---|---|---|---|---|
+| TSM3 | 4.1% | 2.5% (cap applied) | yes | TRIM |
+| AMD3 | 3.2% | **4.0% (cap NOT applied)** | yes | **HOLD** |
+
+### Root cause, two layers deep
+
+**Layer 1 — the cap failed open.** The inline rule read:
+
+```python
+_fund_storm = abs(float(r.get('wow') or 0)) >= 8 or abs(float(r.get('daily_pct') or 0)) >= 6 or storm
+cap = 0.025 if _fund_storm else 0.05
+```
+
+`or 0` turned an **unknown** week-over-week into a **zero** one — the calmest reading possible. AMD3 (`wow = None`) drew the loose 5% cap; TSM3 (`wow = −24.68`) drew the tight 2.5%. AMD3 had in fact fallen **29.4% in five sessions**, three times the storm threshold.
+
+**Layer 2 — why `wow` was unknown at all.** The `px` maps inside the stored history snapshots are keyed by **ISIN**, so a position re-entered after a closed round compares against the *previous* round. The 30-day snapshot still carried AMD3 round 1 (21 Jul – 23 Sep) and published **`mom +34.2%`** on a holding 18% under water; the 7-day snapshot carried no AMD3 at all.
+
+Net: the newest, least-understood, most leveraged position drew the most rope *and* the most flattering momentum.
+
+### Fixes
+
+1. **New PURE `_lev_cap()`** — unknown volatility is now a **storm, not calm**. A position whose risk cannot be measured is sized as if it were risky; that is the only assumption that cannot lose money through ignorance. It also rejects **NaN/inf**, which this function's own test suite caught sailing past both thresholds on the first run, because every comparison against NaN is False.
+2. **Stale-lookback gate** on per-holding `wow`/`mom` — a lookback predating a holding's own `acquired` date describes a period the owner did not own it, so it is blanked and the reason published in `wow_basis`/`mom_basis` rather than papered over.
+3. **`_exit_rule_coarse()` is leverage-aware** — a 50-day average is far too slow a stop for a 3x wrapper. AMD3's sat at **$5.99 against spot $7.12**, 16% below, so it could not be breached until the position was ~45% under water. Leveraged rows now use a loss-from-entry stop: **−12% trim, −20% exit**, stated in underlying terms (~4% and ~6.7% adverse moves, amplified three times).
+4. **The 10% 3x sleeve cap now issues an instruction.** It was a note only, so the sleeve could be breached while every individual name sat inside its own cap and no trade was ever proposed.
+5. **One surface, one answer** — the exit chip now carries the sizing verdict and, where they pull apart (KSTR read **EXIT** on one surface and **WAIT** on the other), states that the sizing engine answers *buy-more* while the exit rule governs *hold-or-sell*. The index's WAIT paragraph says the same in plain words.
+6. **index v5.399** — the leveraged-TRIM paragraph inferred its explanation from the target number alone ("the market is rough right now"). With a second possible reason for a tight cap, that would have shipped the corrected verdict with a *wrong* reason. It now branches on `cap_basis` and quotes `cap_why`.
+
+### Effect on the live book
+
+| | before | after |
+|---|---|---|
+| AMD3 cap | 5.0% | **2.5%** |
+| AMD3 sizing verdict | HOLD | **TRIM $1,883 (264 sh)** |
+| AMD3 exit chip | HOLD | **TRIM** |
+| TSM3 / MSF3 | unchanged | unchanged |
+
+### Two audit claims withdrawn
+
+Both were wrong on inspection and are recorded as wrong:
+
+- **The "$26.33 NAV gap" is not a bug.** It is `interest_usd`; `nav = holdings_usd + cash_usd + interest_usd` reconciles to the cent.
+- **The 10% sleeve cap already existed.** It had simply never fired, because the sleeve is at 8.3%.
+
+**Tests:** 25 assertions against the real AST-extracted `_lev_cap` and `_exit_rule_coarse` (production values, every boundary, garbage inputs, backward compatibility), plus `node --check` on the index and a five-case branch test on the new reason string. All passing.
+
+## v1.512.0 — 2026-10-13 — NETBENEFITS TRUE-UP TO THE 30-SEP STATEMENT
+
+**Owner:** reconcile the Live Investment tab against the attached Fidelity Stock Plan Services eStatement (1–30 Sep 2026).
+
+`_NB_FACTS` advanced from the 31-Aug seed to the 30-Sep statement:
+
+| Field | Was (31 Aug) | Now (30 Sep) |
+|---|---|---|
+| APD mark | $309.46 | **$278.23** |
+| APD market value | $257,470.72 | **$231,487.36** |
+| APD unrealized | **+$20,593.02** | **−$5,390.34** |
+| FYIXX core balance | $9,894.92 | **$9,923.18** |
+| FYIXX 7-day yield | 3.44% | **3.53%** |
+| 2026 YTD income | $4,682.29 | **$4,710.55** |
+| Plan value | $267,365.64 | **$241,410.54** |
+
+Shares unchanged at 832; cost basis unchanged at $236,877.70. The 30-Sep interest row (+$28.26, reinvested) is appended to the core-cash ledger. **The $25,955.10 fall is the APD price alone** — no share change, no withdrawal, no new tax in September (YTD withholding still $1,350.34).
+
+**Reconciliation — 9 assertions, all passing:** 832 × 278.23 = statement MV; MV − cost = unrealized; APD + core = account value $241,410.54; the ledger chains row to row; ledger end = stated balance; Sep interest = $28.26; YTD income = $4,710.55; plan value = $241,410.54; period change = −$25,955.10 as the statement states.
+
+**The projection engine validated itself.** v1.509.0 forecast September interest at **$27.12** against the actual **$28.26** — a $1.14 miss on an unseen month. It has now re-based off 30 Sep and self-corrected its inferred rate from **0.2741% to 0.2818%/month** from the newly confirmed row, exactly as designed. Its November sweep still projects **$1,054.14** against the statement's own estimated-cash-flow table ($1,506 gross × 0.70 = $1,054.20) — a six-cent agreement from two independent routes.
+
+The `next` note now states there is **no October APD dividend**, per the statement's 12-month cash-flow table (stock income appears only in Nov/Feb/May/Aug).
+
+No index change.
+
 ## live_portfolio.json — 2026-10-08 — AMD3 RE-ENTERED (round 2)
 
 **Owner:** update the dashboard with the latest AMD3 trade.
