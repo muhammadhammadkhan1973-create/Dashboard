@@ -111,13 +111,25 @@
       "ticker": "AMD3",
       "isin": "XS2337090422",
       "name": "Leverage Shares 3x Long AMD",
-      "shares": 523,
+      "shares": 1152,
       "theme": "Semiconductors / AI (3x)",
       "world_theme": "US-Tech",
-      "cost_price": 9.45014818,
+      "cost_price": 8.6836697,
       "cost_ccy": "USD",
       "news_query": "AMD Advanced Micro Devices",
       "acquired": "2026-10-08"
+    },
+    {
+      "ticker": "MSF3",
+      "isin": "IE00BK5BZV36",
+      "name": "Leverage Shares 3x Long Microsoft",
+      "theme": "Software / AI (3x)",
+      "world_theme": "US-Tech",
+      "shares": 39,
+      "cost_price": 63.1925641,
+      "cost_ccy": "USD",
+      "news_query": "Microsoft",
+      "acquired": "2026-10-13"
     }
   ],
   "cash": [
@@ -127,13 +139,13 @@
     },
     {
       "ccy": "USD",
-      "amount": 9189.83
+      "amount": 1664.16
     }
   ],
   "reconciled": {
-    "date": "2026-10-08",
-    "source": "IBKR live trades + positions + balances pull (connector), 2026-10-08 15:19 UTC",
-    "note": "AMD3 RE-ENTERED: BUY 523 sh @ $9.4425 on 8 Oct 14:34 UTC (LSEETF, order 1667856399), commission $4.00, net $4,942.43; IBKR average_price 9.45014818 includes the commission. Position count 8 -> 9. Cash after the buy: AED 97,372.56, USD 9,189.83 (USD fell $4,668.55 = the $4,942.43 purchase less the $271.69 ITWN dividend and credit interest). Broker NAV $263,324.99. The first AMD3 round (21 Jul - 23 Sep, +$3,855.43) stays in position_journeys as history. The $4.00 commission is NOT added to broker_costs, which is scoped to the 1-17 Jul statement."
+    "date": "2026-10-13",
+    "source": "IBKR live positions + balances pull (connector), 2026-10-13 11:4x UTC",
+    "note": "TWO CHANGES, both internal (no new money entered or left the account, so capital_flows is unchanged). (1) AMD3 AVERAGED DOWN: 523 -> 1,152 shares. The broker's average price fell $9.45015 -> $8.68367, which implies 629 shares added for $5,061.16, i.e. $8.0464/share including commission. (2) MSF3 OPENED: 39 shares of Leverage Shares 3x Long Microsoft (LSEETF, contract 425172104, ISIN IE00BK5BZV36) at an average $63.19256 = $2,464.51. Position count 9 -> 10. ARITHMETIC PROOF: $5,061.16 + $2,464.51 = $7,525.67, and the USD cash leg fell from $9,189.83 to $1,664.16, a drop of exactly $7,525.67. Nothing is unexplained to the cent, which is why these figures are trusted even though get_account_trades returned an empty list at both a 5-day and a 30-day window -- the fills did not surface through the broker's trade endpoint, so the FILL DATES ARE NOT CONFIRMED. 'acquired' on MSF3 is the date the position was OBSERVED (13 Oct), not a confirmed trade date; it is after the 12 Oct 22:10 scan, whose Flex snapshot still showed AMD3 at 523 and USD cash at $9,189.83. Correct the date if the contract note says otherwise. Commissions are inside the broker's average_price and are NOT added to broker_costs, which stays scoped to the 1-17 Jul statement."
   },
   "capital_flows": [
     {
@@ -153,7 +165,7 @@
     }
   ],
   "broker_costs": {
-    "source": "IBKR Activity Statement U21094978, 1–17 Jul 2026",
+    "source": "IBKR Activity Statement U21094978, 1\u201317 Jul 2026",
     "commissions_usd": [
       {
         "ticker": "SMH",
@@ -185,12 +197,12 @@
       }
     ],
     "commissions_total_usd": 118.11,
-    "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units — worth about 2 pence. IBKR's minimum fee (£1.00) applied to that crumb like any order: a £1 fee on a 2p purchase.",
+    "ainf_fraction_note": "AINF was bought in two main lots plus a leftover fraction of 0.0029 units \u2014 worth about 2 pence. IBKR's minimum fee (\u00a31.00) applied to that crumb like any order: a \u00a31 fee on a 2p purchase.",
     "fx_spread": {
       "aed_sold": 801249.98,
       "usd_received": 218079.0,
       "peg": 3.6725,
-      "note": "AED 801,249.98 ÷ 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
+      "note": "AED 801,249.98 \u00f7 3.6725 (the dirham's fixed official rate) = $218,174.99; you received $218,079.00; difference = the exchange spread."
     },
     "interest_accrued_usd": 163.22,
     "forex_realized_usd": 151.57,
@@ -257,7 +269,7 @@
   "position_journeys": [
     {
       "ticker": "AMD3",
-      "name": "LS 3X AMD — round 1 (closed 23 Sep)",
+      "name": "LS 3X AMD \u2014 round 1 (closed 23 Sep)",
       "status": "CLOSED",
       "opened": "2026-07-21",
       "closed": "2026-09-23",
@@ -317,7 +329,7 @@
           "note": "trailing stop -- closed"
         }
       ],
-      "note": "First AMD3 round: opened 21 Jul, closed 23 Sep on the trailing stop for +$3,855.43 (+25.7%). A SECOND round was opened on 8 Oct (523 sh @ $9.4425) and is a live holding -- this journey is the completed first round only."
+      "note": "First AMD3 round: opened 21 Jul, closed 23 Sep on the trailing stop for +$3,855.43 (+25.7%). A SECOND round was opened on 8 Oct (523 sh @ $9.4425) and ADDED TO on/around 13 Oct (+629 sh @ ~$8.05, average down to $8.68367 on 1,152 sh) -- that round is a live holding; this journey is the completed first round only."
     }
   ]
 }
