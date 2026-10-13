@@ -1,3 +1,233 @@
+## v1.516.0 — 2026-10-13 — THE BAR FEED MOVES TO TRADINGVIEW
+
+**My error.** v1.515.0 read its bars from `_batch_history_cache` — one `yf.download` — because that was the only existing OHLC path in the file. That breaks a standing rule recorded since v1.491.0: *"Yahoo is never used where TradingView can serve the field."* I chose a data source without reading the data-source rules, which are in the decision record under that exact heading.
+
+### Why the old path was Yahoo, and why it didn't have to be
+
+`_batch_history_cache` is Yahoo because **TradingView has no OHLC-history endpoint** — that much of the record is right. But the candle rule never needed history. It needs **one settled bar's open/high/low/close**, and that is a per-symbol column on the same `/scan` POST this scanner already makes about twenty times a run.
+
+### What replaces it
+
+**`_tv_bar_batch`** — request shape copied *verbatim* from the proven `_tv_close_batch`: `symbols.tickers` + `columns`, 150 per chunk, same endpoint, same UA. Only the column list differs, so nothing here is a guessed structure.
+
+**The prior day's range** — which the midpoint test needs — now comes from the dashboard's **own accumulated history** (`_bar_store_merge` → `data['bar_history']`, three bars per name). That is the pattern you locked for the oil trends in v1.490.0: *"the dashboard's own daily history is the SOLE authority."* TradingView gives one bar per call, so the series is built by keeping them, not by asking a second vendor.
+
+**`_settled_rows`** refuses to grade a half-finished candle: a bar counts only once it is dated before today, or dated today after 21:00 UTC.
+
+### The honest limit
+
+**I cannot confirm that TradingView serves `open`/`high`/`low`.** The build sandbox's egress proxy answers 403 to CONNECT for `scanner.tradingview.com` — logged in the proxy's own relay-failure list. Your rule forbids shipping a fetcher at an unconfirmed structure, and I can't web-fetch it to confirm.
+
+So `_tv_bar_batch` returns a **probe** naming exactly which columns came back populated, stamped at `meta.trading_rules.tv_probe`. The runner reaches TV; the next scan settles it in the payload instead of in an assumption.
+
+If TV does not serve them: **nothing grades**, every verdict stays byte-identical to what its engine produced, the probe says why — and **no Yahoo fallback is added.**
+
+### Warm-up, stated plainly
+
+The midpoint test needs two settled bars, so it is live **from the third run**. The rejection test — close in the bottom tenth of its own range — needs only one bar and works as soon as a session has closed. Before that, honest absence: `candle_basis: 'no data'`, verdicts untouched.
+
+### One thing the Yahoo path never had
+
+Because the store is the dashboard's own, **a TradingView outage for one run no longer blinds the rule** — yesterday's settled bar is still on file and still valid. Proven in the harness: TV raising on every call, warm store, 656 rows still graded.
+
+### Scope
+
+Pre-existing Yahoo uses your record already lists as irreducible — the frozen TCE six-month history, the SPY benchmark series, off-pool re-pricing, non-SEC income statements — are **untouched** by this wave. No new Yahoo anywhere: verified by scanning the whole `apply_trading_rules` body.
+
+### Validation
+
+**444 assertions across six suites.** This round caught a real bug — `_bar_store_merge`'s own exception fallback raised on a non-dict store, because `dict('x')` throws — plus three defects in my own harness (a seed dated against the simulated day instead of the real clock, a self-wrapping scope stub, and a leftover line that nulled the datetime module).
+
+## v1.515.0 — 2026-10-13 — TRADING-RULES COMPLIANCE (sections C, D, E, F)
+
+**Owner:** all four sections, across every tab, in one go. Bar cadence: **option B every run, option A weekly.**
+
+### The finding that shaped the build
+
+Section C wasn't under-wired — **no payload block carried daily OHLC at all.** Not even `build_entry_timing`, the one engine that called `_candle_quality`: its rows come from a TradingView batch of closes, EMAs and RSI, and its `history` is `[date, close]` pairs. The rule had nothing to read. For eleven days it decorated one sentence on one tab while every other tab published level-only BUYs with no candle check.
+
+### One pass, not eleven edits
+
+The eleven technical blocks are assigned into `data` from eight different functions, so wiring C into each would have meant eleven implementations of one rule — the drift you objected to over the breakout calculation. `apply_trading_rules` runs after every builder and before the governor: one batched OHLC call per market, grade the last **settled** bar, apply the rule. Same code, same bar, every tab.
+
+### The mode split — read from the live vocabularies, not assumed
+
+| block | field | vocabulary | mode |
+|---|---|---|---|
+| `entry_timing` | verdict | BUY / WAIT / AVOID / WAIT FOR DIP | **timing → vetoed** |
+| `zacks_radar` | verdict | "ZACKS DISCOVERY — Buy / Strong Buy" | **timing → vetoed** |
+| `explosive_us` / `explosive_psx` | verdict | "EXPLOSIVE — both signals", "INFLECTION" | classify → attached |
+| `us_candidates` / `psx_candidates` | status | WATCH / STRONG / HIGH-CONVICTION | classify → attached |
+| 5 weekly screening blocks | grade/score | — | classify → attached |
+
+Vetoing "EXPLOSIVE — both signals" to "WAIT" would turn a statement about accelerating fundamentals into a timing verdict and destroy what the engine computed. Section C vetoes level-only **timing** signals; it is not a licence to overwrite every label.
+
+### Sections D, E, F
+
+**D** — adds **flat base** and **failed breakout**, and publishes the trigger / stop / target / status contract for every named pattern. The honesty rule holds: a near-miss returns nothing rather than a weaker label on a pattern that isn't there.
+
+**E** — enforces what the scanner never did: the **$2,500–5,000** tranche band, the **$7,500** daily ceiling, the **two-buys-a-day** cap, a **7% trailing stop over the whole position**, and the invalidation level recorded at entry. (What existed was `min(spare/3, 10% of NAV)` and a 2×ATR trail on eight US names.)
+
+**F** — the three London 3x holdings finally get mechanics: fair = London mark × (1 + 3 × the US underlying's move), limit **fair +0.5%**, never above **+1.5%**, the **18:30–20:30 PKT** window, the first-hour premium warning, and the **dormant overnight stop**.
+
+### Fail-safe
+
+A dead bar feed leaves every verdict byte-identical to what its engine produced, and records the failure in the payload. Proven, not asserted.
+
+### Validation — and what it caught
+
+**383 assertions across five suites.** The end-to-end harness runs the *real* pass over the *real* 15:10 payload with a stubbed feed, because Yahoo is blocked in the build sandbox — only the runner can confirm the fetch itself.
+
+That harness caught **three defects before release**:
+
+1. `_tr_rows` dropped **all 154 `entry_timing` rows** — that block is keyed by ticker and its rows carry no `ticker` field, so the one tab whose verdict is a real BUY/WAIT call got no grade. It showed up as `rows=154 graded=0 no_bar=0`: never even reached. Fixed, then fixed again when the first patch sat after an earlier early-return.
+2. Prefix matching missed **every Zacks row** ("ZACKS DISCOVERY — Buy" doesn't start with BUY).
+3. The first draft had no mode and would have **overwritten the explosive classifications**.
+
+Dry-run result on the 15:10 payload: 656 rows graded, **34 of 34 `entry_timing` BUYs** and all 41 Zacks rows put through the rule, 9 patterns named, all three 3x holdings priced, the one ADD clamped to the tranche floor.
+
+## v1.514.0 — 2026-10-13 — OPTIONS 1 AND 3 (owner-approved)
+
+### 1. Buffer and confirmation on the coarse exit
+
+Any close below the 50-day average — by any margin, on a single day — read **EXIT**. On the 12:18 run that put EXIT on **five of ten holdings**, including SMH at 1.25% below its average and PHPM down 1.4% overall. A 50-day cross is among the noisiest signals there is; half a diversified book sitting slightly under it in a mild drawdown is ordinary, not a sell on each name.
+
+Three bands:
+
+| gap vs 50-day | rule |
+|---|---|
+| shallower than **−2.5%** | noise — reported, not acted on |
+| **−2.5% to −8%** | real break, needs **2 consecutive closes** below |
+| deeper than **−8%** | decisive on its own, no confirmation |
+
+The consecutive count persists across runs through the `EXISTING` exit-rules carry.
+
+**The −8% decisive band is not in the brief.** I added it because buffer-plus-confirmation alone would have gone blind for one full cycle on genuinely broken positions (KSTR −11.1%, FLXK −8.9%) on the first run after deploy, when no prior below-day count exists. All three numbers are single constants, deliberately easy to retune — say the word and they move.
+
+### 2. Hard gate on ADD
+
+The dashboard was issuing **ADD $1,954 into STOR while its own exit rule labelled STOR EXIT**. v1.513.2's note explained that clash in words but left the instruction standing, so one screen said buy and sell the same holding.
+
+New PURE `_gate_add()`. The advisor cannot see the exit verdict itself — exit rules are built after it — so the gate runs over the finished advisor output and rewrites the row, the action, the notes and the headline. **ADD only** is blocked: TRIM and WAIT are consistent with selling, and HOLD carries no instruction.
+
+`build_exit_rules` is now three passes — verdicts, then the gate, then the reconciliation notes — because a note computed before the gate would quote a sizing verdict the gate was about to overturn.
+
+### Effect on the 12:18 book
+
+| | gap | EXIT was | EXIT now |
+|---|---|---|---|
+| SMH | −1.25% | EXIT | **HOLD** — inside the noise buffer |
+| STOR | −1.96% | EXIT | **HOLD** — inside the noise buffer |
+| PHPM | −4.95% | EXIT | **HOLD** — awaiting a 2nd close |
+| FLXK | −8.88% | EXIT | EXIT — decisive |
+| KSTR | −11.10% | EXIT | EXIT — decisive |
+
+**EXIT count 5 → 2.** ADDs gated: **none** — because option 1 removed STOR's spurious EXIT at the root, so the gate had nothing to block. The two fixes interact: the contradiction disappeared because the EXIT was the thing that was wrong, not the ADD. The gate stays armed for a genuine break.
+
+### Validation — the step whose absence let v1.513.0 ship broken
+
+Every one of the ten live holding rows is a fixture read from the 12:18 payload, with expected verdicts written down *before* the run. Plus the fully enumerated band × confirmation × leverage space (10 gaps × 4 below-day counts), leverage precedence, gain-TRIM reachability, `below_days` bookkeeping, absence and hostile inputs, backward compatibility with all three older call shapes, the complete 6×7 `_gate_add` matrix, and a no-raw-floats sweep. The gate was additionally simulated end-to-end against the real payload before render.
+
+**That run caught two defects before release:**
+
+- **A real bug:** `int(below_days)` raised on a non-numeric string, in a function documented as never raising. Hardened.
+- **A bad test:** the −8% boundary was asserted on a constructed float — `100.0*(1−0.08)` re-derives as `−7.9999999999999964`, so an exact-boundary input lands either side by ~1e-14. The assertion now tests the contract around the boundary instead.
+
+## v1.513.2 — 2026-10-13 — COMPLETES "ONE SURFACE ONE ANSWER"
+
+**Scope note:** this finishes approved item 5 from the 13-Oct audit, which v1.513.0 only half-delivered. Not new scope.
+
+### Verified in production first — v1.513.1 worked
+
+The 12:01 run on v1.513.1:
+
+| | result |
+|---|---|
+| AMD3 cap / basis | **2.5% `unknown`** (was 5.0% `calm`) |
+| AMD3 sizing | **TRIM $1,832** (was HOLD) |
+| AMD3 exit chip | TRIM — **both surfaces agree for the first time** |
+| Headline | "4 instructions; KSTR wait, STOR add, TSM3 trim, **AMD3 trim**" |
+| Unrounded floats in owner-facing text | none |
+| `nav = holdings + cash + interest` | reconciles to the cent |
+
+### The remaining gap
+
+v1.513.0 reconciled the exit chip with the sizing verdict using two inline branches, which covered only **two of the four** combinations. On the 12:01 run **TSM3 displayed exit HOLD directly beside a TRIM instruction for $4,017**, with nothing linking them — the same silent-disagreement shape the fix existed to remove, on a different pair.
+
+TSM3 is healthy (+3.2%, above its 50-day line) *and* oversized (4.1% against a 2.5% cap). Those are not contradictory. But shown side by side with no explanation, they read as one.
+
+### Fix
+
+New **PURE `_exit_sizing_note()`** covering every combination:
+
+| exit \ sizing | HOLD | ADD | WAIT | TRIM |
+|---|---|---|---|---|
+| **HOLD** | — | — | — | note |
+| **TRIM** | note | note | note | note |
+| **EXIT** | note | note | note | note |
+| **NO DATA** | — | — | — | — |
+
+- **EXIT vs HOLD/ADD/WAIT** — the sizing engine answers how *much* to hold, not whether to hold at all; on hold-or-sell the exit rule governs.
+- **TRIM/EXIT vs TRIM** — both reads agree.
+- **HOLD vs TRIM** — healthy and oversized is not a contradiction: one chip answers hold-or-sell, the other answers how much.
+- **TRIM vs HOLD/ADD/WAIT** — inside its size cap is a question about SIZE; the trim is about RISK, and on risk it stands.
+
+Silence is reserved for genuine agreement and for `NO DATA`.
+
+Being pure, it is **unit-tested rather than eyeballed** — which the v1.513.0 inline version could not be. That is the structural point: the previous version's incompleteness was invisible because the logic sat inside a loop where nothing could reach it.
+
+**Tests:** the full 4×4 matrix, the four production pairs from the 12:01 run, both combinations v1.513.0 missed, plus case/whitespace tolerance and garbage inputs. All passing, and the v1.513.1 suite stays green.
+
+## v1.513.1 — 2026-10-13 — THE SAME FAIL-OPEN, ONE LAYER DOWN
+
+**v1.513.0 did not actually close the bug it was written for.** Found by the post-deploy audit of its own first run.
+
+### What happened
+
+The 11:44 run on v1.513.0 still reported AMD3 as `cap_basis: calm`, cap 5.0%, target 4.0%, verdict **HOLD** — the exact verdict the release existed to correct.
+
+The unknown-volatility test required **both** readings to be missing:
+
+```python
+if wow is None and day is None:   # v1.513.0 -- too strict
+```
+
+AMD3's week was still unmeasurable (no week-ago snapshot carries a position re-entered on 8 Oct), but its **day happened to be a quiet −1.5%**, so the holding was certified calm and drew the loose cap again. Its real five-session move was **−29.4%**. A 3x product can post a flat day in the middle of a collapse; one day is not a volatility estimate.
+
+### The test passed because it encoded the same wrong assumption as the code
+
+```python
+ck('only daily known, calm -> loose', _lev_cap({'wow': None, 'daily_pct': 1.0}, False)['cap'], 0.05)
+```
+
+That assertion expected `0.05`. It was written from the same mistaken belief as the implementation, so a green suite certified the defect. The assertion is now inverted, and **the four production rows from the 11:44 run are fixtures** — AMD3, MSF3, TSM3, KSTR with their verbatim `wow`/`daily_pct` values — so a test can no longer certify the bug it was meant to catch.
+
+### Fixes
+
+1. **The week is the primary measure.** An unknown week means unknown volatility and the tight 2.5% cap. The daily move may only **add** a storm trigger, never remove one. The reason string names the trap explicitly when a lone day is all that is on file.
+2. **No raw floats in owner-facing text.** The leveraged exit sentence was printing `down -18.496439403667996% from entry`. Now one decimal.
+
+### Effect on the live book (next scan)
+
+| | v1.513.0 shipped | v1.513.1 |
+|---|---|---|
+| AMD3 cap / basis | 5.0% `calm` | **2.5% `unknown`** |
+| AMD3 sizing verdict | HOLD | **TRIM $1,883 (266 sh)** |
+| AMD3 exit chip | TRIM | TRIM |
+| TSM3 | TRIM $3,950 `storm` | unchanged |
+| MSF3 | HOLD (1.0%, under cap) | unchanged |
+| KSTR cap basis | n/a (not leveraged) | `calm` — wow −6.19 is real and inside thresholds |
+
+Both surfaces now agree on AMD3 for the first time.
+
+### What v1.513.0 did get right — confirmed in production
+
+- **The stale-lookback gate works.** AMD3's false `mom +34.2%` is gone, replaced by the published reason: *"held only since 2026-10-08 — the month-ago lookback (2026-09-13) predates this position"*.
+- **The leverage-aware exit stop works.** It fired **TRIM** on AMD3 at −18.5% where the 50-day-average rule had said HOLD.
+- **The coherence fix works.** KSTR's exit chip now reads *"…the sizing engine says WAIT, but that answers whether to BUY MORE, not whether to hold: on hold-or-sell this exit rule governs, and it says sell."*
+
+**Tests:** 55 assertions, including the four production fixtures and two no-raw-float regressions. All passing.
+
 ## v1.513.0 / index v5.399 — 2026-10-13 — THE LEVERAGED-SIZING FAIL-OPEN
 
 **Owner:** "go" — approved from the 13-Oct post-deploy audit.
