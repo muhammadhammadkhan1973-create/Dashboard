@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- index.html v5.400 (pairs with scanner v1.517.0; owner said go): the RENDER WAVE for the trading-rules payload. (1) Tab 17: a London 3x card on each mapped 3x holding (AMD3/TSM3/MSF3) -- FAIR (mark x 1+3x the US underlying move), BID UP TO (fair +0.5%), NEVER ABOVE (fair +1.5%), the 18:30-20:30 PKT window state, the first-hour premium warning, and the dormant-overnight-stop note; until now these sat in the payload unread while the advisor issued trims on two of them. (2) Tab 1: when the candle rule vetoes a verdict the pill shows what it WAS, struck through, and the hover names the test that failed -- otherwise the reader sees a WAIT that was a BUY yesterday with no reason. (3) Tab 17: under every ADD, the size the risk budget actually allowed and why (tranche band, daily ceiling, buys left, 7% trailing stop). No layout change elsewhere. -->
 <!-- index.html v5.399 (pairs with scanner v1.513.0): the leveraged-TRIM paragraph used to explain every tight 3x cap as "the market is rough right now", inferring the reason from the target number alone. Scanner v1.513.0 can now cap a 3x holding tight for a SECOND reason -- its volatility is UNKNOWN (no week-over-week price history, which is exactly what let AMD3 draw the loose 5% cap and a HOLD while it fell 29.4% in five sessions) -- so the old sentence would have shipped the corrected verdict with a wrong explanation. It now branches on the scanner's own cap_basis and quotes cap_why, keeping one surface to one answer. Also: the WAIT paragraph now states that it answers buy-more, not hold-or-sell (KSTR read EXIT on the exit chip and WAIT here with nothing telling the reader they are different questions). No layout change. -->
 <!-- index.html v5.398 (pairs with scanner v1.510.0+): two defects in the Tab-17 "where each dollar went" donut, both exposed the moment the capital ledger became complete. (1) The centre label read a HARDCODED "7 funds" -- wrong since TSM3 was bought on 23 July; it is now derived from the holdings count. (2) "Cash kept" was computed as money-in minus fund cost, IGNORING withdrawals -- with the ledger complete that overstated cash by the $12,080 taken out ($48,872 shown against ~$36,791 actually unspent). Withdrawals now get their own amber slice ("Taken back out") and cash kept is money-in minus spent minus withdrawn, so the ring closes honestly. Both are display-only. -->
 <!-- index.html v5.397 (pairs with scanner v1.511.0): the Pakistan Valuation-Matrix surfaces can no longer present frozen data as current. The SCS "weekly" PDF has been stuck at July 2, 2026 for 97 days while every fetch succeeds, and NEITHER renderer showed its age -- so July P/E, ROE and dividend-yield screens were being read as today's. _vmStaleBanner() renders scanner v1.511.0's psx_valuation_matrix.staleness as a tier-coloured banner (grey current / amber aging / orange STALE / red FROZEN) carrying the tier's own plain-language note, and is prepended to BOTH renderScsSuggest() and renderPsxValQuality(). Payloads without the staleness stamp render exactly as before. -->
@@ -3600,7 +3601,36 @@ function calcMbUs(){
       if(/\b3x\b|\b2x\b|leverage shares|leveraged/.test(nm)) return {name:(r&&r.ticker)||'', lev:(/3x/.test(nm)?'3x':'2x'), under:'', ter:0.75, allin:4.8};
       return null;
     }
-    function _lihLevNote(r){
+    function _lihLondon3x(r){try{
+  /* v5.400 SECTION F -- the London 3x mechanics card (scanner v1.515.0+ publishes h.london_3x).
+     Shown only on a mapped 3x holding. Decide on the US underlying, never on the London tick. */
+  var x=r&&r.london_3x; if(!x||!x.underlying) return '';
+  var esc=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
+  var f4=function(v){return (v==null||isNaN(Number(v)))?'—':Number(v).toFixed(4);};
+  var win=String(x.window||''); var open=win.indexOf('OPEN')===0; var shut=win.indexOf('SHUT')===0;
+  var wc=open?'#047857':(shut?'#b91c1c':'#94a3b8'), wb=open?'#DCFCE7':(shut?'#FEE2E2':'#F1F5F9');
+  var winTxt=open?'WINDOW OPEN · 18:30–20:30 PKT':(shut?'WINDOW SHUT · opens 18:30 PKT':'window: clock unavailable');
+  var hasFair=(x.fair!=null);
+  var h='<div style="margin:6px 0 2px;padding:9px 12px;border:1px solid #BAE6FD;background:#F0F9FF;border-radius:10px;">'
+    +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">'
+    +'<span style="font-size:10px;letter-spacing:0.6px;font-weight:900;color:#0369A1;">LONDON 3× · DECIDE ON '+esc(x.underlying)+'</span>'
+    +'<span title="'+esc(win)+'" style="cursor:help;font-size:9px;font-weight:800;color:'+wc+';background:'+wb+';border:1px solid '+wc+'55;border-radius:99px;padding:2px 8px;">'+winTxt+'</span>'
+    +(x.premium_warn?'<span title="'+esc(x.premium_warn)+'" style="cursor:help;font-size:9px;font-weight:800;color:#b45309;background:#FEF3C7;border:1px solid #b4530955;border-radius:99px;padding:2px 8px;">⚠ first-hour premium</span>':'')
+    +'</div>';
+  if(hasFair){
+    h+='<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:6px;">'
+      +'<div><div style="font-size:9px;color:#64748B;">FAIR (mark × 1+3×'+esc(x.underlying)+' move)</div><div style="font-family:var(--font-mono);font-weight:800;color:#0f172a;font-size:13px;">'+f4(x.fair)+'</div></div>'
+      +'<div><div style="font-size:9px;color:#64748B;">BID UP TO (fair +0.5%)</div><div style="font-family:var(--font-mono);font-weight:800;color:#047857;font-size:13px;">'+f4(x.limit)+'</div></div>'
+      +'<div><div style="font-size:9px;color:#64748B;">NEVER ABOVE (fair +1.5%)</div><div style="font-family:var(--font-mono);font-weight:800;color:#b91c1c;font-size:13px;">'+f4(x.max_pay)+'</div></div>'
+      +'</div>';
+  }
+  h+='<div style="font-size:11px;color:#0C4A6E;line-height:1.45;">'+esc(x.why||'')+'</div>'
+    +(x.stops?'<div style="margin-top:5px;font-size:10.5px;color:#92400E;background:#FFFBEB;border:1px dashed #FCD34D;border-radius:7px;padding:5px 8px;"><b>Stops:</b> '+esc(x.stops)+'</div>':'')
+    +'</div>';
+  return h;
+}catch(e){return '<div style="font-size:10px;color:#b91c1c;">London 3× card error: '+String(e&&e.message||e)+'</div>';}}
+
+function _lihLevNote(r){
       var lv=_lihIsLeveraged(r); if(!lv) return '';
       return '<div style="margin:2px 14px 6px;padding:7px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:10.5px;color:#92400e;line-height:1.5;">'
         +'\u26A1 <b>'+lv.lev+' leveraged \u2014 cost is inside the price, not on your statement.</b> '
@@ -3686,6 +3716,7 @@ function calcMbUs(){
             +'<div><div style="font-size:9px;color:#94a3b8;">1Y '+(r.ret_1y!=null?(r.ret_1y>=0?'+':'')+r.ret_1y.toFixed(0)+'%':'\u2014')+'</div>'+_lihPerf(r.ret_1y,max1)+'</div>'
           +'</div></div></div>'
           +_lihLevNote(r)
+          +_lihLondon3x(r)   /* v5.400 section F */
         +'</div>';
       });
       g+='<div style="padding:8px 16px 12px;font-size:10.5px;color:#94a3b8;">'
@@ -3860,7 +3891,12 @@ function calcMbUs(){
                var tr=r.tranches||1, per=Math.round(Math.abs(r.trade_usd||0)/tr);
                if(v.indexOf('ADD')===0){addTot+=Math.abs(r.trade_usd||0);
                  var gap=(r.target_pct-r.weight_pct).toFixed(1);
-                 para.push('<p><b>Add '+fmt(r.trade_usd)+' to '+r.ticker+'.</b> '+r.ticker+' is '+share+'. The advisor only adds when the fund is worth adding and the backdrop is safe \u2014 here, '+(whyUp.length?whyUp.join('; '):'the balance of signals is favourable')+'. <b>Why this amount:</b> '+(Number(gap)>0?('it sits '+gap+' points below your target, and '+gap+'% of your '+fmt(nav)+' portfolio is roughly '+fmt(nav*Number(gap)/100)+'; the advisor tops that up to the middle of its comfort band so a small wobble won\u2019t trigger another trade'):('it is inside its comfort band, so this is a modest top-up capped at a third of your spare cash'))+'. Paid in '+tr+' tranche'+(tr>1?'s':'')+(tr>1?(' of about '+fmt(per)+', a few weeks apart, because nobody catches the exact bottom'):'')+'. Funded from the '+fmt(R.deployable_usd||0)+' you hold above the '+R.cash_floor_pct+'% cash safety floor.</p>');}
+                 para.push('<p><b>Add '+fmt(r.trade_usd)+' to '+r.ticker+'.</b> '+r.ticker+' is '+share+'. The advisor only adds when the fund is worth adding and the backdrop is safe \u2014 here, '+(whyUp.length?whyUp.join('; '):'the balance of signals is favourable')+'. <b>Why this amount:</b> '+(Number(gap)>0?('it sits '+gap+' points below your target, and '+gap+'% of your '+fmt(nav)+' portfolio is roughly '+fmt(nav*Number(gap)/100)+'; the advisor tops that up to the middle of its comfort band so a small wobble won\u2019t trigger another trade'):('it is inside its comfort band, so this is a modest top-up capped at a third of your spare cash'))+'. Paid in '+tr+' tranche'+(tr>1?'s':'')+(tr>1?(' of about '+fmt(per)+', a few weeks apart, because nobody catches the exact bottom'):'')+'. Funded from the '+fmt(R.deployable_usd||0)+' you hold above the '+R.cash_floor_pct+'% cash safety floor.</p>'
+                   /* v5.400 SECTION E: the size the risk budget actually allowed, and why (scanner v1.515.0+ r.risk_budget) */
+                   +(function(){var b=r.risk_budget;if(!b)return '';var e2=function(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;');};
+                     return '<p style="margin-top:-4px;padding:6px 10px;background:#F8FAFC;border-left:3px solid '+(b.allowed?'#0EA5E9':'#b91c1c')+';font-size:11px;color:#334155;"><b>Risk budget:</b> '+e2(b.why)
+                       +(b.trail_stop!=null?(' Trailing stop <b style="font-family:var(--font-mono);">'+Number(b.trail_stop).toFixed(2)+'</b>.'):'')
+                       +(b.invalidation!=null?(' Invalidation <b style="font-family:var(--font-mono);">'+Number(b.invalidation).toFixed(2)+'</b>.'):'')+'</p>';})());}
                else if(v.indexOf('TRIM')===0){trimTot+=Math.abs(r.trade_usd||0);
                  if(r.leveraged)para.push('<p><b>Sell '+fmt(r.trade_usd)+' of '+r.ticker+'.</b> This is a 3\u00d7 fund: it moves three times as hard as the stock, and because it resets every day, choppy markets slowly eat it even when the stock ends flat. So the advisor caps it at '+r.target_pct.toFixed(1)+'% of your money'+(r.cap_basis==='unknown'?' (the lower cap \u2014 this fund has no week-over-week price history yet, so the advisor sizes what it cannot measure as if it were risky instead of assuming it is calm. That assumption is the only one that cannot lose you money through ignorance.)':(r.cap_basis==='storm'?' (the lower cap, because this fund or the market is in a storm right now \u2014 '+String(r.cap_why||'').replace(/^storm: /,'')+')':(r.target_pct<4?' (the lower cap, because the market is rough right now)':' when markets are calm')))+'. It is at '+r.weight_pct.toFixed(1)+'% \u2014 the '+fmt(r.trade_usd)+' sale brings it back to the cap. This is size discipline, not a view on the company.</p>');
                  else para.push('<p><b>Sell '+fmt(r.trade_usd)+' of '+r.ticker+'.</b> It has run '+r.drift_pp.toFixed(1)+' points above your target ('+share+'), outside its comfort band. Taking that much off the table locks in the gain and returns it to the middle of the band.</p>');}
@@ -9101,7 +9137,13 @@ function _taBits(t){try{
   if(!r||!r.verdict)return {pill:'<span title="This name is not in the daily technical scan yet (usually a non-US listing or a very thin ticker) — judge it on fundamentals and your own chart." style="cursor:help;font-size:9px;font-weight:800;color:#94A3B8;border:1px dashed #CBD5E1;border-radius:99px;padding:2px 7px;">no timing data</span>',candle:'',note:''};
   var v=r.verdict,vc=v==='BUY'?'#15803D':(v==='AVOID'?'#B91C1C':(v==='WAIT FOR DIP'?'#B45309':'#64748B'));
   var vb=v==='BUY'?'#DCFCE7':(v==='AVOID'?'#FEE2E2':(v==='WAIT FOR DIP'?'#FEF3C7':'#F1F5F9'));
-  var pill='<span onclick="_etOpen(\''+esc(String(t).toUpperCase())+'\')" title="'+esc(r.why||'')+' — click for the full chart and levels (same engine as Tab 19)." style="cursor:pointer;font-size:9px;font-weight:900;color:'+vc+';background:'+vb+';border:1px solid '+vc+'55;border-radius:99px;padding:2px 8px;letter-spacing:0.2px;">'+esc(v)+' ▸</span>';
+  /* v5.400 SECTION C made legible: when the scanner's candle rule vetoed this verdict (scanner v1.515.0+
+     sets verdict_before_candle + candle_note), the pill shows what it WAS, struck through, and the hover
+     says what vetoed it -- otherwise the reader sees a WAIT that was a BUY yesterday with no reason. */
+  var vetoed=!!r.verdict_before_candle, vnote=r.candle_note||'';
+  var ttl=(vetoed?('CANDLE VETO: '+vnote+' \u2014 '):'')+(r.why||'')+' — click for the full chart and levels (same engine as Tab 19).';
+  var pill='<span onclick="_etOpen(\''+esc(String(t).toUpperCase())+'\')" title="'+esc(ttl)+'" style="cursor:pointer;font-size:9px;font-weight:900;color:'+vc+';background:'+vb+';border:1px solid '+vc+'55;border-radius:99px;padding:2px 8px;letter-spacing:0.2px;">'
+    +(vetoed?('<s style="opacity:.55;font-weight:700;">'+esc(r.verdict_before_candle)+'</s> '):'')+esc(v)+(vetoed?' \u2716':'')+' ▸</span>';
   var c=r.candle,candle='',note='';
   if(c&&c.note){
     var m={confirmed:['#15803D','✓ candle in'],forming:['#1D4ED8','◔ candle forming'],waiting:[(c.red_day?'#B91C1C':'#B45309'),(c.red_day?'✕ no candle — red day':'✕ no candle yet')]}[c.state]||['#64748B','candle ?'];
@@ -9114,7 +9156,7 @@ function _taBits(t){try{
     var qm2={strong:['#15803D','★ strong candle'],weak:['#B45309','▽ weak candle'],rejection:['#B91C1C','✖ REJECTION candle']}[qy.grade];
     if(qm2)candle+=' <span title="'+esc(qy.note)+'" style="cursor:help;font-size:9px;font-weight:800;color:'+qm2[0]+';background:'+qm2[0]+'12;border:1px solid '+qm2[0]+'44;border-radius:99px;padding:2px 7px;">'+qm2[1]+'</span>';
   }
-  return {pill:pill,candle:candle,note:note,vc:vc};
+  return {pill:pill,candle:candle,note:note,vc:vc,vetoed:vetoed,veto_note:vnote};
 }catch(e){return {pill:'',candle:'',note:''};}}
 function renderM1Hero(){
   var box=document.getElementById('m1_hero'); if(!box)return;
