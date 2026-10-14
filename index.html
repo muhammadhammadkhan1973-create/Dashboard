@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.402 (pairs with scanner v1.520.0; v5.402 adds: Tab 19 valuation label no longer prints [object Object]; Tab 17 'positions as of <statement date>' note. Earlier v5.401: owner: no approval step): (1) Tab 19 gets a CALL GOVERNOR & AVAILABILITY board on top: each governed call (TCE HIGH vote) with its state, vote weight, the four factors that decided it, the pass/fail streaks and the way back, plus a list of everything not fully available (bank-sector survey, valuation matrix, new names awaiting a candle check, flat-base pattern, Zacks names without a price, lapsed ETF picks) each with reason, since-date and a back-on date. (2) Tab 17: a red DO-NOT-TRADE banner when the portfolio file fails to load (the advisor is suspended by the scanner). No other layout change. -->
+<!-- index.html v5.403 (pairs with scanner v1.521.0): the SIX-RULE BOTTOM CHECK -- a card on Tab 17 (every holding) and Tab 19 (recommended names with a live setup) plus a small pill on each Tab-19 row; the owner's rules 1-5 confirm, rule 6 invalidates. Earlier: v5.402 (pairs with scanner v1.520.0; v5.402 adds: Tab 19 valuation label no longer prints [object Object]; Tab 17 'positions as of <statement date>' note. Earlier v5.401: owner: no approval step): (1) Tab 19 gets a CALL GOVERNOR & AVAILABILITY board on top: each governed call (TCE HIGH vote) with its state, vote weight, the four factors that decided it, the pass/fail streaks and the way back, plus a list of everything not fully available (bank-sector survey, valuation matrix, new names awaiting a candle check, flat-base pattern, Zacks names without a price, lapsed ETF picks) each with reason, since-date and a back-on date. (2) Tab 17: a red DO-NOT-TRADE banner when the portfolio file fails to load (the advisor is suspended by the scanner). No other layout change. -->
 <!-- index.html v5.400 (pairs with scanner v1.517.0; owner said go): the RENDER WAVE for the trading-rules payload. (1) Tab 17: a London 3x card on each mapped 3x holding (AMD3/TSM3/MSF3) -- FAIR (mark x 1+3x the US underlying move), BID UP TO (fair +0.5%), NEVER ABOVE (fair +1.5%), the 18:30-20:30 PKT window state, the first-hour premium warning, and the dormant-overnight-stop note; until now these sat in the payload unread while the advisor issued trims on two of them. (2) Tab 1: when the candle rule vetoes a verdict the pill shows what it WAS, struck through, and the hover names the test that failed -- otherwise the reader sees a WAIT that was a BUY yesterday with no reason. (3) Tab 17: under every ADD, the size the risk budget actually allowed and why (tranche band, daily ceiling, buys left, 7% trailing stop). No layout change elsewhere. -->
 <!-- index.html v5.399 (pairs with scanner v1.513.0): the leveraged-TRIM paragraph used to explain every tight 3x cap as "the market is rough right now", inferring the reason from the target number alone. Scanner v1.513.0 can now cap a 3x holding tight for a SECOND reason -- its volatility is UNKNOWN (no week-over-week price history, which is exactly what let AMD3 draw the loose 5% cap and a HOLD while it fell 29.4% in five sessions) -- so the old sentence would have shipped the corrected verdict with a wrong explanation. It now branches on the scanner's own cap_basis and quotes cap_why, keeping one surface to one answer. Also: the WAIT paragraph now states that it answers buy-more, not hold-or-sell (KSTR read EXIT on the exit chip and WAIT here with nothing telling the reader they are different questions). No layout change. -->
 <!-- index.html v5.398 (pairs with scanner v1.510.0+): two defects in the Tab-17 "where each dollar went" donut, both exposed the moment the capital ledger became complete. (1) The centre label read a HARDCODED "7 funds" -- wrong since TSM3 was bought on 23 July; it is now derived from the holdings count. (2) "Cash kept" was computed as money-in minus fund cost, IGNORING withdrawals -- with the ledger complete that overstated cash by the $12,080 taken out ($48,872 shown against ~$36,791 actually unspent). Withdrawals now get their own amber slice ("Taken back out") and cash kept is money-in minus spent minus withdrawn, so the ring closes honestly. Both are display-only. -->
@@ -3746,7 +3746,7 @@ function _lihLevNote(r){
     var t=L.totals||{};
     function signed(v){ if(v==null) return '\u2014'; return (v>=0?'+$':'-$')+Math.round(Math.abs(v)).toLocaleString(); }
     var pnlCol=(L.pnl_total==null?'#0f172a':(L.pnl_total>=0?'#047857':'#b91c1c'));
-    var h=_lihSeedBanner(L)+_liMoneyViz(L)+'<details style="margin:0 0 12px;"><summary style="cursor:pointer;font-size:12.5px;font-weight:800;color:#065F46;">\uD83D\uDCD6 Prefer it in words? Read the full dollar-by-dollar story</summary>'+_liMoneyStory(L)+'</details>'+'<div class="m2x-card"><div style="display:flex;flex-wrap:wrap;gap:22px;align-items:baseline;">'
+    var h=_lihSeedBanner(L)+_bottomsHtml('holding')+_liMoneyViz(L)+'<details style="margin:0 0 12px;"><summary style="cursor:pointer;font-size:12.5px;font-weight:800;color:#065F46;">\uD83D\uDCD6 Prefer it in words? Read the full dollar-by-dollar story</summary>'+_liMoneyStory(L)+'</details>'+'<div class="m2x-card"><div style="display:flex;flex-wrap:wrap;gap:22px;align-items:baseline;">'
       +'<div><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#64748b;">Your P&amp;L since you invested'+(L.inception_date?(' ('+L.inception_date+')'):'')+'</div>'
       +'<div style="font-size:32px;font-weight:800;color:'+pnlCol+';">'+signed(L.pnl_total)+' <span style="font-size:20px;">'+pc(L.pnl_total_pct)+'</span></div>'
       +'<div style="font-size:12px;color:#64748b;">invested $'+(L.cost_total!=null?Math.round(L.cost_total).toLocaleString():'\u2014')+' \u2192 now '+money(L.holdings_usd)+' (ETF holdings)</div></div>'
@@ -10180,7 +10180,7 @@ function _recStockRows(rows){
     var _iv=r.im3_valuation; var _ivt=(_iv&&typeof _iv==='object')?((_iv.label||'')+(_iv.score!=null&&_iv.max?(' '+_iv.score+'/'+_iv.max):'')):(_iv||''); var val=_ivt?('<span style="font-size:10.5px;color:#6b7280"> · '+_ivt+'</span>'):'';
     var z=(r.zacks!=null)?('#'+r.zacks):'—';
     return '<tr>'+
-      '<td style="font-weight:700">'+r.ticker+'</td>'+
+      '<td style="font-weight:700">'+r.ticker+_btPill(r.ticker)+'</td>'+
       '<td style="font-size:12px;color:#374151">'+(r.name||'')+'</td>'+
       '<td>'+_recEngineChips(r.engines)+' '+_recTagChips(r.tags)+'</td>'+
       '<td style="text-align:right">'+_recFmtRet(rt.ytd)+'</td>'+
@@ -10466,6 +10466,56 @@ function _etOpen(t){try{var r=_etRow(t);if(!r)return;var E=LIVE.entry_timing;var
    +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><span style="font-size:18px;font-weight:900;color:#0F172A;">'+t+'</span>'+_bigPx(t,26)+_im3Chip19(t)+'<span style="font-size:12px;font-weight:900;padding:3px 10px;border-radius:99px;color:'+(r.color||'#334155')+';border:1.5px solid '+(r.color||'#CBD5E1')+';">'+r.verdict+'</span>'+_callChip(t,true)+_breakoutPill(r)+'<span style="flex:1;"></span><button onclick="document.getElementById(\'et_modal\').style.display=\'none\'" style="border:none;background:#F1F5F9;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer;">Close</button></div>'
    +'<div style="margin:6px 0 10px;font-size:13px;line-height:1.5;color:#1E293B;border-left:3px solid '+(r.color||'#CBD5E1')+';padding-left:10px;"><b>Why:</b> '+(r.why||'')+'</div>'+chart+trig+grid+howto+'</div>';
   m.style.display='flex';}catch(e){console.error('et modal',e);}}
+
+function _btStyle(st){
+  var M={'CONFIRMED':['#047857','#DCFCE7','BOTTOM CONFIRMED'],'WATCHING':['#0369A1','#E0F2FE','WATCHING'],'BROKEN':['#b45309','#FEF3C7','BASE BROKEN'],
+         'AVOID':['#b91c1c','#FEE2E2','AVOID'],'FAILED HOLD':['#b45309','#FEF3C7','FAILED HOLD'],'NONE':['#64748B','#F1F5F9','NO BOTTOM SETUP'],'NO DATA':['#64748B','#F1F5F9','NO PRICE HISTORY']};
+  return M[st]||M['NONE'];
+}
+function _btPill(tk){try{
+  /* v5.403 -- small bottom-check pill for a Tab-19 row (scanner v1.521.0 data.bottoms). Only the states that need attention are shown. */
+  var B=(typeof LIVE!=='undefined'&&LIVE&&LIVE.bottoms&&LIVE.bottoms.rows)?LIVE.bottoms.rows[tk]:null; if(!B) return '';
+  if(['CONFIRMED','WATCHING','BROKEN','AVOID','FAILED HOLD'].indexOf(B.state)<0) return '';
+  var c=_btStyle(B.state), esc=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
+  return '<div><span title="'+esc(B.why)+'" style="cursor:help;display:inline-block;margin-top:2px;font-size:9px;font-weight:800;color:'+c[0]+';background:'+c[1]+';border:1px solid '+c[0]+'55;border-radius:4px;padding:0 5px;">'+c[2]+(B.fired&&B.fired.length?' · rule '+B.fired.join('+'):'')+'</span></div>';
+}catch(e){return '';}}
+function _bottomsHtml(scope){try{
+  /* v5.403 -- the SIX-RULE BOTTOM CHECK (scanner v1.521.0). Any ONE of rules 1-5 confirms a bottom a session late; rule 6 is the invalidation. */
+  var Lv=(typeof LIVE!=='undefined'&&LIVE)?LIVE:null; var BT=Lv&&Lv.bottoms; if(!BT||!BT.rows) return '';
+  var esc=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
+  var f2=function(v){return (v==null||isNaN(Number(v)))?'—':Number(v).toFixed(2);};
+  var rules=BT.rules||{};
+  var entries=Object.keys(BT.rows).map(function(k){var r=BT.rows[k];r._k=k;return r;}).filter(function(r){return r.scope===scope;});
+  if(!entries.length) return '';
+  var cnt={};entries.forEach(function(r){cnt[r.state]=(cnt[r.state]||0)+1;});
+  var order={'CONFIRMED':0,'FAILED HOLD':1,'BROKEN':2,'AVOID':3,'WATCHING':4,'NONE':5,'NO DATA':6};
+  entries.sort(function(a,b){return (order[a.state]-order[b.state])||String(a._k).localeCompare(String(b._k));});
+  var show=(scope==='holding')?entries:entries.filter(function(r){return r.state!=='NONE'&&r.state!=='NO DATA';}).slice(0,24);
+  var chips=function(r){var f=r.fired||[];return [1,2,3,4,5].map(function(n){var on=f.indexOf(n)>=0;return '<span title="'+esc('Rule '+n+': '+(rules[n]||''))+'" style="cursor:help;display:inline-block;width:17px;text-align:center;margin-right:2px;font-size:10px;font-weight:800;border-radius:3px;'+(on?'background:#047857;color:#fff;':'background:#F1F5F9;color:#94a3b8;')+'">'+n+'</span>';}).join('');};
+  var rowsH=show.map(function(r){
+    var c=_btStyle(r.state);
+    var lv=[];
+    if(r.state==='CONFIRMED'||r.state==='FAILED HOLD'){ if(r.hold_low!=null) lv.push('low that must hold <b>'+f2(r.hold_low)+'</b>'); var bid=r.tranche_ref_london||r.tranche_ref; if(bid!=null&&r.tranche_ok!==false) lv.push('bid about <b>'+f2(bid)+'</b>'); }
+    if(r.state!=='NONE'&&r.state!=='NO DATA'){ if(r.base_floor!=null) lv.push('base floor '+f2(r.base_floor)); if(r.avoid_below!=null) lv.push('AVOID below '+f2(r.avoid_below)); }
+    var und=(r.underlying&&r.symbol&&r.underlying!==r._k)?(' <span style="color:#6b7280;font-size:10px;">(read on '+esc(r.underlying)+')</span>'):'';
+    return '<tr><td style="padding:6px;font-weight:700;">'+esc(r._k)+und+(String(r.label||'')!==String(r._k)?'<div style="font-weight:400;font-size:10.5px;color:#6b7280;">'+esc(String(r.label||'').slice(0,34))+'</div>':'')+'</td>'
+      +'<td style="padding:6px;"><span style="font-size:9.5px;font-weight:800;color:'+c[0]+';background:'+c[1]+';border:1px solid '+c[0]+'55;border-radius:4px;padding:1px 6px;white-space:nowrap;">'+c[2]+'</span></td>'
+      +'<td style="padding:6px;white-space:nowrap;">'+chips(r)+'</td>'
+      +'<td style="padding:6px;font-size:11px;color:#334155;">'+(lv.join(' · ')||'—')+'</td>'
+      +'<td style="padding:6px;font-size:11.5px;color:#334155;line-height:1.45;">'+esc(r.why)+(r.tranche_note?'<div style="color:#0369A1;font-size:10.5px;">'+esc(r.tranche_note)+'</div>':'')+(r.thin_volume?'<div style="color:#b45309;font-size:10.5px;">thinly traded: the volume rule is switched off</div>':'')+'</td></tr>';
+  }).join('');
+  var summ=['CONFIRMED','WATCHING','BROKEN','AVOID','FAILED HOLD','NONE','NO DATA'].filter(function(k){return cnt[k];}).map(function(k){return cnt[k]+' '+_btStyle(k)[2].toLowerCase();}).join(' · ');
+  var legend=[1,2,3,4,5,6].map(function(n){return '<li style="margin:2px 0;"><b>'+n+'</b> — '+esc(rules[n]||'')+'</li>';}).join('');
+  var title=(scope==='holding')?'Is any of my holdings at a bottom?':'Recommended names at, or near, a bottom';
+  var sub=(scope==='holding')?'Each holding is checked against your six bottom rules. A 3x product is read on its US stock, not on the London price.':'Every Tab-19 name is checked against the same six rules; only names with a live setup are listed.';
+  return '<div class="m2x-card" style="margin:0 0 12px;border-left:4px solid #047857;">'
+    +'<div style="font-size:10px;font-weight:900;letter-spacing:.06em;color:#047857;">BOTTOM CHECK · '+esc(BT.as_of||'')+'</div>'
+    +'<div style="font-size:15px;font-weight:800;color:#0f172a;margin:2px 0;">'+title+'</div>'
+    +'<div style="font-size:11.5px;color:#475569;margin-bottom:6px;">'+sub+' '+esc(summ)+'. Nobody calls a bottom in advance: these rules confirm one a session late, which is the price of not catching knives.</div>'
+    +(show.length?'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#f8fafc;border-bottom:2px solid #e5e7eb;"><th style="text-align:left;padding:6px;">Name</th><th style="text-align:left;padding:6px;">State</th><th style="text-align:left;padding:6px;" title="Rules 1-5; green = fired in the last 3 sessions">Rules 1-5</th><th style="text-align:left;padding:6px;">Levels</th><th style="text-align:left;padding:6px;">What it means</th></tr></thead><tbody>'+rowsH+'</tbody></table></div>':'<div style="font-size:12px;color:#64748b;">No name has a live bottom setup right now.</div>')
+    +'<details style="margin-top:8px;"><summary style="cursor:pointer;font-size:12px;font-weight:700;color:#047857;">The six rules in plain words</summary><ol style="list-style:none;padding:0;margin:6px 0 0;font-size:11.5px;color:#334155;line-height:1.5;">'+legend+'</ol>'
+    +'<div style="font-size:10.5px;color:#6b7280;margin-top:6px;">'+esc(BT.coverage_note||'')+' '+esc(BT.source||'')+'</div></details></div>';
+}catch(e){return '';}}
 
 function _govBoardHtml(){try{
   /* v5.401 -- the CALL GOVERNOR + AVAILABILITY board (scanner v1.519.0+). Decided automatically every scan; nothing here asks for approval. */
@@ -11033,10 +11083,10 @@ function renderRecommendedTab(){
   if(!host) return;
   var R=(typeof LIVE!=='undefined'&&LIVE&&LIVE.recommended_tab)?LIVE.recommended_tab:null;
   if(!R){
-    host.innerHTML=_govBoardHtml()+_recVerdictHtml()+'<p style="color:#6b7280;font-size:13px">This tab populates on the next scan — the scanner will emit the curated recommended list with live returns.</p>';
+    host.innerHTML=_govBoardHtml()+_bottomsHtml('recommended')+_recVerdictHtml()+'<p style="color:#6b7280;font-size:13px">This tab populates on the next scan — the scanner will emit the curated recommended list with live returns.</p>';
     return;
   }
-  var h=_govBoardHtml()+_recVerdictHtml();
+  var h=_govBoardHtml()+_bottomsHtml('recommended')+_recVerdictHtml();
   // top-conviction roll-up
   if(R.top_conviction&&R.top_conviction.length){
     h+='<div style="margin:6px 0 14px;padding:10px 14px;border:1px solid #c7d2fe;border-radius:10px;background:#eef2ff">'+
