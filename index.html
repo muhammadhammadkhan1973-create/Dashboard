@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- index.html v5.403 (pairs with scanner v1.521.0): the SIX-RULE BOTTOM CHECK -- a card on Tab 17 (every holding) and Tab 19 (recommended names with a live setup) plus a small pill on each Tab-19 row; the owner's rules 1-5 confirm, rule 6 invalidates. Earlier: v5.402 (pairs with scanner v1.520.0; v5.402 adds: Tab 19 valuation label no longer prints [object Object]; Tab 17 'positions as of <statement date>' note. Earlier v5.401: owner: no approval step): (1) Tab 19 gets a CALL GOVERNOR & AVAILABILITY board on top: each governed call (TCE HIGH vote) with its state, vote weight, the four factors that decided it, the pass/fail streaks and the way back, plus a list of everything not fully available (bank-sector survey, valuation matrix, new names awaiting a candle check, flat-base pattern, Zacks names without a price, lapsed ETF picks) each with reason, since-date and a back-on date. (2) Tab 17: a red DO-NOT-TRADE banner when the portfolio file fails to load (the advisor is suspended by the scanner). No other layout change. -->
+<!-- index.html v5.404 (pairs with scanner v1.522.0): RUN HEALTH strip on Tab 1 (scan time, slowest stages, unmeasured stretches, warnings, record-sync); live TradingView banner on the PSX valuation cards. Earlier: v5.403 (pairs with scanner v1.521.0): the SIX-RULE BOTTOM CHECK -- a card on Tab 17 (every holding) and Tab 19 (recommended names with a live setup) plus a small pill on each Tab-19 row; the owner's rules 1-5 confirm, rule 6 invalidates. Earlier: v5.402 (pairs with scanner v1.520.0; v5.402 adds: Tab 19 valuation label no longer prints [object Object]; Tab 17 'positions as of <statement date>' note. Earlier v5.401: owner: no approval step): (1) Tab 19 gets a CALL GOVERNOR & AVAILABILITY board on top: each governed call (TCE HIGH vote) with its state, vote weight, the four factors that decided it, the pass/fail streaks and the way back, plus a list of everything not fully available (bank-sector survey, valuation matrix, new names awaiting a candle check, flat-base pattern, Zacks names without a price, lapsed ETF picks) each with reason, since-date and a back-on date. (2) Tab 17: a red DO-NOT-TRADE banner when the portfolio file fails to load (the advisor is suspended by the scanner). No other layout change. -->
 <!-- index.html v5.400 (pairs with scanner v1.517.0; owner said go): the RENDER WAVE for the trading-rules payload. (1) Tab 17: a London 3x card on each mapped 3x holding (AMD3/TSM3/MSF3) -- FAIR (mark x 1+3x the US underlying move), BID UP TO (fair +0.5%), NEVER ABOVE (fair +1.5%), the 18:30-20:30 PKT window state, the first-hour premium warning, and the dormant-overnight-stop note; until now these sat in the payload unread while the advisor issued trims on two of them. (2) Tab 1: when the candle rule vetoes a verdict the pill shows what it WAS, struck through, and the hover names the test that failed -- otherwise the reader sees a WAIT that was a BUY yesterday with no reason. (3) Tab 17: under every ADD, the size the risk budget actually allowed and why (tranche band, daily ceiling, buys left, 7% trailing stop). No layout change elsewhere. -->
 <!-- index.html v5.399 (pairs with scanner v1.513.0): the leveraged-TRIM paragraph used to explain every tight 3x cap as "the market is rough right now", inferring the reason from the target number alone. Scanner v1.513.0 can now cap a 3x holding tight for a SECOND reason -- its volatility is UNKNOWN (no week-over-week price history, which is exactly what let AMD3 draw the loose 5% cap and a HOLD while it fell 29.4% in five sessions) -- so the old sentence would have shipped the corrected verdict with a wrong explanation. It now branches on the scanner's own cap_basis and quotes cap_why, keeping one surface to one answer. Also: the WAIT paragraph now states that it answers buy-more, not hold-or-sell (KSTR read EXIT on the exit chip and WAIT here with nothing telling the reader they are different questions). No layout change. -->
 <!-- index.html v5.398 (pairs with scanner v1.510.0+): two defects in the Tab-17 "where each dollar went" donut, both exposed the moment the capital ledger became complete. (1) The centre label read a HARDCODED "7 funds" -- wrong since TSM3 was bought on 23 July; it is now derived from the holdings count. (2) "Cash kept" was computed as money-in minus fund cost, IGNORING withdrawals -- with the ledger complete that overstated cash by the $12,080 taken out ($48,872 shown against ~$36,791 actually unspent). Withdrawals now get their own amber slice ("Taken back out") and cash kept is money-in minus spent minus withdrawn, so the ring closes honestly. Both are display-only. -->
@@ -459,7 +459,7 @@ body{font-family:var(--font-sans);font-variant-numeric:tabular-nums;-webkit-font
 
   <!-- PANELS 1-11: identical to v4.1 — placeholder divs maintain structure -->
   <!-- Panel 1 -->
-  <div id="input" class="panel active">
+  <div id="input" class="panel active"><div id="run_health_box"></div>
     <h2 class="section-title">Macro Indicator Inputs</h2>
     <p style="color:var(--grey-d);margin-bottom:20px;font-size:14px;">Enter current readings or use defaults. Dashboard recalculates instantly.</p>
     <h3 class="subsection-title">United States — Leading Indicators</h3>
@@ -2914,8 +2914,14 @@ function renderDecisionMatrix(mbScore, igScore, market, zacks, finalRank) {
 }
 
 function _vmStaleBanner(vm){try{
-  var st=vm&&vm.staleness; if(!st||!st.tier) return '';
   var esc=function(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;');};
+  var lo=vm&&vm.live_overlay;
+  if(lo){ /* v5.404 -- scanner v1.522.0: live TradingView ratios replace the frozen broker ratios */
+    return '<div style="margin:0 0 9px;padding:9px 12px;border-radius:9px;background:#F0FDF4;border:1px solid #15803D66;border-left:4px solid #15803D;">'
+      +'<div style="font-size:10px;font-weight:900;letter-spacing:.06em;color:#15803D;margin-bottom:3px;">✓ LIVE TRADINGVIEW RATIOS · '+esc(String(lo.as_of||'').slice(0,10))+' · '+esc(lo.names)+' names</div>'
+      +'<div style="font-size:11.5px;line-height:1.55;color:#334155;">P/E, dividend yield, ROE, P/B, EV/EBITDA and market cap on this card are live, and the cheapest / best-yield / highest-ROE lists are ranked on them. Still from the broker file of '+esc(vm.as_of)+(vm.stale_days?(' ('+esc(vm.stale_days)+' days old)'):'')+': '+esc((lo.frozen_fields||[]).join(', '))+'.</div></div>';
+  }
+  var st=vm&&vm.staleness; if(!st||!st.tier) return '';
   var m={fresh:['#15803D','#F0FDF4','✓','CURRENT'],
          aging:['#B45309','#FFFBEB','◔','AGING'],
          stale:['#C2410C','#FFF7ED','⚠','STALE'],
@@ -6462,6 +6468,32 @@ function calcMetals(){
 // =========================================================
 /* __IM3_API_KEY_PLACEHOLDER__ */
 let LIVE = null;
+function renderRunHealth(){try{
+  /* v5.404 -- RUN HEALTH strip (scanner v1.522.0 data): when the scan ran, how long it took, the slowest stages, the biggest unmeasured stretches, scan warnings, record-sync claims. */
+  var el=document.getElementById('run_health_box'); if(!el) return;
+  var M=(typeof LIVE!=='undefined'&&LIVE&&LIVE.meta)?LIVE.meta:null; if(!M){el.innerHTML='';return;}
+  var esc=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;');};
+  var ta=M.timing_accounting||{}, rt=Number(M.runtime_sec)||0, post=Number(ta.post_export_sec)||0, tot=rt+post;
+  var wf=M.wf_wall_sec, ov=M.wf_overhead_sec;
+  var tm=M.timings_ms||{}; var top=Object.keys(tm).map(function(k){return [k,tm[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+  var pm=M.timings_post_ms||{}; var topP=Object.keys(pm).map(function(k){return [k,pm[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
+  var gaps=((M.timing_gaps||{}).top||[]).slice(0,3);
+  var W=M.warnings||[]; var rs=M.record_sync||[];
+  var drift=rs.filter(function(c){return !c.ok;});
+  var when=M.last_scan_utc?new Date(M.last_scan_utc).toLocaleString('en-GB',{timeZone:'Asia/Karachi',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false})+' PKT':'—';
+  var chips=function(a){return a.map(function(x){return '<span style="display:inline-block;margin:2px 4px 2px 0;padding:1px 7px;border-radius:10px;background:#F1F5F9;color:#334155;font-size:10.5px;">'+esc(x[0])+' <b>'+(x[1]/1000).toFixed(1)+'s</b></span>';}).join('');};
+  var h='<details style="margin:0 0 12px;border:1px solid #CBD5E1;border-left:4px solid '+(W.length||drift.length?'#B45309':'#15803D')+';border-radius:9px;background:#fff;padding:8px 12px;">'
+   +'<summary style="cursor:pointer;font-size:12px;font-weight:800;color:#0f172a;">Run health · scan of '+when+' · '+(tot?Math.round(tot)+'s scanner':'—')+(wf?(' · '+Math.round(wf)+'s workflow'):'')+' · '+W.length+' warning'+(W.length===1?'':'s')+(drift.length?(' · '+drift.length+' record DRIFT'):'')+'</summary>'
+   +'<div style="font-size:11.5px;color:#334155;line-height:1.55;margin-top:6px;">'
+   +'<div><b>Time.</b> Main run '+Math.round(rt)+'s + final stages '+Math.round(post)+'s'+(wf?(' = '+Math.round(tot)+'s in the scanner; the whole workflow took '+Math.round(wf)+'s, so '+Math.round(ov||0)+'s is spent outside the scanner (setup, install, commit)'):'')+'.</div>'
+   +'<div style="margin-top:3px;"><b>Slowest stages.</b> '+chips(top)+'</div>'
+   +(topP.length?'<div><b>Slowest final stages.</b> '+chips(topP)+'</div>':'')
+   +(gaps.length?'<div style="margin-top:3px;"><b>Unmeasured stretches.</b> '+gaps.map(function(g){return esc(g.sec)+'s after <i>'+esc(g.after)+'</i>';}).join(' · ')+' (total '+esc((M.timing_gaps||{}).total_sec)+'s).</div>':'')
+   +'<div style="margin-top:3px;"><b>Scan warnings'+(W.length?'':' — none')+'.</b>'+(W.length?'<ul style="margin:3px 0 0 16px;padding:0;">'+W.map(function(w){return '<li>'+esc(String(w).slice(0,260))+'</li>';}).join('')+'</ul>':'')+'</div>'
+   +(rs.length?'<div style="margin-top:3px;"><b>Decision-record check.</b> '+rs.map(function(c){return '<span title="'+esc(c.live)+'" style="margin-right:8px;color:'+(c.ok?'#15803D':'#B91C1C')+';">'+(c.ok?'✓':'✖ DRIFT')+' '+esc(String(c.claim).slice(0,70))+'</span>';}).join('')+'</div>':'')
+   +'</div></details>';
+  el.innerHTML=h;
+}catch(e){}}
 function setLiveStatus(state,scan,ver){
   const dot=document.getElementById('liveDot'),txt=document.getElementById('liveText');
   if(state==='ok'){dot.style.background='#10b981';txt.textContent='Live scan loaded';}
@@ -8039,6 +8071,7 @@ async function loadLiveData(){
     // and the exact error is painted on screen so a failure self-identifies instead of hiding.
     try{
       applyLive();
+      try{renderRunHealth();}catch(_rh){}
     }catch(re){
       try{
         var _loc=((re&&re.stack)||'').split('\n')[1]||'';
