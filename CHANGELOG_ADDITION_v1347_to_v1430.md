@@ -1,3 +1,67 @@
+## v1.518.0 — 2026-10-14 — THREE FIXES FROM THE FIVE-PASS AUDIT
+
+**Owner said go.** The warm-up veto, the dead flat-base, the bank-sector watchdog.
+
+### 1. An unknowable test is not a failed test
+
+The own-history store held one settled bar on the 04:23 run, so `prev_high` was `None` on all 391 store-graded rows. The midpoint check came back `null`, `_candle_quality` graded that 'mixed', and the veto fired on every store-graded BUY.
+
+**Correction to my own audit:** I said "41 of 41 Zacks vetoes are false." Running the real rows through the fix shows **9 were false and 32 were legitimate** — those 32 failed a *known* test (not green, or not in the upper third). 13 Oct was a red day. The bug was real; its scale was a quarter of what I said.
+
+Now: a `null` check with **no known failure** passes through as `candle_basis: 'partial'` and says the missing test runs tomorrow. A rejection or a known failure still vetoes. Classify-mode rows (Tab 10) carry the same honesty — RERE (green, 95% of range, midpoint unknown) is labelled 'partial', not 'mixed'. Tab 1 was never affected; its engine-native grades carry `prev_*`.
+
+### 2. Flat base was dead code
+
+`_pattern_book` read `range_pct_20d`. No block computed it. I tested the function on fixtures that had the field and never ran the wiring against real rows — the lesson from the day before, half-repeated.
+
+The store now keeps **21 bars** (was 3; ~440 kB at 467 names) and `_range_pct()` publishes `range_pct_20d` once **15 settled bars** are on file. Honest absence until then — the real store has 1–2 bars per name today, so flat base becomes possible in roughly 13 trading days. The pattern's `why` states the real session count, not a hardcoded 20.
+
+### 3. Bank-sector watchdog 400d → 90d
+
+It sat at `as_of 2025-12-31` — 287 days — with no warning and no `stale_days` stamp, because the threshold was 400. Now 90, matching the quarterly screening clock. Tab 11 will carry the warning on the next run.
+
+### Validation
+
+**486 assertions across seven suites.** The null-check fix was run against the 41 real vetoed Zacks rows from the 04:23 payload, not fixtures. Two stale test expectations updated for deliberate changes (the non-buy 'partial' label; the store cap).
+
+## v1.517.0 / index v5.400 — 2026-10-14 — THE RENDER WAVE, and a correction
+
+**Owner said go.** Tab 17 London 3x card, Tab 1 veto made legible, risk-budget reasoning, the timing export, the four-decimal averages.
+
+### Correction to my 13-Oct audit
+
+I said "no block carries OHLC at all." **Wrong for Tab 1.** `build_entry_timing` has carried its own bars and graded its own candle since v1.503.0 — 153 of 154 rows on 13 Oct under `candle_quality` (26 strong / 52 weak / 18 rejection / 57 mixed), beside `candle` = the confirmation-*state* object. My payload check read the block's top-level keys instead of its ticker-keyed rows. Right for the other ten blocks; wrong for the one that mattered most.
+
+What *was* true: the engine graded the candle but never vetoed the BUY on it. **14 of 32 BUYs sat on weak or rejection candles** while `_tech_call`'s one-call pill already read WAIT for the same names — CBNA: verdict BUY, call WAIT, *"the last daily candle was a REJECTION."* Two pills, two answers. The veto on `verdict` brings them into line. It is coherence, not new logic.
+
+### A bug fixed before it bit
+
+v1.515.0 wrote its grade into `r['candle']` — overwriting the state object the index renders as the "✓ candle in / forming / waiting" pill. It would have broken on the first warm run. The pass now **trusts an engine-native grade** and leaves both objects alone; it grades from the own-history store only where the engine did not, and writes to `candle_quality`, the key the renderer already reads.
+
+### One real disagreement, resolved
+
+**TARS**: green, above the prior midpoint, but closed at 39% of its range. The engine's call pill said BUY NOW; your rule needs all three tests, so the verdict pill says WAIT. The verdict follows the rule as you stated it. Rather than ship two pills disagreeing, the veto now reaches the call pill too — `tech_call.call` BUY NOW → WAIT, original preserved in `call_before_candle`, reason prefixed `CANDLE VETO`. "BUY ON TRIGGER" is conditional and compatible with WAIT, so only BUY NOW is touched.
+
+The veto sentence now **names the test that failed**. The 'mixed' wording said *"not green closing above the prior midpoint and in the upper third"* — for TARS, which *is* green and *is* above the midpoint, that was a wrong explanation. Now: *"it did not close in the upper third of its own range (it closed at 43% of its range)."*
+
+### Also in the scanner
+
+- `trading_rules` stage time exported as `post.trading_rules` — it ran after `timings_post_ms` was written, so the TV fetch cost was invisible.
+- Coarse-exit sentences: 50-day averages and prices to two decimals (`$108.78`, not `$108.7776`).
+- The risk budget updates the advisor **row** as well as the action — the Tab-17 paragraph read `rows[]` and still said $1,959 while the instruction list said $2,500.
+
+### index v5.400
+
+1. **Tab 17 — London 3× card** on AMD3, TSM3, MSF3: FAIR (mark × 1+3× the US underlying move), BID UP TO (+0.5%), NEVER ABOVE (+1.5%), window state, first-hour premium warning, dormant-overnight-stop note.
+2. **Tab 1 — the veto made legible:** the pill shows ~~BUY~~ WAIT ✖, and the hover names the test that failed.
+3. **Tab 17 — risk-budget note** under every ADD: the size allowed and why, trailing stop, invalidation.
+
+### Validation
+
+**456 scanner assertions (six suites) + 40 renderer assertions.** The renderers were run in node against rows produced by the real post-pass from the real 20:17 payload — all three 3x holdings, TARS/CBNA/NVDA (vetoed), AAPL (strong candle, untouched), the STOR budget.
+
+Caught this round: the `candle` clobber above; the harness still loading yesterday's payload (TARS wasn't in it); a `<s` regex matching `<span`; and my assumption that NVDA wasn't vetoed — it failed all three candle checks, so it was.
+
 ## v1.516.0 — 2026-10-13 — THE BAR FEED MOVES TO TRADINGVIEW
 
 **My error.** v1.515.0 read its bars from `_batch_history_cache` — one `yf.download` — because that was the only existing OHLC path in the file. That breaks a standing rule recorded since v1.491.0: *"Yahoo is never used where TradingView can serve the field."* I chose a data source without reading the data-source rules, which are in the decision record under that exact heading.
