@@ -1,3 +1,146 @@
+## v1.534.0 / IM3 v2.34.0 — 16 Oct 2026 — research-first fixes (owner: "research alternatives first, test, then render")
+Network reality: the build sandbox is policy-blocked from TradingView, SEC, FMP, Finnhub, stockanalysis, FINRA and Nasdaq (CONNECT 403), and has no GitHub push access, so nothing here could run against those hosts. What WAS verified, by loading the live public pages through the fetch tool: stockanalysis page structure (all three statements, XOM and VMET) and SEC companyconcept records for XOM.
+- ROOT CAUSE of the stockanalysis tier failing for every name: `_SA_US_INC` pointed at /financials/, which is the Financials OVERVIEW page (11 summary rows, 3-6 columns). The statement is /financials/income-statement/ (27-33 rows incl. Revenue and EPS (Diluted)). Corrected. Tax label corrected to "Income Tax Expense" (was "Provision for Income Taxes"); the page has no EBITDA row, so EBITDA is derived as operating income + D&A (same as the SEC path). Every mapped label was checked against the real row lists.
+- SEC extractor `_sec_annual` returns the right five years on real-structure XOM records, so XOM's earlier "0 annual values" was not a parsing bug (likely a throttled or partial companyfacts reply); the tier now logs the reason.
+- s9 without any key: TradingView snapshots of the average price target and the buy share of analysts are kept daily (fwd_eps_hist us_pt / us_rec) beside forward EPS; the comparison window opens at 5 days (was 20) and converges on a 30-day window; price target moved >1% or buy share moved >2 points casts a vote (`meta.revision_bridge.tv_votes`). FMP and Finnhub votes stay as extra inputs.
+- Probe v1.534.0 (re-runs once, then weekly): looks inside Finnhub `stock/metric` (series.annual names and lengths) and `stock/financials-reported` (filings, statement rows, revenue concepts) which the old probe wrongly marked "not ok" because their numbers are nested; adds the small-cap names SEC cannot serve (MWH, VMET, GORO) and 12 more TradingView analyst/growth columns. The next payload answers whether Finnhub statements can replace SEC/FMP for IPO and small-cap names.
+- Tests: test_v1534 (13) and test_im3_v234 (24, labels checked against the real pages) added; all earlier suites pass.
+
+## v1.533.0 / IM3 v2.33.0 — 16 Oct 2026 — second live-scan fixes (v1.532.0 scan: PSX bars now PASS)
+Live v1.532.0: PSX bars 48/48 PASS (backfill served 35 names, ~+15s once; they are now stored). s9 13.6% (base 50%) and IM3 no-history 48 still FAIL. Wall 758s (runtime 360s + 398s outside the scanner).
+- Time: the outside-scanner share (215s pre-cut to 398s) is IM3. Every no-history name cost SEC + 3 stockanalysis page loads (retries and sleeps) in BOTH IM3 steps on EVERY run. Now the income page is fetched first and the other two are skipped when it gives under 3 revenue years; a "page fine, too little revenue" verdict is remembered 7 days (per IM3 version); FMP has a per-step call budget (70) so the shared 250/day quota is not drained.
+- s9: Finnhub trend vote now fires on any net-buy change above 0.005 (was 0.02: only 6 of 44 voted up); source label is `analyst_bridge` (it said fmp_bridge for Finnhub-only votes). FMP still answered HTTP 429 on its first call today (daily quota spent by earlier runs); the 30-day statement cache and 3-day bridge cache fill as soon as it resets.
+- IM3 stockanalysis: the "fetched but revenue row has 0 annual values" verdict for VMET/MWH/AADX/GORO has an unknown cause (the sandbox cannot load the page). The reason now carries the first row labels the page returned, alias labels (Total Revenue, Operating Revenue) are accepted, and unparseable cells are named. Read `src.why` on the next scan.
+- Tests: test_im3_v233 (8) added; all earlier suites pass.
+
+## v1.532.0 / IM3 v2.32.0 — 16 Oct 2026 — fixes from the first live v1.531.0 scan (parity FAIL on 3 of 7)
+Live scan: s7 47.7% (base 40.9) PASS, s8 34.1% PASS, HIGH+WATCH 56.8% PASS, country rows 13 PASS; s9 0%, IM3 no-history 49, PSX bars 41/48 FAILED.
+- s9 root cause: FMP's free plan is 250 calls/day and IM3 spent it (3 uncached calls per name, twice per workflow, plus forced re-scores), so the bridge got HTTP 429 and cached nothing. Bridge now: 3-day cache with stale fallback to 14 days; an HTTP 402/429 switches FMP off for the run instead of retrying; Finnhub stock/recommendation (probe-proven, no daily cap) supplies a second vote (latest month net-buy score vs prior month) so s9 no longer depends on FMP quota. Published as `meta.revision_bridge` (calls, HTTP codes, cache hits; no keys).
+- IM3 FMP: statements cached 30 days in us_history_cache.json (annual data), one call instead of three for a name FMP refuses, plan-excluded (402) names cached 30 days, HTTP 429 turns FMP off for the run.
+- IM3 SEC: when the named revenue tags give under 3 years (XOM 0, RBRK 2, SLDE 1), any revenue/sales-like us-gaap tag with 3+ annual values is used (largest latest value wins); if still none, the row's `why` lists the revenue-like tags it saw.
+- IM3 stockanalysis: header-missing, FY-column-missing and exception cases now put their reason in `src.why` (they were silent -- every row said "no usable 3y revenue").
+- PSX bars: 7 candidates (PACE TBL GTYR SPWL HCAR HUMNL IPAK) sat on a single partial bar because they entered the candidate list after 16 Oct's first scan; names with under two settled bars are now backfilled from the TradingView chart socket (<=80 names, validated rows only, never today's bar). Published as bar stamp `backfill`.
+- Tests: all prior suites pass; new test_v1532 (16 checks) and test_im3_v232 (14 checks).
+
+## v1.531.0 / IM3 v2.31.0 — 16 Oct 2026 — remaining Yahoo streams replaced, parity guard fixed
+- TCE US s8 (external capital): FINRA daily short-volume ratio (10 days, >=5 files), top-third cutoff across the pool. A PROXY for Yahoo's short-interest flag, labelled `s8_src=finra_short_volume_proxy`; no free short-interest source serves (Finnhub 403).
+- TCE US s9 (EPS revision): FMP grades + price-target bridge (30-day upgrades/downgrades plus target direction, 2-day cache, stops on 402/429) used while the TradingView forward-EPS history is under 20 days; then the TV 30-day baseline takes over. `s9_src` records which.
+- TCE US s10 (revenue revision): TradingView `revenue_forecast_fq` snapshot vs the prior run.
+- Parity guard `meta.yahoo_parity` now runs just before governors (after PSX bars attach, fixing the false 0.0% bar share); `meta.tv_socket_run` published there.
+- IM3 v2.31.0: FMP requests use limit=5 (limit above 5 is premium-gated); SEC CIK map never caches empty and retries; stockanalysis fetch retries on 429/5xx; every row records `src.why` (sec / fmp / stockanalysis reason) so the none-rows are diagnosable on the next scan.
+- Tests: all suites pass (v1527 12, v1530 14, v1531 6, probe, im3 sa/fmp, bottoms 1524/1525, cashhunt 1514/1518/1519/1520). Live PASS/FAIL is only provable on the next scan via `meta.yahoo_parity`.
+
+## v1.530.0 — 16 Oct 2026 — Yahoo replacements + standing parity guard
+Audit of the Yahoo cut (v1.526.0 last Yahoo scan vs v1.529.1): TCE US streams s7/s8/s9 went 18/15/22 of 44 to 0, HIGH+WATCH tier names 27 to 5, 49 US names scored with no statement history (XOM coverage 100% to 20%), 7 PSX candidates lost their daily bar, New Zealand dropped out of country RS. This build replaces each:
+- TCE s7 (margin inflection): US now uses TradingView quarterly YoY revenue/EPS growth (same basis as Yahoo's earningsGrowth/revenueGrowth); pool names that arrive without them are filled by one america/scan batch.
+- TCE s9 (EPS revision): the TradingView forward-EPS revision now compares against a 30-day-old snapshot (kept in `fwd_eps_hist`), matching Yahoo's 30-day breadth; the 1-day baseline remains until 20 days of history exist.
+- IM3 statements: root cause found -- the IM3 workflow steps never received FMP_API_KEY, so FMP was dead and SEC failures fell straight to Yahoo. Now: keys passed (daily.yml), order SEC -> FMP -> stockanalysis US three-statement tier (the parser already validated live on MU and ASM) so SEC-served names score exactly as before; names with no history carry a `why`.
+- Country RS: NZ50 tries four TradingView symbols.
+- Probe `yahoo_replacement_probe` (weekly): measures which Finnhub/FMP endpoints, TradingView columns and FINRA files serve revenue estimates, EPS revisions and short interest, for the two still-open streams (s8 short interest, s10 revenue revision). Keys are never written to the payload.
+- Standing guard `meta.yahoo_parity`: every scan compares the streams/coverage Yahoo fed with the pre-cut baseline and publishes PASS/FAIL per metric; on the v1.529.1 payload it fails exactly the seven regressions above, on the v1.526.0 payload it passes.
+- `meta.tv_socket_run` publishes the chart-socket failures (to explain the 7 PSX names).
+- Open until the probe reports: s8 (short % of float) and s10 (revenue-estimate revision).
+
+## v1.529.1 — 16 Oct 2026
+- Probe verdict fix: v1.529.0 counted HTTP-200 lookbacks with null cells as "history" and reported 53 columns with history. Live result: TradingView serves 53 statement columns as current values only (FY latest, FQ latest, TTM); 0 of 1,060 prior-period cells held a number. A lookback now counts only when it returns a number.
+
+## v1.529.0 — 16 Oct 2026 — TradingView fundamentals probe
+- Why: cutting Yahoo left 51 names (XOM, MRVL, ...) scored with no multi-year statement history (IM3 coverage 20%). TradingView is unreachable from the build sandbox, so what it serves for statements has to be measured on the runner.
+- New weekly stage `post.tv_fund_probe` (about 15-20s, once a week): tries ~84 statement columns one per request, then prior-period lookbacks [1]..[4] on every column that answers, for XOM, MRVL, MU, AAPL, CVX. Result is published as `tv_fundamentals_probe` (working columns with values, lookback results, error kinds, a plain-English verdict). The IM3 history tier is built from that measurement, not from guesses.
+- Mock-server test passes (column discovery, lookback depth, weekly reuse).
+
+## v1.528.0 — 16 Oct 2026 — Yahoo scrubbed from the rest of the stack
+- im3_score.py v2.29.0: the Yahoo backstop (statements and info) is removed; names TradingView/FMP/SEC cannot serve show source "none" instead of "yahoo". Cached Yahoo statement parses are no longer served, so ~25 names that carried "hist: yahoo" lose that history until a non-Yahoo source covers them.
+- scanner.py: no Yahoo statement fallback in the explosive screen (no more per-miss Yahoo sleep), no Yahoo last-resort in the IM3 helpers, Yahoo-named labels now read tradingview.
+- moat_cover: dead-fund retries are staggered per fund (the 16 Oct scan retried all 13 together and the stage went 68s to 120s); funds dead 28+ runs retry every 28th.
+- Includes v1.527.1 (ITWN pence rescale).
+
+# v1.526.0 (index unchanged, v5.405) - 2026-10-16
+- Yahoo is out of the bottom check and the exit-day count (owner, 16 Oct: "i have always said cut yahoo and replace it with tv"). Both read TradingView scanner lookback columns only (open/high/low/close/volume and [1]..[n] on global/scan), no Yahoo fallback.
+- The reachable depth is PROVEN every run (separate probes at 1, 5, 20, 60, 100, 129 sessions on NASDAQ:MSFT); under 60 sessions the check goes dark with the depth stated on the board instead of guessing. Published in data.bottoms.tv_history (depth_proven, probe, requests, failed_requests, rejected).
+- Every name's bars are validated: finite and ordered (low <= open/close <= high), at least 60 usable bars, and for holdings the newest close within 12% of the live price after a pence/pound correction (catches a wrong listing line or currency). A rejected name is NO DATA with its reason (tv_reason).
+- TradingView's live bar is dropped while the exchange is open; bars are dated to the last closed session.
+- Rule 3 (hourly structure) is OFF until TradingView hourly lookback is proven; it was the only Yahoo-hourly use.
+- live_portfolio.json override renamed yahoo_symbol -> tv_symbol; UCITS holdings map to LSE:/EURONEXT: symbols (_BT_TV_MAP).
+- NOT verified from the build sandbox (TradingView is unreachable there): first scan will show whether lookback columns work; check data.bottoms.tv_history. Tests use a fake TradingView: v1526 16, v1525 12, v1524 61, v1520 25, v1519 68, earlier suites pass.
+- Remaining Yahoo call sites predate this build (TCE 6-month batch, SPY benchmark, USDPKR, 5-day re-pricing, ETF meta, PSX .KA, metals); listed for the next cut.
+
+# v1.525.0 (index unchanged, v5.405) - 2026-10-15
+- FIX: the 15 Oct scan called KSTR "bottom CONFIRMED" (rule 4) on a Yahoo history that ended 13 Oct, while the market had traded two more sessions down (IBKR: 14 Oct close 21.074, 15 Oct low 20.64, new low every day). A daily history that ends before the last closed session (London 16:30, Amsterdam 17:30, US 21:00 UTC, weekends rolled back) is now NO DATA with stale_bars / last_bar / expected_bar / price_gap_pct and a plain reason; the availability board says "behind the last closed session". Seven London/Amsterdam holdings were affected that day (SMH, ITWN, KSTR, AINF, STOR, FLXK, PHPM all ended 13 Oct).
+- FIX: "thin volume" now also means small traded value (median 30-day volume x price under 250k), which switches the volume rule off. KSTR's rule 4 fired on a 9.9x volume day on Yahoo's numbers; the broker shows 964 shares that day (its volume spike was 9 Oct, which would not have passed the lowest-low test).
+- Exit engine: a stale history falls back to the scan counter for days-below-trend instead of under-counting.
+- Tests: v1525 12, v1524 61, v1520 25, v1519 68, earlier suites pass.
+
+# v1.524.0 (index v5.405) - 2026-10-15
+- Index v5.405: availability items and governed calls are shown at the top of the tab the board names -- Tab 11 (bank survey 288 days old), Tab 9 (TCE-HIGH half vote weight), Tab 3 (PSX market watch stale); Run health gains a "Why this run differs" line.
+- Scanner: psx_market_watch board item names Tab 3; a failed dps.psx.com.pk fetch now records why (HTTP status / 200 with no parsed rows / exception) in last_error and on the board.
+- Bottom engine: a CONFIRMED bottom more than 25% off its 52-week high carries knife_probe (flagged, not cancelled) and the why-text says treat the tranche as a probe (KSTR case: rule 4 confirmed at 36% off its high while closing under the old AVOID line).
+- meta.stage_cadence names heavy stages that swung between scans because of freshness windows (sec_filings 20h, bank_snapshot 24h): 14 Oct 333s vs 15 Oct 438s was sec_filings +56s, bank_snapshot +36s, m1_buylist +39s.
+- Tests: v1524 61, v1520 25, v1519 68, earlier suites pass; render check of the three notices on the live 15 Oct payload.
+
+# v1.523.0 (index unchanged, v5.404) - 2026-10-14
+- Availability board no longer lists the broker valuation matrix once live TradingView ratios replace it (live_overlay present); the item stays if only the superseded flag is set.
+- psx_market_watch: a failed or empty dps.psx.com.pk fetch is now stamped last_error, warned, and appended to the board reason (it had been carrying the 24 Sep copy silently for 20 days).
+- Exit engine: 3x holdings (AMD3/TSM3/MSF3) count days-below-trend on their US stock's daily bars (below_days_basis = "underlying daily bars"); count is zeroed while the product itself is above its 50-day.
+- Bottom rule 2 tightened: the undercut must be of a significant low (tested by another swing low within 2%, or the lowest low of the prior 60 sessions), no deeper than 5%, and the reclaim must close in the upper half of the day's range. Result stamps "tested".
+- Tests: v1523 58, v1520 24, v1519 68, earlier suites pass. test_v1521 is superseded by the decline-filter tests.
+
+# v1.522.0 (index v5.404) - 2026-10-14
+- Bottom rules tightened: a signal now needs a prior decline of at least 10% from the 60-session high (rules 1, 2, 4, 5); rule 3 and WATCHING need it too. New field decline_to_low_pct. CONFIRMED + entry-timing AVOID is flagged "probe, not full position" (flagged, not overridden).
+- PSX valuation: live TradingView ratios overlay the Valuation Matrix (P/E, yield, ROE, P/B, EV/EBITDA, mkt cap), lists re-ranked, stale-matrix warning suppressed; green LIVE TRADINGVIEW banner on the tabs.
+- Exit engine: days-below-trend now counted from Yahoo daily bars (below_days_basis = daily bars / scan counter), not the scan counter.
+- New timing checkpoints seg.etf_live_prices, seg.emerging_holdings, seg.hydrogen_notes, seg.etf_trackers close the ~18.7s unmeasured stretch.
+- Tab 1 Run-health strip (scan time, biggest gaps, warnings).
+- Tests: v1522 55, v1521 38, v1520 23, v1519 68, earlier suites pass.
+
+## v1.527.1 — 16 Oct 2026
+- Bottoms: a London line quoted in pence while the holding is priced in USD/GBP (ITWN) is rescaled by one constant factor instead of being rejected as "wrong line". Audit of the live v1.527.0 scan: socket 552/554 names, SMH London bars match IBKR (15 Oct close 101.94).
+
+## v1.527.0 — 16 Oct 2026 — Yahoo removed completely
+- No `yfinance` import, URL or requirement remains. All ~20 former Yahoo call sites (oil, USDPKR, ETF, SPY, country/FX RS, TCE pool history, repricing, exit/bottom engines) now read TradingView through one chart-socket client (`tvh_history`), with a once-per-run probe, per-series validation and each consumer's existing last-good fallback.
+- Bottoms: real 130-bar daily history plus hourly bars (rule 3 is back). A series is rejected, with the reason shown in `bottoms.tv_history.rejected`, if bars are mis-ordered, too few, or the last close is >12% from the live price.
+- Yahoo-only fundamentals (TCE margin/capital/estimate revisions, statement fallback, fund holdings) are now honestly empty. The Yahoo news feed was replaced by Bing News RSS.
+- requirements.txt: yfinance dropped, websocket-client added.
+- Tests: mock TradingView socket, shim shape tests, static scan, suites 1513-1520/1524/1525 pass (1526 retired).
+
+## v1.521.0 / index v5.403 — 2026-10-14
+- **Bottom engine (owner's six rules):** every Tab-17 holding and every Tab-19 name is checked each scan. Rule 1 reversal candle at a support zone (green, above prior day's midpoint, upper third; next session must hold the low). Rule 2 undercut and reclaim of a prior swing low. Rule 3 hourly higher low then a close above the previous hourly swing high. Rule 4 capitulation volume (>=1.5x the 30-day average) then a lighter down day or an up day on above-average volume. Rule 5 RSI 30-40 at the touch with price lower low / RSI higher low. Any ONE of 1-5 confirms (a session late, by design); rule 6 invalidates: a close below the base floor = BASE BROKEN (no averaging until the next level is tested and confirms by rule 1 or 2); a close below that next level = AVOID.
+- **Zones are automatic:** clustered swing lows of the last 120 sessions (minimum 1% wide) plus the 50- and 200-day averages when within 10% below / 1% above price. Signals count for 3 sessions.
+- **3x London products** are read on their US stock; the tranche bid is the existing London fair value x 1.005.
+- **Advisor gate:** an ADD on a holding whose base is BROKEN or AVOID becomes WAIT ("no averaging into a broken base").
+- **Data:** Yahoo daily (1y) and hourly (1 month) bars, settled bars only; PSX has no OHLC source so it is not covered; a listing with no history says NO DATA and shows on the availability board (add `yahoo_symbol` in live_portfolio.json to fix a UCITS ETF).
+- **Thin names** (median daily volume under 1,000 shares) have rule 4 switched off.
+- **index v5.403:** BOTTOM CHECK card on Tab 17 and Tab 19, a pill on each Tab-19 row, the six rules in plain words.
+
+## v1.520.0 / index v5.402 — 2026-10-14
+- **Exit-day counter fixed:** the "closes below trend" count advanced once per scan, so three scans in one day counted as three closes. It now books once per trading session (`counted_on`). Affects the 2-close confirmation band (PHPM).
+- **Time-gap finder:** `meta.timing_gaps` names every stretch of scan time no timed stage covers, with the stage before and after each hole (targets the ~162s unmeasured).
+- **Availability board is generic:** every dated block is judged against its own refresh cadence (default 3 days; 13F 100; market watch and fund ownership 7). psx_market_watch (20 days) now shows.
+- **Live PSX valuation from TradingView:** `psx_valuation_tv` (P/E, P/B, ROE, yield, market cap, EV/EBITDA). Each column probed separately; fill rate logged; the broker matrix is marked superseded once P/E fill is 60% or more.
+- **Seed refresh:** live_portfolio.json now AMD3 1,477 sh @ 8.46773, MSF3 115 sh @ 64.52096, USD 0.51, AED 76,081.35 (IBKR pull 14 Oct).
+- **index v5.402:** Tab 19 valuation label (no more `[object Object]`); Tab 17 note "positions as of <statement date>"; governor board and seed banner (from v5.401) included.
+
+## v1.519.0 — 2026-10-14 — CALL GOVERNOR, AVAILABILITY BOARD, SEED GUARD (index v5.401)
+
+**No approval step.** You corrected my first design: the system decides by itself, from evidence, and says so on the dashboard.
+
+### 1. Call governor (TCE HIGH-tier vote)
+Judged every scan on four factors over a **rolling window of its last 30 matured calls**: hit rate, median alpha, share beating the benchmark, median return vs the IGNORE tier. FAIL needs 3+ failing factors; PASS needs 3+ passing.
+Ladder with hysteresis: **ACTIVE 1.0 → DISCOUNTED 0.5** after 3 FAIL scan-days → **SUSPENDED 0.0** after 7. Climbing back needs 7 PASS days per rung. Streaks count distinct dates, so two scans in a day are one day. The tier keeps being scored while governed, so it can earn its way back.
+Day one honours the v1.492.0 discount already live (nothing flips today). Real payload today: 30 matured, 0% hit, median alpha −10.95%, 4 of 4 factors fail, DISCOUNTED, fail streak 3 → **suspends on the 7th FAIL day (~18 Oct) unless the evidence changes**.
+ETF picks lapse after 7 scan-days at −5% or worse vs ACWI and return after 7 days at or ahead.
+
+### 2. Availability board (Tab 19)
+`availability` lists everything not fully available, each with reason, since-date, back-on date and what clears it: bank-sector survey (287 days — UNAVAILABLE at >180d, notice at >90d), frozen PSX valuation matrix, 10 new PSX names awaiting a candle check (back ~16 Oct), flat-base pattern (back ~2 Nov), 8 Zacks names without a price, lapsed ETF picks.
+
+### 3. Portfolio-seed guard (item 8, approved)
+`_li_load_config` validates shape; on failure Tab 17 shows a red DO-NOT-TRADE banner, the advisor is suspended, and the scan warns. Tested against a truncated file, a missing file, empty holdings, scanner.py pasted over the file (the 24 Sep incident), zero/bool shares.
+
+### 4. Record sync
+`meta.record_sync` re-measures the decision record's factual claims each scan; a false claim warns as DRIFT. Record updated: ETF tracker computes; bank-sector threshold 90d.
+
+**Tested:** 68 new assertions on the real functions and the real payload (plus 418 existing, all passing). The tests caught one real defect before render: a corrupt stored streak value crashed the step; hardened. Board and banner rendered and inspected.
+
 ## v1.518.0 — 2026-10-14 — THREE FIXES FROM THE FIVE-PASS AUDIT
 
 **Owner said go.** The warm-up veto, the dead flat-base, the bank-sector watchdog.
