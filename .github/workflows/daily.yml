@@ -124,7 +124,6 @@ jobs:
         if: steps.inputs_hash.outputs.skip_scanner != 'true'
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           ETF_NINJA_KEY: ${{ secrets.ETF_NINJA_KEY }}
           FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
           ETF_FINNHUB_KEY: ${{ secrets.ETF_FINNHUB_KEY }}
@@ -380,7 +379,6 @@ jobs:
         # incremental logic keeps quiet runs cheap (~1-2 min); state continuity is worth that always.
         if: steps.check_explosive.outputs.changed == 'true' || github.event.inputs.force_im3 == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         env:
-          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}      # v1.530.0: the IM3 scorer's FMP tier read this env var, but this step never passed it -> FMP was silently dead
           FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
           FORCE_IM3: ${{ github.event.inputs.force_im3 }}   # GUARD FIX 2026-09-08: the checkbox unskipped the scanner and opened this step, but _force inside read an env NEVER SET here -- so 'force IM3' never actually forced a re-score (proven by the forced run's run_health: full=false). Now it does what its label says.
           SCORE_TICKERS: ${{ steps.check_explosive.outputs.score_tickers }}
@@ -611,6 +609,25 @@ jobs:
               if tk in score_map:
                   record['im3'] = score_map[tk]
 
+          # v1.535.0: the scanner's parity guard runs BEFORE this step, so its IM3 row measured the PREVIOUS run's scores. Re-measure it on the merged
+          # records (unique tickers whose statement history source is 'none') so the guard reports what is actually shipped.
+          try:
+              _pm = (data.get('meta') or {}).get('yahoo_parity')
+              if isinstance(_pm, dict):
+                  _none = set()
+                  for _sec in ('tce_us', 'explosive_us'):
+                      for _r in (data.get(_sec) or []):
+                          _im = (_r.get('im3') or {}) if isinstance(_r, dict) else {}
+                          if isinstance(_im.get('src'), dict) and _im['src'].get('hist') == 'none':
+                              _none.add(_r.get('ticker'))
+                  for _c in _pm.get('checks', []):
+                      if _c.get('metric') == 'im3_us_names_without_statement_history':
+                          _c['now'] = len(_none); _c['status'] = 'PASS' if len(_none) <= 8 else 'FAIL'; _c['measured'] = 'after IM3 merge (unique tickers)'
+                  _pm['failing'] = [_c['metric'] for _c in _pm.get('checks', []) if _c.get('status') == 'FAIL']
+                  _pm['overall'] = 'PASS' if not _pm['failing'] else 'FAIL'
+          except Exception as _pe:
+              print('::warning title=parity refresh::' + str(_pe))
+
           # v1.300 SMART-MONEY GRADES LAND (owner-audited gap): the whale + consensus names
           # WERE being scored (universe 205 -> 259) but the merge wrote only into
           # explosive_us / tce_us / zacks_radar. AMZN, AAPL, MSFT and GOOG live in none of
@@ -806,7 +823,6 @@ jobs:
         # identical runs don't churn data.json. Writes scores into explosive_psx / tce_psx /
         # psx_candidates so the dashboard's PSX IM3 column picks them up.
         env:
-          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}      # v1.530.0: the IM3 scorer's FMP tier read this env var, but this step never passed it -> FMP was silently dead
           FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
           FORCE_IM3: ${{ github.event.inputs.force_im3 }}
         run: |
