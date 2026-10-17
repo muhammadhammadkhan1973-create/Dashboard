@@ -1,3 +1,54 @@
+## v1.541.0 / index v5.406 (17 Oct 2026)
+- s9: Finnhub recommendation and earnings-surprise legs removed from the revision bridge (28 of 88 calls were HTTP 429); s9 is TradingView-only. Old cached rec/surprise votes no longer count.
+- index v5.406: "Yahoo replacement" strip under Run health (parity verdict and 9 checks, s8 FINRA file and coverage, s9 bridge counts, TradingView socket run).
+- Measured and NOT changed: s9 threshold sweep (0.05% to 1%) lost matched Yahoo-era names faster than it removed extras (13 hits at 0.05%, 9 at 0.2%, 6 at 0.5%), so 0.05% stays. data.json (8.16 MB) has no lossless saving large enough for 7.5 MB (nulls about 0.2 MB); no displayed content was dropped.
+
+## scanner v1.540.0 -- audit of the live v1.539.0 scan (16 Oct 2026)
+- Live v1.539.0 result: s8 on FINRA short interest works (file 2026-09-30, pipe-delimited, 44 names, 43 with a percent); s8 name overlap 0.73 (all 4 missing names are no longer in the TCE pool); s9 FAILED (0.341 vs 0.375): rating-change votes cancelled real EPS raises (XOM +9 percent, CVX +3.3, AAPL +0.2 had net 0).
+- Fix: a forward-EPS consensus change beyond +-0.05 percent decides s9 on its own (`eps_primary`); rating, price-target, NTM and surprise votes are used only when there is no EPS signal.
+- The dashboard's own `estimate_history` snapshots (622 names, weekly then daily, 25 dates) are merged in as extra baseline, with `fwd_eps_seed.json` and the stored history.
+- Parity: s8 and s9 shares are measured on names that were in the Yahoo-era pool AND are in today's pool (3 Yahoo-era s9 names left the pool), against the Yahoo-era flagged share of those same names. Simulated on the live 16 Oct pool: 15 flagged, 13 of the 19 comparable Yahoo-era names (recall 0.68), share 0.395 against a 0.375 floor.
+
+## scanner v1.539.0 -- s9 from the 30-day change in TradingView consensus forward EPS (16 Oct 2026)
+- Recovered 21 daily snapshots of `streams.fwd_eps` (TradingView next-quarter consensus EPS) for 80 tickers from the repo's own data.json history (643 commits back to 22 Jul) and ship them as `fwd_eps_seed.json` (place it in the repo root). The scanner merges the seed into `fwd_eps_hist.us` once; stored values win on shared dates. A 30-day window therefore exists on day one instead of 15 Nov.
+- `_tv_fwd_votes`: consensus forward EPS up more than 0.05 percent over about 30 days is an up vote, down more than 0.05 percent a down vote (s9 = up > down and up > 0, unchanged). Back-test on the 44-name pool against the v1.526.0 Yahoo-era s9 names: 15 flagged, 13 of them Yahoo-era (precision 0.87, recall 0.59), against 19 flagged and 10 matched with the earlier proxy.
+- Quarter-roll guard: `earnings_release_date` added to the US analyst pull; snapshots dated on or before the latest report are not used as a baseline, because the next-quarter estimate changes identity at a report, not value.
+- EPS-surprise beats no longer vote (information only: `meta.revision_bridge.surprise_beats_info_only`). They produced the 9 false s9 flags.
+- Still running in parallel: rating-change vote (Finnhub), price-target / buy-share / NTM EPS / NTM revenue snapshot votes (from 18 Oct).
+
+## scanner v1.538.0 -- s8 on real short interest, honest parity (16 Oct 2026, self-audit of s8/s9)
+- FAULT: s8 used FINRA daily short VOLUME (a market-maker flow figure around 50 percent for every stock) with a cut-off set to the top third so the share matched Yahoo's 34 percent. It passed the parity count by construction while only 6 of the 15 Yahoo-era names matched (XOM, a 1 percent short-interest stock, was flagged). The comment 'not published by any source we hold' was wrong: FINRA publishes consolidated short interest twice a month at cdn.finra.org/equity/otcmarket/biweekly/shrtYYYYMMDD.csv.
+- FIX: `fetch_finra_short_interest` (newest of the 15th / month-end files that parses, delimiter sniffed, header-named columns), float from TradingView (`fetch_tv_float`: float_shares_outstanding, else total x float percent), s8 = shares short / float >= 8 percent, the same rule Yahoo fed. The volume proxy runs only if the whole short-interest download fails. Diagnostics in `meta.short_interest` (files tried, header, delimiter, names covered).
+- Parity guard now also compares NAMES: `tce_us_s8_name_overlap` / `tce_us_s9_name_overlap` against the v1.526.0 flagged sets (WARN below 0.6). Counts alone let a different signal pass.
+- s9 findings recorded, not yet changed: the 9 'new' s9 names are all driven by TradingView EPS-surprise votes (a beat is not a revision); Finnhub surprise and rating legs were empty for every name; the price-target / NTM EPS / NTM revenue snapshots have one day of history until 18 Oct (a clean 30-day window on 15 Nov).
+
+## IM3 v2.36.0 -- TradingView statement history (16 Oct 2026)
+- Found by the widened v1.537.0 discovery on the runner: TradingView serves ~20-year ANNUAL arrays (newest first) in `*_fy_h` columns -- total_revenue, net_income, earnings_per_share_diluted, ebitda, free_cash_flow, total_assets, total_debt, gross_profit -- and 20+ quarters in `*_fq_h`, plus `earnings_fq_h` / `revenues_fq_h` (Actual vs Estimate per quarter). No key, no quota.
+- `tv_history(ticker)`: last tier after SEC and stockanalysis for names with under 3 years of revenue (source `tradingview`). `_tv_fill`: fills only EMPTY series (EPS, EBITDA, FCF, assets, debt, COGS) of an SEC/stockanalysis history; never overwrites, so SEC/stockanalysis-served scores are unchanged.
+- Why-string now ends with the TradingView reason.
+
+## scanner v1.537.1 (16 Oct 2026)
+- The weekly TradingView discovery cache is now versioned: the live v1.537.0 scan reused the 15:20 UTC result, so the widened short-interest/float/growth search had not run. It runs on the next scan, then weekly.
+
+## scanner v1.537.0 -- 100%-TradingView s9 (16 Oct 2026, from the live v1.536.0 discovery: 120 of 136 analyst fields serve)
+- s9 now also votes on TradingView consensus snapshots: `eps_estimate_ntm` and `revenue_estimate_ntm` (both proven served) added to the US analyst pull, kept daily as `fwd_eps_hist.us_ntm` / `us_rvn`, +-0.5 percent against the baseline is a vote (`_tv_estimate_votes`).
+- Snapshot baselines (price target, buy share, NTM EPS, NTM revenue) open after 2 days instead of 5.
+- Discovery widened to short interest / float / ownership / growth / CAGR / history style field names (900 candidates, 1 sample value each) so a TradingView short-interest or multi-year column, if one exists, shows in `tv_discovery.serving`.
+
+## scanner v1.536.0 / IM3 v2.35.0 -- TradingView-only (owner decision 16 Oct 2026)
+- FMP and its quota removed: scanner bridge no longer calls FMP, IM3 `FMP_KEY` hard-off, `FMP_API_KEY` env lines removed from daily.yml (3). IM3 history tiers are now SEC -> stockanalysis (FMP never served in the IM3 step before v1.530, so no regression).
+- New `build_tv_discovery`: weekly, reads TradingView `metainfo`, tests every analyst/estimate/revision/surprise-looking field one by one, publishes `data.tv_discovery.serving`. Daily, fetches the proven surprise columns (`eps_surprise_percent_fq` etc.) for the US pool; a surprise of 5 percent or more adds one s9 vote (`tv_up`/`tv_down`), alongside the price-target and buy-share snapshots.
+- Finnhub (free key, no daily cap) stays as a secondary vote source; remove `FINNHUB_KEY` to make it purely TradingView.
+- Retired tests (they asserted FMP behaviour): b27/test_v1531, test_v1532, test_v1535 FMP legs, test_im3_v232/v233.
+
+## v1.535.0 — 16 Oct 2026 — measured on the live v1.534.0 / IM3 v2.34.0 scan
+Live result: the stockanalysis URL fix WORKED -- in the shipped file only 5 explosive_us names have no statement history (AADX, AVEX, BMNP, GAU, HAWK: 2-year listings or a 404; baseline 5) and 41 names are served by stockanalysis; XOM, PBR, SNDK, ALAB, MRVL, KNSA, AYA, CAI, SLDE now score. The parity guard's "46" was the PREVIOUS run's IM3 rows (the guard runs before the IM3 step) counting a name once per section.
+- Parity guard: counts unique tickers; daily.yml re-measures the IM3 row on the merged records right after the scores are written, so `meta.yahoo_parity` reports what is shipped (`measured: after IM3 merge`).
+- s9 (13.6% vs 50%): FMP answered HTTP 429 again (free plan, daily quota already spent), so only the Finnhub trend vote ran. Added a second keyless-of-FMP Finnhub vote: the latest reported quarter's earnings surprise within 120 days, +5 points or more = up, -5 or less = down (analysts revise toward the surprise within weeks). Bridge entries fetched while FMP was down (or without the surprise leg) are retried the next day instead of being frozen for 3 days. `tv_votes` was being overwritten by the stats block; fixed so the TradingView snapshot votes are visible from 21 Oct when 5 days of snapshots exist.
+- Probe answers (Finnhub, from the runner): `stock/financials-reported` works -- XOM 16 filings, GORO 15, revenue concepts us-gaap_Revenues / RevenueFromContractWithCustomerExcludingAssessedTax, 18-33 rows per statement -- but returns nothing for MWH and VMET (recent listings). `stock/metric` serves 41-point annual series (salesPerShare, eps, ebitda, margins, roe, roic). TradingView serves price_target_high/low/median, recommendation_hold/sell/over/under, total_revenue_yoy_growth_fy/fq, last_annual_revenue/eps, earnings_per_share_forecast_fq. Kept in reserve (not wired): Finnhub statements as a fourth history tier for names SEC/FMP/stockanalysis all miss.
+- Time (v1.534.0): scanner 330s, post 93s, workflow wall 659s (758s the run before, 584s pre-cut); outside the scanner and post stages the IM3 steps still cost ~236s while the stockanalysis cache warms (30-day positive and 7-day negative cache from this run on).
+- Tests: test_v1535 (8) added; all earlier suites pass; the workflow's embedded Python compiles.
+
 ## v1.534.0 / IM3 v2.34.0 — 16 Oct 2026 — research-first fixes (owner: "research alternatives first, test, then render")
 Network reality: the build sandbox is policy-blocked from TradingView, SEC, FMP, Finnhub, stockanalysis, FINRA and Nasdaq (CONNECT 403), and has no GitHub push access, so nothing here could run against those hosts. What WAS verified, by loading the live public pages through the fetch tool: stockanalysis page structure (all three statements, XOM and VMET) and SEC companyconcept records for XOM.
 - ROOT CAUSE of the stockanalysis tier failing for every name: `_SA_US_INC` pointed at /financials/, which is the Financials OVERVIEW page (11 summary rows, 3-6 columns). The statement is /financials/income-statement/ (27-33 rows incl. Revenue and EPS (Diluted)). Corrected. Tax label corrected to "Income Tax Expense" (was "Provision for Income Taxes"); the page has no EBITDA row, so EBITDA is derived as operating income + D&A (same as the SEC path). Every mapped label was checked against the real row lists.
