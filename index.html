@@ -393,7 +393,7 @@ body{font-family:var(--font-sans);font-variant-numeric:tabular-nums;-webkit-font
         <span id="liveDot" style="width:9px; height:9px; border-radius:50%; background:#9ca3af; display:inline-block;"></span>
         <strong id="liveText">Loading live scan…</strong>
       </div>
-      <div style="margin-top:5px; opacity:0.85;">Last scan: <span id="liveScan">—</span> · <span id="liveVer">—</span></div>
+      <div style="margin-top:5px; opacity:0.85;">Last scan: <span id="liveScan">—</span> · <span id="liveVer">—</span> <span id="liveParity" style="margin-left:6px;"></span></div>
       <div style="margin-top:6px;"><button onclick="reloadLive()" style="background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:6px; padding:3px 10px; font-size:11px; cursor:pointer;">↻ Reload live data</button></div>
     </div>
   </div>
@@ -6518,6 +6518,11 @@ function renderReplacementStrip(M,esc){try{
   var ok=P.overall==='PASS', col=ok?'#15803D':'#B91C1C';
   var chk=(P.checks||[]).map(function(c){var g=c.status==='PASS';return '<span title="baseline '+esc(c.baseline)+' &rarr; now '+esc(c.now)+(c.note?(' · '+esc(c.note)):'')+'" style="display:inline-block;margin:2px 4px 2px 0;padding:1px 7px;border-radius:10px;background:'+(g?'#DCFCE7':'#FEE2E2')+';color:'+(g?'#166534':'#991B1B')+';font-size:10.5px;">'+esc(c.metric)+' <b>'+esc(c.now)+'</b></span>';}).join('');
   var SI=M.short_interest||{}, RB=M.revision_bridge||{}, SK=M.tv_socket_run||{};
+  try{var _lp=document.getElementById('liveParity');if(_lp){var _y=M.yahoo_residual||{},_ba=M.block_ages||{},_w=(P.checks||[]).filter(function(c){return c.status!=='PASS';}).length;
+    _lp.innerHTML='<span title="Yahoo-parity guard: '+(P.checks||[]).length+' checks, '+_w+' not passing. Data blocks late: '+esc(_ba.late!=null?_ba.late:'?')+'. Yahoo last-resort answered '+esc(_y.ok!=null?_y.ok:0)+' of '+esc(_y.asked_names!=null?_y.asked_names:0)+'." style="background:'+(ok&&!_w?'#DCFCE7':'#FEE2E2')+';color:'+(ok&&!_w?'#166534':'#991B1B')+';border-radius:9px;padding:1px 7px;font-weight:800;">parity '+esc(P.overall)+(_w?(' · '+_w+' warn'):'')+' · '+esc(_ba.late!=null?_ba.late:0)+' late</span>';}}catch(_e){}
+  var _SH=(LIVE&&LIVE.m1_buylist&&LIVE.m1_buylist.score_health)||null, _CH=M.changes||null;
+  var _extra=(_SH?('<div><b>M1 scoring.</b> '+esc(_SH.ok)+' of '+esc(_SH.attempted)+' fresh rescores succeeded'+(Object.keys(_SH.src||{}).length?(' ('+Object.keys(_SH.src).map(function(k){return esc(k)+' '+esc(_SH.src[k]);}).join(', ')+')'):'')+' · legacy yahoo labels '+esc(_SH.legacy_yahoo_labels)+' · older than TTL '+esc(_SH.stale_n)+((_SH.failed||[]).length?('<br><span style="color:#B91C1C;">Failed: '+_SH.failed.slice(0,8).map(function(f){return esc(f.t)+' ('+esc(f.why)+')';}).join(', ')+'</span>'):'')+'</div>'):'')
+   +(_CH?('<div><b>Changed since last scan'+(_CH.vs?(' ('+esc(_CH.vs)+')'):'')+'.</b> buy list added: '+esc((_CH.buys_added||[]).join(', ')||'none')+' · dropped: '+esc((_CH.buys_dropped||[]).join(', ')||'none')+' · cash-gate flips: '+esc(_CH.n_gate_flips||0)+((_CH.gate_flips||[]).length?(' ('+esc(_CH.gate_flips.slice(0,12).join(', '))+')'):'')+'</div>'):'');
   var h='<details style="margin:0 0 12px;border:1px solid #CBD5E1;border-left:4px solid '+col+';border-radius:9px;background:#fff;padding:8px 12px;">'
    +'<summary style="cursor:pointer;font-size:12px;font-weight:800;color:#0f172a;">Yahoo replacement · parity <span style="color:'+col+';">'+esc(P.overall)+'</span> · '+(P.checks||[]).length+' checks'+((P.failing||[]).length?(' · failing: '+esc((P.failing||[]).join(', '))):'')+'</summary>'
    +'<div style="font-size:11.5px;color:#334155;line-height:1.55;margin-top:6px;">'
@@ -6528,6 +6533,7 @@ function renderReplacementStrip(M,esc){try{
    +(M.block_ages&&M.block_ages.top?('<div style="margin-top:4px;"><b>Data age by block</b> ('+esc(M.block_ages.late)+' of '+esc(M.block_ages.n)+' late, shown as age / its refresh cadence): '+M.block_ages.top.slice(0,8).map(function(b){var c=b.ratio>2?'#B91C1C':(b.ratio>1?'#B45309':'#15803D');return '<span title="'+esc(b.block)+' as of '+esc(b.as_of)+(b.source?(' · '+esc(b.source)):'')+'" style="display:inline-block;margin:2px 4px 2px 0;padding:1px 7px;border-radius:10px;background:#F1F5F9;color:'+c+';font-size:10.5px;">'+esc(b.block)+' <b>'+esc(b.age_days)+'d</b>/'+esc(b.cadence_days)+'d</span>';}).join('')+'</div>'):'')
    +(M.short_interest&&M.short_interest.nowcast?('<div><b>s8 interim estimate (shadow, not used).</b> '+esc(M.short_interest.nowcast.names)+' names estimated'+(M.short_interest.nowcast.would_flip&&M.short_interest.nowcast.would_flip.length?(' · would flip: '+esc(M.short_interest.nowcast.would_flip.join(', '))):' · none would flip')+(M.short_interest.nowcast_scored?(' · last scored: mean error '+esc(M.short_interest.nowcast_scored.mae_pct_points)+' pts on '+esc(M.short_interest.nowcast_scored.n)+' names'):'')+'</div>'):'')
    +(SK.symbols?('<div><b>TradingView socket.</b> '+esc(SK.ok)+' of '+esc(SK.symbols)+' symbols in '+(Number(SK.ms)/1000).toFixed(1)+'s'+(SK.failed?(' · '+esc(SK.failed)+' failed'):'')+'</div>'):'')
+   +_extra
    +'</div></details>';
   return h;
 }catch(e){return '';}}
@@ -8616,7 +8622,7 @@ function renderTopDown(){
     var _bb=_bl.buys.map(function(b){
       var locks=(b.zacks_ok?'<span style="color:var(--green);font-weight:700;">Zacks \u2713</span> ':'')+(b.fund_ok?'<span style="color:var(--green);font-weight:700;">Funds \u2713</span>':'');
       return '<tr>'+tdCell('<b>'+b.ticker+'</b>')+tdCell(b.name||'\u2014')+tdCell((b.sector||'\u2014')+(b.off_regime?' <span title="Booming override \u2014 outside the regime table" style="color:#7c3aed;font-weight:800;">\u26A1</span>':''))
-        +tdCell('<span style="color:'+tdGradeColor(b.im3_grade)+';font-weight:700;">'+(b.im3_grade||'\u2014')+(b.im3_pct!=null?(' '+(Math.round(b.im3_pct*10)/10)+'%'):'')+'</span>')
+        +tdCell('<span title="'+(b.im3_src?('Scored from '+b.im3_src):'')+'" style="color:'+tdGradeColor(b.im3_grade)+';font-weight:700;">'+(b.im3_grade||'\u2014')+(b.im3_pct!=null?(' '+(Math.round(b.im3_pct*10)/10)+'%'):'')+'</span>')
         +tdCell(b.valuation?('<span style="color:'+(b.valuation==='Attractive'?'var(--green)':b.valuation==='Rich'?'var(--red)':'var(--grey-d)')+';font-weight:600;">'+b.valuation+'</span>'):'<span style="color:var(--grey-d);">\u2014</span>')
         +tdCell(tdPerfChip(b.perf_ytd))+tdCell(tdPerfChip(b.perf_1y))+tdCell(tdPerfChip(b.perf_5y))+tdCell(tdPerfChip(b.perf_6m))
         +tdCell(tdTrendChip(b))
@@ -8643,7 +8649,7 @@ function renderTopDown(){
           +'<span style="font-weight:800;color:#334155;min-width:22px;">'+(i+1)+'.</span>'
           +'<span style="font-weight:800;">'+r.ticker+(_buySet2[r.ticker]?' <span style="color:#f59e0b;" title="also on the buy list">\u2605</span>':'')+'</span>'
           +'<span style="color:var(--grey-d);flex:1;">'+(r.name||'')+'</span>'
-          +'<span style="color:'+tdGradeColor(r.im3_grade)+';font-weight:700;">'+r.im3_grade+' '+(Math.round(r.im3_pct*10)/10)+'%</span>'
+          +'<span title="'+(r.im3_src?('Scored from '+r.im3_src):'')+'" style="color:'+tdGradeColor(r.im3_grade)+';font-weight:700;">'+r.im3_grade+' '+(Math.round(r.im3_pct*10)/10)+'%</span>'
           +'<span style="color:#0f766e;">'+cash+'</span>'
           +'<span style="color:var(--grey-d);">backed by: '+conf+'</span>'
           +'</div>';
