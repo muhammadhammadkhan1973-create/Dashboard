@@ -484,7 +484,7 @@ jobs:
           try:
               import json as _sj
               _sm = _sj.load(open('.run_marks.json'))
-              _sm['scoring_entry'] = {'score_list': len(score_list), 'full': bool(_full), 'sel': len(_sel)}
+              _sm['scoring_entry'] = {'score_list': len(score_list), 'full': bool(_full), 'sel': len(_sel), 'reason': ('force_im3' if _force else 'self_heal_backfill' if _backfill else 'FULL_RESCORE_env' if _os.environ.get('FULL_RESCORE', '') == 'true' else 'incremental'), 'detail_missing': sum(1 for _t in explosive_tickers if _t not in _det_now), 'n_universe': len(explosive_tickers)}
               _sj.dump(_sm, open('.run_marks.json', 'w'))
           except Exception:
               pass
