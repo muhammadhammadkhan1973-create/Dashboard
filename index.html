@@ -6512,6 +6512,20 @@ function renderRunHealth(){try{
    +'</div></details>';
   el.innerHTML=h+renderReplacementStrip(M,esc);
 }catch(e){}}
+function _toggleBlockAges(){try{
+  var id='blockAgesPanel',p=document.getElementById(id);
+  if(p){p.remove();return;}
+  var M=((typeof LIVE!=='undefined'&&LIVE&&LIVE.meta)||{}),B=M.block_ages||{},all=B.all||B.top||[];
+  var esc=function(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+  var rows=all.map(function(r){var a=Array.isArray(r)?r:[r.block,r.as_of,r.age_days,r.cadence_days,r.tab];var ratio=a[3]?a[2]/a[3]:0;
+    return '<tr style="'+(ratio>2?'color:#B91C1C;font-weight:700;':'')+'"><td>'+esc(a[0])+'</td><td>'+esc(a[1])+'</td><td style="text-align:right">'+esc(a[2])+'d</td><td style="text-align:right">'+esc(a[3])+'d</td><td>'+esc(a[4]||'')+'</td></tr>';}).join('');
+  p=document.createElement('div');p.id=id;
+  p.style.cssText='position:fixed;right:12px;top:48px;z-index:9999;max-height:70vh;overflow:auto;background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:11.5px;max-width:92vw;';
+  p.innerHTML='<div style="font-weight:800;margin-bottom:6px;">Data age by block ('+esc(B.late||0)+' of '+esc(B.n||all.length)+' late) <a href="#" onclick="_toggleBlockAges();return false;" style="float:right;margin-left:14px;">close</a></div>'
+    +'<table style="border-collapse:collapse;"><thead><tr style="text-align:left;"><th>Block</th><th>As of</th><th>Age</th><th>Cadence</th><th>Tab</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +'<div style="margin-top:6px;color:#64748B;">Cadence is learned from how often each block actually changes; red = older than twice its cadence.</div>';
+  document.body.appendChild(p);
+}catch(e){}}
 function renderReplacementStrip(M,esc){try{
   /* v5.406 -- DATA-SOURCE REPLACEMENT strip (scanner v1.541.0): Yahoo-parity verdict, s8 short-interest source, s9 revision bridge, TradingView socket run. */
   var P=M.yahoo_parity; if(!P) return '';
@@ -6519,7 +6533,7 @@ function renderReplacementStrip(M,esc){try{
   var chk=(P.checks||[]).map(function(c){var g=c.status==='PASS';return '<span title="baseline '+esc(c.baseline)+' &rarr; now '+esc(c.now)+(c.note?(' · '+esc(c.note)):'')+'" style="display:inline-block;margin:2px 4px 2px 0;padding:1px 7px;border-radius:10px;background:'+(g?'#DCFCE7':'#FEE2E2')+';color:'+(g?'#166534':'#991B1B')+';font-size:10.5px;">'+esc(c.metric)+' <b>'+esc(c.now)+'</b></span>';}).join('');
   var SI=M.short_interest||{}, RB=M.revision_bridge||{}, SK=M.tv_socket_run||{};
   try{var _lp=document.getElementById('liveParity');if(_lp){var _y=M.yahoo_residual||{},_ba=M.block_ages||{},_w=(P.checks||[]).filter(function(c){return c.status!=='PASS';}).length;
-    _lp.innerHTML='<span title="Yahoo-parity guard: '+(P.checks||[]).length+' checks, '+_w+' not passing. Data blocks late: '+esc(_ba.late!=null?_ba.late:'?')+'. Yahoo last-resort answered '+esc(_y.ok!=null?_y.ok:0)+' of '+esc(_y.asked_names!=null?_y.asked_names:0)+'." style="background:'+(ok&&!_w?'#DCFCE7':'#FEE2E2')+';color:'+(ok&&!_w?'#166534':'#991B1B')+';border-radius:9px;padding:1px 7px;font-weight:800;">parity '+esc(P.overall)+(_w?(' · '+_w+' warn'):'')+' · '+esc(_ba.late!=null?_ba.late:0)+' late</span>';}}catch(_e){}
+    _lp.innerHTML='<span title="Yahoo-parity guard: '+(P.checks||[]).length+' checks, '+_w+' not passing. Data blocks late: '+esc(_ba.late!=null?_ba.late:'?')+'. Yahoo last-resort answered '+esc(_y.ok!=null?_y.ok:0)+' of '+esc(_y.asked_names!=null?_y.asked_names:0)+'." onclick="_toggleBlockAges()" style="cursor:pointer;background:'+(ok&&!_w?'#DCFCE7':'#FEE2E2')+';color:'+(ok&&!_w?'#166534':'#991B1B')+';border-radius:9px;padding:1px 7px;font-weight:800;">parity '+esc(P.overall)+(_w?(' · '+_w+' warn'):'')+' · '+esc(_ba.late!=null?_ba.late:0)+' late</span>';}}catch(_e){}
   var _SH=(LIVE&&LIVE.m1_buylist&&LIVE.m1_buylist.score_health)||null, _CH=M.changes||null;
   var _extra=(_SH?('<div><b>M1 scoring.</b> '+esc(_SH.ok)+' of '+esc(_SH.attempted)+' fresh rescores succeeded'+(Object.keys(_SH.src||{}).length?(' ('+Object.keys(_SH.src).map(function(k){return esc(k)+' '+esc(_SH.src[k]);}).join(', ')+')'):'')+' · legacy yahoo labels '+esc(_SH.legacy_yahoo_labels)+' · older than TTL '+esc(_SH.stale_n)+((_SH.failed||[]).length?('<br><span style="color:#B91C1C;">Failed: '+_SH.failed.slice(0,8).map(function(f){return esc(f.t)+' ('+esc(f.why)+')';}).join(', ')+'</span>'):'')+'</div>'):'')
    +(_CH?('<div><b>Changed since last scan'+(_CH.vs?(' ('+esc(_CH.vs)+')'):'')+'.</b> buy list added: '+esc((_CH.buys_added||[]).join(', ')||'none')+' · dropped: '+esc((_CH.buys_dropped||[]).join(', ')||'none')+' · cash-gate flips: '+esc(_CH.n_gate_flips||0)+((_CH.gate_flips||[]).length?(' ('+esc(_CH.gate_flips.slice(0,12).join(', '))+')'):'')+'</div>'):'');
