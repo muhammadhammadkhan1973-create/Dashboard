@@ -1,3 +1,46 @@
+## v1.553.0 (scanner) + requirements.txt: OWNER-AUTHORISED Yahoo RETURN for IM3 statements of names SEC cannot serve (XOM, CVX, COP, PSX, ABEV, BHP, BTI, banks...). Measured: stockanalysis/TV substitute shifted scores 3.4 pts on average vs the last Yahoo scan (55% of names within 0.5), so the 0.5% bar was unreachable without Yahoo. Order: SEC (unchanged) -> Yahoo -> history path only if Yahoo fails. SEC gap-fill and path comparator switched OFF by default (IM3_SEC_FILL=1 / IM3_PATH_COMPARE=1 re-enable) because the fill moved SEC names away from their Yahoo-era scores. The 55 history names and the 11 filled SEC names rescore once (marker 553). requirements.txt gets yfinance back.
+
+## v1.552.0 (scanner): live v1.551.0 comparator showed AFRM fixed by the fill but ABNB capex/fcf and AMG operating income still NA on SEC because those rows were sparse, not empty. Fill now replaces SEC rows with <3 years when history has more; Operating Income, Net Income and Total Revenue added to the filled rows. Names rescore once more (marker 552).
+
+## v1.551.0 (scanner): live comparator after v1.550.0 showed the remaining gaps are SEC-side NA rows (ABNB capex/fcf/eps, AFRM/AMG receivables) -- SEC-path names lacked scorecard rows Yahoo used to supply. `_fill_sec_gaps` fills a row from stockanalysis/TV history only when the SEC row is entirely empty and history has >=3y; filled rows are listed in the audit (`fill`). The 74 sec+tv names rescore once (30/run).
+
+## v1.550.0 (scanner): live path comparator (12 rows) showed the history path loses rev/op/np CAGR (4-5 fiscal years vs 6) and net_cash (no cash-flow line). Fixes: CAGR over the longest available span (>=3y) on the history path only; `Changes In Cash` derived from balance-sheet cash. The 55 stockanalysis+tv names rescore once (30/run). Comparator history now one row per name per day.
+
+## v1.549.0 (scanner): path comparator also lists the metrics whose verdict differs between SEC and history paths (`diff_metrics`), to find why the history path scores ~2.5 pts lower (live n=4: mean abs 3.8).
+
+## v1.548.0 (scanner): `meta.im3_path_compare` rotates 4 SEC-scored names/run through the stockanalysis+TV history path and publishes deltas (history keeps 60 rows) + parity check `im3_history_vs_sec_mean_abs_delta`.
+
+## v1.547.0 (scanner) / index v5.410 / daily.yml
+- M1: `m1_buylist.score_health` (attempted, ok, failed names with reason, source mix, legacy yahoo labels, scores older than TTL); each scored row carries `im3_src` (shown as a tooltip on the grade).
+- `meta.changes`: buy-list adds/drops and cash-gate flips versus the previous scan.
+- Parity guard gains 4 checks (fresh-rescore success, legacy Yahoo labels, stale scores, Yahoo last-resort answer rate; WARN status) and `meta.yahoo_residual_hist` keeps 30 runs.
+- daily.yml `scoring_entry` now records `reason`, `detail_missing`, `n_universe` (answers why a full rescore ran).
+- index: header chip (parity, warnings, late blocks) on every tab; run-health strip shows M1 scoring health and the changed-since-last-scan line.
+
+## v1.546.0 (18 Oct 2026)
+- FOUND on the v1.545.0 live scan: 46 m1_im3_audit entries still 'yahoo' and only 2 of 30 fresh rescores succeeded. The scanner's M1 scorer (_fetch_im3_data) had NO fallback after SEC (v1.528.0 removed Yahoo there, and the stockanalysis/TradingView tiers exist only in im3_score.py). Names SEC cannot serve (foreign 20-F filers, and US names without OperatingIncomeLoss such as XOM, CVX, COP, PSX, banks) were frozen on their pre-cutout scores.
+- _hist_im3_statements: those names now fall back to im3_score's stockanalysis three-statement history (then TradingView *_fy_h for empty series), mapped to the same Yahoo-shaped frames; source labelled 'stockanalysis+tv'. Rows the history lacks (shares outstanding, minority interest, change in cash) stay NA, so the scorecard max can be lower than on the SEC path.
+- The 11.9 s 'unmeasured' stretch before run_tce_us is the short-interest / revision-bridge / Yahoo-residual block, not the FINRA downloads: the Yahoo last-resort calls now run six at a time.
+- m1_buylist: the per-name sleep was 0.7 s (YF_DELAY*2, a Yahoo-era delay) x 30 fresh scores; now 0.15 s.
+## v1.545.0 / index v5.409 (18 Oct 2026)
+- KPMG bank-sector block: the Banking Perspective is ANNUAL, so its age is judged against when the next edition is due (as_of + 485 days), not its year-end. The CY2025 edition (latest published) is no longer flagged as 291 days stale; it turns amber/red only once the next edition is overdue.
+- s8 interim short interest: SHADOW nowcast (last FINRA short interest scaled by the newest-5 vs 10-session Reg SHO short-volume share, clamped 0.85-1.20) published in meta.short_interest.nowcast with the names that would cross 8 percent. Not used by s8. When the next FINRA file arrives the previous nowcast is scored (meta.short_interest.nowcast_scored, mean error in points) so it can be switched on, or dropped, on evidence.
+- m1_im3_audit: entries still labelled 'yahoo' are force-rescored first, up to the per-run budget (30), until none remain.
+- meta.block_ages: every dated block's age against its own refresh cadence; shown as chips on the Run health strip.
+- Speed: the 10-14 FINRA short-volume downloads run concurrently, and FINRA short interest, TradingView float and short volume are fetched together (about 11 s of unmeasured serial time before run_tce_us).
+## v1.544.0 / index v5.408 (18 Oct 2026)
+- moat_cover: the carry gate demanded >=50 holdings from IVV, ITOT, KBE and QUAL, which return 0-2 for good, so the 7-day cache was never used and 59-72 s was spent every scan. A target already attempted now counts; a new target still forces one refresh.
+- PSX market watch: dps.psx.com.pk/market-watch answers 404 to the runner (carried a 24 Sep copy). fetch_psx_market_watch_tv rebuilds the same table from TradingView's Pakistan scan (index memberships and sector carried from the last good copy), source labelled. Falls back to the carried copy only if TradingView also fails.
+- FINRA: meta.short_interest.age_days / stale (>25 days warns); shown on the strip.
+- s9: streams.s9_source (yahoo_last_resort | tradingview_eps | tradingview_other); the EPS-rev cell marks Yahoo-sourced values with *.
+- PAYLOAD_SOFT_CEILING_MB 7.5 -> 9.0.
+## v1.543.0 (18 Oct 2026)
+- Live v1.542.0: Yahoo answered 26 of 30 asked names from the runner, parity 8 PASS + 1 WARN (s9 share 0.459). 4 Yahoo flips (CBRS, LRCX, RGNX, SATL) were still overridden by TradingView's consensus-down vote; the Yahoo up>down breadth now replaces eps_primary for those names. Scanner 258 s run + 74 s final stages.
+
+## v1.542.0 / index v5.407 (18 Oct 2026)
+- Live audit of v1.541.0: parity FAIL on tce_us_s9_share (0.351 vs 0.514 baseline, floor 0.385). Cause: removing Finnhub dropped 5 flags absent from the Yahoo-era list (CSCO, MSFT, NVDA, OABI, PLTR) plus ASPI (a Yahoo-era name). Matched 13 of 19 comparable Yahoo names, 13 of 14 flags are Yahoo-era names. The 6 misses (APLD, ASPI, CBRS, LRCX, RGNX, SATL) have flat or falling consensus: Yahoo counted individual analysts, no TradingView field does. Step-count, up-only and 45/60-day variants all tested worse.
+- s9 LAST RESORT (owner permission 18 Oct): fetch_yahoo_s9_residual, Yahoo earningsTrend epsRevisions up/down 30d, asked only for names TradingView did not flag, fail-open (no crumb / 401 / 403 / 429 leaves s9 TradingView-only), 60 s budget, YAHOO_RESIDUAL=0 turns it off. Published as meta.yahoo_residual. Not testable from the sandbox (Yahoo blocked there): unit-tested with a stubbed session only.
+
 ## v1.541.0 / index v5.406 (17 Oct 2026)
 - s9: Finnhub recommendation and earnings-surprise legs removed from the revision bridge (28 of 88 calls were HTTP 429); s9 is TradingView-only. Old cached rec/surprise votes no longer count.
 - index v5.406: "Yahoo replacement" strip under Run health (parity verdict and 9 checks, s8 FINRA file and coverage, s9 bridge counts, TradingView socket run).
