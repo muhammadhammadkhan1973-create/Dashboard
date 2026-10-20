@@ -6548,6 +6548,7 @@ function renderReplacementStrip(M,esc){try{
    +(M.short_interest&&M.short_interest.nowcast?('<div><b>s8 interim estimate (shadow, not used).</b> '+esc(M.short_interest.nowcast.names)+' names estimated'+(M.short_interest.nowcast.would_flip&&M.short_interest.nowcast.would_flip.length?(' · would flip: '+esc(M.short_interest.nowcast.would_flip.join(', '))):' · none would flip')+(M.short_interest.nowcast_scored?(' · last scored: mean error '+esc(M.short_interest.nowcast_scored.mae_pct_points)+' pts on '+esc(M.short_interest.nowcast_scored.n)+' names'):'')+'</div>'):'')
    +(SK.symbols?('<div><b>TradingView socket.</b> '+esc(SK.ok)+' of '+esc(SK.symbols)+' symbols in '+(Number(SK.ms)/1000).toFixed(1)+'s'+(SK.failed?(' · '+esc(SK.failed)+' failed'):'')+'</div>'):'')
    +_extra
+   +(M.im3_tv_only_test?('<div><b>TradingView-only test (shadow, not used).</b> '+esc(M.im3_tv_only_test.n)+' names scored from TradingView history alone vs their Yahoo score: mean shift '+esc(M.im3_tv_only_test.mean_abs_delta)+' pts, within 0.5: '+esc(M.im3_tv_only_test.within_0_5!=null?Math.round(M.im3_tv_only_test.within_0_5*100)+'%':'—')+', within 2: '+esc(M.im3_tv_only_test.within_2!=null?Math.round(M.im3_tv_only_test.within_2*100)+'%':'—')+' &middot; <b>'+esc(M.im3_tv_only_test.verdict)+'</b></div>'):'')
    +'</div></details>';
   return h;
 }catch(e){return '';}}
