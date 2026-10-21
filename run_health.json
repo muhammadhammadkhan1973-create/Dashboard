@@ -1,41 +1,36 @@
 {
- "t0": 1792572276,
+ "t0": 1792578784,
  "marks": {
-  "setup_done": 1792572301,
-  "scanner_done": 1792572752,
-  "scoring_done": 1792572905
+  "setup_done": 1792578804,
+  "scanner_done": 1792579093,
+  "scoring_done": 1792579121
  },
  "check_verdict": {
-  "book_at_check": 457,
+  "book_at_check": 474,
   "universe": 239,
-  "missing_im3": 18,
-  "missing_sample": [
-   "AEP",
-   "AKTS",
-   "AQST",
-   "BBNX",
-   "CF"
-  ],
+  "missing_im3": 0,
+  "missing_sample": [],
   "full_rescore": false,
   "scorer_changed": false,
   "stale": false,
-  "last_scored_seen": "2026-10-20T04:47:56"
+  "last_scored_seen": "2026-10-21T08:54:43"
  },
  "scoring_entry": {
-  "score_list": 239,
-  "full": true,
-  "sel": 18,
-  "reason": "force_im3",
-  "detail_missing": 50,
+  "score_list": 0,
+  "full": false,
+  "sel": 0,
+  "force_suppressed": false,
+  "reason": "incremental",
+  "detail_missing": 31,
   "n_universe": 239
  },
- "t_end": 1792572910,
+ "t_end": 1792579125,
  "status": "success",
- "wall_sec": 634,
+ "wall_sec": 341,
  "segments_sec": {
-  "setup": 25,
-  "scanner": 451,
-  "scoring": 153,
-  "commit_tail": 5
+  "setup": 20,
+  "scanner": 289,
+  "scoring": 28,
+  "commit_tail": 4
  }
 }
