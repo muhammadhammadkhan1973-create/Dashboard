@@ -468,6 +468,17 @@ jobs:
           _backfill = sum(1 for _t in explosive_tickers if _t not in _det_now) > (len(explosive_tickers) // 2)
           if _backfill:
               print(f"[im3 self-heal] detail store missing for majority of {len(explosive_tickers)} tickers -- forcing FULL re-score")
+          # v1.560.0 FORCE GUARD: a ticked force_im3 within 20h of the last full re-score costs ~2.5 min for identical scores (two of the last four runs). It is
+          # downgraded to incremental with a log line; FULL_RESCORE=true (env) or a real scorer change still forces. The stamp below is written after a full pass.
+          _force_suppressed = False
+          try:
+              import datetime as _dtf
+              _lf = data.get('im3_last_full_utc')
+              if _force and _lf and (_dtf.datetime.utcnow() - _dtf.datetime.fromisoformat(str(_lf)[:19])).total_seconds() < 20 * 3600:
+                  _force_suppressed = True; _force = False
+                  print(f"[force guard] force_im3 ignored: last full re-score was {_lf} (<20h ago); running incremental. Set FULL_RESCORE=true to override.")
+          except Exception as _fge:
+              print(f"[force guard] skipped ({_fge})")
           _full = _force or _backfill or _os.environ.get('FULL_RESCORE', '') == 'true'
           _sel = [t for t in _os.environ.get('SCORE_TICKERS', '').split() if t]
           # WALL-TIME FIX (2026-09-02): the old line treated 'not _sel' as a FULL trigger and the
@@ -484,7 +495,7 @@ jobs:
           try:
               import json as _sj
               _sm = _sj.load(open('.run_marks.json'))
-              _sm['scoring_entry'] = {'score_list': len(score_list), 'full': bool(_full), 'sel': len(_sel), 'reason': ('force_im3' if _force else 'self_heal_backfill' if _backfill else 'FULL_RESCORE_env' if _os.environ.get('FULL_RESCORE', '') == 'true' else 'incremental'), 'detail_missing': sum(1 for _t in explosive_tickers if _t not in _det_now), 'n_universe': len(explosive_tickers)}
+              _sm['scoring_entry'] = {'score_list': len(score_list), 'full': bool(_full), 'sel': len(_sel), 'force_suppressed': bool(_force_suppressed), 'reason': ('force_im3' if _force else 'self_heal_backfill' if _backfill else 'FULL_RESCORE_env' if _os.environ.get('FULL_RESCORE', '') == 'true' else 'incremental'), 'detail_missing': sum(1 for _t in explosive_tickers if _t not in _det_now), 'n_universe': len(explosive_tickers)}
               _sj.dump(_sm, open('.run_marks.json', 'w'))
           except Exception:
               pass
@@ -781,6 +792,9 @@ jobs:
                           _mv_vm = _im_vm.pop('metric_values', None)
                           if _mm_vm or _mv_vm:
                               _det_vm[_tk_vm] = {'metrics': _mm_vm, 'metric_values': _mv_vm}
+          if _full:
+              import datetime as _dtf2
+              data['im3_last_full_utc'] = _dtf2.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')   # v1.560.0 force-guard stamp
           # Write updated data.json
           with open('data.json', 'w') as f:
               json.dump(data, f, separators=(',',':'), default=str)
