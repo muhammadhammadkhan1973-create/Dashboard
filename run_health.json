@@ -1,36 +1,41 @@
 {
- "t0": 1792572164,
+ "t0": 1792572276,
  "marks": {
-  "setup_done": 1792572188,
-  "scanner_done": 1792572189,
-  "scoring_done": 1792572205
+  "setup_done": 1792572301,
+  "scanner_done": 1792572752,
+  "scoring_done": 1792572905
  },
- "skipped_guard": "manual re-run, inputs unchanged, data.json <90min old -- identical output guaranteed; tick force_im3 to override",
  "check_verdict": {
   "book_at_check": 457,
-  "universe": 224,
-  "missing_im3": 0,
-  "missing_sample": [],
+  "universe": 239,
+  "missing_im3": 18,
+  "missing_sample": [
+   "AEP",
+   "AKTS",
+   "AQST",
+   "BBNX",
+   "CF"
+  ],
   "full_rescore": false,
   "scorer_changed": false,
   "stale": false,
   "last_scored_seen": "2026-10-20T04:47:56"
  },
  "scoring_entry": {
-  "score_list": 0,
-  "full": false,
-  "sel": 0,
-  "reason": "incremental",
-  "detail_missing": 32,
-  "n_universe": 224
+  "score_list": 239,
+  "full": true,
+  "sel": 18,
+  "reason": "force_im3",
+  "detail_missing": 50,
+  "n_universe": 239
  },
- "t_end": 1792572209,
+ "t_end": 1792572910,
  "status": "success",
- "wall_sec": 45,
+ "wall_sec": 634,
  "segments_sec": {
-  "setup": 24,
-  "scanner": 1,
-  "scoring": 16,
-  "commit_tail": 4
+  "setup": 25,
+  "scanner": 451,
+  "scoring": 153,
+  "commit_tail": 5
  }
 }
