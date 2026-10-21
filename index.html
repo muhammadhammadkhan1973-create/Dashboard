@@ -6512,6 +6512,34 @@ function renderRunHealth(){try{
    +'</div></details>';
   el.innerHTML=h+renderReplacementStrip(M,esc);
 }catch(e){}}
+/* v5.412 TREND-CONTINUATION playbook (scanner v1.559.0): one chip after every ticker on every tab + a header panel. Data: LIVE.entry_timing.rows[t].trend_pb */
+var _TPB_STYLE={'BREAKOUT BUY':['#DCFCE7','#15803D','▲'],'BUY DIP':['#DCFCE7','#15803D','▲'],'IN DIP ZONE - WAIT FOR REVERSAL':['#FEF3C7','#B45309','▲'],
+  'TREND - WAIT FOR DIP':['#E0F2FE','#0369A1','▲'],"STRETCHED - DON'T CHASE":['#FFEDD5','#C2410C','▲'],'TREND BROKEN - STAND ASIDE':['#FEE2E2','#B91C1C','▼']};
+function _tpbRow(t){try{var r=LIVE&&LIVE.entry_timing&&LIVE.entry_timing.rows&&LIVE.entry_timing.rows[t];return (r&&r.trend_pb&&r.trend_pb.state!=='BOTTOMING')?r.trend_pb:null;}catch(e){return null;}}
+function _tpbTip(p){var z=p.dip_zone||[];return (p.why||'')+' | dip zone '+z.join('-')+' | breakout > '+p.breakout_level+' | exit on close < '+p.invalidation+(p.trail?(' | trailing stop '+p.trail):'')+(p.atr14?(' (ATR '+p.atr14+')'):'');}
+function _tpbChip(t){var p=_tpbRow(t);if(!p)return '';var st=_TPB_STYLE[p.action]||['#F1F5F9','#334155','•'];
+  var short={'BREAKOUT BUY':'BREAKOUT','BUY DIP':'BUY DIP','IN DIP ZONE - WAIT FOR REVERSAL':'IN DIP ZONE','TREND - WAIT FOR DIP':'TREND','STRETCHED - DON\'T CHASE':'STRETCHED','TREND BROKEN - STAND ASIDE':'TREND BROKEN'}[p.action]||p.action;
+  return '<span class="tpbchip" title="'+String(_tpbTip(p)).replace(/"/g,'&quot;')+'" style="display:inline-block;font-size:9px;font-weight:800;padding:1px 6px;margin-left:4px;border-radius:99px;background:'+st[0]+';color:'+st[1]+';border:1px solid '+st[1]+'33;vertical-align:middle;white-space:nowrap;">'+st[2]+' '+short+'</span>';}
+var _tpbTimer=null,_tpbBusy=false;
+function _tpbDecorate(){if(_tpbBusy)return;_tpbBusy=true;try{
+  var rows=LIVE&&LIVE.entry_timing&&LIVE.entry_timing.rows;if(!rows){_tpbBusy=false;return;}
+  var re=/^[A-Z][A-Z0-9]{0,4}([.\-][A-Z])?$/,els=document.querySelectorAll('td,th,span,b,strong,a,li,h4,h5,div');
+  for(var i=0;i<els.length;i++){var e=els[i];if(e.childElementCount||e.getAttribute('data-tpb')||e.classList.contains('tpbchip'))continue;
+    var tx=e.textContent;if(!tx||tx.length>8)continue;tx=tx.trim();if(!re.test(tx)||!rows[tx])continue;
+    if(e.closest&&e.closest('#trendPanel,#blockAgesPanel'))continue;
+    var c=_tpbChip(tx);e.setAttribute('data-tpb','1');if(c)e.insertAdjacentHTML('afterend',c);}
+ }catch(err){}_tpbBusy=false;}
+function _tpbSchedule(){if(_tpbTimer)clearTimeout(_tpbTimer);_tpbTimer=setTimeout(_tpbDecorate,500);}
+try{new MutationObserver(function(ms){for(var i=0;i<ms.length;i++){var n=ms[i].addedNodes;for(var j=0;j<n.length;j++){if(n[j].nodeType===1&&!(n[j].classList&&n[j].classList.contains('tpbchip'))){_tpbSchedule();return;}}}}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
+function _toggleTrendPanel(){try{var id='trendPanel',p=document.getElementById(id);if(p){p.remove();return;}
+  var rows=(LIVE&&LIVE.entry_timing&&LIVE.entry_timing.rows)||{},order=['BREAKOUT BUY','BUY DIP','IN DIP ZONE - WAIT FOR REVERSAL','TREND - WAIT FOR DIP',"STRETCHED - DON'T CHASE",'TREND BROKEN - STAND ASIDE'],by={},nb=0;
+  Object.keys(rows).forEach(function(t){var p2=rows[t].trend_pb;if(!p2)return;if(p2.state==='BOTTOMING'){nb++;return;}(by[p2.action]=by[p2.action]||[]).push([t,p2,rows[t]]);});
+  var esc=function(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});},h='';
+  order.forEach(function(a){var L=by[a];if(!L)return;var st=_TPB_STYLE[a];h+='<div style="margin:8px 0 3px;font-weight:800;color:'+st[1]+';">'+st[2]+' '+esc(a)+' ('+L.length+')</div><table style="border-collapse:collapse;width:100%;"><thead><tr style="text-align:left;color:#64748B;"><th>Name</th><th>Close</th><th>Dip zone</th><th>Breakout &gt;</th><th>Exit &lt;</th><th>Trail</th></tr></thead><tbody>';
+    L.sort(function(x,y){return x[0]<y[0]?-1:1;}).forEach(function(q){var z=q[1].dip_zone||[];h+='<tr><td style="font-weight:700;">'+esc(q[0])+'</td><td>'+esc(q[2].bar_close||q[2].close)+'</td><td>'+esc(z.join(' - '))+'</td><td>'+esc(q[1].breakout_level)+'</td><td>'+esc(q[1].invalidation)+'</td><td>'+esc(q[1].trail||'—')+'</td></tr>';});h+='</tbody></table>';});
+  p=document.createElement('div');p.id=id;p.style.cssText='position:fixed;right:12px;top:48px;z-index:9999;max-height:78vh;overflow:auto;background:#fff;border:1px solid #CBD5E1;border-radius:10px;padding:10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:11.5px;max-width:94vw;min-width:320px;';
+  p.innerHTML='<div style="font-weight:800;">Trend-continuation playbook <a href="#" onclick="_toggleTrendPanel();return false;" style="float:right;margin-left:14px;">close</a></div><div style="color:#64748B;margin:2px 0 4px;">Trending = price above a rising 50-day EMA and within 5% of the 52-week high. Buy dips into the EMA20-EMA50 band after a higher low and a green reversal; exit on a close below the 50-day. '+esc(nb)+' other names follow the bottom rules.</div>'+(h||'<div>No trending names yet.</div>');
+  document.body.appendChild(p);}catch(e){}}
 function _toggleBlockAges(){try{
   var id='blockAgesPanel',p=document.getElementById(id);
   if(p){p.remove();return;}
@@ -6533,7 +6561,7 @@ function renderReplacementStrip(M,esc){try{
   var chk=(P.checks||[]).map(function(c){var g=c.status==='PASS';return '<span title="baseline '+esc(c.baseline)+' &rarr; now '+esc(c.now)+(c.note?(' · '+esc(c.note)):'')+'" style="display:inline-block;margin:2px 4px 2px 0;padding:1px 7px;border-radius:10px;background:'+(g?'#DCFCE7':'#FEE2E2')+';color:'+(g?'#166534':'#991B1B')+';font-size:10.5px;">'+esc(c.metric)+' <b>'+esc(c.now)+'</b></span>';}).join('');
   var SI=M.short_interest||{}, RB=M.revision_bridge||{}, SK=M.tv_socket_run||{};
   try{var _lp=document.getElementById('liveParity');if(_lp){var _y=M.yahoo_residual||{},_ba=M.block_ages||{},_w=(P.checks||[]).filter(function(c){return c.status!=='PASS';}).length;
-    _lp.innerHTML='<span title="Yahoo-parity guard: '+(P.checks||[]).length+' checks, '+_w+' not passing. Data blocks late: '+esc(_ba.late!=null?_ba.late:'?')+'. Yahoo last-resort answered '+esc(_y.ok!=null?_y.ok:0)+' of '+esc(_y.asked_names!=null?_y.asked_names:0)+'." onclick="_toggleBlockAges()" style="cursor:pointer;background:'+(ok&&!_w?'#DCFCE7':'#FEE2E2')+';color:'+(ok&&!_w?'#166534':'#991B1B')+';border-radius:9px;padding:1px 7px;font-weight:800;">parity '+esc(P.overall)+(_w?(' · '+_w+' warn'):'')+' · '+esc(_ba.late!=null?_ba.late:0)+' late</span>';}}catch(_e){}
+    _lp.innerHTML='<span title="Yahoo-parity guard: '+(P.checks||[]).length+' checks, '+_w+' not passing. Data blocks late: '+esc(_ba.late!=null?_ba.late:'?')+'. Yahoo last-resort answered '+esc(_y.ok!=null?_y.ok:0)+' of '+esc(_y.asked_names!=null?_y.asked_names:0)+'." onclick="_toggleBlockAges()" style="cursor:pointer;background:'+(ok&&!_w?'#DCFCE7':'#FEE2E2')+';color:'+(ok&&!_w?'#166534':'#991B1B')+';border-radius:9px;padding:1px 7px;font-weight:800;">parity '+esc(P.overall)+(_w?(' · '+_w+' warn'):'')+' · '+esc(_ba.late!=null?_ba.late:0)+' late</span> <span onclick="_toggleTrendPanel()" title="Trend-continuation playbook: dip zones, breakout levels, trailing stops" style="cursor:pointer;background:#E0F2FE;color:#0369A1;border-radius:9px;padding:1px 7px;font-weight:800;">trend playbook</span>';}}catch(_e){}
   var _SH=(LIVE&&LIVE.m1_buylist&&LIVE.m1_buylist.score_health)||null, _CH=M.changes||null;
   var _extra=(_SH?('<div><b>M1 scoring.</b> '+esc(_SH.ok)+' of '+esc(_SH.attempted)+' fresh rescores succeeded'+(Object.keys(_SH.src||{}).length?(' ('+Object.keys(_SH.src).map(function(k){return esc(k)+' '+esc(_SH.src[k]);}).join(', ')+')'):'')+' · legacy yahoo labels '+esc(_SH.legacy_yahoo_labels)+' · older than TTL '+esc(_SH.stale_n)+((_SH.failed||[]).length?('<br><span style="color:#B91C1C;">Failed: '+_SH.failed.slice(0,8).map(function(f){return esc(f.t)+' ('+esc(f.why)+')';}).join(', ')+'</span>'):'')+'</div>'):'')
    +(_CH?('<div><b>Changed since last scan'+(_CH.vs?(' ('+esc(_CH.vs)+')'):'')+'.</b> buy list added: '+esc((_CH.buys_added||[]).join(', ')||'none')+' · dropped: '+esc((_CH.buys_dropped||[]).join(', ')||'none')+' · cash-gate flips: '+esc(_CH.n_gate_flips||0)+((_CH.gate_flips||[]).length?(' ('+esc(_CH.gate_flips.slice(0,12).join(', '))+')'):'')+'</div>'):'');
