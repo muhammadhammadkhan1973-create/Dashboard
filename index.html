@@ -10597,7 +10597,7 @@ function _btPill(tk){try{
   var B=(typeof LIVE!=='undefined'&&LIVE&&LIVE.bottoms&&LIVE.bottoms.rows)?LIVE.bottoms.rows[tk]:null; if(!B) return '';
   if(['CONFIRMED','WATCHING','BROKEN','AVOID','FAILED HOLD'].indexOf(B.state)<0) return '';
   var c=_btStyle(B.state), esc=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
-  return '<div><span title="'+esc(B.why)+'" style="cursor:help;display:inline-block;margin-top:2px;font-size:9px;font-weight:800;color:'+c[0]+';background:'+c[1]+';border:1px solid '+c[0]+'55;border-radius:4px;padding:0 5px;">'+c[2]+(B.fired&&B.fired.length?' · rule '+B.fired.join('+'):'')+'</span></div>';
+  return '<div><span title="'+esc(B.why)+'" style="cursor:help;display:inline-block;margin-top:2px;font-size:9px;font-weight:800;color:'+c[0]+';background:'+c[1]+';border:1px solid '+c[0]+'55;border-radius:4px;padding:0 5px;">'+c[2]+(B.fired&&B.fired.length?' · rule '+B.fired.join('+'):'')+(B.state==='CONFIRMED'&&B.tranche_ok===false?' · NO TRANCHE':'')+(B.state==='CONFIRMED'&&B.thin_volume?' · thin vol':'')+'</span></div>';
 }catch(e){return '';}}
 function _bottomsHtml(scope){try{
   /* v5.403 -- the SIX-RULE BOTTOM CHECK (scanner v1.521.0). Any ONE of rules 1-5 confirms a bottom a session late; rule 6 is the invalidation. */
