@@ -1071,6 +1071,7 @@ jobs:
           [ -f us_history_cache.json ] && git add us_history_cache.json || true
           [ -f explosive_stmt_cache.json ] && git add explosive_stmt_cache.json || true   # v1.481 side-state
           [ -f sigt_quarterly_cache.json ] && git add sigt_quarterly_cache.json || true     # v1.481 side-state
+          [ -f justetf_cache.json ] && git add justetf_cache.json || true                   # v1.563 side-state
           [ -f ma_lines.json ] && git add ma_lines.json || true                             # v1.481 side-state
           [ -f foundation_cache.json ] && git add foundation_cache.json || true             # v1.481 full foundation rows
           # HISTORY GOVERNOR (owner-approved 'a', 2026-09-22): data files are whole-file regenerated every run and
