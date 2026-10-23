@@ -792,6 +792,15 @@ jobs:
                           _mv_vm = _im_vm.pop('metric_values', None)
                           if _mm_vm or _mv_vm:
                               _det_vm[_tk_vm] = {'metrics': _mm_vm, 'metric_values': _mv_vm}
+          try:      # v1.568.0 the buy list is re-arbitrated above, so the scanner's 'changes' line is finished here against the previous run's FINAL buys
+              _ch = (data.get('meta') or {}).get('changes') or {}
+              _pb = set(_ch.get('prev_buys') or [])
+              _nb = {b.get('ticker') for b in ((data.get('m1_buylist') or {}).get('buys') or []) if b.get('ticker')}
+              if _pb or _nb:
+                  _ch['buys_added'] = sorted(_nb - _pb); _ch['buys_dropped'] = sorted(_pb - _nb); _ch['finalised'] = 'scoring step'
+                  data.setdefault('meta', {})['changes'] = _ch
+          except Exception as _che:
+              print(f"[changes] not finalised ({_che})")
           if _full:
               import datetime as _dtf2
               data['im3_last_full_utc'] = _dtf2.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')   # v1.560.0 force-guard stamp
