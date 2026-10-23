@@ -10588,7 +10588,7 @@ function _etOpen(t){try{var r=_etRow(t);if(!r)return;var E=LIVE.entry_timing;var
   m.style.display='flex';}catch(e){console.error('et modal',e);}}
 
 function _btStyle(st){
-  var M={'CONFIRMED':['#047857','#DCFCE7','BOTTOM CONFIRMED'],'WATCHING':['#0369A1','#E0F2FE','WATCHING'],'BROKEN':['#b45309','#FEF3C7','BASE BROKEN'],
+  var M={'CONFIRMED':['#047857','#DCFCE7','BOTTOM CONFIRMED'],'CONFIRMED_PENDING':['#B45309','#FEF3C7','BOTTOM CONFIRMED'],'WATCHING':['#0369A1','#E0F2FE','WATCHING'],'BROKEN':['#b45309','#FEF3C7','BASE BROKEN'],
          'AVOID':['#b91c1c','#FEE2E2','AVOID'],'FAILED HOLD':['#b45309','#FEF3C7','FAILED HOLD'],'NONE':['#64748B','#F1F5F9','NO BOTTOM SETUP'],'NO DATA':['#64748B','#F1F5F9','NO PRICE HISTORY']};
   return M[st]||M['NONE'];
 }
@@ -10596,8 +10596,8 @@ function _btPill(tk){try{
   /* v5.403 -- small bottom-check pill for a Tab-19 row (scanner v1.521.0 data.bottoms). Only the states that need attention are shown. */
   var B=(typeof LIVE!=='undefined'&&LIVE&&LIVE.bottoms&&LIVE.bottoms.rows)?LIVE.bottoms.rows[tk]:null; if(!B) return '';
   if(['CONFIRMED','WATCHING','BROKEN','AVOID','FAILED HOLD'].indexOf(B.state)<0) return '';
-  var c=_btStyle(B.state), esc=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
-  return '<div><span title="'+esc(B.why)+'" style="cursor:help;display:inline-block;margin-top:2px;font-size:9px;font-weight:800;color:'+c[0]+';background:'+c[1]+';border:1px solid '+c[0]+'55;border-radius:4px;padding:0 5px;">'+c[2]+(B.fired&&B.fired.length?' · rule '+B.fired.join('+'):'')+(B.state==='CONFIRMED'&&B.tranche_ok===false?' · NO TRANCHE':'')+(B.state==='CONFIRMED'&&B.thin_volume?' · thin vol':'')+'</span></div>';
+  var c=_btStyle((B.state==='CONFIRMED'&&(B.hold_pending||B.tranche_ok===false))?'CONFIRMED_PENDING':B.state), esc=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');};
+  return '<div><span title="'+esc(B.why)+'" style="cursor:help;display:inline-block;margin-top:2px;font-size:9px;font-weight:800;color:'+c[0]+';background:'+c[1]+';border:1px solid '+c[0]+'55;border-radius:4px;padding:0 5px;">'+c[2]+(B.fired&&B.fired.length?' · rule '+B.fired.join('+'):'')+(B.state==='CONFIRMED'&&B.tranche_ok===false?' · NO TRANCHE':'')+(B.state==='CONFIRMED'&&B.hold_pending?' · 1st TRANCHE ONLY, HOLD TEST PENDING':(B.state==='CONFIRMED'&&B.held_sessions?' · held '+B.held_sessions+'d':''))+(B.state==='CONFIRMED'&&B.cluster?' · CLUSTER':'')+(B.state==='CONFIRMED'&&B.thin_volume?' · thin vol':'')+'</span></div>';
 }catch(e){return '';}}
 function _bottomsHtml(scope){try{
   /* v5.403 -- the SIX-RULE BOTTOM CHECK (scanner v1.521.0). Any ONE of rules 1-5 confirms a bottom a session late; rule 6 is the invalidation. */
