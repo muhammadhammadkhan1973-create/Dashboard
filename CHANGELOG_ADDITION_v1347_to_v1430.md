@@ -1,3 +1,83 @@
+## v1.580.0 — 2026-10-26 — EVIDENCE LAYER: the 53-item engine build plan + the 12-item KSE-100 Bottom Watch, in one scanner version (index v5.430)
+
+One new post-processing layer (`build_evidence_layer`, 24 guarded steps, runs after the audit layer and before the side split) plus surgical fixes inside
+the engines. Every new selection rule is a **shadow lane**: the old rule keeps running and keeps writing its ledger lane; the v2 rule writes a parallel
+lane; promotion only when a v2 lane has >= 60 matured 63-session marks with a better median and beat rate on the cleaned ledger.
+Tested by replaying the 26 Oct live payload through the audit + evidence layers with network stubs (`/tmp/r22/t1580.py`: 24/24 steps ok), unit tests of the
+Bottom Watch maths (both divergence kinds, volume dry-up, support band) and of the ledger benchmark/collision fix, and a jsdom render test of the ten index
+panels (`domtest1580.js`). Live sources (TradingView monthly/weekly bars, the price-context scan) are verified on the first live run.
+
+| # | Item | Status | Where |
+|---|---|---|---|
+| 1 | Ledger benchmark leg from the same series; impossible marks voided (`alpha_void`, `mark_suspect`) | BUILT (113 marks voided on the live ledger) | build_signal_ledger + ev_ledger_hygiene |
+| 2 | PSX lanes priced only from PSX sources; US/PSX ticker collisions voided | BUILT (3 rows) | build_signal_ledger + ev_ledger_hygiene |
+| 3 | At-entry attributes stamped on every new ledger row | BUILT (175 rows today) | ev_ledger_attrs |
+| 4 | TCE predictions store streams/conviction/momentum/RS/short interest/regime; shadow 2xATR exit column | BUILT | ev_tce_prediction_snapshot |
+| 5 | New lanes: global_discovery (now priced), world_etf by door, bottoms:CONFIRMED_all, kse100_bottom_watch, PSX value/momentum | BUILT | ev_shadow_lanes |
+| 6 | Medians only, n + horizon on every figure, 63-session at n>=20, no horizon-1; TCE edge verdict replaces the 40% winner threshold | BUILT | ev_results_v2, ev_tce_scorecard_verdict |
+| 7 | PSX tracker entry_grade/pct/tier on new rows; frozen PSX rows re-priced | BUILT (new rows only; old rows keep no entry grade) | ev_psx_tracker_fields |
+| 8 | Paper book charged 10 bps/side; turnover and net alpha published | BUILT (US: 198%/month one-way, gross +0.55 -> net -1.39 pts) | ev_pb_costs_and_bands |
+| 9 | PSX cash gate reads metric_values from im3_detail.json | BUILT (OGDC/PPL now fail, FFC/HUBC pass; no-data 33 -> 31) | build_psx_topdown |
+| 10 | Favoured filter accepts Booming; set() over dicts fixed | BUILT (unit-tested with a forced favoured list: 7 buys, no exception) | build_psx_topdown |
+| 11 | SBP >= 11% trigger (A-SBP) beside the CPI trigger; 90-day rate history; 6M KIBOR - policy spread as the bank signal | BUILT (KIBOR is a dated manual constant until a feed exists) | ev_psx_regime_fix |
+| 12 | Macro constants age-flagged (>45 days = placeholder) | PARTIAL: flags built; reserves/import bill still June constants (no reachable feed from the runner yet) | ev_psx_regime_fix |
+| 13 | fund_ok wired to the 13F holders when the institutional consensus is empty | BUILT | build_m1_buylist |
+| 14 | TCE streams.total recomputed after the analyst overlay | BUILT | derive_streams |
+| 15 | M2 F6 counts only when the 30-day revision > 0 | BUILT | build_m2_watch |
+| 16 | ETF tracker: perf_suspect rows cannot rank; lapsed string carries the threshold; +5% promote flag | BUILT (rank_v2 / lapsed_reason_v2 / promote_candidate; the lapse governor itself unchanged) | ev_gate_whale_discovery_etf |
+| 17 | One regime table; funnel from the live pool | PARTIAL: favored_effective logged per run (meta.favored_effective_log); tables not merged | ev_psx_regime_fix |
+| 18 | M1 v2: trend gate at selection, RS tie-breaker, shadow lane | BUILT (12 names; 3 of the 4 old buys fail the gate today) | ev_gate_m1 |
+| 19 | Explosive CONFIRMED only above a rising 200-day and <= 25% extended; 300% base-effect flag | BUILT (7 confirmed / 13 not yet) | ev_gate_explosive |
+| 20 | Zacks radar v2: rank 1 only + trend; EXIT mark on rank >= 3 | BUILT | ev_gate_zacks |
+| 21 | M2 Turnaround v2: stage 1->2 base; distress vetoes | PARTIAL: base + price < $5 veto built; CFO/net-debt vetoes need statement fields not on the rows | ev_gate_m2 |
+| 22 | M2 Quality v2: RS pct >= 70, within 15% of the 52-week high, Zacks < 3 | BUILT | ev_gate_m2 |
+| 23 | TCE HIGH_v2 = gated intersection; attention streams display-only | BUILT (shadow tier_v2 on every row) | ev_gate_tce |
+| 24 | Short interest as a cap, never a positive | BUILT in v2 (old conviction unchanged by design) | ev_gate_tce |
+| 25 | Max 3 HIGH per sector; 90-day cooling-off after a HIGH loss | BUILT | ev_gate_tce |
+| 26 | HIGH demoted to WATCH on MIXED / RISK OFF / broken S&P trend | BUILT (fired today) | ev_gate_tce |
+| 27 | Entry verdict consumes the playbook (BOTTOM TRANCHE / WAIT FOR DIP); RS and 6-1 momentum filled for all names | BUILT (6 verdicts changed, 246 fields filled) | ev_entry_timing_playbook |
+| 28 | Falling-knife bottoms need rule 1/2 plus one of 3/4/5 for a tranche | BUILT (9 confirmations held back today) | ev_bottoms_knife |
+| 29 | PSX M2 / Explosive-PSX price gate; banks out of M2 | BUILT | ev_gate_psx, ev_gate_explosive |
+| 30 | Recommended v2: two independent engines, modifiers only break ties, sector cap 3 | BUILT (119 -> 2 names today) | ev_gate_recommended |
+| 31 | Whale: crowded demoted; filing age shown | PARTIAL: crowded flag + filing age + v2; "top-3 position for a whale" needs position weights the 13F parse does not keep | ev_gate_whale_discovery_etf |
+| 32 | Discovery valuation guard + trend gate | BUILT (lane starts today) | ev_gate_whale_discovery_etf |
+| 33 | World ETF door v2: value + momentum | PARTIAL: momentum leg (6- and 12-month both positive) built; country value leg needs a CAPE/P-B feed | ev_gate_whale_discovery_etf |
+| 34 | Sector-relative scorecard (shadow score v2) | PARTIAL: built on the stored metric values (margins, cash conversion, FCF/sales, ROE, F-score, turnover, cover, debt, Beneish); gross profitability and asset growth not in the stored set | ev_m1_score_v2 |
+| 35 | Market-multiple valuation label (P/E, EV/EBITDA percentile within sector) | BUILT (shadow, valuation_v2) | ev_m1_score_v2 |
+| 36 | Zacks demoted from first sort key to a tilt | BUILT (live rule; the rank-4/5 veto unchanged) | build_m1_buylist |
+| 37 | Forward-weighted Explosive score (strength_v2) | BUILT (shadow) | ev_gate_explosive |
+| 38 | PSX value sleeve (earnings yield vs KIBOR, P/B, dividend; grade >= C) | BUILT (shadow lane psx_value) | ev_gate_psx |
+| 39 | PSX 6-1 momentum lane, on only when breadth >= 40% | BUILT (off today: breadth 18.8%) | ev_gate_psx |
+| 40 | Relative sector gate replaces "Favoured >= 62"; banks capped in buys_v2 | BUILT (shadow favored_v2 / buys_v2) | ev_gate_psx |
+| 41 | Bank IG v2 PSX-relative percentiles with the NIM direction | PARTIAL: percentiles + KIBOR note built; sector-structure weights not calibrated | ev_gate_psx |
+| 42 | Sector eligibility on 6-month relative return and breadth; regime table a tie-breaker | BUILT (meta.sector_gate_v2) | ev_us_regime_sectors |
+| 43 | Metals: central-bank buying constant dated | PARTIAL: WGC_CB_TONNES = 690 (H1-2026 annualised, dated); ETF-holdings weekly and COT-extreme scoring not added | constant |
+| 44 | Banded paper book: monthly re-rank, top-8 in / top-16 out, 25% drift bands, 10 bps | BUILT (pb_v2, NAV chain from today) | ev_pb_costs_and_bands |
+| 45 | M1 sector cap 2, list of 10-12 | BUILT in v2 | ev_gate_m1 |
+| 46 | One exit arbiter; candle veto never blocks an exit | BUILT (live_investment.actions) | ev_exit_arbiter |
+| 47 | Time stop (under water after 42 sessions); TRIM at +25% | BUILT | ev_exit_arbiter |
+| 48 | Policy targets and caps (theme 25%, line 15%, stock 5%, 3x 5%, core >= 40%) | PARTIAL: caps on the holding-level theme labels; holdings-level look-through not built | ev_exit_arbiter |
+| 49 | 3x rules: 21-session max hold, -20% stop, underlying below 20-day, re-entry lockout | BUILT (lockout is advisory text; no order flow exists) | ev_exit_arbiter |
+| 50 | Drawdown de-risking at -10% / -20% from peak NAV | BUILT (fires today at -17.6%) | ev_exit_arbiter |
+| 51 | PSX cash-flow statements (CapitalStake / TV probe) | NOT BUILT (external key) | — |
+| 52 | Narrative feed hygiene | NOT BUILT | — |
+| 53 | Every tile shows n and horizon; shadow label | BUILT on the Results scoreboard; FACT/JUDGEMENT labels elsewhere not added | index v5.430 |
+| K1 | KSE-100 monthly/weekly/daily bars via the chart socket, side file bottom_watch_bars.json, resample fallback | BUILT (live source verified on first run) | build_bottom_watch |
+| K2 | Monthly RSI waves, hidden and regular bullish divergence | BUILT (unit-tested) | _ev_rsi, _ev_divergence |
+| K3 | Monthly volume month-to-date projection vs 24-month 20th percentile | BUILT | _ev_bottom_watch_eval |
+| K4 | Owner LIP band (dated) + auto swing lows + first-test flag | BUILT | _ev_bottom_watch_eval |
+| K5 | Chaikin oscillator monthly + weekly divergence | BUILT | _ev_chaikin |
+| K6 | Four votes -> state with a price trigger; tranche factor | BUILT | _ev_bottom_watch_eval |
+| K7 | PSX market regime (KSE-100 vs 200-day, breadth) with the Bottom Watch state | BUILT (meta.market_regime_psx) | build_bottom_watch |
+| K8 | Ledger lane kse100_bottom_watch, one row per state change, owner's call logged | BUILT | build_bottom_watch |
+| K9 | Backtest over the monthly history (every 3+-vote month, forward 3/6/12 months, new-low rate) | BUILT | _ev_bottom_watch_backtest |
+| K10 | PSX tab card: four tiles, state pill, sparkline with the band, RSI panel, history table, plain hovers; S&P twin on the US tab | BUILT | index v5.430 |
+| K11 | Stock-level bottom rules 7/8 (weekly divergence, volume dry-up) | NOT BUILT (needs per-stock bars inside _bt_eval; next version) | — |
+| K12 | Tranche factor on PSX buy lists | BUILT | build_bottom_watch |
+
+Totals: 65 items — 53 BUILT, 9 PARTIAL (built with a stated limit: 12, 17, 21, 31, 33, 34, 41, 43, 48), 3 NOT BUILT (51 PSX statements, 52 narrative feeds, K11 stock-level bottom rules). Live-run verification still owed for the
+two new network calls (TradingView monthly bars; the price-context scan) and for the shadow lanes' first marks.
+
 ## v1.575.0 (scanner) + signal_ledger.json (M2 seed): M2 now tested like every other engine. The signal ledger gains M2 Quality, M2 Turnaround (Tab 8b) and PSX M2 watch (Tab 3); back-filled from the dashboard git history (373 rows). First 21-session reading: M2 Quality median +1.3pp beat 53% (n=100), M2 Turnaround -1.0pp 45% (n=33), PSX M2 +0.1pp 51% (n=49). Replaces the weaker "return while listed" shortlist-tracker measure for M2 with the same fixed 5/21/63/90-session test M1 gets. COMMIT signal_ledger.json with scanner.py.
 
 ## v1.574.0 (scanner) / index v5.424 / signal_ledger.json (seed): M1 AND EVERY RECOMMENDATION ENGINE TESTED AGAINST ITS INDEX. The signal ledger is back-filled from the dashboard's own daily history in git (every second day, 1 Jul - 25 Oct 2026, 59 snapshots): 450 historical rows for the M1 buy list, Recommended top 10, PSX top-down buys, TCE HIGH, Explosive US and Zacks radar, each marked 5/21/63/90 sessions later against the S&P 500 or KSE-100 from the same snapshots. Marks are now taken only inside a 10-session window after each horizon. Results chart shows each engine with its tab and a fixed 21-session test; "PB" rows renamed "M1 buy list held as a paper portfolio (Tab 2)" / "PSX top-down buys held as a paper portfolio (Tab 3)". First reading, 21 sessions: M1 buy list median +1.7pp, beat 58% (n=36); Recommended top 10 +1.7pp, 55% (n=40); TCE HIGH +0.6pp, 51% (n=37); Explosive -0.3pp, 48% (n=62); PSX top-down -0.7pp, 41% (n=32); Zacks radar -2.5pp, 39% (n=41). COMMIT signal_ledger.json alongside scanner.py.
