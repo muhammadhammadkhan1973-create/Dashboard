@@ -1,3 +1,5 @@
+## v1.585.1 / index v5.443 - fundamental buying zones: per growing stock fair value (average of the two valuation models), strong-buy (75%), buy-below (90%), rich (110%) lines, status and plain business-view sentence; M1 'Attractive' no longer counts as cheap when price is >10% above fair value. Banner table of all growing stocks.
+
 ## v1.585.0 / index v5.442 - WHERE TO ENTER (fundamentals + price)
 - New `ev_entry_points` (runs in `ev_post_bottoms` after master signal and trend dips). A stock qualifies when this quarter's EPS is up 15%+ and sales 10%+ on a year ago (Explosive US or the acceleration screen) AND it is cheap (M1 Attractive / cheap vs peers / 15%+ margin of safety / P/E <= 18). The price must then give one entry: BUY ON RETRACEMENT, BUY AT A CONFIRMED BOTTOM (small), BUY THE BREAKOUT (close above ceiling on volume), BASE FORMING (quiet 8+ day base, buy only on the breakout close), else WAIT / STAND ASIDE / DON'T CHASE.
 - Banner section "Where to enter" with entry zone and stop per name. Offline test on 27 Oct data: 45 growing names, 17 cheap, 1 buy-now, 2 base-forming.
