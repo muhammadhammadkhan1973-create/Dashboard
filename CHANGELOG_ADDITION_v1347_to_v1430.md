@@ -1,9 +1,3 @@
-## v1.585.2 - AUDIT FIXES (live run of 27 Oct, v1.585.1)
-- Master signal now takes 'growing + cheap' (entry points) as a business vote: DVN and RERE no longer read TREND ONLY / AVOID on one tab and 'buy' on another.
-- BUY SMALL from a confirmed bottom says so ('chart shows a CONFIRMED BOTTOM - small first piece') instead of 'the price says wait'; headline separates 'buy where business and price agree' from 'small first piece at a confirmed bottom'.
-- Results tab summary rebuilt after the evidence layer (it still showed VLO / FOXA / ROST as BUY after entry timing had turned them to WAIT (bottom rules)).
-- A BUY SMALL backed only by Zacks or Explosive carries a caution (neither has beaten the market in the live ledger yet).
-
 ## v1.585.1 / index v5.443 - fundamental buying zones: per growing stock fair value (average of the two valuation models), strong-buy (75%), buy-below (90%), rich (110%) lines, status and plain business-view sentence; M1 'Attractive' no longer counts as cheap when price is >10% above fair value. Banner table of all growing stocks.
 
 ## v1.585.0 / index v5.442 - WHERE TO ENTER (fundamentals + price)
