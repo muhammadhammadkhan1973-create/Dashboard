@@ -1,3 +1,18 @@
+## v1.587.0 - Pakistan macro inputs now update themselves
+- SBP reserves, monthly import bill and current account are read from Business Recorder headlines (Google News RSS), with plausibility clamps. Priority: explicit psx_macros_manual.json value > live headline > old constant (logged as stale).
+- Fixes the 125-day-old reserves (dashboard showed 16.53bn; real SBP-held is 21.45bn, total liquid 26.80bn, week ended 2 Oct) that understated import cover.
+- Content-age rows show the real source and date. Parsers unit-tested offline; live fetch verifies on the next GitHub run (sandbox cannot reach Google News).
+
+## v1.586.0 / index v5.446 - audit actions 1-5
+1. PSX SIGNAL: new ev_psx_signal. Every Pakistani candidate and your five holdings get BUY / BUY SMALL / ADD / WAIT FOR PRICE / HOLD / AVOID, fair value and buying zones (strong buy 75%, buy 90%, rich 110% of fair value), chart support zone and stop; merged into the master signal as 'PSX:<ticker>' so chips work on the Pakistan tabs; section on tab 23. Holdings only read HOLD or ADD (no validated PSX exit rule). Weak KSE-100 phase = new money only at a confirmed bottom.
+2. TIGHTER BOTTOMS: a CONFIRMED name below its 200-day that was never armed (Bottom Rule v2 sequence) is moved back to WATCHING and loses tranche_ok (state_loose keeps the old state; TIGHTEN_BOTTOMS=0 reverts). State counts recomputed.
+3. ONE EXIT VOICE: the exit arbiter table says it is the instruction to follow; older sections are named only where they disagree ('All sections agree' otherwise).
+4. LOG: every stage of 5 s or more prints its own line; serialise time logged; the old 'data.json written in 57 s' was the whole post-export phase (bottoms, governors, serialising), not the file write - label corrected.
+5. HEADROOM: fwd_eps_hist, estimate_history and world_stocks (about 1.3 MB, never read by index.html) moved to committed side files with slim inline pointers; carry-forward reads them first (_prev_block). daily.yml commits the three files.
+
+## v1.585.4
+- Replaced the deprecated pd.Timestamp.utcnow() (3 Pandas4Warning per run; removed in pandas 4) with pd.Timestamp.now('UTC'). Same value, no behaviour change.
+
 ## v1.585.3 / index v5.445
 - Hover on every signal chip, trend chip, signal pill and zone-table ticker shows the full company name; hover on a pill (6 to SELL, 5 to TRIM, 14 to BUY ...) lists every ticker with its name. Pills now show the true count (they were capped at 12).
 - A held note whose bottom check has fired but is unconfirmed now says so (AMD3: 'a possible turn is forming, not confirmed, does not cancel the stop instruction'); 3x notes with earnings within 10 days carry the gap warning. The Bottom Watch text no longer says 'nothing fires' when a rule has fired.
