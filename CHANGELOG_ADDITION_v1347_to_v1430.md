@@ -1,3 +1,13 @@
+## v1.588.1 - audit of the 08:53 run (452 s): two fixes
+- The weekly Zacks scrape (re-runs every 7 days) was an UNTIMED 147 s hole in the log and made that run 7.5 min. It now runs in the background as timed stage 'zacks_scrape' and is joined just before its first use, so it overlaps the other stages.
+- A hand-typed value in psx_macros_manual.json (REER 105.17) beat the live, dated 108.9 headline. Manual values for reer / pak_ca / pak_fiscal now count only if the file also carries "<key>_as_of"; undated ones are ignored with a log line.
+
+## v1.588.0 - all stale macro inputs fixed in one build
+- Import bill: re-seeded to Sept-26 goods imports $6.5bn (PBS via Topline; was the FY26 average 5.8bn, 126 days old) -> import cover 3.3 months, not 3.7. Live harvest also derives imports = exports + trade deficit from headlines.
+- REER: live from SBP REER headlines (Mettis/ProPakistani), dated seed 108.93 (Sept-26); was a hand-typed 105.17. Fiscal: full-year deficit % GDP from headlines, dated seed 2.61% (FY26); was 5.4. TradingEconomics scrapes for REER and fiscal removed (unit/period unreliable). CPI date now exposed from the PBS feed.
+- SBP reserves constant re-seeded to 21.5bn (17 Oct). Recession probability cadence set to its real ~2-month release lag; config rows (OSP differential, frozen matrix) no longer count as late.
+- US macros, Pakistan macros and metals now run at the same time (independent; about 30 s saved).
+
 ## v1.587.3 - live Pakistan headlines keep the last good value when Google News misses a run; TradingEconomics current-account scrape (read 1369) removed; undated carried current account dropped; more current-account queries
 
 ## v1.587.2 - FIX: current account headline was read before it existed (NameError swallowed) so a crude scrape gave +1369; live Business Recorder value now wins unless the manual file sets it. Import-bill queries widened.
