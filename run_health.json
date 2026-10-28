@@ -1,36 +1,42 @@
 {
- "t0": 1793175501,
+ "t0": 1793177585,
  "marks": {
-  "setup_done": 1793175529,
-  "scanner_done": 1793175806,
-  "scoring_done": 1793175824
+  "setup_done": 1793177609,
+  "scanner_done": 1793178002,
+  "scoring_done": 1793178033
  },
  "check_verdict": {
-  "book_at_check": 478,
-  "universe": 236,
-  "missing_im3": 0,
-  "missing_sample": [],
+  "book_at_check": 479,
+  "universe": 232,
+  "missing_im3": 9,
+  "missing_sample": [
+   "ARE",
+   "COST",
+   "FUBO",
+   "MAR",
+   "PGR"
+  ],
   "full_rescore": false,
   "scorer_changed": false,
   "stale": false,
   "last_scored_seen": "2026-10-26T04:21:46"
  },
  "scoring_entry": {
-  "score_list": 0,
+  "score_list": 9,
   "full": false,
-  "sel": 0,
+  "sel": 9,
   "force_suppressed": false,
   "reason": "incremental",
-  "detail_missing": 32,
-  "n_universe": 236
+  "detail_missing": 41,
+  "n_universe": 232
  },
- "t_end": 1793175829,
+ "t_end": 1793178037,
  "status": "success",
- "wall_sec": 328,
+ "wall_sec": 452,
  "segments_sec": {
-  "setup": 28,
-  "scanner": 277,
-  "scoring": 18,
-  "commit_tail": 5
+  "setup": 24,
+  "scanner": 393,
+  "scoring": 31,
+  "commit_tail": 4
  }
 }
