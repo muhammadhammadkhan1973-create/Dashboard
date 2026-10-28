@@ -1,3 +1,5 @@
+## v1.587.1 - every hand-fed macro input now shows its age on the dashboard (cards + Data-age panel; unknown date = STALE)
+
 ## v1.587.0 - Pakistan macro inputs now update themselves
 - SBP reserves, monthly import bill and current account are read from Business Recorder headlines (Google News RSS), with plausibility clamps. Priority: explicit psx_macros_manual.json value > live headline > old constant (logged as stale).
 - Fixes the 125-day-old reserves (dashboard showed 16.53bn; real SBP-held is 21.45bn, total liquid 26.80bn, week ended 2 Oct) that understated import cover.
