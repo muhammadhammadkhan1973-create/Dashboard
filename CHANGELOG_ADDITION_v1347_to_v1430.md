@@ -1,9 +1,3 @@
-## v1.588.0 - all stale macro inputs fixed in one build
-- Import bill: re-seeded to Sept-26 goods imports $6.5bn (PBS via Topline; was the FY26 average 5.8bn, 126 days old) -> import cover 3.3 months, not 3.7. Live harvest also derives imports = exports + trade deficit from headlines.
-- REER: live from SBP REER headlines (Mettis/ProPakistani), dated seed 108.93 (Sept-26); was a hand-typed 105.17. Fiscal: full-year deficit % GDP from headlines, dated seed 2.61% (FY26); was 5.4. TradingEconomics scrapes for REER and fiscal removed (unit/period unreliable). CPI date now exposed from the PBS feed.
-- SBP reserves constant re-seeded to 21.5bn (17 Oct). Recession probability cadence set to its real ~2-month release lag; config rows (OSP differential, frozen matrix) no longer count as late.
-- US macros, Pakistan macros and metals now run at the same time (independent; about 30 s saved).
-
 ## v1.587.3 - live Pakistan headlines keep the last good value when Google News misses a run; TradingEconomics current-account scrape (read 1369) removed; undated carried current account dropped; more current-account queries
 
 ## v1.587.2 - FIX: current account headline was read before it existed (NameError swallowed) so a crude scrape gave +1369; live Business Recorder value now wins unless the manual file sets it. Import-bill queries widened.
