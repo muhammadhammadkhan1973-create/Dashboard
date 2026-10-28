@@ -1,3 +1,19 @@
+## v1.590.0 - Zacks is a FINDER, not a voter (owner decision 28 Oct)
+- Zacks rank <= 2 no longer counts as a business backer in: master signal (Tabs 14/23 banner, chips), Recommended (Tab 19; two non-Zacks engines needed, conviction ignores Zacks), M2 watch (Tab 8b; the "outside confirmation" family needs a non-Zacks member), and the rebalance picks that read Recommended (Tab 17). Zacks is still shown as "Zacks N (information only)".
+- Names Zacks brings that none of our engines back are kept visible under a new signal "FOUND BY ZACKS" (watch only) with a headline sentence; they graduate when one of our own engines backs them.
+- The M1 discovery lane is unchanged: it already needs an IM3 grade of A.
+- Tested on the 10:36 UTC data: master signal 146 rows both ways, 46 relabelled (45 WAIT FOR PRICE -> FOUND BY ZACKS, CSCO BUY SMALL -> FOUND BY ZACKS), no buys lost except CSCO; Recommended 87 -> 70 (17 names whose second engine was Zacks); M2 turnaround lost C only; downstream chain (trend dips, entry points, PSX signal) runs clean. index.html: colour for the new signal.
+
+## v1.589.1 - metals 43 s -> expected ~15 s
+- Log: the five 260-week CFTC history pulls (gold, silver, copper, platinum, palladium) ran one after another; silver alone stalled ~29 s (09:59:56 -> 10:00:25). They are independent and now run together; a failed metal is still skipped on its own. Tested with a fake fetcher (3.0 s vs ~8 s sequential, failure isolated).
+
+## v1.589.0 - audit of the 09:20 run: the screen was blind to ~190 real companies
+- Log: "L1 large-cap fundamentals: matched 375/567" then "TV gap pass: 190 names -> 0 filled". The bulk TradingView query silently loses about a third of the named large-caps every run (BK, EA, CTRA, AVB, ASML, BABA, BHP ... listed in meta.discovery.tv_gap_dropped), and the old gap pass re-ran the same query, so it could never fill them. They were invisible to every engine (a likely reason buy candidates like TMO/FDX come and go).
+- New: the missing names are now asked from TradingView BY SYMBOL (NYSE/NASDAQ/AMEX prefixes, 150 per call, same columns; same call style already proven for indices). Additive and guarded; each name is tried once per run. Tested with a mocked TradingView only (live behaviour unproven).
+- Log line about REER/CA/Fiscal no longer says "no free monthly feed ... Carried".
+
+## v1.588.2 - FIX: the Pakistan macro block starts from a copy of last run's values, so a stale '<key>_source: manual' flag survived and blocked the live REER (105.17 kept instead of 108.9). Source/date flags are now cleared at the start of each run.
+
 ## v1.588.1 - audit of the 08:53 run (452 s): two fixes
 - The weekly Zacks scrape (re-runs every 7 days) was an UNTIMED 147 s hole in the log and made that run 7.5 min. It now runs in the background as timed stage 'zacks_scrape' and is joined just before its first use, so it overlaps the other stages.
 - A hand-typed value in psx_macros_manual.json (REER 105.17) beat the live, dated 108.9 headline. Manual values for reer / pak_ca / pak_fiscal now count only if the file also carries "<key>_as_of"; undated ones are ignored with a log line.
