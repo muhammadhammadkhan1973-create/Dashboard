@@ -1,3 +1,7 @@
+## v1.587.3 - live Pakistan headlines keep the last good value when Google News misses a run; TradingEconomics current-account scrape (read 1369) removed; undated carried current account dropped; more current-account queries
+
+## v1.587.2 - FIX: current account headline was read before it existed (NameError swallowed) so a crude scrape gave +1369; live Business Recorder value now wins unless the manual file sets it. Import-bill queries widened.
+
 ## v1.587.1 - every hand-fed macro input now shows its age on the dashboard (cards + Data-age panel; unknown date = STALE)
 
 ## v1.587.0 - Pakistan macro inputs now update themselves
