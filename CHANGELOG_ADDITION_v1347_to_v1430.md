@@ -1,3 +1,16 @@
+## v1.592.0 (scanner) / index v5.449 - 2026-10-29
+- Signal ledger: every pick now logs its rank in the engine's own list on the signal day (ord, of, pct). Unranked lists (entry timing, trend playbook, bottoms) log ord/of only.
+- New data.signal_ledger_monthly: 30-day scorecard. Picks grouped by signal month, judged at 21 sessions (about 30 calendar days) vs SPY / KSE-100: median gap, beat rate, n, live count, and top-10% / top-25% / rest cuts that fill in as ranked picks mature. enough=False under 30 picks.
+- index: collapsible "30-day scorecard by signal month" under the Signal ledger line (grey = under 30 picks).
+- Tested on the real ledger: monthly cells reproduce the hand-computed cohort table; 174 signals get ord/of; page renders the table, no JS errors. Rank cuts will be empty until ranked picks from this run reach 21 sessions (about 25 Nov).
+
+## v1.591.0 (scanner) / index v5.448 - 2026-10-29
+- Tabs 10, 18, 19: repeated "Pending next scan" / "UNAVAILABLE" cells become a dot with the reason on hover, plus ONE data-health line per tab (count, kinds, expandable name list). Nothing deleted.
+- Tab 10: US Explosive shows the 25 best-ranked visible names by default; "Show all" restores the existing view (171 visible of 355 on the current data).
+- One-message banner: "Changes since the last run" box (names whose signal moved, new names, names that dropped off) fed by master_signal.changes.
+- Bottoms: same-inputs cache. If names, live prices and the calendar day match the previous run, the six-rule rows are reused (no TradingView pull). A normal daily run still pays the full cost; only same-day re-runs gain. Log line: "[Bottoms] cache hit".
+- NOT done: export-phase trim (no single slow step identified without a profiled run; needs the next log's post.* timings).
+
 ## v1.590.0 - Zacks is a FINDER, not a voter (owner decision 28 Oct)
 - Zacks rank <= 2 no longer counts as a business backer in: master signal (Tabs 14/23 banner, chips), Recommended (Tab 19; two non-Zacks engines needed, conviction ignores Zacks), M2 watch (Tab 8b; the "outside confirmation" family needs a non-Zacks member), and the rebalance picks that read Recommended (Tab 17). Zacks is still shown as "Zacks N (information only)".
 - Names Zacks brings that none of our engines back are kept visible under a new signal "FOUND BY ZACKS" (watch only) with a headline sentence; they graduate when one of our own engines backs them.
