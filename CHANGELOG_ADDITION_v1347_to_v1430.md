@@ -1444,3 +1444,7 @@ Format: newest first.
 - Empty cells show a plain "no data" with a hover reason; undefined/NaN values are counted and flagged in the page snapshot.
 - Tab 5: heat map first, verdict next, full numbers table folded, older blended ranking folded and relabelled (top/upper/middle/lower/bottom blend), all 11 sectors with a "now:" verdict tag and a disagreement flag.
 - Freshness tag legend under the strip on every tab. Trend lines carry a hover label and legend.
+
+## index v5.465
+- Phone width: every wide table now sits in its own side-scroll box and panels cannot widen the page (page width 390 px on a 390 px screen on all tabs; was up to 3,220 px).
+- Tables with 45+ rows (Explosive, Trend Convergence Engine, Results, others) show the first 25 rows with a 'show all' button. Total height of the 13 long pages 251,764 px -> 73,517 px (Explosive 31,827 -> 6,016).
