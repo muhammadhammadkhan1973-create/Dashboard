@@ -475,9 +475,9 @@ jobs:
           try:
               import datetime as _dtf
               _lf = data.get('im3_last_full_utc')
-              if _force and _lf and (_dtf.datetime.utcnow() - _dtf.datetime.fromisoformat(str(_lf)[:19])).total_seconds() < 20 * 3600:
+              if _force and _lf and (_dtf.datetime.utcnow() - _dtf.datetime.fromisoformat(str(_lf)[:19])).total_seconds() < 72 * 3600:   # v1.599.0: was 20h. A ticked force_im3 within 3 days of a full re-score cost 225s for identical scores (3 Nov run)
                   _force_suppressed = True; _force = False
-                  print(f"[force guard] force_im3 ignored: last full re-score was {_lf} (<20h ago); running incremental. Set FULL_RESCORE=true to override.")
+                  print(f"[force guard] force_im3 ignored: last full re-score was {_lf} (<72h ago); running incremental. Set FULL_RESCORE=true to override.")
           except Exception as _fge:
               print(f"[force guard] skipped ({_fge})")
           _full = _force or _backfill or _os.environ.get('FULL_RESCORE', '') == 'true'
