@@ -1448,3 +1448,10 @@ Format: newest first.
 ## index v5.465
 - Phone width: every wide table now sits in its own side-scroll box and panels cannot widen the page (page width 390 px on a 390 px screen on all tabs; was up to 3,220 px).
 - Tables with 45+ rows (Explosive, Trend Convergence Engine, Results, others) show the first 25 rows with a 'show all' button. Total height of the 13 long pages 251,764 px -> 73,517 px (Explosive 31,827 -> 6,016).
+
+## index v5.466
+- Tab 5: "In plain words" summary at the top (what is strong, what to study, what not to chase, what lags, typical stock vs index).
+
+## index v5.467
+- Tab 5: "Where the dashboard views disagree" block (macro banner, macro quadrant and older blend against live price/estimates, with which to trust) and a warning line under the macro banner.
+- Tab 5 stock rows: plain notes where Tab 5 and the master signal disagree (FOUND BY ZACKS, AVOID, WAIT) and for held stocks the master signal does not cover (COP, EOG).
