@@ -12993,7 +12993,7 @@ var _llN=0;
 function _llWrap(cont,pid,minChars,openN){
   var _had=!!cont.querySelector(':scope > details.ll_fold');
   var kids=[].slice.call(cont.children).filter(function(k){
-    if(k.id==='engine_tuning_box') return false;
+    if(k.id==='engine_tuning_box'||k.id==='oil_compare_box') return false;
     if(/^(H1|H2|DETAILS|STYLE|SCRIPT|TABLE|SVG|P|BUTTON|INPUT)$/i.test(k.tagName)) return false;
     if(k.classList.contains('ll_top')||k.classList.contains('ci_strip')) return false;
     return (k.textContent||'').length>=minChars; });
@@ -13090,8 +13090,32 @@ function renderEngineTuning(){
   var gv=T.governor||{}; var gk=Object.keys(gv); if(gk.length) h+='<div style="margin-top:6px;font-size:12px;color:#475569;">Automatic vote control: '+gk.map(function(k){return k.replace(/-/g,' ')+' &mdash; '+(gv[k].plain_state||'')+(gv[k].weight!=null?' (vote '+Math.round(gv[k].weight*100)+'%)':'');}).join('; ')+'.</div>';
   h+='</div>'; box.innerHTML=h;
 }
+// ===== v5.469 OIL COMPARISON (Results tab): US picks vs Brent AND WTI, PSX picks vs Arab Light =====
+var _ocKey='';
+function renderOilCompare(){
+  var O=LIVE&&LIVE.oil_compare; var pn=document.getElementById('results'); if(!pn||!O||!O.markets) return;
+  var key=O.as_of+'|'+O.latest_oil_date; var box=document.getElementById('oil_compare_box'); if(box&&_ocKey===key) return;
+  if(!box){ box=document.createElement('div'); box.id='oil_compare_box'; var et=document.getElementById('engine_tuning_box'); if(et&&et.nextSibling) pn.insertBefore(box,et.nextSibling); else pn.insertBefore(box,pn.firstChild); }
+  _ocKey=key;
+  function blk(title,mkName,oils,mk){
+    var m=O.markets[mk]; if(!m) return '';
+    var h='<div style="margin:6px 0;"><div style="font-weight:800;color:#0A3161;font-size:13px;">'+title+'</div><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:560px;"><thead><tr style="background:#0A3161;color:#fff;text-align:left;"><th style="padding:4px 6px;">Compared with</th><th style="text-align:right;">picks matched</th><th style="text-align:right;">picks return</th><th style="text-align:right;">oil moved</th><th style="text-align:right;">'+mkName+' moved</th><th style="text-align:right;">picks minus oil</th><th style="text-align:right;">beat oil</th></tr></thead><tbody>';
+    oils.forEach(function(nm,i){ var o=m.oils[nm]; if(!o||o.error||!o.matched){ h+='<tr><td style="padding:4px 6px;">'+nm+'</td><td colspan="6">no data yet</td></tr>'; return; }
+      h+='<tr style="border-top:1px solid #E2E8F0;'+(i%2?'background:#F1F5F9;':'')+'"><td style="padding:4px 6px;font-weight:700;">'+nm+' ($'+(o.now!=null?o.now:'')+', from '+o.series_from+')</td><td style="text-align:right;">'+o.matched+' of '+(o.matched+o.unmatched)+'</td><td style="text-align:right;color:'+_siCol(o.median_pick)+';">'+_siPct(o.median_pick)+'</td><td style="text-align:right;">'+_siPct(o.median_oil)+'</td><td style="text-align:right;">'+(o.median_market!=null?_siPct(o.median_market):'&mdash;')+'</td><td style="text-align:right;font-weight:700;color:'+_siCol(o.median_vs_oil)+';">'+_siPct(o.median_vs_oil)+'</td><td style="text-align:right;">'+o.beat_oil_pct+'%</td></tr>';
+      if(o.oil_stocks) h+='<tr><td colspan="7" style="padding:0 6px 4px;font-size:11px;color:#475569;">Oil-company picks only ('+o.oil_stocks.n+'): '+_siPct(o.oil_stocks.median_pick)+' versus oil '+_siPct(o.oil_stocks.median_oil)+'.</td></tr>';
+    });
+    h+='</tbody></table></div>';
+    var first=m.oils[oils[0]]; if(first&&first.engines&&first.engines.length) h+='<div style="font-size:11px;color:#334155;">By engine (picks minus '+oils[0]+'): '+first.engines.map(function(e){return e.engine.replace(/_/g,' ').replace(/:/g,' ')+' '+_siPct(e.median_vs_oil)+' ('+e.n+')';}).join('; ')+'.</div>';
+    return h+'</div>';
+  }
+  var h='<div style="border:2px solid #0A3161;border-radius:10px;padding:10px 12px;margin:8px 0;background:#F8FAFC;"><div style="font-size:15px;font-weight:800;color:#0A3161;">Picks versus oil</div><div style="font-size:12px;color:#475569;margin:3px 0 6px;">Two separate answers. <b>US picks</b> are checked against Brent and against US crude (WTI). <b>PSX picks</b> are checked against Arab Light. Each row shows the middle pick since it was logged, how far oil moved over the same period, and how far the market moved. &ldquo;Picks minus oil&rdquo; above zero means the picks did better than simply holding oil.</div>';
+  h+=blk('US picks','S&amp;P 500','Brent,WTI'.split(','),'US')+blk('PSX picks','KSE-100',['Arab Light'],'PSX');
+  h+='<div style="font-size:11px;color:#64748B;">Oil prices on file start late July, so earlier picks are left out (shown as &ldquo;x of y matched&rdquo;). Latest oil reading: '+O.latest_oil_date+'.</div></div>';
+  box.innerHTML=h;
+}
 function applyLayoutLayer(){
   try{ renderEngineTuning(); }catch(e){ console.warn('engine tuning',e); }
+  try{ renderOilCompare(); }catch(e){ console.warn('oil compare',e); }
   document.querySelectorAll('.panel').forEach(function(pn){
     try{
       _llWrapTables(pn);
