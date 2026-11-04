@@ -1455,3 +1455,12 @@ Format: newest first.
 ## index v5.467
 - Tab 5: "Where the dashboard views disagree" block (macro banner, macro quadrant and older blend against live price/estimates, with which to trust) and a warning line under the macro banner.
 - Tab 5 stock rows: plain notes where Tab 5 and the master signal disagree (FOUND BY ZACKS, AVOID, WAIT) and for held stocks the master signal does not cover (COP, EOG).
+
+## scanner v1.599.3
+- Master signal: the owner's 10 US holdings always carry a row. COP and EOG (entry-timing rows existed, no business backer) were silently dropped; they now show HOLD with the plain reason. Replay on the 4 Nov data: COP and EOG added, no other row changed.
+
+## scanner v1.600.0 / index v5.468
+- Engines are never switched off: governor weights now ACTIVE 100% / DISCOUNTED 75% / SUSPENDED 50% (UNDER REVIEW tag); TCE HIGH goes from 0% to a 50% voice.
+- New engine_tuning block: per-engine status (ON TRACK / UNDER REVIEW / TOO EARLY, 63-day result counts too), what-to-tune hints (inputs that separated winners from losers), safe vs speculative half scorecard, forward exit-rule tracking (from 4 Nov), tuning change log with before/after.
+- Results tab: "How each engine is doing, and what to tune" panel.
+- Layout layer fix: partially rendered pages are now folded on later passes (Results 24k -> 6.6k px); total of the 13 long pages 251,764 px -> 66,373 px.
