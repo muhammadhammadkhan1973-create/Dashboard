@@ -1,42 +1,36 @@
 {
- "t0": 1793790616,
+ "t0": 1793792692,
  "marks": {
-  "setup_done": 1793790637,
-  "scanner_done": 1793791039,
-  "scoring_done": 1793791063
+  "setup_done": 1793792714,
+  "scanner_done": 1793792921,
+  "scoring_done": 1793792955
  },
  "check_verdict": {
-  "book_at_check": 505,
-  "universe": 224,
-  "missing_im3": 7,
-  "missing_sample": [
-   "DE",
-   "NOC",
-   "SHEL",
-   "SPGI",
-   "TMUS"
-  ],
+  "book_at_check": 512,
+  "universe": 223,
+  "missing_im3": 0,
+  "missing_sample": [],
   "full_rescore": false,
   "scorer_changed": false,
   "stale": false,
   "last_scored_seen": "2026-11-03T14:01:50"
  },
  "scoring_entry": {
-  "score_list": 7,
+  "score_list": 0,
   "full": false,
-  "sel": 7,
+  "sel": 0,
   "force_suppressed": true,
   "reason": "incremental",
-  "detail_missing": 38,
-  "n_universe": 224
+  "detail_missing": 31,
+  "n_universe": 223
  },
- "t_end": 1793791125,
+ "t_end": 1793792959,
  "status": "success",
- "wall_sec": 509,
+ "wall_sec": 267,
  "segments_sec": {
-  "setup": 21,
-  "scanner": 402,
-  "scoring": 24,
-  "commit_tail": 62
+  "setup": 22,
+  "scanner": 207,
+  "scoring": 34,
+  "commit_tail": 4
  }
 }
