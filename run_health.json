@@ -1,17 +1,18 @@
 {
- "t0": 1793846406,
+ "t0": 1793903346,
  "marks": {
-  "setup_done": 1793846428,
-  "scanner_done": 1793846703,
-  "scoring_done": 1793846727
+  "setup_done": 1793903368,
+  "scanner_done": 1793903772,
+  "scoring_done": 1793903800
  },
  "check_verdict": {
-  "book_at_check": 513,
-  "universe": 224,
-  "missing_im3": 2,
+  "book_at_check": 515,
+  "universe": 230,
+  "missing_im3": 3,
   "missing_sample": [
-   "RYTM",
-   "SMCIP"
+   "KMT",
+   "NIC",
+   "SHLS"
   ],
   "full_rescore": false,
   "scorer_changed": false,
@@ -19,21 +20,21 @@
   "last_scored_seen": "2026-11-03T14:01:50"
  },
  "scoring_entry": {
-  "score_list": 2,
+  "score_list": 3,
   "full": false,
-  "sel": 2,
+  "sel": 3,
   "force_suppressed": false,
   "reason": "incremental",
-  "detail_missing": 33,
-  "n_universe": 224
+  "detail_missing": 34,
+  "n_universe": 230
  },
- "t_end": 1793846731,
+ "t_end": 1793903806,
  "status": "success",
- "wall_sec": 325,
+ "wall_sec": 460,
  "segments_sec": {
   "setup": 22,
-  "scanner": 275,
-  "scoring": 24,
-  "commit_tail": 4
+  "scanner": 404,
+  "scoring": 28,
+  "commit_tail": 6
  }
 }
