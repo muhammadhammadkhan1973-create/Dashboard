@@ -1464,3 +1464,26 @@ Format: newest first.
 - New engine_tuning block: per-engine status (ON TRACK / UNDER REVIEW / TOO EARLY, 63-day result counts too), what-to-tune hints (inputs that separated winners from losers), safe vs speculative half scorecard, forward exit-rule tracking (from 4 Nov), tuning change log with before/after.
 - Results tab: "How each engine is doing, and what to tune" panel.
 - Layout layer fix: partially rendered pages are now folded on later passes (Results 24k -> 6.6k px); total of the 13 long pages 251,764 px -> 66,373 px.
+
+## scanner v1.601.0 / index v5.469 (2026-11-04)
+- New stage `oil_compare`: US picks vs Brent AND WTI, PSX picks vs Arab Light (live reading; the flat monthly official price is not used), each beside S&P 500 / KSE-100. Back-fill from history oil series (US from 2026-07-27: 835 of 936 picks; PSX from 2026-07-26: 131 of 168).
+- Results tab: 'Picks versus oil' panel under the engine tuning panel.
+
+## scanner v1.602.0 / index v5.470 (2026-11-04)
+- Sector intel: stock list now weighted the way the real sector funds weight (no stock above 23%, big names together at most 50%), foreign-domiciled names (SCCO, AEM...) left out of the fund comparison, GE/GEV moved to Industrials. Offline check on listed names: Technology list -12.25% vs XLK -12.25% (was -7.13%); Materials 4.64 vs 7.70 (was 0.58); Communication 8.25 vs 8.04.
+- index: a top-10 ranked bar chart at the top of each data page (from the page's own first table), source tags on known estimate/manual/live labels.
+
+## scanner v1.603.0 / index v5.471 (2026-11-04)
+- New stage `holdings_watch`: one plain row for each of the 10 US and 5 PSX holdings (price, floor, ceiling with reasons, dashboard message, quality grade / fair value for PSX). Price only: no share counts or costs on file.
+- Results tab: 'The stocks you hold' panel under the oil panel.
+
+## scanner v1.603.1 (2026-11-04)
+- Fix: holdings_watch ran before the sector box was built, so the 10 US rows had no price/floor/ceiling in the real run (PSX rows were fine). It now runs right after the sector box.
+
+## scanner v1.604.0 (2026-11-04)
+- holdings_watch: the five PSX holdings now pull 260 daily bars from the TradingView chart socket, so their floors and ceilings use the 52-week low/high and true 50/200-day averages (OGDC and PPL had no floor). Falls back to the old two-average levels if the socket is down.
+
+## scanner v1.605.0 / index v5.472 (2026-11-06) - Tab 17 APD sale
+- From the owner's Fidelity Activity & orders page: 45 APD sold 3 Nov at $324.00 (limit 319.50, conf 1F703DZ7) = $14,580.00 before fees; a second sell order for 45 at $327.50 (180 days) is open (placed 4 Nov).
+- Position 832 -> 787 shares (the 30-Sep statement figures are kept as statement facts); cost basis is average cost, flagged ESTIMATE (Fidelity picks lots). Sale proceeds added to Fidelity cash ($27.97 -> $14,607.97, ESTIMATE until the next statement). Dividend projection uses 787 shares from now on; the 9 Nov sweep stays on 832 (held at record date).
+- Tab 17 NetBenefits: a new box for the sale (profit about +$1,768, ESTIMATE) and the waiting order (distance to the limit, proceeds and shares if it fills). Includes v1.604.0 (PSX holdings price history).
