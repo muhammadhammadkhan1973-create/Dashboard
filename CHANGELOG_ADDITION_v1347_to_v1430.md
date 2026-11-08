@@ -1487,3 +1487,6 @@ Format: newest first.
 - From the owner's Fidelity Activity & orders page: 45 APD sold 3 Nov at $324.00 (limit 319.50, conf 1F703DZ7) = $14,580.00 before fees; a second sell order for 45 at $327.50 (180 days) is open (placed 4 Nov).
 - Position 832 -> 787 shares (the 30-Sep statement figures are kept as statement facts); cost basis is average cost, flagged ESTIMATE (Fidelity picks lots). Sale proceeds added to Fidelity cash ($27.97 -> $14,607.97, ESTIMATE until the next statement). Dividend projection uses 787 shares from now on; the 9 Nov sweep stays on 832 (held at record date).
 - Tab 17 NetBenefits: a new box for the sale (profit about +$1,768, ESTIMATE) and the waiting order (distance to the limit, proceeds and shares if it fills). Includes v1.604.0 (PSX holdings price history).
+
+## index v5.473 (2026-11-07)
+- Removed the grey half-bars behind numbers in tables (they showed a number's size against the biggest in its column, which meant nothing for price levels and confused the reading). Green/red tint for gains and losses stays.
