@@ -1,36 +1,41 @@
 {
- "t0": 1794284073,
+ "t0": 1794317939,
  "marks": {
-  "setup_done": 1794284092,
-  "scanner_done": 1794284383,
-  "scoring_done": 1794284412
+  "setup_done": 1794317956,
+  "scanner_done": 1794318272,
+  "scoring_done": 1794318307
  },
  "check_verdict": {
   "book_at_check": 527,
-  "universe": 221,
-  "missing_im3": 0,
-  "missing_sample": [],
+  "universe": 226,
+  "missing_im3": 4,
+  "missing_sample": [
+   "CBRS",
+   "CECO",
+   "DCTH",
+   "HROW"
+  ],
   "full_rescore": false,
   "scorer_changed": false,
   "stale": false,
   "last_scored_seen": "2026-11-03T14:01:50"
  },
  "scoring_entry": {
-  "score_list": 0,
+  "score_list": 4,
   "full": false,
-  "sel": 0,
+  "sel": 4,
   "force_suppressed": false,
   "reason": "incremental",
-  "detail_missing": 30,
-  "n_universe": 221
+  "detail_missing": 34,
+  "n_universe": 226
  },
- "t_end": 1794284417,
+ "t_end": 1794318312,
  "status": "success",
- "wall_sec": 344,
+ "wall_sec": 373,
  "segments_sec": {
-  "setup": 19,
-  "scanner": 291,
-  "scoring": 29,
+  "setup": 17,
+  "scanner": 316,
+  "scoring": 35,
   "commit_tail": 5
  }
 }
