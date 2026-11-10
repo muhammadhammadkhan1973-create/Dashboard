@@ -1,3 +1,9 @@
+## scanner v1.606.1 (10 Nov): transfer confirmation QUU0XA5O recorded, Fidelity fee $0.00, window 5-10 business days.
+
+## scanner v1.606.0 / index v5.474 (10 Nov 2026)
+- Tab 17: whole FYIXX balance $15,662.29 moved to the UAE bank is recorded as IN PROCESS (requested 10 Nov, look for it 12-13 Nov, kept on record until 13 Nov). The earlier received transfer stays shown. Expected credit if the same $15 charge applies: $15,647.29; real credited amount to be recorded when reported.
+- Cash, cost basis ($224,599.90) and shares (787) now use Fidelity's own Owned-assets figures (flagged FIDELITY FIGURE, no longer ESTIMATE). Realized gain on the 45 APD shares sold: $2,302.20 before fees (cost $12,277.80 = $272.84/share).
+
 ## v1.599.1 (scanner only; index stays v5.461) - 2026-11-03
 - One line per company: scan rows grouped by company name (TradingView 'description'); the owned / mega / shortest-ticker / largest line is kept, so GOOGM / METAM no longer double-count Alphabet and Meta. Preferred lines (T/PA ...) dropped.
 - Technology older-blend lookup fixed ('Information Technology' name in sector_booming).
