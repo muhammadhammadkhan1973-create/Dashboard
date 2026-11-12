@@ -1,3 +1,9 @@
+## scanner v1.607.0 / index v5.475 (12 Nov 2026)
+- Tab 17: transfer QUU0XA5O marked RECEIVED. Bank app shows +$15,647.29 on 12 Nov against $15,662.29 sent: cost $15.00, same as the 30 Oct transfer ($9,923.18 sent, $9,908.18 received). Fidelity's fee was $0.00 both times, so the $15 is a flat bank/intermediary charge (0.096% of this transfer), not a percentage.
+- New per-transfer table (sent / got / cost / days to land) and a cost-pattern note; nb.transfer_received.rows and cost_pattern.
+- Fix: observed-cash base now also subtracts transfers RECEIVED after the balance was observed (cash would otherwise have shown $15,662.29 instead of $0.00).
+- Tested: build_netbenefits replayed on 12 Nov data (cash $0.00, in-transit cleared); page rendered at 1200 and 390 px, no JS errors, no sideways scroll.
+
 ## scanner v1.606.1 (10 Nov): transfer confirmation QUU0XA5O recorded, Fidelity fee $0.00, window 5-10 business days.
 
 ## scanner v1.606.0 / index v5.474 (10 Nov 2026)
