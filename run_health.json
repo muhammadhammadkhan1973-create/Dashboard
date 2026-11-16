@@ -1,36 +1,42 @@
 {
- "t0": 1794795577,
+ "t0": 1794862017,
  "marks": {
-  "setup_done": 1794795604,
-  "scanner_done": 1794796085,
-  "scoring_done": 1794796116
+  "setup_done": 1794862040,
+  "scanner_done": 1794862625,
+  "scoring_done": 1794862657
  },
  "check_verdict": {
   "book_at_check": 551,
-  "universe": 218,
-  "missing_im3": 0,
-  "missing_sample": [],
+  "universe": 217,
+  "missing_im3": 5,
+  "missing_sample": [
+   "CBRS",
+   "CPAY",
+   "FOX",
+   "RVMD",
+   "U"
+  ],
   "full_rescore": false,
   "scorer_changed": false,
   "stale": false,
   "last_scored_seen": "2026-11-03T14:01:50"
  },
  "scoring_entry": {
-  "score_list": 0,
+  "score_list": 5,
   "full": false,
-  "sel": 0,
+  "sel": 5,
   "force_suppressed": false,
   "reason": "incremental",
-  "detail_missing": 29,
-  "n_universe": 218
+  "detail_missing": 34,
+  "n_universe": 217
  },
- "t_end": 1794796124,
+ "t_end": 1794862662,
  "status": "success",
- "wall_sec": 547,
+ "wall_sec": 645,
  "segments_sec": {
-  "setup": 27,
-  "scanner": 481,
-  "scoring": 31,
-  "commit_tail": 8
+  "setup": 23,
+  "scanner": 585,
+  "scoring": 32,
+  "commit_tail": 5
  }
 }
