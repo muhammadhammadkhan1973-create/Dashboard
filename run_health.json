@@ -1,16 +1,20 @@
 {
- "t0": 1794984012,
+ "t0": 1795029234,
  "marks": {
-  "setup_done": 1794984037,
-  "scanner_done": 1794984287,
-  "scoring_done": 1794984324
+  "setup_done": 1795029256,
+  "scanner_done": 1795029678,
+  "scoring_done": 1795029705
  },
  "check_verdict": {
-  "book_at_check": 569,
-  "universe": 217,
-  "missing_im3": 1,
+  "book_at_check": 570,
+  "universe": 216,
+  "missing_im3": 7,
   "missing_sample": [
-   "ELVN"
+   "BW",
+   "CEPU",
+   "COHU",
+   "FENC",
+   "KC"
   ],
   "full_rescore": false,
   "scorer_changed": false,
@@ -18,21 +22,21 @@
   "last_scored_seen": "2026-11-17T15:23:11"
  },
  "scoring_entry": {
-  "score_list": 1,
+  "score_list": 7,
   "full": false,
-  "sel": 1,
-  "force_suppressed": true,
+  "sel": 7,
+  "force_suppressed": false,
   "reason": "incremental",
-  "detail_missing": 30,
-  "n_universe": 217
+  "detail_missing": 35,
+  "n_universe": 216
  },
- "t_end": 1794984329,
+ "t_end": 1795029710,
  "status": "success",
- "wall_sec": 317,
+ "wall_sec": 476,
  "segments_sec": {
-  "setup": 25,
-  "scanner": 250,
-  "scoring": 37,
+  "setup": 22,
+  "scanner": 422,
+  "scoring": 27,
   "commit_tail": 5
  }
 }
