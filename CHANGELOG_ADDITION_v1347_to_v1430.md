@@ -1,3 +1,11 @@
+## scanner v1.614.0 / index v5.483 (22 Nov 2026) - near-miss discovery watch list (action plan item 4)
+- New: a near-miss watch list under the M2 board. It lists the names the M2 quick-score first screen put at 40 to 49.9 (pass mark 50), closest first, with the factor holding each one back (sales growth, earnings growth, return on capital, or 6-month price).
+- Scale: 295 names sit in the band; the 25 closest are shown. Note: the shipped speculative list is capped at 250, so the lowest-scoring band names are not in the list (the count shown is the full band).
+- Data: built from data['m2_universe'] already computed this run. No new fetches, no scoring change. Data file grows by about 6 KB.
+- Honest limit: quick first-screen score only. The full 122-point quality check has not been run on these names. Watch-list names, not buy signals.
+- Tests: builder run on the 22 Nov live data (band check, sort order, empty input); page panel rendered in a stub DOM with live data and with the empty state. Not yet confirmed on a live scan.
+- Cadence: refreshes on every scan (no extra cost). Monthly review is the owner's step.
+
 ## scanner v1.613.0 / index v5.482 (17 Nov 2026) - audit of the 21:01 PKT run (12 min 19 s)
 - Time: run_health wall 806 s vs 291 s at 20:35. Stage timings vs the previous run: TCE PSX +163 s, PSX macros +104 s, tail builders +71 s, TCE US +70 s, narratives +60 s, live investment +51 s, look-through +24 s. Every slow stage is a network fetch; CPU stages unchanged; code added in v1.612.0 was a key snapshot (milliseconds). Same evening pattern on 16 Nov 20:57 (645 s). Verdict: slow sources/runner in the evening window, not a regression.
 - New slow-stage guard: meta.timings_history (last 10 runs) and meta.slow_stages name any stage at 3x its recent median, with a run warning when the extra time passes 120 s; shown as a Run-time check line in the engine-tuning box.
