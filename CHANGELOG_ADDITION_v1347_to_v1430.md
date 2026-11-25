@@ -1,9 +1,3 @@
-## scanner v1.615.0 / index v5.484 (25 Nov 2026) - fix: APD result said "MISSED by 0.0%"
-- Cause: the plain-language line compared unrounded TradingView figures ($3.61 actual vs $3.6113 estimate) and printed the surprise (-0.04%) as "by 0.0%". The page chip used the same test and said "missed".
-- Fix: the verdict now uses the Zacks adjusted basis (the same figures the Zacks box shows: $3.61 vs $3.60, a 0.3% beat) when the Zacks seed is current. Otherwise it uses TradingView figures rounded to the cent. A gap under 0.1% reads "came in line with expectations", never a miss. The page chip follows the same rule.
-- Verified on the live data: the line now reads "earned $3.61 a share against $3.60 expected (Zacks adjusted basis), so it BEAT expectations by 0.3%." Unit checks: real beat, real miss, in-line, no-date and no-seed cases.
-- No change to scoring or fetches.
-
 ## scanner v1.614.0 / index v5.483 (22 Nov 2026) - near-miss discovery watch list (action plan item 4)
 - New: a near-miss watch list under the M2 board. It lists the names the M2 quick-score first screen put at 40 to 49.9 (pass mark 50), closest first, with the factor holding each one back (sales growth, earnings growth, return on capital, or 6-month price).
 - Scale: 295 names sit in the band; the 25 closest are shown. Note: the shipped speculative list is capped at 250, so the lowest-scoring band names are not in the list (the count shown is the full band).
