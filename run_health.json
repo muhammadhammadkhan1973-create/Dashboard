@@ -1,10 +1,11 @@
 {
- "t0": 1795800124,
+ "t0": 1795803765,
  "marks": {
-  "setup_done": 1795800145,
-  "scanner_done": 1795800505,
-  "scoring_done": 1795800540
+  "setup_done": 1795803788,
+  "scanner_done": 1795803789,
+  "scoring_done": 1795803809
  },
+ "skipped_guard": "manual re-run, inputs unchanged, data.json <90min old -- identical output guaranteed; tick force_im3 to override",
  "check_verdict": {
   "book_at_check": 594,
   "universe": 218,
@@ -24,13 +25,13 @@
   "detail_missing": 28,
   "n_universe": 218
  },
- "t_end": 1795800545,
+ "t_end": 1795803812,
  "status": "success",
- "wall_sec": 421,
+ "wall_sec": 47,
  "segments_sec": {
-  "setup": 21,
-  "scanner": 360,
-  "scoring": 35,
-  "commit_tail": 5
+  "setup": 23,
+  "scanner": 1,
+  "scoring": 20,
+  "commit_tail": 3
  }
 }
