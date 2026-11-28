@@ -1,3 +1,18 @@
+## scanner v1.616.0 (28 Nov 2026) - Tab 17 reconciled to the Share Plan Record of 28 Nov
+- Open sell orders: now all five (135 shares). Before: one order (45 at $327.50). Added the 28 Nov orders at $323.75 (20), $335.75 (25), $339.75 (25), $344.75 (20). Confirmation 2F8028ZW added to the 4 Nov order.
+- Sale date: 5 Nov 2026 (fill date). Before: 3 Nov (order date). Order date kept as its own field.
+- Account total: no longer adds the $9,923.18 fund balance and the $14,580 sale proceeds on top of the holding. Both had already been sent to the bank by the 10 Nov transfer, so the total was overstated. It now equals the holding value once every transfer has landed (cash $0). Before: $275,627.01. Now: $251,123.83.
+- Sale cost note: the 45 shares sold are confirmed from lot B at $272.84 (was an estimate).
+- Checked and unchanged (already tie to the record): 787 shares, cost $224,599.90, price $319.09, value $251,123.83, gain $26,523.93, transfers $9,908.18 and $15,647.29 (each $15 short), realised profit $2,302.20, dividend rate $1.81 a quarter.
+- Not on Tab 17 yet: the lot table (lots A to F, free-to-sell count), the 4 Jan 2027 dividend date, and the C/D lot split (Fidelity shows it as 0 free). The page needs a render change for the lot table; to be done only on your go-ahead.
+- Test: the real builder run on the 27 Nov price; every value above checked against the record. Scanner-only change (no index change).
+
+## scanner v1.615.0 / index v5.484 (25 Nov 2026) - fix: APD result said "MISSED by 0.0%"
+- Cause: the plain-language line compared unrounded TradingView figures ($3.61 actual vs $3.6113 estimate) and printed the surprise (-0.04%) as "by 0.0%". The page chip used the same test and said "missed".
+- Fix: the verdict now uses the Zacks adjusted basis (the same figures the Zacks box shows: $3.61 vs $3.60, a 0.3% beat) when the Zacks seed is current. Otherwise it uses TradingView figures rounded to the cent. A gap under 0.1% reads "came in line with expectations", never a miss. The page chip follows the same rule.
+- Verified on the live data: the line now reads "earned $3.61 a share against $3.60 expected (Zacks adjusted basis), so it BEAT expectations by 0.3%." Unit checks: real beat, real miss, in-line, no-date and no-seed cases.
+- No change to scoring or fetches.
+
 ## scanner v1.614.0 / index v5.483 (22 Nov 2026) - near-miss discovery watch list (action plan item 4)
 - New: a near-miss watch list under the M2 board. It lists the names the M2 quick-score first screen put at 40 to 49.9 (pass mark 50), closest first, with the factor holding each one back (sales growth, earnings growth, return on capital, or 6-month price).
 - Scale: 295 names sit in the band; the 25 closest are shown. Note: the shipped speculative list is capped at 250, so the lowest-scoring band names are not in the list (the count shown is the full band).
