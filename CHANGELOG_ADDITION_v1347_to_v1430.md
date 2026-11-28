@@ -1,3 +1,15 @@
+## scanner v1.617.0 / index v5.485 (28 Nov 2026) - APD EXIT PLAN panel on Tab 17
+- New panel on Tab 17, between the header tiles and the account total. It shows the three-stage exit plan you decided on 28 Nov.
+- Price ladder from the live price to the $374.75 full exit, with markers at the $341.14 stage 2 trigger and the $344.75 stage 1 top.
+- Three stage cards: Stage 1 (the five open sell orders, 135 shares, $44,995 if all fill, profit about $8,162); Stage 2 (after a close above $341.14, sell 10 at $349.75 and 18 at $359.75); Stage 3 (sell the remaining 624 shares at $374.75, $233,880).
+- Historical study: mid-term election range (11% to 47%, middle about 20%, applied to about $316) and all-time-high breakouts (10 of 17 rose 47% to 100%; 7 peaked and fell 20%+; a 7% trailing sell got out early in 12 of 17).
+- Checkpoints: Q1 FY27 results 4 Feb 2027 and late April / early May results, with days remaining counted live.
+- Open item for you: whether a warning sign alone should sell everything. Shown as still open.
+- Stage 2 and 3 orders are NOT placed. The panel says so.
+- Data: scanner adds an apd_plan block (plan facts) and lot cost $272.84 for the 135 shares. No change to order or fetch logic.
+- Test: panel rendered from the real builder output; no undefined or NaN values; stage figures match the 28 Nov record (135 shares, 28 shares, 624 shares, profit $8,162).
+- Not changed: the existing "SELL TO TAKE PROFIT OUT" tile still shows the amount to sell at the current price. Decide whether to keep it alongside the plan.
+
 ## scanner v1.616.0 (28 Nov 2026) - Tab 17 reconciled to the Share Plan Record of 28 Nov
 - Open sell orders: now all five (135 shares). Before: one order (45 at $327.50). Added the 28 Nov orders at $323.75 (20), $335.75 (25), $339.75 (25), $344.75 (20). Confirmation 2F8028ZW added to the 4 Nov order.
 - Sale date: 5 Nov 2026 (fill date). Before: 3 Nov (order date). Order date kept as its own field.
